@@ -10,5 +10,5 @@ Daany DataFrame seems to be similar to Pandas, but the implementation follows th
 - grouping data in the data frame,
 - aggregation on grouped data in the data frame,
 - calculated column,
-- apply an operation on a specific column in the data frame,
+- apply an operation on a specific column/row in the data frame,
 - ...
