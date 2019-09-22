@@ -422,7 +422,7 @@ namespace Unit.Test.DF
             }
 
         }
-
+        //exception degree
         [Fact]
         public void degreeCheck1()
         {
@@ -433,7 +433,7 @@ namespace Unit.Test.DF
 
           
         }
-
+        //exception degree
         [Fact]
         public void degreeCheck2()
         {
@@ -444,7 +444,7 @@ namespace Unit.Test.DF
 
              
         }
-
+        //exception width
         [Fact]
         public void widthMustBeSet()
         {

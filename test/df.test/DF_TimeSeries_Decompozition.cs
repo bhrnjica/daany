@@ -66,7 +66,7 @@ namespace Unit.Test.DF
 
 
         [Fact]
-        public void AddCalculatedColumn_Test02()
+        public void SSA_Decomposition_Test02()
         {
             double[] values = getSomeMonthlyData(); // Monthly time-series data
             var sWindow = 12; var sDegree = 1; var tWindow = 12; var tDegree = 12; var lWindow= tWindow; var lDegree = tDegree;
@@ -78,7 +78,7 @@ namespace Unit.Test.DF
         }
 
         [Fact]
-        public void AddCalculatedColumn_Test03()
+        public void SSA_Decomposition_Test03()
         {
             double[] values = new double[] { 1,2,3,4,5,6,7,8,9,10};
             var ma3 = TimeSeriesGen.SimpleMA(values, 3);

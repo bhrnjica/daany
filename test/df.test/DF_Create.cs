@@ -187,7 +187,7 @@ namespace Unit.Test.DF
         [Fact]
         public void LoadromCSV_Test()
         {
-            string path = "../../../../dataset/titanic/titanic_full_1310.csv";
+            string path = "../../../testdata/titanic_full_1310.csv";
             var df = DataFrame.FromCsv(path, "	", names:null); //
 
             //

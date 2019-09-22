@@ -1,9 +1,41 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>daany.ext</AssemblyName>
+    <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>Daany</RootNamespace>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageId>Daany.df.ext - c# extension library for data analysis</PackageId>
+    <Authors>Bahrudin Hrnjica</Authors>
+    <Product>daany - data analysis and transformation</Product>
+    <Description>Daany - C# library for data analysis and transformation with the implementation of Matrix, DataFrame, Time series generator and decomposition and various statistics' parameters. It is closely implemented with ML.NET, in order to load the transformed data in to ML.NET pipeline.</Description>
+    <Copyright>Bahrudin Hrnjica</Copyright>
+    <PackageLicenseExpression>MIT License</PackageLicenseExpression>
+    <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
+    <PackageTags>ml.net, data prep,</PackageTags>
+    <Version>0.1.0</Version>
+    <PackageReleaseNotes>MIT License
+
+Copyright (c) 2019 Bahrudin Hrnjica
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

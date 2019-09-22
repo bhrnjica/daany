@@ -109,7 +109,7 @@ namespace Daany
         /// </summary>
         /// <param name="filepath">full or relative path of the file</param>
         /// <param name="sep"> separator string</param>
-        /// <param name="names">column names in case the columns are provided separetly from the file</param>
+        /// <param name="names">column names in case the columns are provided separately from the file</param>
         /// <param name="dformat">dat time format</param>
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
         /// <returns>df object</returns>
