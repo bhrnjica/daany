@@ -1,3 +1,5 @@
+![Daany Logo](./docs/daany_logo_small.png)
+
 Daany - Data Analytic C# library with the implementation of Matrix, DataFrame, generator, and decomposition of Time series and various statistics' parameters.
 
 # Data Frame
@@ -97,5 +99,6 @@ ConsoleHelper.ConsoleWriteHeader("Test Iris DataSet Confusion Matrix ");
 ConsoleHelper.ConsolePrintConfusionMatrix(metricsTest.ConfusionMatrix);
 ```
 Once the program is run, the output shows that we have 100% accurate Iris model:
+![Iris Model Evaluation](./docs/2019-09-22_20-23-39.png)
 
 
