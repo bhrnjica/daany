@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="clasic\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\daany.df\daany.df.csproj" />
+    <ProjectReference Include="..\daany.ext\daany.df.ext.csproj" />
+    <ProjectReference Include="..\daany.math\daany.math.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Accord">
+      <HintPath>..\..\Assemblies\netstandard2.0\Accord.dll</HintPath>
+    </Reference>
+    <Reference Include="Accord.Math">
+      <HintPath>..\..\Assemblies\netstandard2.0\Accord.Math.dll</HintPath>
+    </Reference>
+    <Reference Include="Accord.Math.Core">
+      <HintPath>..\..\Assemblies\netstandard2.0\Accord.Math.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

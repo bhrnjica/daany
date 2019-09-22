@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+    <RootNamespace>Daany</RootNamespace>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageId>DataAnalysis</PackageId>
+    <Authors>Bahrudin Hrnjica</Authors>
+    <Product>daany - data analysis and transformation</Product>
+    <Description>daany - is library for tabular data preparation. It is similar to Pandas but completely follows the C# pattern and implementation. The library is just a implementation of the ferquency used methods during data preparation for machine learning. It is tigtly implemented with IDataView abstraction of the ml.net. Once the data preparation is done, data frame object can be easely included in to ml.net pipeline, by calling Loadfrom enumerable qwith castom mapping delegate.</Description>
+    <Copyright>Bahrudin Hrnjica</Copyright>
+    <PackageLicenseExpression>MIT License</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bhrnjica/mlnet-models</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bhrnjica/mlnet-models</RepositoryUrl>
+    <PackageTags>ml.net, data prep,</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="util\Table.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\daany.math\daany.math.csproj" />
+  </ItemGroup>
+
+</Project>
