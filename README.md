@@ -19,3 +19,83 @@ The ``DataFrame`` implementation contains basic capabilities like:
 - ...
 
 Once the ``DataFrame`` completes the data transformation, the extension method provides the easy way to pass the data into ```MLContex``` of the ML.NET Framework.
+The following example shows Daany Data Frame in action:
+
+### Data Loading
+We are going to use iris data file, which can be found on manny places on the internet. The basic structure of the file is that it contains 5 tab separated columns: ```sepal_length```,	```sepal_width```,	```petal_length```,	```petal_width```, and 	```species```.
+The Daany DataFrame class has predefined static method to load data from txt or csv file. The following code loads the data and create DataFrame object:
+
+```csharp
+//read the iris data and create DataFrame object. 
+var df = DataFrame.FromCsv(orgdataPath,sep:"\t");
+```
+Now that we have data frame we can perform one of many supported data transofrmations. For this example we are going to create two new columns in to ```df```.:
+```csharp
+//calculate two new columns into dataset
+df.AddCalculatedColumn("SepalArea", (r, i) => Convert.ToSingle(r[0]) * Convert.ToSingle(r[1]));
+df.AddCalculatedColumn("PetalArea", (r, i) => Convert.ToSingle(r[2]) * Convert.ToSingle(r[3]));
+```
+Now the ```df``` object has two new columns:```SepalArea``` and ```PetalArea```. 
+
+Now we are going to create an new Data Frame containing only three columns: ```SepalArea```, ```PetalArea``` and ```Species```:
+```csharp
+//create new data-frame by selecting only three columns
+var derivedDF = df.Create(("SepalArea", null), ("PetalArea", null), ("species", null));
+```
+For this purpose we use ```Create``` method by passing tuples of olde and new column name. 
+
+### Building model using ML.NET
+Now we transformed the data and created final data frame, which will be passed to ML.NET. SInce the data is already in the memory, we shoudl use ```mlContext.Data.LoadFromEnumerable``` ML.NET method. Here we need to provide the type for the loaded data. SO let's create the Iris class with only three properties since we want to use only two columns as the Features and one as label. 
+```csharp
+class Iris
+{
+public float PetalArea { get; set; }
+public float SepalArea { get; set; }
+public string Species { get; set; }
+}
+```
+Now that we have class type implemented we can load the data frame into ML.NET:
+```csharp
+//Load Data Frame into Ml.NET data pipeline
+IDataView dataView = mlContext.Data.LoadFromEnumerable<Iris>(derivedDF.GetEnumeratorEx<Iris>(oRow =>
+{
+    //convert row object array into Iris row
+    var ooRow = oRow.ToList();
+    var prRow = new Iris();
+    prRow.SepalArea = Convert.ToSingle(ooRow[0]);
+    prRow.PetalArea = Convert.ToSingle(ooRow[1]);
+    prRow.Species = Convert.ToString(ooRow[2]);
+    //
+    return prRow;
+}));
+```
+The whole data has been loaded into the ML.NET pipeline, so we have to split the data into Train and Test set:
+```csharp
+//Split dataset in two parts: TrainingDataset (80%) and TestDataset (20%)
+var trainTestData = mlContext.Data.TrainTestSplit(dataView, testFraction: 0.1);
+var trainData = trainTestData.TrainSet;
+var testData = trainTestData.TestSet;
+```
+Create the pipeline to prepare the train data for machine learning:
+```csharp
+//prepare data for ML
+var dataPipeline = PrepareIrisData(mlContext);
+```
+Use datapipeline and trainSet and train and build the model. Algorthm selection and training process is implemented in the ```Train``` method.:
+```csharp
+//train and build the model 
+var model = Train(mlContext, dataPipeline, trainData);
+```
+### Model Evaluation
+Once we have trained model, we can evaluate the model how it predicts the Isir flower from the test set:
+```csharp
+//evaluate test set
+var testPrediction = model.Transform(testData);
+var metricsTest = mlContext.MulticlassClassification.Evaluate(testPrediction);
+ConsoleHelper.PrintMultiClassClassificationMetrics("TEST Iris Dataset", metricsTest);
+ConsoleHelper.ConsoleWriteHeader("Test Iris DataSet Confusion Matrix ");
+ConsoleHelper.ConsolePrintConfusionMatrix(metricsTest.ConfusionMatrix);
+```
+Once the program is run, the output shows that we have 100% accurate Iris model:
+
+
