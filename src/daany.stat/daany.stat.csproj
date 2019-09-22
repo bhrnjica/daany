@@ -5,12 +5,13 @@
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>Daany</RootNamespace>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageId>Daany.stat - c# statistics library for data analysis</PackageId>
+    <PackageId>Daany.Stat</PackageId>
     <Authors>Bahrudin Hrnjica</Authors>
     <Product>daany - data analysis and transformation</Product>
-    <Description>Daany - C# library for data analysis and transformation with the implementation of Matrix, DataFrame, Time series generator and decomposition and various statistics' parameters. It is closely implemented with ML.NET, in order to load the transformed data in to ML.NET pipeline.</Description>
+    <Description>Daany.stat - c# statistics library for data analysis.
+Daany - C# library for data analysis and transformation with the implementation of Matrix, DataFrame, Time series generator and decomposition and various statistics' parameters. It is closely implemented with ML.NET, in order to load the transformed data in to ML.NET pipeline.</Description>
     <Copyright>Bahrudin Hrnjica</Copyright>
-    <PackageLicenseExpression>MIT License</PackageLicenseExpression>
+    <PackageLicenseExpression></PackageLicenseExpression>
     <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
     <PackageTags>ml.net, data prep,</PackageTags>
@@ -36,6 +37,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -58,6 +61,13 @@ SOFTWARE.</PackageReleaseNotes>
     <Reference Include="Accord.Math.Core">
       <HintPath>..\..\Assemblies\netstandard2.0\Accord.Math.Core.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
