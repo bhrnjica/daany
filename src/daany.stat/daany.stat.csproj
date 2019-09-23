@@ -14,8 +14,8 @@ Daany - C# library for data analysis and transformation with the implementation 
     <PackageLicenseExpression></PackageLicenseExpression>
     <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
-    <PackageTags>ml.net, data prep,</PackageTags>
-    <Version>0.1.1</Version>
+    <PackageTags>ml.net, data prepeparation, data analytics</PackageTags>
+    <Version>0.1.03</Version>
     <PackageReleaseNotes>MIT License
 
 Copyright (c) 2019 Bahrudin Hrnjica
@@ -39,6 +39,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -55,14 +57,17 @@ SOFTWARE.</PackageReleaseNotes>
     <Reference Include="Accord">
       <HintPath>..\..\Assemblies\netstandard2.0\Accord.dll</HintPath>
       <Private>true</Private>
+      <Pack>true</Pack>
     </Reference>
     <Reference Include="Accord.Math">
       <HintPath>..\..\Assemblies\netstandard2.0\Accord.Math.dll</HintPath>
       <Private>true</Private>
+      <Pack>true</Pack>
     </Reference>
     <Reference Include="Accord.Math.Core">
       <HintPath>..\..\Assemblies\netstandard2.0\Accord.Math.Core.dll</HintPath>
       <Private>true</Private>
+      <Pack>true</Pack>
     </Reference>
   </ItemGroup>
 
