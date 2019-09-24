@@ -24,30 +24,32 @@ Once the ``DataFrame`` completes the data transformation, the extension method p
 The following example shows Daany Data Frame in action:
 
 ### Data Loading
-We are going to use iris data file, which can be found on manny places on the internet. The basic structure of the file is that it contains 5 tab separated columns: ```sepal_length```,	```sepal_width```,	```petal_length```,	```petal_width```, and 	```species```.
+We are going to use iris data file, which can be found on many places on the internet. The basic structure of the file is that it contains 5 tab separated columns: ```sepal_length```,	```sepal_width```,	```petal_length```,	```petal_width```, and 	```species```.
 The Daany DataFrame class has predefined static method to load data from txt or csv file. The following code loads the data and create DataFrame object:
 
 ```csharp
 //read the iris data and create DataFrame object. 
 var df = DataFrame.FromCsv(orgdataPath,sep:"\t");
 ```
-Now that we have data frame we can perform one of many supported data transofrmations. For this example we are going to create two new columns into ```df```.:
+Now that we have data frame we can perform one of many supported data transofrmations. For this example we are going to create two new columns into ```df```:
 ```csharp
-//calculate two new columns into dataset
+//calculate two new columns into dataset: r argument represents a current row, and i represent the current row index
 df.AddCalculatedColumn("SepalArea", (r, i) => Convert.ToSingle(r[0]) * Convert.ToSingle(r[1]));
 df.AddCalculatedColumn("PetalArea", (r, i) => Convert.ToSingle(r[2]) * Convert.ToSingle(r[3]));
 ```
 Now the ```df``` object has two new columns:```SepalArea``` and ```PetalArea```. 
 
-Now we are going to create an new Data Frame containing only three columns: ```SepalArea```, ```PetalArea``` and ```Species```:
+Now we are going to create a new Data Frame containing only three columns: ```SepalArea```, ```PetalArea``` and ```Species```:
 ```csharp
 //create new data-frame by selecting only three columns
 var derivedDF = df.Create(("SepalArea", null), ("PetalArea", null), ("species", null));
 ```
-For this purpose we use ```Create``` method by passing tuples of olde and new column name. 
+For this purpose, we use ```Create``` method by passing tuples of the old and new column name. In our case, we pass ```null``` for the new column name, which means keep old column name.
 
 ### Building model using ML.NET
-Now we transformed the data and created final data frame, which will be passed to ML.NET. SInce the data is already in the memory, we shoudl use ```mlContext.Data.LoadFromEnumerable``` ML.NET method. Here we need to provide the type for the loaded data. SO let's create the Iris class with only three properties since we want to use only two columns as the Features and one as label. 
+Now we transformed the data and created final data frame, which will be passed to ML.NET. Since the data is already in the memory, we should use ```mlContext.Data.LoadFromEnumerable``` ML.NET method. Here we need to provide the type for the loaded data. 
+
+So let's create the Iris class with only three properties since we want to use only two columns as the features and one as label. 
 ```csharp
 class Iris
 {
@@ -83,13 +85,13 @@ Create the pipeline to prepare the train data for machine learning:
 //prepare data for ML
 var dataPipeline = PrepareIrisData(mlContext);
 ```
-Use datapipeline and trainSet and train and build the model. Algorthm selection and training process is implemented in the ```Train``` method.:
+Use datapipeline and trainSet and train and build the model. Algorithm selection and training process is implemented in the ```Train``` method.:
 ```csharp
 //train and build the model 
 var model = Train(mlContext, dataPipeline, trainData);
 ```
 ### Model Evaluation
-Once we have trained model, we can evaluate the model how it predicts the Isir flower from the test set:
+Once we have trained model, we can evaluate the model how it predicts the Iris flower from the test set:
 ```csharp
 //evaluate test set
 var testPrediction = model.Transform(testData);
