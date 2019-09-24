@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-using Accord.Math;
+//using Accord.Math;
 using Accord.Math.Decompositions;
+using Daany.MathExt;
 
 namespace Daany.Stat
 {
@@ -217,7 +218,7 @@ namespace Daany.Stat
             
             //in case adjusted flag is enabled
             if (adjustScale)
-                posContr = posContr.Pow(-1).Subtract(posContr.Pow(-1).Max() * 1.1).Multiply(-1);
+                posContr = posContr.Pow(-1).Substract(posContr.Pow(-1).Max() * 1.1).Multiply(-1);
             
             //
             return posContr;
@@ -238,7 +239,7 @@ namespace Daany.Stat
             int kStar = Math.Max(L, K);
             int N = L + K - 1;
             //
-            var newM = Accord.Math.Matrix.Zeros(L, K);
+            var newM = MatrixEx.Zeros(L, K);
             //
             if (L >= K)
                 Y = Y.Transpose();
@@ -309,7 +310,7 @@ namespace Daany.Stat
             if (signalCounts > 0)
                 sM = _Xs.Take(signalCounts);
             //initi ts
-            tsCumulative = Vector.Zeros(_ts.Count());
+            tsCumulative = MatrixEx.Zeros(_ts.Count());
             foreach (var sMat in sM)
             {
                 var retVal = diagonalAveraging(sMat.Value);
@@ -378,7 +379,7 @@ namespace Daany.Stat
             double[][] forecastOrthonormalVal;
             var L = _xCom.GetLength(0);
             var K = _xCom.GetLength(1);
-            var X_com_hat = Accord.Math.Matrix.Zeros(L, K);
+            var X_com_hat = MatrixEx.Zeros(L, K);
 
             if (singularsValuesCount >= 0)
             {
@@ -390,7 +391,7 @@ namespace Daany.Stat
             else
                 forecastOrthonormalVal = _orthonormalBase;
 
-            var valR = Accord.Math.Matrix.Zeros(forecastOrthonormalVal[0].Length, 1);
+            var valR = MatrixEx.Zeros(forecastOrthonormalVal[0].Length, 1);
             var tmp = valR.GetColumn(valR.GetLength(1) - 1);
             _R = tmp.Take(tmp.Count() - 1).ToArray();
             for (int i = 0; i < forecastOrthonormalVal.Length; i++)
