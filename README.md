@@ -4,7 +4,7 @@ Daany - Data Analytic C# library with the implementation of Matrix, DataFrame, g
 
 # Data Frame
 
-Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Panda's look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require to  any class type implementation prior to data loading and data transformation, which is huge time saving.     
+Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require to  any class type implementation prior to data loading and data transformation, which is huge time saving.     
 
 The ``DataFrame`` implementation contains basic capabilities like:
 
