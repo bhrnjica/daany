@@ -101,9 +101,9 @@ namespace Daany.MathExt
 
         public static T[,] Transpose<T>(this T[,] m1)
         {
-            var retVal = new T[m1.GetLength(0), m1.GetLength(1)];
-            for (int i = 0; i < m1.GetLength(0); i++)
-                for (int j = 0; j < m1.GetLength(1); j++)
+            var retVal = new T[m1.GetLength(1), m1.GetLength(0)];
+            for (int i = 0; i < retVal.GetLength(0); i++)
+                for (int j = 0; j < retVal.GetLength(1); j++)
                     retVal[i, j] = m1[j, i];
             //
             return retVal;

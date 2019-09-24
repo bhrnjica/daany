@@ -18,3 +18,4 @@ bin-release/
 # information for Eclipse / Flash Builder.
 /.vs/daany/v16
 /.vs/daany/DesignTimeBuild
+/test/Daany.Test.App
