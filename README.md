@@ -103,4 +103,34 @@ ConsoleHelper.ConsolePrintConfusionMatrix(metricsTest.ConfusionMatrix);
 Once the program is run, the output shows that we have 100% accurate Iris model:
 ![Iris Model Evaluation](./docs/img/2019-09-22_20-23-39.png)
 
+# Daany Statistics
+Besides the DataFrame Daany library contains set of implementation with working on time series data:
+- Conversion time series into ```Daany.DataFrame```
+- STL time series decomposition,
+- Singular Spectrum Analysis decomposition,
+- Set of Time Series operations like moving average, etc....
+
+### Singular Spectrum Analysis, SSA
+
+With SSA, you can decompose the time series into any number of components (signlas). The following code loads the famous time series data:
+
+```csharp
+var strPath = $"{root}/AirPassengers.csv";
+var mlDF = DataFrame.FromCsv(strPath, sep: ",");
+var ts = mlDF["#Passengers"].Select(f => Convert.ToDouble(f));//create time series
+```
+Now that we have AirPasanger time series, we can create SSA object by passing the time series into it:
+```csharp
+//create Singular Spectrum Analysis object
+var ssa = new SSA(ts);
+//perform analysis
+ssa.Fit(36);
+```
+So we created the ssa object by passing the number of components that we are going to create. Once the ssa object has been created we can call the Fit method to start with time series ssa analysis.
+
+Once we have analysed the time series, we can plot its components. The following plot shows the first 4 components:
+
+The following plot shows ahow ssa aproximated the time series:
+
+At the end we can plot preditcted and acual value sof the time series:
 
