@@ -429,9 +429,10 @@ namespace Unit.Test.DF
             var builder = new InterpolatorBuilder();
             builder.Width = 37;
             builder.Degree = -1;
-            var loess = builder.interpolate(this.createLinearDataArray());
+             
+            var exception = Assert.Throws<Exception>(() => builder.interpolate(this.createLinearDataArray()));
+            Assert.Equal("Degree must be 0, 1 or 2", exception.Message);
 
-          
         }
         //exception degree
         [Fact]
@@ -440,16 +441,19 @@ namespace Unit.Test.DF
             var builder = new InterpolatorBuilder();
             builder.Width = 37;
             builder.Degree = 3;
-            var loess = builder.interpolate(this.createLinearDataArray());
+           // var loess = builder.interpolate(this.createLinearDataArray());
 
-             
+            var exception = Assert.Throws<Exception>(() => builder.interpolate(this.createLinearDataArray()));
+            Assert.Equal("Degree must be 0, 1 or 2", exception.Message);
+
         }
         //exception width
         [Fact]
         public void widthMustBeSet()
         {
             var builder = new InterpolatorBuilder();
-            var loess = builder.interpolate(new double[2000]);
+            var exception = Assert.Throws<Exception>(() => builder.interpolate(new double[2000]));
+            Assert.Equal("LoessInterpolator.Builder: Width must be set", exception.Message);
 
         }
 
@@ -459,7 +463,9 @@ namespace Unit.Test.DF
             var builder = new InterpolatorBuilder();
             
            // var loess = builder.interpolate(null);
-            Assert.Throws<Exception>(() => builder.interpolate(null));
+            var exception = Assert.Throws<Exception>(() => builder.interpolate(null));
+            Assert.Equal("LoessInterpolator.Builder: Width must be set", exception.Message);
+
         }
 
         //  Utility functions...

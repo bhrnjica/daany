@@ -78,7 +78,7 @@ namespace Daany.Stat
             var retVal = new TSComponents();
             retVal.Residual = stl.Residual;
             retVal.Trend = stl.Trend;
-            retVal.Residual = stl.Residual;
+            retVal.Seasonal = stl.Seasonal;
             return retVal;
 
         }
