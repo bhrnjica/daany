@@ -129,11 +129,15 @@ ssa.Fit(36);
 So we created the ssa object by passing the number of components that we are going to create. Once the ssa object has been created we can call the ```Fit``` method to start with time series ssa analysis.
 
 Once we have analyzed the time series, we can plot its components. The following plot shows the first 4 components:
+
 ![Iris Model Evaluation](./docs/img/2019-09-24_22-03-27.png)
 
-The following plot shows ahow ssa aproximated the time series:
+The following plot shows how previous 4 components aproximate the actual AirPassengers data:
+
+
 ![Iris Model Evaluation](./docs/img/2019-09-24_22-04-57.png)
 
 At the end we can plot ssa predicted and actual values of the time series:
+
 ![Iris Model Evaluation](./docs/img/2019-09-24_22-05-18.png)
 
