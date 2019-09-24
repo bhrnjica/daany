@@ -132,7 +132,7 @@ Once we have analyzed the time series, we can plot its components. The following
 
 ![Iris Model Evaluation](./docs/img/2019-09-24_22-03-27.png)
 
-The following plot shows how previous 4 components aproximate the actual AirPassengers data:
+The following plot shows how previous 4 components, aproximate the actual AirPassengers data:
 
 
 ![Iris Model Evaluation](./docs/img/2019-09-24_22-04-57.png)
