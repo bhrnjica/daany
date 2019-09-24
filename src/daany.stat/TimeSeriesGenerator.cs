@@ -82,9 +82,41 @@ namespace Daany.Stat
             return retVal;
 
         }
-        
-        
-        public static (List<List<float>> X, List<List<float>> y) ToDataFrame(List<float> tsData, int pastSteps, int futureSteps = 1)
+
+
+        /// <summary>
+        /// Convert time series into DataFrame
+        /// </summary>
+        /// <param name="tsData">array of floating numbers</param>
+        /// <param name="pastSteps">the number of past steps to define data frame columns</param>
+        /// <returns></returns>
+        public static DataFrame ToDataFrame(float[] tsData, int pastSteps)
+        {
+            //Generate column names
+            var columns = new List<string>();
+            for(int i= pastSteps; i >= 0; i--)
+            {
+                string colName = "";
+                if (i == 0)
+                    colName = $"Label";
+                else
+                    colName = $"t-{i}";
+                //
+                columns.Add(colName);
+            }
+
+            //calculate column and row counts
+            int cols = pastSteps + 1;
+            int rows = tsData.Length - cols + 1;
+            var index = Enumerable.Range(0, rows).ToList();
+            object[] data = tsData.Select(x=>(object)x).ToArray();
+            //creta dataframe
+            var df = new DataFrame(data,index,columns);
+            return df;
+        }
+
+
+        private static (List<List<float>> X, List<List<float>> y) ToListOfList(List<float> tsData, int pastSteps, int futureSteps = 1)
         {
             ///
             var feature = new List<List<float>>();
@@ -128,7 +160,7 @@ namespace Daany.Stat
             var train = tsData.Take(countData - futureSteps);
             var test = tsData.Skip(Math.Max(0, countData - futureSteps)).Select(x => x);
 
-            var (X, y) = ToDataFrame(train.ToList(), pastSteps, futureSteps);
+            var (X, y) = ToListOfList(train.ToList(), pastSteps, futureSteps);
 
             //In order to create test set the number of instances of y must be greater than number of past steps.
             if (pastSteps > y.Count)

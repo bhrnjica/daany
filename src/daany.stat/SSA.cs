@@ -95,7 +95,7 @@ namespace Daany.Stat
             //prepare the embedding matrix
             var retVal = new double[L, K];
             for (int i = 0; i < L; i++)
-            {
+            {   
                 var k = i;
                 for (int j = 0; j < K; j++)
                    retVal[i, j] = _ts[k++];
