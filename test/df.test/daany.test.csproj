@@ -22,16 +22,4 @@
     <ProjectReference Include="..\..\src\daany.stat\daany.stat.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Accord">
-      <HintPath>..\..\Assemblies\netstandard2.0\Accord.dll</HintPath>
-    </Reference>
-    <Reference Include="Accord.Math">
-      <HintPath>..\..\Assemblies\netstandard2.0\Accord.Math.dll</HintPath>
-    </Reference>
-    <Reference Include="Accord.Math.Core">
-      <HintPath>..\..\Assemblies\netstandard2.0\Accord.Math.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

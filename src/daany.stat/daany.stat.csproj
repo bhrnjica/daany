@@ -15,7 +15,7 @@ Daany - C# library for data analysis and transformation with the implementation 
     <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
     <PackageTags>ml.net, data prepeparation, data analytics</PackageTags>
-    <Version>0.1.05</Version>
+    <Version>0.1.06</Version>
     <PackageReleaseNotes>MIT License
 
 Copyright (c) 2019 Bahrudin Hrnjica
@@ -40,22 +40,8 @@ SOFTWARE.</PackageReleaseNotes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    
+    <FileVersion>1.0.0.0</FileVersion>   
     <PackageIconUrl>..\..\docs\img\daanyIcon.png</PackageIconUrl>
-    <references>
-      <group targetFramework="net48">
-        <reference file="..\..\Assemblies\net48\Accord.dll" />
-        <reference file="..\..\Assemblies\net48\Accord.Math" />
-        <reference file="..\..\Assemblies\net48\Accord.Math.Core" />
-      </group>
-
-      <group targetFramework="netstandard2.0">
-        <reference file="..\..\Assemblies\netstandard2.0\Accord.dll" />
-        <reference file="..\..\Assemblies\netstandard2.0\Accord.Math" />
-        <reference file="..\..\Assemblies\netstandard2.0\Accord.Math.Core" />
-      </group>
-    </references>
   </PropertyGroup>
 
   <ItemGroup>
@@ -66,9 +52,6 @@ SOFTWARE.</PackageReleaseNotes>
     <ProjectReference Include="..\daany.df\daany.df.csproj" />
     <ProjectReference Include="..\daany.ext\daany.df.ext.csproj" />
     <ProjectReference Include="..\daany.math\daany.math.csproj" />
-    <AssemblyReference Include="Accord.dll" Version="3.8.0" PrivateAssets="All" />
-    <AssemblyReference Include="Accord.Math" Version="3.8.0" PrivateAssets="All" />
-    <AssemblyReference Include="Accord.Math.Core" Version="3.8.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
