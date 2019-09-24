@@ -112,7 +112,7 @@ Besides the DataFrame Daany library contains set of implementation with working 
 
 ### Singular Spectrum Analysis, SSA
 
-With SSA, you can decompose the time series into any number of components (signlas). The following code loads the famous time series data:
+With SSA, you can decompose the time series into any number of components (signals). The following code loads the famous time series data:
 
 ```csharp
 var strPath = $"{root}/AirPassengers.csv";
