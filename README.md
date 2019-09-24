@@ -1,4 +1,4 @@
-![Daany Logo](./docs/daany_logo_small.png)
+![Daany Logo](./docs/img/daany_logo_small.png)
 
 Daany - Data Analytic C# library with the implementation of Matrix, DataFrame, generator, and decomposition of Time series and various statistics' parameters.
 
@@ -31,7 +31,7 @@ The Daany DataFrame class has predefined static method to load data from txt or 
 //read the iris data and create DataFrame object. 
 var df = DataFrame.FromCsv(orgdataPath,sep:"\t");
 ```
-Now that we have data frame we can perform one of many supported data transofrmations. For this example we are going to create two new columns in to ```df```.:
+Now that we have data frame we can perform one of many supported data transofrmations. For this example we are going to create two new columns into ```df```.:
 ```csharp
 //calculate two new columns into dataset
 df.AddCalculatedColumn("SepalArea", (r, i) => Convert.ToSingle(r[0]) * Convert.ToSingle(r[1]));
@@ -99,6 +99,6 @@ ConsoleHelper.ConsoleWriteHeader("Test Iris DataSet Confusion Matrix ");
 ConsoleHelper.ConsolePrintConfusionMatrix(metricsTest.ConfusionMatrix);
 ```
 Once the program is run, the output shows that we have 100% accurate Iris model:
-![Iris Model Evaluation](./docs/2019-09-22_20-23-39.png)
+![Iris Model Evaluation](./docs/img/2019-09-22_20-23-39.png)
 
 
