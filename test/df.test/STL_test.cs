@@ -424,6 +424,7 @@ namespace Unit.Test.DF
         }
         //exception degree
         [Fact]
+        
         public void degreeCheck1()
         {
             var builder = new InterpolatorBuilder();

@@ -201,9 +201,73 @@ namespace Daany
             this.Values = data.ToList();
         }
 
-        public DataFrame Filter(string[] cols, object[] values, FilterOperator fOper)
+        /// <summary>
+        /// Filter data frame based on selected columns and coresponded values and operators.
+        /// </summary>
+        /// <param name="cols">selected columns</param>
+        /// <param name="filteValues">filter values.</param>
+        /// <param name="fOpers">filter operators</param>
+        /// <returns>returns filtered df</returns>
+        public DataFrame Filter(string[] cols, object[] filteValues, FilterOperator[] fOpers)
         {
-            throw new NotImplementedException();
+            if (Index.Count == 0)
+                return new DataFrame(new object[0], Index.ToList(), Columns.ToList());
+
+            //check for the same length of the arguments
+            if (!(cols.Length == filteValues.Length && cols.Length == fOpers.Length))
+                throw new Exception("Inconsistent number of columns, filter values an doperators.");
+            
+            //
+            this.DFTypes = columnsTypes();
+            int[] indCols = getColumnIndex(cols);
+            //
+            for (int i=0; i < cols.Length; i++)
+            {
+                if(this.DFTypes[indCols[i]] == ColType.I2 && fOpers[indCols[i]] != FilterOperator.Equal)
+                {
+                    throw new Exception("Boolean column must connect with only 'Equal' operator.");
+                }
+            }
+            
+            //
+            
+            int rowIndex = 0;
+            //temp row values
+            object[] rowValues = new object[cols.Length];
+
+            //filtered values
+            var lst = new List<object>();
+            for (int i = 0; i < Index.Count; i++)
+            {
+                rowIndex = i * Columns.Count;
+
+                //in case
+
+                //fill current row
+                for(int ix=0; ix < indCols.Length; ix++)
+                    rowValues[ix] = Values[rowIndex + indCols[ix]];
+
+                //perform  filtering
+                if (rowValues.Any(x=> x== DataFrame.NAN))
+                {
+                    //for (int j = 0; j < Columns.Count; j++)
+                    //    lst.Add(Values[index + j]);
+                    continue;
+                }
+                else 
+                {
+                    if(applyOperator(indCols, rowValues, filteValues, fOpers))
+                    {
+                        for (int j = 0; j < Columns.Count; j++)
+                            lst.Add(Values[rowIndex + j]);
+                    }
+
+                }
+            }
+
+
+            var df = new DataFrame(lst.ToArray(), Enumerable.Range(0, lst.Count / Columns.Count).ToList(), Columns);
+            return df;
         }
 
         /// <summary>
@@ -215,71 +279,7 @@ namespace Daany
         /// <returns></returns>
         public DataFrame Filter(string col, object value, FilterOperator fOper)
         {
-            if (Index.Count == 0)
-                return new DataFrame(new object[0], Index.ToList(), Columns.ToList());
-
-            this.DFTypes = columnsTypes();
-            int colIndex = getColumnIndex(col);
-            int index = 0;
-            var lst = new List<object>();
-            for (int i = 0; i < Index.Count; i++)
-            {
-                index = i * Columns.Count;
-                var val1 = Values[index + colIndex];
-
-                //
-                if (val1 == DataFrame.NAN && fOper == FilterOperator.IsNUll)
-                {
-                    for (int j = 0; j < Columns.Count; j++)
-                        lst.Add(Values[index + j]);
-                }
-                else if (this.DFTypes[colIndex] == ColType.I2)
-                {
-                    if (fOper != FilterOperator.Equal)
-                        throw new Exception("Boolean column only accept equal operator.");
-                }
-                else if (this.DFTypes[colIndex] == ColType.I32 || this.DFTypes[colIndex] == ColType.I64
-                    || this.DFTypes[colIndex] == ColType.F32 || this.DFTypes[colIndex] == ColType.DD)
-                {
-                    var val11 = Convert.ToDouble(val1);
-                    var val2 = Convert.ToDouble(value);
-                    //
-                    if (applyOperator(val11, val2, fOper))
-                    {
-                        for (int j = 0; j < Columns.Count; j++)
-                            lst.Add(Values[index + j]);
-                    }
-                }
-                else if (this.DFTypes[colIndex] == ColType.STR)
-                {
-                    var val11 = val1.ToString();
-                    var val2 = value.ToString();
-                    //
-                    if (applyOperator(val11, val2, fOper))
-                    {
-                        for (int j = 0; j < Columns.Count; j++)
-                            lst.Add(Values[index + j]);
-                    }
-
-                }
-                else if (this.DFTypes[colIndex] == ColType.DT)
-                {
-                    var val11 = Convert.ToDateTime(val1);
-                    var val2 = Convert.ToDateTime(value);
-                    //
-                    if (applyOperator(val11, val2, fOper))
-                    {
-                        for (int j = 0; j < Columns.Count; j++)
-                            lst.Add(Values[index + j]);
-                    }
-                }
-                else
-                    throw new Exception("Unknown column type");
-
-            }
-
-            var df = new DataFrame(lst.ToArray(), Enumerable.Range(0, lst.Count / Columns.Count).ToList(), Columns);
-            return df;
+            return Filter(new string[] {col }, new object[] { value}, new FilterOperator[] {fOper });
         }
 
         /// <summary>
@@ -1167,6 +1167,63 @@ namespace Daany
         {
             return _numFloatRegex.IsMatch(value);
         }
+
+
+        /// <summary>
+        /// Filter operation against set of values
+        /// </summary>
+        /// <param name="rowValues">data frame row</param>
+        /// <param name="filteValues">filter values</param>
+        /// <param name="fOpers">filter operators</param>
+        /// <returns></returns>
+        private bool applyOperator(int[] indCols, object[] rowValues, object[] filteValues, FilterOperator[] fOpers)
+        {
+            for (int colIndex = 0; colIndex < rowValues.Length; colIndex++)
+            {
+                var fOper = fOpers[colIndex];
+                if (this.DFTypes[indCols[colIndex]] == ColType.I2)
+                {
+                    var val1 = Convert.ToBoolean(rowValues[colIndex]);
+                    var val2 = Convert.ToBoolean(filteValues[colIndex]);
+                    if (fOper != FilterOperator.Equal)
+                        throw new Exception("Equal should be assign to boolean columns.");
+                    if (val1 != val2)
+                        return false;
+                }
+                if (this.DFTypes[indCols[colIndex]] == ColType.I32 || this.DFTypes[indCols[colIndex]] == ColType.I64
+                    || this.DFTypes[indCols[colIndex]] == ColType.F32 || this.DFTypes[indCols[colIndex]] == ColType.DD)
+                {
+                    var val1 = Convert.ToDouble(rowValues[colIndex]);
+                    var val2 = Convert.ToDouble(filteValues[colIndex]);
+
+                    //
+                    if (!applyOperator(val1, val2, fOper))
+                        return false;
+                }
+                else if (this.DFTypes[indCols[colIndex]] == ColType.STR)
+                {
+                    var val1 = rowValues[colIndex].ToString();
+                    var val2 = filteValues[colIndex].ToString();
+                    //
+                    if (!applyOperator(val1, val2, fOper))
+                        return false;
+
+                }
+                else if (this.DFTypes[indCols[colIndex]] == ColType.DT)
+                {
+                    var val1 = Convert.ToDateTime(rowValues[colIndex]);
+                    var val2 = Convert.ToDateTime(filteValues[colIndex]);
+                    //
+                    if (!applyOperator(val1, val2, fOper))
+                        return false;
+                }
+                else
+                    throw new Exception("Unknown column type");
+            }
+
+            return true;
+        }
+
 
         private bool applyOperator(DateTime val1, DateTime val2, FilterOperator fOper)
         {

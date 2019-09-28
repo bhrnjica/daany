@@ -6,7 +6,7 @@ using Daany;
 
 namespace Unit.Test.DF
 {
-    public class DataFrame_Tests
+    public class DataFrame_Sort_Tests
     {
         private void CreateRowAndCol(int row, int col, ref List<int> indexs, ref List<string> columns)
         {
