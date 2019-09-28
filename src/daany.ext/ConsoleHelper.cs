@@ -7,7 +7,7 @@ using static Microsoft.ML.TrainCatalogBase;
 using System.Diagnostics;
 
 
-namespace Common
+namespace Daany.Ext
 {
     public static class ConsoleHelper
     {

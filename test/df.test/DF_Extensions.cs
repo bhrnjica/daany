@@ -24,7 +24,7 @@ namespace Unit.Test.DF
         }
 
         [Fact]
-        public void AddCalculatedColumn_Test01()
+        public void OneHotEncoding_Test01()
         {
             var mlContext = new MLContext();
             var dict = new Dictionary<string, List<object>>
@@ -53,7 +53,38 @@ namespace Unit.Test.DF
             Assert.Equal(1f, df[6, 7]);
         }
 
-        
+        [Fact]
+        public void KeyToValue_Test01()
+        {
+            var mlContext = new MLContext();
+            var dict = new Dictionary<string, List<object>>
+            {
+                {"product_id",new List<object>() {1,1,2,2,2,2,2 } },
+                { "retail_price",new List<object>() { 2,2,5,5,5,5,5 } },
+                { "quantity",new List<object>() { 1,2,4,8,16,32,64 } },
+                { "city",new List<object>() { "SF","SJ","SF","SJ","Miami", "Orlando","SJ"} },
+                { "state" ,new List<object>() { "CA","CA","CA","CA","FL","FL","PR" } },
+            };
+
+
+            //
+            var df = new DataFrame(dict);
+
+            //add one hot encoding columns
+            df.CategoryToKey(mlContext, "state");
+            var col = df["state_cvalues"].Select(x=>Convert.ToInt32(x)).ToArray();
+            Assert.Equal(1, col[0]);
+            Assert.Equal(1, col[1]);
+            Assert.Equal(1, col[2]);
+            Assert.Equal(1, col[3]);
+            Assert.Equal(2, col[4]);
+            Assert.Equal(2, col[5]);
+            Assert.Equal(3, col[6]);
+
+        }
+
+
+
 
     }
 

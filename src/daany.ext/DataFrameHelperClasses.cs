@@ -18,4 +18,14 @@ namespace Daany.Ext
     {
         public float[] Classes { get; set; }
     }
+
+    public class CategoryValues
+    {
+        public uint Classes { get; set; }
+    }
+
+    public class LookupMap
+    {
+        public string Key { get; set; }
+    }
 }
