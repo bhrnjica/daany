@@ -1,4 +1,18 @@
-﻿using System;
+﻿//////////////////////////////////////////////////////////////////////////////////////////
+// Daany - DAta ANalYtic Library                                                        //
+// https://github.com/bhrnjica/daany                                                    //
+//                                                                                      //
+// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
+//                                                                                      //
+// This code is free software under the MIT License                                     //
+// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
+//                                                                                      //
+// Bahrudin Hrnjica                                                                     //
+// bhrnjica at hotmail.com                                                              //
+// Bihac, Bosnia and Herzegovina                                                        //
+// http://bhrnjica.wordpress.com                                                        //
+//////////////////////////////////////////////////////////////////////////////////////////
+using System;
 using System.IO;
 using System.Linq;
 using System.Globalization;
@@ -13,6 +27,9 @@ using Microsoft.ML.Transforms;
 
 namespace Daany.Ext
 {
+    /// <summary>
+    /// Set of extension methods for the Daany.DataFrame related to Machine Learning and Data Transformation.
+    /// </summary>
     public static class DataFrameExt
     {
         public static void EncodeColumn(this DataFrame df, MLContext mlContext, string colName)

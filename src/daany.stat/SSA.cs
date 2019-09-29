@@ -1,8 +1,21 @@
-﻿using System;
+﻿//////////////////////////////////////////////////////////////////////////////////////////
+// Daany - DAta ANalYtic Library                                                        //
+// https://github.com/bhrnjica/daany                                                    //
+//                                                                                      //
+// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
+//                                                                                      //
+// This code is free software under the MIT License                                     //
+// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
+//                                                                                      //
+// Bahrudin Hrnjica                                                                     //
+// bhrnjica at hotmail.com                                                              //
+// Bihac, Bosnia and Herzegovina                                                        //
+// http://bhrnjica.wordpress.com                                                        //
+//////////////////////////////////////////////////////////////////////////////////////////
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-//using Accord.Math;
 using Accord.Math.Decompositions;
 using Daany.MathExt;
 
@@ -15,6 +28,7 @@ namespace Daany.Stat
         public double[] Residual { get; set; }
     }
     /// <summary>
+    /// This class is modification of the python code found at: https://github.com/aj-cloete/pySSA
     /// Class implementation for singular spectrum analysis, based on the Python version found at: 
     /// SSA procedure in three steps:
     /// 1. Embed  - the time series by forming a Hankel matrix of lagged window(length K) vectors.

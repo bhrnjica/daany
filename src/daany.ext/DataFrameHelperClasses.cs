@@ -1,12 +1,17 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Globalization;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-using Daany;
-
+﻿//////////////////////////////////////////////////////////////////////////////////////////
+// Daany - DAta ANalYtic Library                                                        //
+// https://github.com/bhrnjica/daany                                                    //
+//                                                                                      //
+// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
+//                                                                                      //
+// This code is free software under the MIT License                                     //
+// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
+//                                                                                      //
+// Bahrudin Hrnjica                                                                     //
+// bhrnjica at hotmail.com                                                              //
+// Bihac, Bosnia and Herzegovina                                                        //
+// http://bhrnjica.wordpress.com                                                        //
+//////////////////////////////////////////////////////////////////////////////////////////
 namespace Daany.Ext
 {
     public class CategoryColumn

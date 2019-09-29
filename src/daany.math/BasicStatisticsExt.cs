@@ -1,13 +1,15 @@
 ﻿//////////////////////////////////////////////////////////////////////////////////////////
-// GPdotNET - Genetic Programming Tool                                                  //
-// Copyright 2006-2017 Bahrudin Hrnjica                                                 //
+// Daany - DAta ANalYtic Library                                                        //
+// https://github.com/bhrnjica/daany                                                    //
+//                                                                                      //
+// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
 //                                                                                      //
 // This code is free software under the MIT License                                     //
-// See license section of  http://github.com/bhrnjica/gpdotnet/blob/master/license.md  //
+// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
 //                                                                                      //
 // Bahrudin Hrnjica                                                                     //
-// bhrnjica@hotmail.com                                                                 //
-// Bihac,Bosnia and Herzegovina                                                         //
+// bhrnjica at hotmail.com                                                              //
+// Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 using System;

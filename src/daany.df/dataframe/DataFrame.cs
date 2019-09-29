@@ -1,61 +1,87 @@
-﻿// Daany - DAta ANalYtic Library
-// http://accord-framework.net
-//
-// Copyright © Bahrudin Hrnjica, 2006-2019
-// bhrnjica at hotmail.com
-//
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+﻿//////////////////////////////////////////////////////////////////////////////////////////
+// Daany - DAta ANalYtic Library                                                        //
+// https://github.com/bhrnjica/daany                                                    //
+//                                                                                      //
+// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
+//                                                                                      //
+// This code is free software under the MIT License                                     //
+// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
+//                                                                                      //
+// Bahrudin Hrnjica                                                                     //
+// bhrnjica at hotmail.com                                                              //
+// Bihac, Bosnia and Herzegovina                                                        //
+// http://bhrnjica.wordpress.com                                                        //
+//////////////////////////////////////////////////////////////////////////////////////////
 using System;
 using System.IO;
 using System.Linq;
+using System.Collections;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using Daany;
+
 using Daany.MathExt;
-using Daany.DFExt;
-using System.Collections;
+
 
 namespace Daany
 {
     /// <summary>
     /// Class implementation for DataFrame. The DataFrame is going to be C# specific implementation
-    /// to handle data loading from the file, sorting, filtering, handling with columns and rows
-    /// accessing df elements etc.
+    /// to handle data loading from files, grouping, sorting, filtering, handling with columns and rows
+    /// accessing data frame (df) elements etc.
     /// </summary>
     public class DataFrame : IDataFrame, IEnumerator<object[]>, IEnumerable<object[]>
     {
-        //COlumns names property for the df. The property contains column names of the df. 
-        public IList<string> Columns { get; internal set; }
-        //Data type for each df column.
-        public ColType[] DFTypes { get; internal set; }
-        //Index for row of the df.
-        public IList<int> Index { get; internal set; }
-        //1D element contains df data values
-        public List<object> Values { get; set; }
-        //Df representation of missing value
-        public static object NAN { get { return null; } }
-        //list of gruping columns
-        public List<string> Grouped { get; set; }
+        #region Properties
 
+
+        /// <summary>
+        /// List of columns (names) in the data frame.
+        /// </summary>
+        /// 
+        public IList<string> Columns { get; internal set; }
+
+
+        /// <summary>
+        /// Data type for each data frame column.
+        /// </summary>
+        /// 
+        public ColType[] DFTypes { get; internal set; }
+
+        /// <summary>
+        /// Index for rows in the data frame.
+        /// </summary>
+        /// 
+        public IList<int> Index { get; internal set; }
+
+
+        /// <summary>
+        /// 1D element contains data frame values
+        /// </summary>
+        /// 
+        public List<object> Values { get; set; }
+
+
+        /// <summary>
+        /// Representation of missing value.
+        /// </summary>
+        /// 
+        public static object NAN { get { return null; } }
+
+        //list of gruping columns
+        /// <summary>
+        ///Data type for each data frame column.
+        /// </summary>
+        /// 
+        //public List<string> Grouped { get; set; }
+        #endregion
+
+        #region Private fields
         //private fields
         static readonly Regex _numFloatRegex = new Regex(@"^(((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?)$");
         static readonly Regex _numRegex = new Regex(@"^[0-9]+$");
-
+        #endregion
 
         #region IEnumerator interface
         int position = -1;
@@ -70,7 +96,7 @@ namespace Daany
         public void Dispose() {; }
 
         /// <summary>
-        /// Return row enumeration as array of objects
+        /// Return row enumeration as array of objects.
         /// </summary>
         /// <returns></returns>
         IEnumerator<object[]> IEnumerable<object[]>.GetEnumerator()
@@ -90,7 +116,7 @@ namespace Daany
             }
         }
         /// <summary>
-        /// Returns strongly typed row enumerator
+        /// Returns strongly typed row enumerator.
         /// </summary>
         /// <typeparam name="TRow"></typeparam>
         /// <param name="callBack"></param>
@@ -105,14 +131,14 @@ namespace Daany
 
         #region Static members
         /// <summary>
-        /// Method for loading data from the file into df.
+        /// Method for loading data from the file into data frame object.
         /// </summary>
-        /// <param name="filepath">full or relative path of the file</param>
-        /// <param name="sep"> separator string</param>
-        /// <param name="names">column names in case the columns are provided separately from the file</param>
-        /// <param name="dformat">dat time format</param>
+        /// <param name="filepath">Full or relative path of the file.</param>
+        /// <param name="sep"> Separator string.</param>
+        /// <param name="names">Column names in case the columns are provided separately from the file.</param>
+        /// <param name="dformat">Date time format.</param>
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
-        /// <returns>df object</returns>
+        /// <returns>Data Frame object.</returns>
         public static DataFrame FromCsv(string filepath, string sep = ",", string[] names = null, string dformat = "dd/mm/yyyy", int nRows = -1)
         {
             var rows = File.ReadAllLines(filepath);
@@ -121,12 +147,12 @@ namespace Daany
 
             var listObj = new List<object>();
 
-            //define header
+            //Define header
             var header = names;
             if (header == null)
                 header = rows[0].Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries);
 
-            //Initi df
+            //Initialize df
             var llst = new List<object>();
             int rowCount = 0;
             for (int i = 0; i < rows.Length; i++)
@@ -156,10 +182,10 @@ namespace Daany
         }
 
         /// <summary>
-        /// Save df in a file.
+        /// Saves data frame .NET object in a csv file.
         /// </summary>
-        /// <param name="filePath">full or relative file path.</param>
-        /// <param name="dfr">Df to persist into file.</param>
+        /// <param name="filePath">Full or relative file path.</param>
+        /// <param name="dfr">Data frame to persist into file.</param>
         /// <returns>True if save successfully passed</returns>
         public static bool SaveToCsv(string filePath, DataFrame dfr)
         {
@@ -179,27 +205,167 @@ namespace Daany
             return true;
         }
 
+        /// <summary>
+        /// Create empty data frame with specified column list.
+        /// </summary>
+        /// <param name="columns">Column name list.</param>
+        /// <returns></returns>
+        public static DataFrame CreateEmpty(IList<string> columns)
+        {
+            var val = new object[0];
+            var ind = new List<int>();
+            var df = new DataFrame(val, ind, columns);
+            return df;
+        }
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Create df fro another df
+        /// Create data frame from another data frame.
         /// </summary>
-        /// <param name="df"></param>
+        /// <param name="df">Existing data frame.</param>
         public DataFrame(DataFrame df)
         {
             Values = df.Values;
             Index = df.Index;
             Columns = df.Columns.Select(x => (string)x).ToList();
         }
-        //create df from the 1d values , list of indexed rows and list of column names.
+
+
+        /// <summary>
+        /// Create data frame from the 1d array values, list of indexed rows and list of column names.
+        /// </summary>
+        /// <param name="data">1d object array of values.</param>
+        /// <param name="index">Row index.</param>
+        /// <param name="columns">List of column names.</param>
         public DataFrame(object[] data, IList<int> index, IList<string> columns)
         {
             this.Index = index;
             this.Columns = columns;
             this.Values = data.ToList();
         }
+
+        /// <summary>
+        /// Create data frame from the 1d array values.
+        /// </summary>
+        /// <param name="data">1d object array of values</param>
+        /// <param name="columns">List of column names.</param>
+        public DataFrame(object[] data, IList<string> columns)
+        {
+            if (data.Length % columns.Count != 0)
+                throw new Exception("The Columns count must be divisible by data length.");
+            //calculate row count
+            int rows = data.Length / columns.Count;
+
+            this.Index = Enumerable.Range(0, rows).ToList();
+            this.Columns = columns;
+            this.Values = data.ToList();
+        }
+
+        /// <summary>
+        /// Create data frame by list of values, row index and column names
+        /// </summary>
+        /// <param name="data">list of df values </param>
+        /// <param name="index">row index</param>
+        /// <param name="columns">column index</param>
+        public DataFrame(List<object> data, IList<int> index, IList<string> columns)
+        {
+            this.Index = index;
+            this.Columns = columns;
+            this.Values = data;
+        }
+
+        /// <summary>
+        /// Create data frame by list of values and column names.
+        /// </summary>
+        /// <param name="data">List of data frame values.</param>
+        /// <param name="columns">List of column names.</param>
+        public DataFrame(List<object> data, IList<string> columns)
+        {
+            if (data.Count % columns.Count != 0)
+                throw new Exception("The Columns count must be divisible by data length.");
+            //calculate row count
+            int rows = data.Count / columns.Count;
+
+            this.Index = Enumerable.Range(0, rows).ToList();
+            this.Columns = columns;
+            this.Values = data;
+        }
+
+
+        /// <summary>
+        /// Create data frame from dictionary.
+        /// </summary>
+        /// <param name="data">Data provided in dictionary collection.</param>
+        public DataFrame(IDictionary<string, List<object>> data)
+        {
+
+            if (data == null || data.Count == 0)
+                throw new Exception("Data is empty!");
+            //row coulmn indices preparation
+            Index = Enumerable.Range(0, data.Values.First().Count()).ToList();
+            Columns = data.Keys.ToList();
+
+            //
+            var size = Index.Count * Columns.Count;
+            Values = new List<object>();
+            for (int i = 0; i < Index.Count; i++)
+            {
+                for (int j = 0; j < Columns.Count; j++)
+                {
+                    var value = data.ElementAt(j).Value[i];
+                    var v = parseValue(value, null);
+                    Values.Add(v);
+                }
+
+            }
+        }
+
+        #endregion
+
+        #region Data Frame Operations
+        /// <summary>
+        /// Create new data frame from the existing by changing column names  
+        /// </summary>
+        /// <param name="colNames">List of old and new column names.</param>
+        /// <returns>New data frame with renamed column names.</returns>
+        public DataFrame Create(params (string oldName, string newName)[] colNames)
+        {
+            var dict = new Dictionary<string, List<object>>();
+            foreach (var c in colNames)
+            {
+                if (!Columns.Contains(c.oldName))
+                    throw new Exception($"The column name '{c.oldName}' does not exist!");
+                //
+                var newName = c.oldName;
+                if (!string.IsNullOrEmpty(c.newName))
+                    newName = c.newName;
+
+                dict.Add(newName, this[c.oldName].ToList());
+            }
+
+            return new DataFrame(dict);
+        }
+
+        /// <summary>
+        /// Rename column name within the data frame.
+        /// </summary>
+        /// <param name="colNames">Tuple of old and new name</param>
+        /// <returns></returns>
+        public bool Rename(params (string oldName, string newName)[] colNames)
+        {
+            foreach (var c in colNames)
+            {
+                var index = Columns.IndexOf(c.oldName);
+                if (index == -1)
+                    throw new Exception($"The column name '{c.oldName}' does not exist!");
+                Columns[index] = c.newName;
+            }
+            //
+            return true;
+        }
+
 
         /// <summary>
         /// Filter data frame based on selected columns and coresponded values and operators.
@@ -216,21 +382,21 @@ namespace Daany
             //check for the same length of the arguments
             if (!(cols.Length == filteValues.Length && cols.Length == fOpers.Length))
                 throw new Exception("Inconsistent number of columns, filter values an doperators.");
-            
+
             //
             this.DFTypes = columnsTypes();
             int[] indCols = getColumnIndex(cols);
             //
-            for (int i=0; i < cols.Length; i++)
+            for (int i = 0; i < cols.Length; i++)
             {
-                if(this.DFTypes[indCols[i]] == ColType.I2 && fOpers[indCols[i]] != FilterOperator.Equal)
+                if (this.DFTypes[indCols[i]] == ColType.I2 && fOpers[indCols[i]] != FilterOperator.Equal)
                 {
                     throw new Exception("Boolean column must connect with only 'Equal' operator.");
                 }
             }
-            
+
             //
-            
+
             int rowIndex = 0;
             //temp row values
             object[] rowValues = new object[cols.Length];
@@ -244,19 +410,19 @@ namespace Daany
                 //in case
 
                 //fill current row
-                for(int ix=0; ix < indCols.Length; ix++)
+                for (int ix = 0; ix < indCols.Length; ix++)
                     rowValues[ix] = Values[rowIndex + indCols[ix]];
 
                 //perform  filtering
-                if (rowValues.Any(x=> x== DataFrame.NAN))
+                if (rowValues.Any(x => x == DataFrame.NAN))
                 {
                     //for (int j = 0; j < Columns.Count; j++)
                     //    lst.Add(Values[index + j]);
                     continue;
                 }
-                else 
+                else
                 {
-                    if(applyOperator(indCols, rowValues, filteValues, fOpers))
+                    if (applyOperator(indCols, rowValues, filteValues, fOpers))
                     {
                         for (int j = 0; j < Columns.Count; j++)
                             lst.Add(Values[rowIndex + j]);
@@ -279,127 +445,8 @@ namespace Daany
         /// <returns></returns>
         public DataFrame Filter(string col, object value, FilterOperator fOper)
         {
-            return Filter(new string[] {col }, new object[] { value}, new FilterOperator[] {fOper });
+            return Filter(new string[] { col }, new object[] { value }, new FilterOperator[] { fOper });
         }
-
-        /// <summary>
-        /// Create df by list of values, row index and column names
-        /// </summary>
-        /// <param name="data">list of df values </param>
-        /// <param name="index">row index</param>
-        /// <param name="columns">column index</param>
-        public DataFrame(List<object> data, IList<int> index, IList<string> columns)
-        {
-            this.Index = index;
-            this.Columns = columns;
-            this.Values = data;
-        }
-
-        /// <summary>
-        /// Create df from dictionary
-        /// </summary>
-        /// <param name="data"></param>
-        public DataFrame(IDictionary<string, List<object>> data)
-        {
-
-            if (data == null || data.Count == 0)
-                throw new Exception("Data is empty!");
-
-            Index = Enumerable.Range(0, data.Values.First().Count()).ToList();
-            Columns = data.Keys.ToList();
-
-            //
-            var size = Index.Count * Columns.Count;
-            Values = new List<object>();
-            for (int i = 0; i < Index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    var value = data.ElementAt(j).Value[i];
-                    var v = parseValue(value, null);
-                    Values.Add(v);
-                }
-
-            }
-        }
-
-        /// <summary>
-        /// Create empty df with specified column list
-        /// </summary>
-        /// <param name="columns"></param>
-        /// <returns></returns>
-        internal static DataFrame CreateEmpty(IList<string> columns)
-        {
-            var val = new object[0];
-            var ind = new List<int>();
-            var df = new DataFrame(val, ind, columns);
-            return df;
-        }
-        /// <summary>
-        /// Create new df from the existing by changing column names  
-        /// </summary>
-        /// <param name="colNames">list of old and new column names</param>
-        /// <returns></returns>
-        public DataFrame Create(params (string oldName, string newName)[] colNames)
-        {
-            var dict = new Dictionary<string, List<object>>();
-            foreach (var c in colNames)
-            {
-                if (!Columns.Contains(c.oldName))
-                    throw new Exception($"The column name '{c.oldName}' does not exist!");
-                //
-                var newName = c.oldName;
-                if (!string.IsNullOrEmpty(c.newName))
-                    newName = c.newName;
-
-                dict.Add(newName, this[c.oldName].ToList());
-            }
-
-            return new DataFrame(dict);
-        }
-
-        /// <summary>
-        /// Rename column name
-        /// </summary>
-        /// <param name="colNames">tuple of old and new name</param>
-        /// <returns></returns>
-        public bool Rename(params (string oldName, string newName)[] colNames)
-        {
-            foreach (var c in colNames)
-            {
-                var index = Columns.IndexOf(c.oldName);
-                if (index == -1)
-                    throw new Exception($"The column name '{c.oldName}' does not exist!");
-                Columns[index] = c.newName;
-            }
-            //
-            return true;
-        }
-
-
-        #endregion
-
-        #region Print Helper
-        //public List<List<object>> Head(int count=5)
-        //{
-        //    int cnt = 0;
-        //    var lst = new List<List<object>>();
-        //    foreach (var r in this.GetEnumerator())
-        //    {
-        //        if (cnt >= count)
-        //            break;
-
-        //    }
-        //}
-
-        /// <summary>
-        /// Prints basic descriptive statistics values of the dataframe
-        /// </summary>
-        public void Describe()
-        {
-
-        }
-        #endregion
 
         /// <summary>
         /// Join two df with Inner or Left join type.
@@ -937,7 +984,9 @@ namespace Daany
             //add row index
             Index.Add(Index.Count);
         }
+        #endregion
 
+        #region Operators
         /// <summary>
         /// Returns specific value from Data Frame positioned at (rowIndex,colIndex )
         /// </summary>
@@ -1080,13 +1129,39 @@ namespace Daany
             return Columns.Count;
         }
 
-
+        /// <summary>
+        /// Customization of the standard ToString method.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             var str = $"({Index.Count},{Columns.Count})";
             return str;
         }
 
+        #endregion
+
+        #region Print Helper
+        //public List<List<object>> Head(int count=5)
+        //{
+        //    int cnt = 0;
+        //    var lst = new List<List<object>>();
+        //    foreach (var r in this.GetEnumerator())
+        //    {
+        //        if (cnt >= count)
+        //            break;
+
+        //    }
+        //}
+
+        /// <summary>
+        /// Prints basic descriptive statistics values of the dataframe
+        /// </summary>
+        public void Describe()
+        {
+
+        }
+        #endregion
 
         #region Private
 
@@ -1168,14 +1243,6 @@ namespace Daany
             return _numFloatRegex.IsMatch(value);
         }
 
-
-        /// <summary>
-        /// Filter operation against set of values
-        /// </summary>
-        /// <param name="rowValues">data frame row</param>
-        /// <param name="filteValues">filter values</param>
-        /// <param name="fOpers">filter operators</param>
-        /// <returns></returns>
         private bool applyOperator(int[] indCols, object[] rowValues, object[] filteValues, FilterOperator[] fOpers)
         {
             for (int colIndex = 0; colIndex < rowValues.Length; colIndex++)
@@ -1223,7 +1290,6 @@ namespace Daany
 
             return true;
         }
-
 
         private bool applyOperator(DateTime val1, DateTime val2, FilterOperator fOper)
         {

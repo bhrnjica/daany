@@ -1,9 +1,21 @@
-﻿using Daany.MathExt;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Daany.MathExt.MatrixExt;
+﻿//////////////////////////////////////////////////////////////////////////////////////////
+// Daany - DAta ANalYtic Library                                                        //
+// https://github.com/bhrnjica/daany                                                    //
+//                                                                                      //
+// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
+//                                                                                      //
+// This code is free software under the MIT License                                     //
+// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
+//                                                                                      //
+// Bahrudin Hrnjica                                                                     //
+// bhrnjica at hotmail.com                                                              //
+// Bihac, Bosnia and Herzegovina                                                        //
+// http://bhrnjica.wordpress.com                                                        //
+//////////////////////////////////////////////////////////////////////////////////////////
 using Accord;
+using Daany.MathExt.MatrixExt;
+using System;
+
 namespace Daany.MathExt
 {
     /// <summary>
