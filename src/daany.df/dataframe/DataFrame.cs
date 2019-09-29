@@ -160,7 +160,7 @@ namespace Daany
                 //
                 if (i == 0 && names == null)
                     continue;
-                var row = rows[i].Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries);
+                var row = rows[i].Split(new string[] { sep }, StringSplitOptions.None);
 
                 //
                 for (int j = 0; j < header.Length; j++)
@@ -1368,7 +1368,9 @@ namespace Daany
 
         private static bool IsMissingValue(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrEmpty(value))
+                return true;
+            else if (string.IsNullOrWhiteSpace(value))
                 return true;
             else if (_missingCharacters.Contains(value))
                 return true;

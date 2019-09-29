@@ -206,6 +206,28 @@ namespace Unit.Test.DF
         }
 
         [Fact]
+        public void LoadromCSV_Test2()
+        {
+            string path = "../../../testdata/titanic_train.csv";
+            var df = DataFrame.FromCsv(path, ",", names: null); //
+
+            //
+            //row test
+            var r1 = df[0].ToList();
+            //1,0,3,Braund Mr. Owen Harris,male,22,1,0,A/5 21171,7.25,,S,youth		
+            var e1 = new object[] { 1, 0, 3, "Braund Mr. Owen Harris", "male", 22, 1, 0, "A/5 21171", 7.25, DataFrame.NAN ,"S", "youth" };
+
+
+            for (int i = 0; i < 10; i++)
+            {
+                object v1 = r1[i].ToString();
+                object v2 = e1[i].ToString();
+                Assert.True(v1.Equals(v2));
+            }
+        }
+
+
+        [Fact]
         public void SaveToCSV_Test()
         {
 
