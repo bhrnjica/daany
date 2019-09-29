@@ -424,14 +424,13 @@ namespace Unit.Test.DF
         }
         //exception degree
         [Fact]
-        
         public void degreeCheck1()
         {
             var builder = new InterpolatorBuilder();
             builder.Width = 37;
             builder.Degree = -1;
              
-            var exception = Assert.Throws<Exception>(() => builder.interpolate(this.createLinearDataArray()));
+            var exception = Assert.Throws<System.Exception>(() => builder.interpolate(this.createLinearDataArray()));
             Assert.Equal("Degree must be 0, 1 or 2", exception.Message);
 
         }
