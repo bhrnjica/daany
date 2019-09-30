@@ -349,6 +349,25 @@ namespace Daany
         }
 
         /// <summary>
+        /// Removes specified columns from the data frame.
+        /// </summary>
+        /// <param name="colName">List of column names to be removed.</param>
+        /// <returns></returns>
+        public DataFrame Remove(params string[] colName)
+        {
+            //
+            var cols = new List<(string oldName, string newName)>();
+            foreach(var c in this.Columns)
+            {
+                if (colName.Contains(c))
+                    continue;
+                cols.Add((c,null));
+            }
+
+            return Create(cols.ToArray());
+        }
+
+        /// <summary>
         /// Rename column name within the data frame.
         /// </summary>
         /// <param name="colNames">Tuple of old and new name</param>

@@ -383,6 +383,66 @@ namespace Unit.Test.DF
                 Assert.Equal((int)c3[i], cc3[i]);
         }
 
+        [Fact]
+        public void CreateDataFrameFromExisted_Test()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "catId",new List<object>() { "A", "A", "B", "B" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+            };
+            
+            //
+            var df1 = new DataFrame(dict);
 
+            var df2 = df1.Create(("itemID",null), ("value1", "value"));
+
+            //test
+            var c1f1 = df1["itemID"].ToList();
+            var c1f2 = df1["value1"].ToList();
+
+            var c2f1 = df2["itemID"].ToList();
+            var c2f2 = df2["value"].ToList();
+
+            for (int i = 0; i < c1f1.Count(); i++)
+                Assert.Equal(c1f1[i].ToString(), c2f1[i].ToString());
+            for (int i = 0; i < c2f2.Count(); i++)
+                Assert.Equal(c1f2[i], c2f2[i]);
+           
+
+        }
+
+        [Fact]
+        public void RemoveColumns_Test()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "catId",new List<object>() { "A", "A", "B", "B" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+            };
+
+            //
+            var df1 = new DataFrame(dict);
+
+            var df2 = df1.Remove("catId");
+
+            //test
+            var c1f1 = df1["itemID"].ToList();
+            var c1f2 = df1["value1"].ToList();
+            Assert.Equal(3, df1.Columns.Count);
+
+            var c2f1 = df2["itemID"].ToList();
+            var c2f2 = df2["value1"].ToList();
+            Assert.Equal(2, df2.Columns.Count);
+
+            for (int i = 0; i < c1f1.Count(); i++)
+                Assert.Equal(c1f1[i].ToString(), c2f1[i].ToString());
+            for (int i = 0; i < c2f2.Count(); i++)
+                Assert.Equal(c1f2[i], c2f2[i]);
+
+
+        }
     }
 }
