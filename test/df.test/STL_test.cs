@@ -428,26 +428,22 @@ namespace Unit.Test.DF
         {
             var builder = new InterpolatorBuilder();
             builder.Width = 37;
-            builder.Degree = -1;
-             
-            var exception = Assert.Throws<System.Exception>(() => builder.interpolate(this.createLinearDataArray()));
+            
+            var exception = Assert.ThrowsAny<System.Exception>(() => builder.Degree = -1);
             Assert.Equal("Degree must be 0, 1 or 2", exception.Message);
 
         }
-        //exception degree
         [Fact]
         public void degreeCheck2()
         {
             var builder = new InterpolatorBuilder();
             builder.Width = 37;
-            builder.Degree = 3;
-           // var loess = builder.interpolate(this.createLinearDataArray());
 
-            var exception = Assert.Throws<Exception>(() => builder.interpolate(this.createLinearDataArray()));
+            var exception = Assert.ThrowsAny<System.Exception>(() => builder.Degree = 3);
             Assert.Equal("Degree must be 0, 1 or 2", exception.Message);
 
         }
-        //exception width
+
         [Fact]
         public void widthMustBeSet()
         {

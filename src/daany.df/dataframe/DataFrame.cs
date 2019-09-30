@@ -560,6 +560,22 @@ namespace Daany
             return df;
         }
 
+        /// <summary>
+        /// Returns the dictionary containing missing values
+        /// </summary>
+        /// <returns>Dictionary with specified column and number of missing value in it.</returns>
+        public IDictionary<string, int> MissingValues()
+        {
+            var dc = new Dictionary<string, int>();
+            foreach (var col in Columns)
+            {
+                var mCount = this[col].Where(x => x == NAN).Count();
+                dc.Add(col, mCount);
+            }
+
+            return dc.Where(x => x.Value > 0).ToDictionary(x => x.Key, y => y.Value);
+        }
+
 
         /// <summary>
         /// Removes rows with missing values for specified set of columns. In case cols is null, removed values 
@@ -1027,22 +1043,7 @@ namespace Daany
             }
         }
 
-        /// <summary>
-        /// Returns the dictionary containing missing values
-        /// </summary>
-        /// <returns>Dictionary with specified column and number of missing value in it.</returns>
-        public IDictionary<string, int> MissingValues()
-        {
-            var dc = new Dictionary<string, int>();
-            foreach (var col in Columns)
-            {
-                var mCount = this[col].Where(x => x == NAN).Count();
-                dc.Add(col, mCount);
-            }
-
-            return dc.Where(x => x.Value > 0).ToDictionary(x => x.Key, y => y.Value);
-        }
-
+        
         /// <summary>
         /// Return DataFrame generated from list of columns.
         /// </summary>
