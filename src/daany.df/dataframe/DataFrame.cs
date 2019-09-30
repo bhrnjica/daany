@@ -141,46 +141,18 @@ namespace Daany
         /// <returns>Data Frame object.</returns>
         public static DataFrame FromCsv(string filepath, string sep = ",", string[] names = null, string dformat = "dd/mm/yyyy", int nRows = -1)
         {
-            var rows = File.ReadAllLines(filepath);
-            if (nRows > -1 && rows.Length > 0)
-                rows = rows.Take(nRows).ToArray();
-
-            var listObj = new List<object>();
-
-            //Define header
-            var header = names;
-            if (header == null)
-                header = rows[0].Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries);
-
-            //Initialize df
-            var llst = new List<object>();
-            int rowCount = 0;
-            for (int i = 0; i < rows.Length; i++)
-            {
-                //
-                if (i == 0 && names == null)
-                    continue;
-                var row = rows[i].Split(new string[] { sep }, StringSplitOptions.None);
-
-                //
-                for (int j = 0; j < header.Length; j++)
-                {
-                    var v = "";
-                    if (row.Length > j)
-                        v = row[j];
-
-                    var value = parseValue(v, dformat);
-                    llst.Add(value);
-                }
-                rowCount++;
-            }
-
-            //create data frame
-            var ind = Enumerable.Range(0, rowCount);
-            var df = new DataFrame(llst.ToArray(), ind.ToList(), header.ToList());
-            return df;
+            return FromCsv(filepath, sep[0], names, '\"', dformat, nRows);
         }
 
+        /// <summary>
+        /// Method for loading data from the file into data frame object.
+        /// </summary>
+        /// <param name="filepath">Full or relative path of the file.</param>
+        /// <param name="sep"> Separator string.</param>
+        /// <param name="names">Column names in case the columns are provided separately from the file.</param>
+        /// <param name="dformat">Date time format.</param>
+        /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
+        /// <returns>Data Frame object.</returns>
         public static DataFrame FromCsv(string filepath, char sep = ',', string[] names = null, char textQaualifier='"', string dformat = "dd/mm/yyyy", int nRows = -1)
         {
             var rows = File.ReadAllLines(filepath);
@@ -202,7 +174,7 @@ namespace Daany
                 //
                 if (i == 0 && names == null)
                     continue;
-                var row = ParseText(rows[0], sep, textQaualifier).ToArray();
+                var row = ParseText(rows[i], sep, textQaualifier).ToArray();
 
                 //
                 for (int j = 0; j < header.Length; j++)
