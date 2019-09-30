@@ -22,7 +22,7 @@ using System.Text.RegularExpressions;
 
 
 using Daany.MathExt;
-
+using System.Text;
 
 namespace Daany
 {
@@ -161,6 +161,48 @@ namespace Daany
                 if (i == 0 && names == null)
                     continue;
                 var row = rows[i].Split(new string[] { sep }, StringSplitOptions.None);
+
+                //
+                for (int j = 0; j < header.Length; j++)
+                {
+                    var v = "";
+                    if (row.Length > j)
+                        v = row[j];
+
+                    var value = parseValue(v, dformat);
+                    llst.Add(value);
+                }
+                rowCount++;
+            }
+
+            //create data frame
+            var ind = Enumerable.Range(0, rowCount);
+            var df = new DataFrame(llst.ToArray(), ind.ToList(), header.ToList());
+            return df;
+        }
+
+        public static DataFrame FromCsv(string filepath, char sep = ',', string[] names = null, char textQaualifier='"', string dformat = "dd/mm/yyyy", int nRows = -1)
+        {
+            var rows = File.ReadAllLines(filepath);
+            if (nRows > -1 && rows.Length > 0)
+                rows = rows.Take(nRows).ToArray();
+
+            var listObj = new List<object>();
+
+            //Define header
+            var header = names;
+            if (header == null)
+                header = ParseText(rows[0], sep, textQaualifier).ToArray();
+
+            //Initialize df
+            var llst = new List<object>();
+            int rowCount = 0;
+            for (int i = 0; i < rows.Length; i++)
+            {
+                //
+                if (i == 0 && names == null)
+                    continue;
+                var row = ParseText(rows[0], sep, textQaualifier).ToArray();
 
                 //
                 for (int j = 0; j < header.Length; j++)
@@ -1185,6 +1227,64 @@ namespace Daany
 
         #region Private
 
+        //https://stackoverflow.com/questions/14655023/split-a-string-that-has-white-spaces-unless-they-are-enclosed-within-quotes
+        private static IEnumerable<string> ParseText(string line, char delimiter, char textQualifier)
+        {
+
+            if (line == null)
+                yield break;
+
+            else
+            {
+                char prevChar = '\0';
+                char nextChar = '\0';
+                char currentChar = '\0';
+
+                bool inString = false;
+
+                StringBuilder token = new StringBuilder();
+
+                for (int i = 0; i < line.Length; i++)
+                {
+                    currentChar = line[i];
+
+                    if (i > 0)
+                        prevChar = line[i - 1];
+                    else
+                        prevChar = '\0';
+
+                    if (i + 1 < line.Length)
+                        nextChar = line[i + 1];
+                    else
+                        nextChar = '\0';
+
+                    if (currentChar == textQualifier && (prevChar == '\0' || prevChar == delimiter) && !inString)
+                    {
+                        inString = true;
+                        continue;
+                    }
+
+                    if (currentChar == textQualifier && (nextChar == '\0' || nextChar == delimiter) && inString)
+                    {
+                        inString = false;
+                        continue;
+                    }
+
+                    if (currentChar == delimiter && !inString)
+                    {
+                        yield return token.ToString();
+                        token = token.Remove(0, token.Length);
+                        continue;
+                    }
+
+                    token = token.Append(currentChar);
+
+                }
+
+                yield return token.ToString();
+
+            }
+        }
         private Dictionary<object, DataFrame> groupDFBy(string groupCol)
         {
             var Group = new Dictionary<object, DataFrame>();
