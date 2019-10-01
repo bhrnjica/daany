@@ -161,7 +161,7 @@ namespace Daany
         /// <returns>True if save successfully passed</returns>
         public static bool SaveToCsv(string filePath, DataFrame dataFrame)
         {
-            if (dataFrame != null)
+            if (dataFrame == null)
                 throw new ArgumentNullException(nameof(dataFrame));
 
             var lst = new List<string>();
