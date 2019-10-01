@@ -233,16 +233,16 @@ namespace Daany.Ext
         {
             string msg = string.Format($"{string.Join(",",df.Columns)}");
             ConsoleWriteHeader(msg);
-            int cnt = 0;
-            foreach(var r in df)
-            {
-                var str = r.Select(x => x != null ? x.ToString() : "").ToArray();
-                string msg1 = string.Format($"{string.Join(",", str)}");
-                Console.WriteLine(msg1);
-                Console.WriteLine("--");
-                if (++cnt > count)
-                    break;
-            }
+            //int cnt = 0;
+            //foreach(var r in df.GetDicEnumerator())
+            //{
+            //    var str = r.Select(x => x != null ? x.ToString() : "").ToArray();
+            //    string msg1 = string.Format($"{string.Join(",", str)}");
+            //    Console.WriteLine(msg1);
+            //    Console.WriteLine("--");
+            //    if (++cnt > count)
+            //        break;
+            //}
            
         }
 
