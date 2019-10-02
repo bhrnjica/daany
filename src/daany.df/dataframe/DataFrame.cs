@@ -32,6 +32,7 @@ namespace Daany
     /// to handle data loading from files, grouping, sorting, filtering, handling with columns and rows
     /// accessing data frame (df) elements etc.
     /// </summary>
+  
     public class DataFrame : IDataFrame
     {
         #region Properties
@@ -47,6 +48,8 @@ namespace Daany
         /// </summary>
         /// 
         public IList<int> Index => _index;
+
+        internal IList<object> Values => _values;
 
 
         /// <summary>
@@ -73,6 +76,8 @@ namespace Daany
         private IList<string> _columns;
         static readonly Regex _numFloatRegex = new Regex(@"^(((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?)$");
         static readonly Regex _numRegex = new Regex(@"^[0-9]+$");
+        //Quick Sort algorithm. In case of false, the Merge Sort will be used.
+        internal static bool qsAlgo = false;
         #endregion
 
         /// <summary>
@@ -117,6 +122,14 @@ namespace Daany
             if (nRows > -1 && rows.Length > 0)
                 rows = rows.Take(nRows).ToArray();
 
+            return FromStrArray(rows, sep, names, textQaualifier, dformat);
+        }
+
+        public static DataFrame FromStrArray(string[] rows, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = "dd/mm/yyyy")
+        {
+            if (rows==null)
+                throw new ArgumentNullException(nameof(rows));
+
             //Define header
             var header = names;
             if (header == null)
@@ -133,9 +146,7 @@ namespace Daany
                 var row = ParseText(rows[i], sep, textQaualifier).ToArray();
 
                 //
-#pragma warning disable CA1062 // Validate arguments of public methods
                 for (int j = 0; j < header.Length; j++)
-#pragma warning restore CA1062 // Validate arguments of public methods
                 {
                     var v = "";
                     if (row.Length > j)
@@ -564,10 +575,11 @@ namespace Daany
         /// Sorts data-frame by specified column in ascending order
         /// </summary>
         /// <param name="cols">Sorting columns</param>
-        /// <param name="qsAlgo">Quick Sort algorithm. In case of false, the Merge Sort will be used.</param>
+       
         /// <returns>New ordered df.</returns>
-        public DataFrame SortBy(string[] cols, bool qsAlgo = false)
+        public DataFrame SortBy(params string[] cols)
         {
+            
             //determine column types
             _dfTypes = columnsTypes();
             var colInd = getColumnIndex(cols);
@@ -584,6 +596,19 @@ namespace Daany
             return df;
         }
 
+        /// <summary>
+        /// Sorts data-frame by specified column in descending order
+        /// </summary>
+        /// <param name="cols">Sorting columns.</param>
+        /// <returns></returns>
+        public DataFrame SortByDescending(params string[] cols)
+        {
+            var df = SortBy(cols);
+            DataFrame newDf = df.reverse();
+            return df;
+        }
+
+        
         /// <summary>
         /// Returns the dictionary containing missing values
         /// </summary>
@@ -996,7 +1021,52 @@ namespace Daany
             return df;
         }
 
-       
+        /// <summary>
+        /// Returns data frame consisted of last n rows.
+        /// </summary>
+        /// <param name="rows"></param>
+        /// <returns></returns>
+        public DataFrame TakeLast(int rows)
+        {
+            var val = new List<object>();
+            int counter = 1;
+            for (int i = Index.Count-1; i >=0 ; i--)
+            {
+                val.InsertRange(0,this[i]);
+                if (counter >= rows)
+                    break;
+                counter++;
+            }
+            //
+            var df = new DataFrame(val.ToArray(), Enumerable.Range(0, rows).ToList(), Columns.ToArray());
+
+            //
+            return df;
+        }
+
+        /// <summary>
+        /// Returns data frame consisted of first n rows.
+        /// </summary>
+        /// <param name="rows"></param>
+        /// <returns></returns>
+        public DataFrame Take(int rows)
+        {
+            var val = new List<object>();
+            int counter = 1;
+            for (int i = 0; i < Index.Count; i++)
+            {
+                val.AddRange(this[i]);
+                if (counter >= rows)
+                    break;
+
+                counter++;
+            }
+            //
+            var df = new DataFrame(val.ToArray(), Enumerable.Range(0, rows).ToList(), Columns.ToArray());
+
+            //
+            return df;
+        }
 
         /// <summary>
         /// Create GroupedDataFrame
@@ -1248,6 +1318,23 @@ namespace Daany
         #endregion
 
         #region Private
+        private DataFrame reverse()
+        {
+            var cols = this.Columns;
+            var inde = this.Index;
+            var lst = new List<object>();
+            for(int i= this.Index.Count-1; i >=0 ; i--)
+            {
+                for (int j = 0; j < this.Columns.Count; j++)
+                {
+                    var v = this[i, j];
+                    lst.Add(v);
+                }
+            }
+            var dff = new DataFrame(lst, inde, cols);
+            return dff;
+        }
+
         private DataFrame getDataFramesRows(List<int> selected)
         {
             var val = new List<object>();

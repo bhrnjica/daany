@@ -15,7 +15,7 @@ namespace Unit.Test.DF
         private double[] getSomeMonthlyData()
         {
             var strPath = $"{root}/AirPassengers.csv";
-            var mlDF = DataFrame.FromCsv(strPath, sep: ",");
+            var mlDF = DataFrame.FromCsv(strPath, sep: ',');
             //
             return mlDF["#Passengers"].Select(x => Convert.ToDouble(x)).ToArray();
 

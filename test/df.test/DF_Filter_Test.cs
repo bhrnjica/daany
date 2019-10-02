@@ -43,7 +43,7 @@ namespace Unit.Test.DF
             //
             var filteredDF = df.Filter("col1", 5, FilterOperator.GreatherOrEqual);
 
-            Assert.True(filteredDF.Count() == 9);
+            Assert.True(filteredDF.RowCount() == 9);
             Assert.True(filteredDF[0,0].ToString() == "11");
             Assert.True(filteredDF[1, 1].ToString() == "22");
             Assert.True(filteredDF[5, 5].ToString() == "66");
@@ -56,13 +56,13 @@ namespace Unit.Test.DF
         public void Filter_Multiple_Columns_Test01()
         {
             //Text,Tag,Datum, Double,IntCol
-            var df = DataFrame.FromCsv(filepath: $"..\\..\\..\\testdata\\filter_dataFrameSample.txt", sep: "\t", names: null, dformat: null);
+            var df = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\filter_dataFrameSample.txt", sep: '\t', names: null, dformat: null);
 
             //filter by one numeric column
             var filteredDF = df.Filter("Double", 0.05, FilterOperator.Less);
 
             //filter double column
-            Assert.True(filteredDF.Count() == 6);
+            Assert.True(filteredDF.RowCount() == 6);
             Assert.Equal(0.0145413186f, Convert.ToSingle(filteredDF[0, 3]));
             Assert.Equal(0.031656122f, Convert.ToSingle(filteredDF[1, 3]));
             Assert.Equal(0.032011067f, Convert.ToSingle(filteredDF[2, 3]));
@@ -77,7 +77,7 @@ namespace Unit.Test.DF
             var values = (new DateTime[] { new DateTime(2019, 1, 5), new DateTime(2019, 2,2) }).Select(x=>(object)x).ToArray();
 
             filteredDF = df.Filter(cols,values, opers);
-            Assert.True(filteredDF.Count() == 27);
+            Assert.True(filteredDF.RowCount() == 27);
             Assert.Equal(7f, Convert.ToSingle(filteredDF[0, 4]));
             Assert.Equal(52f, Convert.ToSingle(filteredDF[1, 4]));
             Assert.Equal(27f, Convert.ToSingle(filteredDF[2, 4]));
@@ -106,7 +106,7 @@ namespace Unit.Test.DF
             valls.Add(new DateTime(2019, 1, 5)); valls.Add(new DateTime(2019, 2, 2));valls.Add(68);
 
             filteredDF = df.Filter(cols, valls.ToArray(), opers);
-            Assert.True(filteredDF.Count() == 11);
+            Assert.True(filteredDF.RowCount() == 11);
 
             Assert.Equal(79f, Convert.ToSingle(filteredDF[0, 4]));
             Assert.Equal(88f, Convert.ToSingle(filteredDF[1, 4]));

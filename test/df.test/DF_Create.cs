@@ -188,7 +188,7 @@ namespace Unit.Test.DF
         public void LoadromCSV_Test()
         {
             string path = "../../../testdata/titanic_full_1310.csv";
-            var df = DataFrame.FromCsv(path, "	", names:null); //
+            var df = DataFrame.FromCsv(path, '\t', names:null); //
 
             //
             //row test
@@ -219,7 +219,7 @@ namespace Unit.Test.DF
         public void LoadromCSV_Test2()
         {
             string path = "../../../testdata/titanic_train.csv";
-            var df = DataFrame.FromCsv(path, ",", names: null); //
+            var df = DataFrame.FromCsv(path, ',', names: null); //
 
             //
             //row test
