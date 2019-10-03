@@ -1,5 +1,5 @@
 ﻿//////////////////////////////////////////////////////////////////////////////////////////
-// Daany - DAta ANalYtic Library                                                        //
+// Daany - DAta ANalYtics Library                                                        //
 // https://github.com/bhrnjica/daany                                                    //
 //                                                                                      //
 // Copyright 2006-2018 Bahrudin Hrnjica                                                 //
