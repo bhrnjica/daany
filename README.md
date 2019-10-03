@@ -1,6 +1,6 @@
 ![Daany Logo](./docs/img/daany_logo_small.png)
 
-Daany - Data Analytic C# library with the implementation of Matrix, DataFrame, generator, and decomposition of Time series and various statistics' parameters.
+Daany - DAta ANalYtics C# library with the implementation of Matrix, DataFrame, generator, and decomposition of Time series and various statistics' parameters.
 
 # Data Frame
 
