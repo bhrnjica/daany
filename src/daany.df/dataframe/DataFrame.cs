@@ -101,6 +101,25 @@ namespace Daany
                
         }
 
+        /// <summary>
+        /// Return row enumerators
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<IDictionary<string, object>> GetEnumerator()
+        {
+            var dic = new Dictionary<string, object>();
+            for (int i = 0; i < Index.Count; i++)
+            {
+                dic.Clear();
+                var row = this[i].ToList();
+                for (int j = 0; j < this.Columns.Count; j++)
+                    dic.Add(this.Columns[j], row[j]);
+
+                yield return dic;
+            }
+
+        }
+
 
         #region Static members
         /// <summary>
