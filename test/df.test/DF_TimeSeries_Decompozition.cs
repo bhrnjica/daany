@@ -109,13 +109,13 @@ namespace Unit.Test.DF
 
 
             // Check some results
-            Assert.Equal(-25.497726036404412, ts.Seasonal[0]);
-            Assert.Equal(126.19893730296793, ts.Trend[3]);
-            Assert.Equal(-24.069658425380908, ts.Residual[5]);
+            Assert.Equal(-25.4977260364, ts.Seasonal[0],10);
+            Assert.Equal(126.19893730296931, ts.Trend[3]);
+            Assert.Equal(-24.069658425391282, ts.Residual[5]);
 
-            Assert.Equal(-57.481848113404943, ts.Seasonal[10]);
-            Assert.Equal(135.10836367065352, ts.Trend[13]);
-            Assert.Equal(7.3536508004487757, ts.Residual[15]);
+            Assert.Equal(-57.48184811341828, ts.Seasonal[10]);
+            Assert.Equal(135.10836367065477, ts.Trend[13]);
+            Assert.Equal(7.3536508004532664, ts.Residual[15]);
 
         }
 
@@ -159,12 +159,13 @@ namespace Unit.Test.DF
             double[] seasonal = stl.Seasonal;
             double[] trend = stl.Trend;
             double[] residual = stl.Residual;
-            int epsilon = 2;
-            for (int i = 0; i < 980/*fBaseline.GetLength(0)*/; ++i)
+
+            int factor = 100;
+            for (int i = 0; i < fBaseline.GetLength(0); ++i)
             {
-                Assert.Equal(fBaseline[i,1], seasonal[i], epsilon);
-                Assert.Equal(fBaseline[i,2], trend[i], epsilon);
-                Assert.Equal(fBaseline[i,3], residual[i], epsilon);
+                Assert.Equal((int)(fBaseline[i,1]*factor), (int)(seasonal[i]*factor));
+                Assert.Equal((int)(fBaseline[i,2]*factor), (int)(trend[i]*factor));
+                Assert.Equal((int)(fBaseline[i,3]*factor), (int)(residual[i]*factor));
             }
         }
 

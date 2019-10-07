@@ -26,6 +26,7 @@ namespace Daany.MathExt
     /// </summary>
     public static class AdvancedStatistics
     {
+       
         /// <summary>
         /// Calculate Classification Accuracy
         /// </summary>
@@ -36,7 +37,7 @@ namespace Daany.MathExt
         {
             checkDataSets(obsData, preData);
 
-            //calculate sum of the square residuals
+            //
             double corected = 0;
             for (int i = 0; i < obsData.Length; i++)
             {
@@ -45,6 +46,9 @@ namespace Daany.MathExt
             }
             return corected/obsData.Length;
         }
+
+        
+
         /// <summary>
         /// Calculate Classification Error
         /// </summary>
@@ -55,7 +59,7 @@ namespace Daany.MathExt
         {
             checkDataSets(obsData, preData);
 
-            //calculate sum of the square residuals
+            //
             double corected = 0;
             for (int i = 0; i < obsData.Length; i++)
             {
@@ -64,62 +68,6 @@ namespace Daany.MathExt
             }
             return 1.0 - corected / obsData.Length;
         }
-        /// <summary>
-        /// Calculate Absolute error of two data sets
-        /// </summary>
-        /// <param name="obsData">Observer data</param>
-        /// <param name="preData">Predicted data</param>
-        /// <returns></returns>
-        public static double AE(this double[] obsData, double[] preData)
-        {
-            checkDataSets(obsData, preData);
-
-            //calculate sum of the square residuals
-            double ssr = 0;
-            for (int i = 0; i < obsData.Length; i++)
-            {
-                var r = Abs(obsData[i] - preData[i]);
-                ssr += r;
-            }
-            return ssr;
-        }
-
-        /// <summary>
-        /// Calculates Mean Absolute error
-        /// </summary>
-        /// <param name="obsData">Observer data</param>
-        /// <param name="preData">Predicted data</param>
-        /// <returns></returns>
-        public static double MAE(this double[] obsData, double[] preData)
-        {
-            checkDataSets(obsData, preData);
-
-            //c
-            return AE(obsData, preData) / obsData.Length;
-        }
-
-        /// <summary>
-        /// Calculates sum of squares of the two vectors
-        /// </summary>
-        /// <param name="obsData">Observer data</param>
-        /// <param name="preData">Predicted data</param>
-        /// <returns></returns>
-        public static double SE(this double[] obsData, double[] preData)
-        {
-            checkDataSets(obsData, preData);
-
-            //calculate sum of the square residuals
-            double ssr = 0;
-            for(int i=0; i < obsData.Length; i++)
-            {
-                var r = (obsData[i] - preData[i]);
-                ssr += r * r;
-            }
-               
-
-            return ssr;
-        }
-
 
         /// <summary>
         /// Calculate Mean Square Error of two data sets
@@ -130,23 +78,13 @@ namespace Daany.MathExt
         public static double MSE(this double[] obsData, double[] preData)
         {
             checkDataSets(obsData, preData);
-
-            return SE(obsData, preData)/obsData.Length;
+            var se = SE(obsData, preData);
+            return se.Sum() / obsData.Length;
         }
 
 
-        /// <summary>
-        /// Calculate Root Square Error of two data sets
-        /// </summary>
-        /// <param name="obsData">Observer data</param>
-        /// <param name="preData">Predicted data</param>
-        /// <returns></returns>
-        public static double RSE(this double[] obsData, double[] preData)
-        {
-            checkDataSets(obsData, preData);
 
-            return Sqrt(SE(obsData, preData));
-        }
+
 
         /// <summary>
         /// Calculates Root Mean Square error
@@ -158,8 +96,302 @@ namespace Daany.MathExt
         {
             checkDataSets(obsData, preData);
 
-            return Sqrt(SE(obsData, preData)/(double)obsData.Length);
+            return Sqrt(MSE(obsData, preData));
         }
+
+        /// <summary>
+        /// Calculate Absolute error of two data sets
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double[] AE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            //
+            double[] ae = new double[obsData.Length];
+            for (int i = 0; i < obsData.Length; i++)
+            {
+                var r = Abs(obsData[i] - preData[i]);
+                ae[i]= r;
+            }
+            return ae;
+        }
+
+        /// <summary>
+        /// Calculates Mean Absolute error
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double MAE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+            var ae = AE(obsData, preData);
+            //c
+            return ae.Sum() / obsData.Length;
+        }
+
+        /// <summary>
+        /// Calculate Absolute percent error of two data sets
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double[] APE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            //
+            double[] retVal = new double[obsData.Length];
+            for (int i = 0; i < obsData.Length; i++)
+            {
+                var r = Abs(obsData[i] - preData[i])/ obsData[i];
+                retVal[i] = r;
+            }
+            return retVal;
+        }
+
+        /// <summary>
+        /// Calculate Mean Absolute Percent Error of two data sets
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double MAPE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+            var ae = APE(obsData, preData);
+            //c
+            return ae.Sum() / obsData.Length;
+        }
+
+        /// <summary>
+        /// Calculate Symmetric Mean Absolute Percent Error of two data sets
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double SMAPE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            //
+            double retVal = 0;
+            for (int i = 0; i < obsData.Length; i++)
+            {
+                var r = Abs(obsData[i] - preData[i]) / (Abs(obsData[i])+ Abs(preData[i]));
+                retVal += r;
+            }
+
+            return 2 * retVal / (double)obsData.Length;
+        }
+
+
+        /// <summary>
+        /// Calculate Squared Log Error of two data sets
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns>Sum of all SLE</returns>
+        public static double[] SLE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            //
+            double[] retVal = new double[obsData.Length];
+            for (int i = 0; i < obsData.Length; i++)
+            {
+                var r = Pow(Log(1.0 + obsData[i]) - Log(1.0 + preData[i]),2);
+                retVal[i] = r;
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Calculate Mean Squared Log Error of two data sets
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double MSLE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            var retVal = SLE(obsData, preData);
+
+            return retVal.Sum() / obsData.Length;
+        }
+
+
+        /// <summary>
+        /// Calculate Mean Squared Log Error of two data sets
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double RMSLE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            return Sqrt(MSLE(obsData, preData));
+        }
+
+
+        
+        /// <summary>
+        /// Calculates squares of the two vectors
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double[] SE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            //calculate sum of the square residuals
+            double[] se = new double[obsData.Length];
+            for(int i=0; i < obsData.Length; i++)
+            {
+                var r = (obsData[i] - preData[i]);
+                se[i]= r * r;
+            }
+               
+            return se;
+        }
+
+        /// <summary>
+        /// Calculate Relative Square Error of two data sets
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double RSE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+            var mean = obsData.MeanOf();
+            var se = SE(obsData, preData);
+            //calculate sum of the square residuals
+            double ssr = 0;
+            for (int i = 0; i < obsData.Length; i++)
+            {
+                var r = (obsData[i] - mean);
+                ssr += r * r;
+            }
+
+
+            return se.Sum() / ssr;
+        }
+
+
+        /// <summary>
+        /// Calculate Root Relative Squared Error between two vectors
+        /// </summary>
+        /// <param name="obsData"></param>
+        /// <param name="preData"></param>
+        /// <returns></returns>
+        public static double RRSE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+            return Sqrt(RSE(obsData, preData));
+        }
+
+        /// <summary>
+        /// Calculates Relative Absolute Error between two vecotrs
+        /// </summary>
+        /// <param name="obsData"></param>
+        /// <param name="preData"></param>
+        /// <returns></returns>
+        public static double RAE(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+            var mean = obsData.MeanOf();
+            var se = AE(obsData, preData);
+            //calculate sum of the square residuals
+            double ssr = 0;
+            for (int i = 0; i < obsData.Length; i++)
+            {
+                var r = Abs(obsData[i] - mean);
+                ssr += r;
+            }
+
+
+            return se.Sum() / ssr;
+        }
+
+        /// <summary>
+        /// Mean Absolute Scaled Error
+        ///Description
+        /// mase computes the mean absolute scaled error between two numeric vectors.
+        /// Function is only intended for time series data, where actual and numeric are numeric vectors ordered by time.
+        /// </summary>
+        /// <param name="obsData"></param>
+        /// <param name="preData"></param>
+        /// <param name="stepSize">A positive integer that specifies how many observations to look back in time in 
+        ///                         order to compute the naive forecast. The default is 1, which means that the 
+        ///                         naive forecast for the current time period is the actual value of the previous period.</param>
+        /// <returns></returns>
+        public static double MASE(this double[] obsData, double[] preData, int stepSize = 1)
+        {
+            checkDataSets(obsData, preData);
+
+            int n = obsData.Length;
+            int m = stepSize;
+            var ae = AE(obsData, preData);
+            var retVal = 0.0;
+            for (int i = m; i < n; i++)
+            {
+                var r = Abs(obsData[i] - obsData[i - m]);
+                retVal += r;
+            }
+
+            return ae.Sum() / (n * retVal / (n - m));
+        }
+
+
+        /// <summary>
+        /// Calculate Log Loss between two vectors
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double[] LL(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            //
+            double[] retVal = new double[obsData.Length];
+            for (int i = 0; i < obsData.Length; i++)
+            {
+                retVal[i] = obsData[i] * Log(preData[i]) + (1.0 - obsData[i]) * Log(1.0 - preData[i]);
+
+            }
+            return retVal;
+        }
+
+        /// <summary>
+        /// Calculate Mean Log Loss between two vectors
+        /// </summary>
+        /// <param name="obsData">Observer data</param>
+        /// <param name="preData">Predicted data</param>
+        /// <returns></returns>
+        public static double LOGLOS(this double[] obsData, double[] preData)
+        {
+            checkDataSets(obsData, preData);
+
+            //
+            double retVal = 0;
+            for (int i = 0; i < obsData.Length; i++)
+            {
+                var r = obsData[i] * Log(preData[i]) + (1.0 - obsData[i]) * Log(1.0 - preData[i]);
+                retVal += r;
+
+            }
+            return retVal;
+        }
+
 
 
         /// <summary>
@@ -241,7 +473,7 @@ namespace Daany.MathExt
             }
 
             //calculate NSE
-            var nse = 1.0 - se / ose;
+            var nse = 1.0 - se.Sum() / ose;
             return nse;
         }
 
@@ -259,7 +491,7 @@ namespace Daany.MathExt
         {
             checkDataSets(obsData, preData);
             var ae = AE(obsData, preData);
-            var pbias =  ae / obsData.Sum();
+            var pbias =  ae.Sum() / obsData.Sum();
 
             return pbias;
         }
