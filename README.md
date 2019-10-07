@@ -29,13 +29,13 @@ The Daany DataFrame class has predefined static method to load data from txt or 
 
 ```csharp
 //read the iris data and create DataFrame object. 
-var df = DataFrame.FromCsv(orgdataPath,sep:"\t");
+var df = DataFrame.FromCsv(orgdataPath,sep:'\t');
 ```
 Now that we have data frame we can perform one of many supported data transofrmations. For this example we are going to create two new columns into ```df```:
 ```csharp
 //calculate two new columns into dataset: r argument represents a current row, and i represent the current row index
-df.AddCalculatedColumn("SepalArea", (r, i) => Convert.ToSingle(r[0]) * Convert.ToSingle(r[1]));
-df.AddCalculatedColumn("PetalArea", (r, i) => Convert.ToSingle(r[2]) * Convert.ToSingle(r[3]));
+df.AddCalculatedColumn("SepalArea", (r, i) => Convert.ToSingle(r["sepal_width"]) * Convert.ToSingle(r["sepal_length"]));
+df.AddCalculatedColumn("PetalArea", (r, i) => Convert.ToSingle(r["petal_width"]) * Convert.ToSingle(r["petal_length"]));
 ```
 Now the ```df``` object has two new columns:```SepalArea``` and ```PetalArea```. 
 
@@ -61,17 +61,17 @@ public string Species { get; set; }
 Now that we have class type implemented we can load the data frame into ML.NET:
 ```csharp
 //Load Data Frame into Ml.NET data pipeline
-IDataView dataView = mlContext.Data.LoadFromEnumerable<Iris>(derivedDF.GetEnumeratorEx<Iris>(oRow =>
-{
-    //convert row object array into Iris row
-    var ooRow = oRow.ToList();
-    var prRow = new Iris();
-    prRow.SepalArea = Convert.ToSingle(ooRow[0]);
-    prRow.PetalArea = Convert.ToSingle(ooRow[1]);
-    prRow.Species = Convert.ToString(ooRow[2]);
-    //
-    return prRow;
-}));
+IDataView dataView = mlContext.Data.LoadFromEnumerable<Iris>(derivedDF.GetEnumerator<Iris>((oRow) =>
+ {
+ //convert row object array into Iris row
+                
+ var prRow = new Iris();
+ prRow.SepalArea = Convert.ToSingle(oRow["SepalArea"]);
+ prRow.PetalArea = Convert.ToSingle(oRow["PetalArea"]);
+ prRow.Species = Convert.ToString(oRow["species"]);
+ //
+ return prRow;
+ }));
 ```
 The whole data has been loaded into the ML.NET pipeline, so we have to split the data into Train and Test set:
 ```csharp
