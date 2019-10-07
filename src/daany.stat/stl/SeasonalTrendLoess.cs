@@ -489,7 +489,7 @@ namespace Daany.stl
         private static int calcDefaultTrendWidth(int periodicity, int seasonalWidth)
         {
             //  This formula is based on a numerical stability analysis in the original paper.
-            var retVal = (int)(1.5 * periodicity / (1 - 1.5 / seasonalWidth) + 0.5);
+            var retVal = (int)(1.5 * periodicity / (1 - 1.5 / (double)seasonalWidth) + 0.5);
             return retVal;
         }
 

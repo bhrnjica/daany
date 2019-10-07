@@ -137,7 +137,7 @@ namespace Daany.stl
             //  (The paper does this by multiplying the above lambda by (width / n). Not sure why the code is different.)
             if ((this.fWidth > this.fData.Length))
             {
-                lambda = (lambda + ((double)(((this.fWidth - this.fData.Length)/ 2))));
+                lambda = (lambda + ((double)(((this.fWidth - this.fData.Length)/ 2.0))));
             }
 
             //  "Neighborhood" is computed somewhat fuzzily.

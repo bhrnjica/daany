@@ -152,7 +152,7 @@ namespace Daany.stl
             }
             else if ((this.fJump == 1))
             {
-                int halfWidth = ((this.fWidth + 1) / 2);
+                int halfWidth = (int)((this.fWidth + 1) / 2.0);
                 left = 0;
                 right = (this.fWidth - 1);
                 for (int i = 0; (i < this.fData.Length); i++)
@@ -207,7 +207,7 @@ namespace Daany.stl
                 //  Third branch for  i = [ 9, 10, 11, ..., 131, 132, 133]; 125 points
                 //                 left = [ 0,  1,  2, ..., 122, 123, 124]
                 //                right = [18, 19, 20, ..., 140, 141, 142]; right - left = 18
-                int halfWidth = ((this.fWidth + 1) / 2);
+                int halfWidth = (int)((this.fWidth + 1) / 2.0);
                 for (int i = 0; (i < this.fData.Length); i = (i + this.fJump))
                 {
                     if ((i < (halfWidth - 1)))

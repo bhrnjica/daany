@@ -12,7 +12,7 @@ namespace Unit.Test.DF
     public class TimeSeriesSTL_Decompozition
     {
         static string root = "..\\..\\..\\testdata";//\\69_lakes";
-        private double[] getSomeMonthlyData()
+        private double[] getAirPassengersData()
         {
             var strPath = $"{root}/AirPassengers.csv";
             var mlDF = DataFrame.FromCsv(strPath, sep: ',');
@@ -23,7 +23,7 @@ namespace Unit.Test.DF
         [Fact]
         public void SSA_Decomposition_Test01()
         {
-            double[] ts = getSomeMonthlyData(); // Monthly time-series data
+            double[] ts = getAirPassengersData(); // Monthly time-series data
 
             //embed
             var ssa = new SSA(ts);
@@ -60,35 +60,48 @@ namespace Unit.Test.DF
         [Fact]
         public void STL_Decomposition_Test01()
         {
-            double[] values = getSomeMonthlyData(); // Monthly time-series data
+            
+
+            double[] values = getAirPassengersData(); // Monthly time-series data
 
             var  builder = new SeasonalTrendLoessBuilder();
             builder.PeriodLength = 12;    // Data has a period of 12
             builder.Periodic = true;
-            //  setSeasonalWidth(12).   // Monthly data smoothed over 35 years
             builder.Robust= false;         // Not expecting outliers, so no robustness iterations
             var smoother = builder.buildSmoother(values);
 
             var  stl = smoother.decompose();
             double[] seasonal = stl.Seasonal;
             double[] trend = stl.Trend;
-            double[] residual = stl.Residual;
+            double[] remainder = stl.Residual;
 
-            // Check some results
-            Assert.Equal(-25.497726036404412, seasonal[0]);
-            Assert.Equal(126.19893730296793, trend[3]);
-            Assert.Equal(-24.069658425380908, residual[5]);
+            //Load result calculated by using R STL package
+            var dfReslt = DataFrame.FromCsv($"{root}/airpassengers_stl_result.txt");
+            //TODO: only two decimal places. Should be more than two.?! 
+            int factor = 100;
+            //check rowcounts
+            Assert.True(dfReslt.RowCount() == stl.fSeasonal.Length);
+            int i = 0;
+            
+            foreach(var row in dfReslt.GetEnumerator())
+            {
+                var s = (int) ( Convert.ToDouble(row["seasonal"])*factor);
+                var t = (int) (Convert.ToDouble(row["trend"])*factor);
+                var r = (int) (Convert.ToDouble(row["remainder"])*factor);
+                // Check some results
+                Assert.Equal<int>(s, (int)  (seasonal[i]*factor));
+                Assert.Equal<int>(t, (int) (trend[i] * factor));
+                Assert.Equal<int>(r, (int) (remainder[i] * factor));
+                i++; ;
+            }
 
-            Assert.Equal(-57.481848113404943, seasonal[10]);
-            Assert.Equal(135.10836367065352, trend[13]);
-            Assert.Equal(7.3536508004487757, residual[15]);
         }
 
 
         [Fact]
         public void STL_Decomposition_Test02()
         {
-            double[] values = getSomeMonthlyData(); // Monthly time-series data
+            double[] values = getAirPassengersData(); // Monthly time-series data
             var sWindow = 12; var sDegree = 1; var tWindow = 12; var tDegree = 12; var lWindow= tWindow; var lDegree = tDegree;
             var sJump = 12; var tJump = 12; var lJump = 12; var isRobust = false; var inner = 12; var outer = 12;
 
