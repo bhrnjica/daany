@@ -1302,6 +1302,11 @@ namespace Daany
             return Columns.Count;
         }
 
+
+
+        #endregion
+
+        #region Print Helper
         /// <summary>
         /// Customization of the standard ToString method.
         /// </summary>
@@ -1311,26 +1316,80 @@ namespace Daany
             var str = $"({Index.Count},{Columns.Count})";
             return str;
         }
-
-        #endregion
-
-        #region Print Helper
-        //public List<List<object>> Head(int count=5)
-        //{
-        //    int cnt = 0;
-        //    var lst = new List<List<object>>();
-        //    foreach (var r in this.GetEnumerator())
-        //    {
-        //        if (cnt >= count)
-        //            break;
-
-        //    }
-        //}
+        /// <summary>
+        /// Returns the formated string of the first  'count' rows of the data frame
+        /// Suitable for the Jupyter notebooks
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public string Head(int count = 5)
+        {
+            StringBuilder sb = new StringBuilder();
+            int rows = this.RowCount();
+            int cols = this.ColCount();
+            int longestColumnName = 0;
+            for (int i = 0; i < cols; i++)
+            {
+                longestColumnName = Math.Max(longestColumnName, this.Columns[i].Length);
+            }
+            for (int i = 0; i < cols; i++)
+            {
+                // Left align by 10
+                sb.Append(string.Format(this.Columns[i].PadRight(longestColumnName)));
+            }
+            sb.AppendLine();
+            long numR = Math.Min(rows, count);
+            for (int i = 0; i < numR; i++)
+            {
+                IList<object> row = this[i].ToList();
+                foreach (object obj in row)
+                {
+                    sb.Append((obj ?? "null").ToString().PadRight(longestColumnName));
+                }
+                sb.AppendLine();
+            }
+            return sb.ToString();
+        }
 
         /// <summary>
-        /// Prints basic descriptive statistics values of the dataframe
+        /// Returns the formated string of the last  'count' rows of the data frame
+        /// Suitable for the Jupyter notebooks
         /// </summary>
-        public void Describe()
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public string Tail(int count = 5)
+        {
+            StringBuilder sb = new StringBuilder();
+            int rows = this.RowCount();
+            int cols = this.ColCount();
+            int longestColumnName = 0;
+            for (int i = 0; i < cols; i++)
+            {
+                longestColumnName = Math.Max(longestColumnName, this.Columns[i].Length);
+            }
+            for (int i = 0; i < cols; i++)
+            {
+                // Left align by 10
+                sb.Append(string.Format(this.Columns[i].PadRight(longestColumnName)));
+            }
+            sb.AppendLine();
+            int numR = Math.Min(rows, count);
+            for (int i = rows - numR; i < rows; i++)
+            {
+                IList<object> row = this[i].ToList();
+                foreach (object obj in row)
+                {
+                    sb.Append((obj ?? "null").ToString().PadRight(longestColumnName));
+                }
+                sb.AppendLine();
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Prints basic descriptive statistics values of the data frame
+        /// </summary>
+        private void Describe()
         {
 
         }

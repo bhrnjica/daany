@@ -14,8 +14,8 @@ Daany - C# library for data analysis and transformation with the implementation 
     <PackageLicenseExpression></PackageLicenseExpression>
     <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
-    <PackageTags>ml.net, data prepeparation, data analytics</PackageTags>
-    <Version>0.2.0</Version>
+    <PackageTags>ml.net, data preparation, data analytics</PackageTags>
+    <Version>0.2.1</Version>
     <PackageReleaseNotes>MIT License
 
 Copyright (c) 2019 Bahrudin Hrnjica
@@ -40,8 +40,8 @@ SOFTWARE.</PackageReleaseNotes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>   
-    <PackageIconUrl>..\..\docs\img\daany.ico</PackageIconUrl>   
+    <FileVersion>1.0.0.0</FileVersion>
+    <PackageIcon>daanyIcon.png</PackageIcon>
     <ApplicationIcon>daany.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -51,7 +51,6 @@ SOFTWARE.</PackageReleaseNotes>
 
   <ItemGroup>
     <ProjectReference Include="..\daany.df\daany.df.csproj" />
-    <ProjectReference Include="..\daany.ext\daany.df.ext.csproj" />
     <ProjectReference Include="..\daany.math\daany.math.csproj" />
   </ItemGroup>
 
@@ -61,6 +60,10 @@ SOFTWARE.</PackageReleaseNotes>
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\docs\img\daanyIcon.png" Link="daanyIcon.png" Pack="true" Visible="false" PackagePath="\" />
+  </ItemGroup>
+  
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.4">

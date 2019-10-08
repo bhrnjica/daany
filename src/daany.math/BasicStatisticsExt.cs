@@ -378,5 +378,11 @@ namespace Daany.MathExt
 
             return new Tuple<double[], double[]>(means, stdevs);
         }
+
+
+        public static double[] Description(this double[] vector)
+        {
+            return null;
+        }
     }
 }
