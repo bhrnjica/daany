@@ -1322,33 +1322,20 @@ namespace Daany
         /// </summary>
         /// <param name="count"></param>
         /// <returns></returns>
-        public string Head(int count = 5)
+        public DataFrame Head(int count = 5)
         {
-            StringBuilder sb = new StringBuilder();
+            //
             int rows = this.RowCount();
             int cols = this.ColCount();
-            int longestColumnName = 0;
-            for (int i = 0; i < cols; i++)
-            {
-                longestColumnName = Math.Max(longestColumnName, this.Columns[i].Length);
-            }
-            for (int i = 0; i < cols; i++)
-            {
-                // Left align by 10
-                sb.Append(string.Format(this.Columns[i].PadRight(longestColumnName)));
-            }
-            sb.AppendLine();
+            //
+            var lst = new List<object>();
             long numR = Math.Min(rows, count);
             for (int i = 0; i < numR; i++)
             {
                 IList<object> row = this[i].ToList();
-                foreach (object obj in row)
-                {
-                    sb.Append((obj ?? "null").ToString().PadRight(longestColumnName));
-                }
-                sb.AppendLine();
+                lst.AddRange(this[i].ToList());
             }
-            return sb.ToString();
+            return new DataFrame(lst, Columns.ToArray());
         }
 
         /// <summary>
@@ -1357,7 +1344,22 @@ namespace Daany
         /// </summary>
         /// <param name="count"></param>
         /// <returns></returns>
-        public string Tail(int count = 5)
+        public DataFrame Tail(int count = 5)
+        {
+            int rows = this.RowCount();
+            int cols = this.ColCount();
+            //
+            var lst = new List<object>();
+            int numR = Math.Min(rows, count);
+            for (int i = rows - numR; i < rows; i++)
+            {
+                lst.AddRange(this[i].ToList());
+            }
+            //
+            return new DataFrame(lst,Columns.ToArray());
+        }
+
+        public string ToStringBuilder()
         {
             StringBuilder sb = new StringBuilder();
             int rows = this.RowCount();
@@ -1373,8 +1375,8 @@ namespace Daany
                 sb.Append(string.Format(this.Columns[i].PadRight(longestColumnName)));
             }
             sb.AppendLine();
-            int numR = Math.Min(rows, count);
-            for (int i = rows - numR; i < rows; i++)
+            //
+            for (int i = 0; i < rows; i++)
             {
                 IList<object> row = this[i].ToList();
                 foreach (object obj in row)
@@ -1385,7 +1387,6 @@ namespace Daany
             }
             return sb.ToString();
         }
-
         /// <summary>
         /// Prints basic descriptive statistics values of the data frame
         /// </summary>

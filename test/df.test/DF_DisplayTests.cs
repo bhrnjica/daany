@@ -37,14 +37,16 @@ namespace Unit.Test.DF
             //
             var df = new DataFrame(dict);
             var actual = df.Head(10);
-
-            Assert.Equal(expected, actual);
+            Assert.Equal(7, actual.RowCount());
+            Assert.Equal(expected, actual.ToStringBuilder());
 
             var actual1 = df.Head(7);
-            Assert.Equal(expected, actual1);
+            Assert.Equal(7, actual1.RowCount());
+            Assert.Equal(expected, actual1.ToStringBuilder());
 
             var actual2 = df.Tail(10);
-            Assert.Equal(expected, actual1);
+            Assert.Equal(7, actual2.RowCount());
+            Assert.Equal(expected, actual1.ToStringBuilder());
 
             var expected1 = @"product_id  retail_pricequantity    city        state       
 2           5           4           SF          CA          
@@ -55,7 +57,8 @@ namespace Unit.Test.DF
 ";
 
             var actual3 = df.Tail(5);
-            Assert.Equal(expected1, actual3);
+            Assert.Equal(5, actual3.RowCount());
+            Assert.Equal(expected1, actual3.ToStringBuilder());
 
         }
 
