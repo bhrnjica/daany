@@ -1359,7 +1359,7 @@ namespace Daany
             return new DataFrame(lst,Columns.ToArray());
         }
 
-        public string ToStringBuilder()
+        internal string ToStringBuilder()
         {
             StringBuilder sb = new StringBuilder();
             int rows = this.RowCount();
