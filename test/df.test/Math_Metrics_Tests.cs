@@ -117,5 +117,26 @@ namespace Unit.Test.DF
             Assert.Equal(0.72201262859409132, minMax.stdevs[1]);
             Assert.Equal(0.72052383815693033, minMax.stdevs[2]);
         }
+
+
+        [Fact]
+        public void Statistics_Percentiles_Test()
+        {
+            
+            var data =new double[] { 2, 3, 4, 5, 6, 8, 7, 54, 3, 23, 23, 5, 6, 8, 8, 99, 5, 5, 5 };
+            var val1 = data.Percentile(0);
+            var val2 = data.Percentile(25);
+            var val3 = data.Percentile(50);
+            var val4 = data.Percentile(75);
+            var val5 = data.Percentile(100);
+            var median = data.MedianOf();
+            var min = data.Min();
+            var max = data.Max();
+            Assert.Equal(min, val1);
+            Assert.Equal(5, val2);
+            Assert.Equal(median, val3);
+            Assert.Equal(8, val4);
+            Assert.Equal(max, val5);
+        }
     }
 }

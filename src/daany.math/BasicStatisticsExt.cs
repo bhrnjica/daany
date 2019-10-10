@@ -163,35 +163,53 @@ namespace Daany.MathExt
             if (colData == null || colData.Length < 2)
                 throw new Exception("'coldData' cannot be null or empty!");
 
-            //initial mean value
-            double median = 0;
-            int medianIndex = colData.Length / 2;
+            return Percentile(colData, 50);
+        }
+
+        /// <summary>
+        /// Calculate percentile of a sorted data set
+        /// </summary>
+        /// <param name="sortedData"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static double Percentile(this double[] data, double p)
+        {
 
             //make a deep copy of the data
-            var temp = new double[colData.Length];
-            Array.Copy(colData, temp, colData.Length);
+            var sortedData = new double[data.Length];
+
+            Array.Copy(data, sortedData, data.Length);
             //sort the values
+            Array.Sort(data);
 
-            Array.Sort(temp);
+            //
+            if (p >= 100.0d) 
+                return sortedData[sortedData.Length - 1];
 
-            //in case we have odd number of elements in data set
-            // median is just in the middle of the dataset
-            if(temp.Length % 2 == 1)
+            double position = (sortedData.Length + 1) * p / 100.0;
+            double leftNumber = 0.0d, rightNumber = 0.0d;
+
+            double n = p / 100.0d * (sortedData.Length - 1) + 1.0d;
+
+            if (position >= 1)
             {
-                // 
-                median = temp[medianIndex];
+                leftNumber = sortedData[(int)Math.Floor(n) - 1];
+                rightNumber = sortedData[(int)Math.Floor(n)];
             }
-            else//otherwize calculate average between two element in the middle
+            else
             {
-                var val1 = temp[medianIndex - 1];
-                var val2 = temp[medianIndex];
-
-                //calculate the median
-                median = (val1 + val2) / 2; 
+                leftNumber = sortedData[0]; // first data
+                rightNumber = sortedData[1]; // first data
             }
 
-            return median;
-        }
+            //if (leftNumber == rightNumber)
+            if (Equals(leftNumber, rightNumber))
+                return leftNumber;
+            double part = n - Math.Floor(n);
+            return leftNumber + part * (rightNumber - leftNumber);
+        } 
+
+
 
         /// <summary>
         /// Calculate variance for the sample data .
@@ -357,6 +375,9 @@ namespace Daany.MathExt
 
             return parSum / count;
         }
+
+
+        
 
         /// <summary>
         /// Calculates the minimum and maximum value for each column in dataset

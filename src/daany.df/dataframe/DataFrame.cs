@@ -1451,21 +1451,21 @@ namespace Daany
             var dicDf = new Dictionary<string, List<object>>();
             // 
             var dicColumn = new Dictionary<string, object>();
-            dicColumn.Add("count",    double.NaN); 
-            dicColumn.Add("unique",   double.NaN);
-            dicColumn.Add("top",      double.NaN);
-            dicColumn.Add("freq",     double.NaN); 
-            dicColumn.Add("mean",     double.NaN); 
-            dicColumn.Add("std",      double.NaN);
-            dicColumn.Add("min",      double.NaN); 
-            dicColumn.Add("25%",      double.NaN); 
-            dicColumn.Add("50%",      double.NaN); 
-            dicColumn.Add("75%",      double.NaN);
-            dicColumn.Add("max",      double.NaN);
+            dicColumn.Add("count",    null); 
+            dicColumn.Add("unique",   null);
+            dicColumn.Add("top",      null);
+            dicColumn.Add("mode",     null); 
+            dicColumn.Add("mean",     null); 
+            dicColumn.Add("std",      null);
+            dicColumn.Add("min",      null); 
+            dicColumn.Add("25%",      null); 
+            dicColumn.Add("50%",      null); 
+            dicColumn.Add("75%",      null);
+            dicColumn.Add("max",      null);
             dicDf.Add("count", new List<object>());
             dicDf.Add("unique", new List<object>());
             dicDf.Add("top", new List<object>());
-            dicDf.Add("freq", new List<object>());
+            dicDf.Add("mode", new List<object>());
             dicDf.Add("mean", new List<object>());
             dicDf.Add("std", new List<object>());
             dicDf.Add("min", new List<object>());
@@ -1506,11 +1506,16 @@ namespace Daany
            foreach(var v in dicDf)
             {
                 var l = dicDf[v.Key];
-                index.Add(v.Key);
-                for(int i=0; i < l.Count; i++)
+                //check if some row is null
+                if(l.Any(d=> d!=null))
                 {
-                    lst.Add(l[i]);
+                    index.Add(v.Key);
+                    for (int i = 0; i < l.Count; i++)
+                    {
+                        lst.Add(l[i]==null?float.NaN:l[i]);
+                    }
                 }
+                
             }
 
             //
@@ -1530,16 +1535,16 @@ namespace Daany
         {
             //
             dic["count"]    = colValue.Length;
-            dic["unique"]   = float.NaN;
-            dic["top"]      = float.NaN;
-            dic["freq"]     = float.NaN;
-            dic["mean"]     = (float)colValue.MeanOf();
-            dic["std"]      = (float)colValue.Stdev();
-            dic["min"]      = (float)colValue.Min();
-            dic["25%"]      = float.NaN;
-            dic["50%"]      = (float)colValue.MedianOf();
-            dic["75%"]      = float.NaN;
-            dic["max"]      = (float)colValue.Max();
+            dic["unique"]   = null;
+            dic["top"]      = null;
+            dic["mode"]     = null;
+            dic["mean"]     = Math.Round(colValue.MeanOf(),6);
+            dic["std"]      = Math.Round(colValue.Stdev(),6);
+            dic["min"]      = Math.Round(colValue.Min(),6);
+            dic["25%"]      = Math.Round(colValue.Percentile(25), 6);
+            dic["50%"]      = Math.Round(colValue.MedianOf(),6);
+            dic["75%"]      = Math.Round(colValue.Percentile(75), 6);
+            dic["max"]      = Math.Round(colValue.Max(),6);
             return;
         }
         
@@ -1547,16 +1552,16 @@ namespace Daany
         {
             //
             dic["count"]    = colValue.Length;
-            dic["unique"]   = colValue.Distinct().Count();
+            dic["unique"]   = Math.Round((double)colValue.Distinct().Count(), 6); 
             dic["top"]      = colValue.First();
-            dic["freq"] = (float)colValue.ModeOf();
-            dic["mean"] = float.NaN;
-            dic["std"] = float.NaN;
-            dic["min"] = float.NaN;
-            dic["25%"] = float.NaN;
-            dic["50%"] = float.NaN;
-            dic["75%"] = float.NaN;
-            dic["max"] = float.NaN;
+            dic["mode"]     = colValue.ModeOf();
+            dic["mean"]     = null;
+            dic["std"]  = null;
+            dic["min"]  = null;
+            dic["25%"]  = null;
+            dic["50%"]  = null;
+            dic["75%"]  = null;
+            dic["max"]  = null;
             return;
         }
 
@@ -1564,16 +1569,16 @@ namespace Daany
         {
             //
             dic["count"] = colValue.Length;
-            dic["unique"] = colValue.Distinct().Count();
+            dic["unique"] = Math.Round((double)colValue.Distinct().Count(), 6);
             dic["top"] = colValue.First();
-            dic["freq"] = colValue.ModeOf();
-            dic["mean"] = float.NaN;
-            dic["std"] = float.NaN;
-            dic["min"] = float.NaN;
-            dic["25%"] = float.NaN;
-            dic["50%"] = float.NaN;
-            dic["75%"] = float.NaN;
-            dic["max"] = float.NaN;
+            dic["mode"] = colValue.ModeOf();
+            dic["mean"] = null;
+            dic["std"] = null;
+            dic["min"] = null;
+            dic["25%"] = null;
+            dic["50%"] = null;
+            dic["75%"] = null;
+            dic["max"] = null;
             return;
         }
 
