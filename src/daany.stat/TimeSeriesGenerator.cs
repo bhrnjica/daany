@@ -122,10 +122,9 @@ namespace Daany.Stat
             //calculate column and row counts
             int cols = pastSteps + 1;
             int rows = tsData.Length - cols + 1;
-            var index = Enumerable.Range(0, rows).ToList();
             object[] data = tsData.Select(x=>(object)x).ToArray();
             //creta dataframe
-            var df = new DataFrame(data,index,columns);
+            var df = new DataFrame(data, columns);
             return df;
         }
 

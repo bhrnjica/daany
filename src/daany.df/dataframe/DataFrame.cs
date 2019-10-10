@@ -47,7 +47,7 @@ namespace Daany
         /// Index for rows in the data frame.
         /// </summary>
         /// 
-        public IList<int> Index => _index;
+        public IList<object> Index => _index;
 
         internal IList<object> Values => _values;
 
@@ -72,7 +72,7 @@ namespace Daany
         /// </summary>
         /// 
         private List<object> _values;
-        private IList<int> _index;
+        private IList<object> _index;
         private IList<string> _columns;
         static readonly Regex _numFloatRegex = new Regex(@"^(((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?)$");
         static readonly Regex _numRegex = new Regex(@"^[0-9]+$");
@@ -179,7 +179,7 @@ namespace Daany
 
             //create data frame
             var ind = Enumerable.Range(0, rowCount);
-            var df = new DataFrame(llst.ToArray(), ind.ToList(), header.ToList());
+            var df = new DataFrame(llst.ToArray(), header.ToList());
             return df;
         }
 
@@ -218,14 +218,19 @@ namespace Daany
         public static DataFrame CreateEmpty(IList<string> columns)
         {
             var val = Array.Empty<object>();
-            var ind = new List<int>();
-            var df = new DataFrame(val, ind, columns);
+            var df = new DataFrame();
+            df._values = new List<object>();
+            df._index= new List<object>();
+            df._columns = columns;
             return df;
         }
         #endregion
 
         #region Constructors
+        private DataFrame()
+        {
 
+        }
         /// <summary>
         /// Create data frame from another data frame.
         /// </summary>
@@ -247,9 +252,10 @@ namespace Daany
         /// <param name="data">1d object array of values.</param>
         /// <param name="index">Row index.</param>
         /// <param name="columns">List of column names.</param>
+        [Obsolete("The constructor is obsolete and will be replaced in the next version.")]
         public DataFrame(object[] data, IList<int> index, IList<string> columns)
         {
-            this._index = index;
+            this._index = index.Select(x=>(object)x).ToList();
             this._columns = columns;
             this._values = data.ToList();
         }
@@ -272,7 +278,7 @@ namespace Daany
             //calculate row count
             int rows = data.Length / columns.Count;
 
-            this._index = Enumerable.Range(0, rows).ToList();
+            this._index = Enumerable.Range(0, rows).Select(x=>(object)x).ToList();
             this._columns = columns;
             this._values = data.ToList();
         }
@@ -283,9 +289,10 @@ namespace Daany
         /// <param name="data">list of df values </param>
         /// <param name="index">row index</param>
         /// <param name="columns">column index</param>
+        [Obsolete("The constructor is obsolete and will be replaced in the next version.")]
         public DataFrame(List<object> data, IList<int> index, IList<string> columns)
         {
-            this._index = index;
+            this._index = index.Select(x => (object)x).ToList();
             this._columns = columns;
             this._values = data;
         }
@@ -309,7 +316,7 @@ namespace Daany
             //calculate row count
             int rows = data.Count / columns.Count;
 
-            this._index = Enumerable.Range(0, rows).ToList();
+            this._index = Enumerable.Range(0, rows).Select(x => (object)x).ToList();
             this._columns = columns;
             this._values = data;
         }
@@ -328,7 +335,7 @@ namespace Daany
                 throw new Exception($"'{data}' dictionary cannot be empty!");
 
             //row column indexes preparation
-            this._index = Enumerable.Range(0, data.Values.First().Count()).ToList();
+            this._index = Enumerable.Range(0, data.Values.First().Count()).Select(x => (object)x).ToList();
             this._columns = data.Keys.ToList();
 
             //
@@ -419,7 +426,7 @@ namespace Daany
         public DataFrame Filter(string[] cols, object[] filteValues, FilterOperator[] fOpers)
         {
             if (Index.Count == 0)
-                return new DataFrame(Array.Empty<object>(), Index.ToList(), Columns.ToList());
+                return new DataFrame(Array.Empty<object>(), Columns.ToList());
 
             //check for non-null arguments
             if (cols == null || cols.Length == 0)
@@ -476,7 +483,7 @@ namespace Daany
 
                 }
             }
-            var df = new DataFrame(lst.ToArray(), Enumerable.Range(0, lst.Count / Columns.Count).ToList(), Columns);
+            var df = new DataFrame(lst.ToArray(), Columns);
             return df;
         }
 
@@ -585,7 +592,7 @@ namespace Daany
                 }
             }
             //Now construct the Data frame
-            var newDf = new DataFrame(lst, Enumerable.Range(0, lst.Count / totalColumns.Count).ToList(), totalColumns);
+            var newDf = new DataFrame(lst, totalColumns);
             return newDf;
 
         }
@@ -611,7 +618,7 @@ namespace Daany
                 sortedList = sdf.MergeSort(_values, colInd);
 
             //create a new df with sorted values 
-            var df = new DataFrame(sortedList, Index.ToList(), Columns.ToList());
+            var df = new DataFrame(sortedList, Columns.ToList());
             return df;
         }
 
@@ -687,10 +694,9 @@ namespace Daany
                     val.Add(_values[i]);
             }
 
-            var ind = Enumerable.Range(0, val.Count / Columns.Count).ToList();
             var cc = Columns.ToList();
             //create new dataframe
-            var df = new DataFrame(val.ToArray(), ind, cc);
+            var df = new DataFrame(val.ToArray(), cc);
             return df;
         }
 
@@ -991,7 +997,6 @@ namespace Daany
             var val = new List<object>();
             //go through all rows
             var index = 0;
-            var newRowCount = Index.Count / nthRow;
             for (int i = 0; i < Index.Count; i++)
             {
                 for (int j = 0; j < Columns.Count; j++)
@@ -1006,7 +1011,7 @@ namespace Daany
 
             }
             //
-            var df = new DataFrame(val.ToArray(), Enumerable.Range(0, newRowCount).ToList(), Columns.ToArray());
+            var df = new DataFrame(val.ToArray(), Columns.ToArray());
 
             //
             return df;
@@ -1027,7 +1032,7 @@ namespace Daany
             {
                 if (rand.NextDouble() < needed / available)
                 {
-                    selected.Add(Index[(int)available - 1]);
+                    selected.Add((int)available - 1);
                    needed--;
                 }
                 available--;
@@ -1057,7 +1062,7 @@ namespace Daany
                 counter++;
             }
             //
-            var df = new DataFrame(val.ToArray(), Enumerable.Range(0, rows).ToList(), Columns.ToArray());
+            var df = new DataFrame(val.ToArray(), Columns.ToArray());
 
             //
             return df;
@@ -1081,7 +1086,7 @@ namespace Daany
                 counter++;
             }
             //
-            var df = new DataFrame(val.ToArray(), Enumerable.Range(0, rows).ToList(), Columns.ToArray());
+            var df = new DataFrame(val.ToArray(), Columns.ToArray());
 
             //
             return df;
@@ -1169,7 +1174,7 @@ namespace Daany
             // 
             foreach (var v in df._values)
                 _values.Add(v);
-            this._index = Enumerable.Range(0, Index.Count + df.Index.Count).ToList();
+            this._index = Enumerable.Range(0, Index.Count + df.Index.Count).Select(x=>(object)x).ToList();
         }
 
         /// <summary>
@@ -1390,17 +1395,215 @@ namespace Daany
         /// <summary>
         /// Prints basic descriptive statistics values of the data frame
         /// </summary>
-        private void Describe()
+        /// <param name="numericOnly">Include only numeric columns.</param>
+        /// <param name="inclColumns">Specified columns</param>
+        /// <returns></returns>
+        public DataFrame Describe(bool numericOnly = true, params string[] inclColumns)
         {
+            var types = this.columnsTypes();
+            var lstCols = new List<(string cName, ColType cType)>();
 
+            //include columns
+            if (inclColumns == null || inclColumns.Length==0)
+            {
+                for (int i = 0; i < this.Columns.Count(); i++)
+                {
+                    lstCols.Add((this.Columns[i], types[i]));
+                }
+            }
+            else
+            {
+                for (int i = 0; i < this.Columns.Count(); i++)
+                {
+                    var c = this.Columns[i];
+                    if(inclColumns.Contains(c))
+                        lstCols.Add((this.Columns[i], types[i]));
+                }
+            }
+
+
+            //only numeric columns
+            var finalCols = new List<(string cName, ColType cType)>();
+            for (int i = 0; i < lstCols.Count(); i++)
+            {
+                if(numericOnly)
+                {
+                    if (isNumeric(lstCols[i].cType))
+                        finalCols.Add(lstCols[i]);
+                }
+                else //if(!isNumeric(lstCols[i].cType) && !numericOnly)
+                    finalCols.Add(lstCols[i]);
+            }
+
+            DataFrame dfDescr = describeColumns(finalCols);
+            //
+            return dfDescr;
         }
+
+
+
         #endregion
 
         #region Private
+
+        private DataFrame describeColumns(List<(string cName, ColType cType)> columns)
+        {
+            var dicDf = new Dictionary<string, List<object>>();
+            // 
+            var dicColumn = new Dictionary<string, object>();
+            dicColumn.Add("count",    double.NaN); 
+            dicColumn.Add("unique",   double.NaN);
+            dicColumn.Add("top",      double.NaN);
+            dicColumn.Add("freq",     double.NaN); 
+            dicColumn.Add("mean",     double.NaN); 
+            dicColumn.Add("std",      double.NaN);
+            dicColumn.Add("min",      double.NaN); 
+            dicColumn.Add("25%",      double.NaN); 
+            dicColumn.Add("50%",      double.NaN); 
+            dicColumn.Add("75%",      double.NaN);
+            dicColumn.Add("max",      double.NaN);
+            dicDf.Add("count", new List<object>());
+            dicDf.Add("unique", new List<object>());
+            dicDf.Add("top", new List<object>());
+            dicDf.Add("freq", new List<object>());
+            dicDf.Add("mean", new List<object>());
+            dicDf.Add("std", new List<object>());
+            dicDf.Add("min", new List<object>());
+            dicDf.Add("25%", new List<object>());
+            dicDf.Add("50%", new List<object>());
+            dicDf.Add("75%", new List<object>());
+            dicDf.Add("max", new List<object>());
+            //
+            for (int i=0; i < columns.Count(); i++)
+            {
+                if (isNumeric(columns[i].cType))
+                {
+                    //exclude null values
+                    var val = this[columns[i].cName].Where(x=> x!=null).Select(x => Convert.ToDouble(x)).ToArray();
+                    describeColumn(dicColumn, val);
+                }
+                else if(isCategorical(columns[i].cType))
+                {
+                    //exclude null values
+                    var val = this[columns[i].cName].Where(x => x != null).Select(x => x).ToArray();
+                    describeCatColumn(dicColumn, val);
+                }
+                else if(isObject(columns[i].cType))
+                {
+                    var val = this[columns[i].cName].Where(x => x != null).Select(x => x).ToArray();
+                    describeObjColumn(dicColumn, val);
+                }
+                else
+                    throw new Exception("Unknown column type.");
+                //add calculated values to df dictionary
+                foreach (var d in dicColumn)
+                    dicDf[d.Key].Add(d.Value);
+            }
+
+            //constuct the data frame
+           var lst = new List<object>();
+           var index = new List<object>();
+           foreach(var v in dicDf)
+            {
+                var l = dicDf[v.Key];
+                index.Add(v.Key);
+                for(int i=0; i < l.Count; i++)
+                {
+                    lst.Add(l[i]);
+                }
+            }
+
+            //
+            var lstCols = new List<string>();
+            lstCols.AddRange(columns.Select(c=>c.cName));
+
+           //cretae data frame
+           var df = new DataFrame();
+           df._values = lst;
+           df._index = index;
+           df._columns = lstCols;
+           return df;
+
+        }
+ 
+        private void describeColumn(Dictionary<string, object> dic, double[] colValue)
+        {
+            //
+            dic["count"]    = colValue.Length;
+            dic["unique"]   = float.NaN;
+            dic["top"]      = float.NaN;
+            dic["freq"]     = float.NaN;
+            dic["mean"]     = (float)colValue.MeanOf();
+            dic["std"]      = (float)colValue.Stdev();
+            dic["min"]      = (float)colValue.Min();
+            dic["25%"]      = float.NaN;
+            dic["50%"]      = (float)colValue.MedianOf();
+            dic["75%"]      = float.NaN;
+            dic["max"]      = (float)colValue.Max();
+            return;
+        }
+        
+        static private void describeCatColumn(Dictionary<string, object> dic, object[] colValue)
+        {
+            //
+            dic["count"]    = colValue.Length;
+            dic["unique"]   = colValue.Distinct().Count();
+            dic["top"]      = colValue.First();
+            dic["freq"] = (float)colValue.ModeOf();
+            dic["mean"] = float.NaN;
+            dic["std"] = float.NaN;
+            dic["min"] = float.NaN;
+            dic["25%"] = float.NaN;
+            dic["50%"] = float.NaN;
+            dic["75%"] = float.NaN;
+            dic["max"] = float.NaN;
+            return;
+        }
+
+        static private void describeObjColumn(Dictionary<string, object> dic, object[] colValue)
+        {
+            //
+            dic["count"] = colValue.Length;
+            dic["unique"] = colValue.Distinct().Count();
+            dic["top"] = colValue.First();
+            dic["freq"] = colValue.ModeOf();
+            dic["mean"] = float.NaN;
+            dic["std"] = float.NaN;
+            dic["min"] = float.NaN;
+            dic["25%"] = float.NaN;
+            dic["50%"] = float.NaN;
+            dic["75%"] = float.NaN;
+            dic["max"] = float.NaN;
+            return;
+        }
+
+        static private bool isNumeric(ColType cType)
+        {
+            if (cType == ColType.I32 || cType == ColType.I64 || cType == ColType.F32 || cType == ColType.DD)
+                return true;
+            else
+                return false;
+        }
+
+        static private bool isCategorical(ColType cType)
+        {
+            if (cType == ColType.I2 || cType == ColType.IN)
+                return true;
+            else
+                return false;
+        }
+
+        private bool isObject(ColType cType)
+        {
+            if (cType == ColType.STR || cType == ColType.DT)
+                return true;
+            else
+                return false;
+        }
+
         private DataFrame reverse()
         {
             var cols = this.Columns;
-            var inde = this.Index;
             var lst = new List<object>();
             for(int i= this.Index.Count-1; i >=0 ; i--)
             {
@@ -1410,7 +1613,7 @@ namespace Daany
                     lst.Add(v);
                 }
             }
-            var dff = new DataFrame(lst, inde, cols);
+            var dff = new DataFrame(lst, cols);
             return dff;
         }
 
@@ -1505,7 +1708,7 @@ namespace Daany
                 }
                 //add to group
                 if (!Group.ContainsKey(groupValue))
-                    Group.Add(groupValue, new DataFrame(row.ToArray(), new List<int>() { 0 }, Columns));
+                    Group.Add(groupValue, new DataFrame(row.ToArray(), Columns));
                 else
                     Group[groupValue].AddRow(row);
             }

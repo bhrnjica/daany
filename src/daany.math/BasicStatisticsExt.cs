@@ -31,23 +31,59 @@ namespace Daany.MathExt
         /// </summary>
         /// <param name="colData"> array of values </param>
         /// <returns>calculated mode</returns>
-        public static double ModeOf(this double[] colData)
+        //public static double ModeOf(this double[] colData)
+        //{
+        //    if (colData == null || colData.Length < 2)
+        //        throw new Exception("'coldData' cannot be null or empty!");
+
+        //    Dictionary<int, int> counts = new Dictionary<int, int>();
+        //    foreach (int a in colData)
+        //    {
+        //        if (counts.ContainsKey(a))
+        //            counts[a] = counts[a] + 1;
+        //        else
+        //            counts[a] = 1;
+        //    }
+
+        //    int result = int.MinValue;
+        //    int max = int.MinValue;
+        //    foreach (int key in counts.Keys)
+        //    {
+        //        if (counts[key] > max)
+        //        {
+        //            max = counts[key];
+        //            result = key;
+        //        }
+        //    }
+
+        //    return result;
+        //}
+
+        /// <summary>
+        /// Calculate mode value of array of numbers. Mode represent the most frequent element in the array 
+        /// </summary>
+        /// <param name="colData"> array of values </param>
+        /// <returns>calculated mode</returns>
+        public static T ModeOf<T>(this T[] colData)
         {
             if (colData == null || colData.Length < 2)
                 throw new Exception("'coldData' cannot be null or empty!");
 
-            Dictionary<int, int> counts = new Dictionary<int, int>();
-            foreach (int a in colData)
+            var counts = new Dictionary<T, int>();
+            for(int i =0; i < colData.Length; i++)
             {
+                var a = colData[i];
+
                 if (counts.ContainsKey(a))
                     counts[a] = counts[a] + 1;
                 else
                     counts[a] = 1;
             }
 
-            int result = int.MinValue;
-            int max = int.MinValue;
-            foreach (int key in counts.Keys)
+            //
+            T result = counts.Keys.First();
+            int max = counts[result];
+            foreach (var key in counts.Keys)
             {
                 if (counts[key] > max)
                 {
@@ -58,20 +94,38 @@ namespace Daany.MathExt
 
             return result;
         }
+
+        ///// <summary>
+        ///// Select random element from the array
+        ///// </summary>
+        ///// <param name="colData"> array of values </param>
+        ///// <returns>random element</returns>
+        //public static double RandomOf(this double[] colData)
+        //{
+        //    if (colData == null || colData.Length < 2)
+        //        throw new Exception("'coldData' cannot be null or empty!");
+
+        //    Random rand = new Random((int)DateTime.Now.Ticks);
+        //    var randIndex= rand.Next(0,colData.Length);
+        //    return colData[randIndex];
+        //}
+
         /// <summary>
         /// Select random element from the array
         /// </summary>
         /// <param name="colData"> array of values </param>
         /// <returns>random element</returns>
-        public static double RandomOf(this double[] colData)
+        public static T RandomOf<T>(this T[] colData)
         {
             if (colData == null || colData.Length < 2)
                 throw new Exception("'coldData' cannot be null or empty!");
 
             Random rand = new Random((int)DateTime.Now.Ticks);
-            var randIndex= rand.Next(0,colData.Length);
+            var randIndex = rand.Next(0, colData.Length);
             return colData[randIndex];
         }
+
+
         /// <summary>
         /// Calculate mean value of array of numbers. 
         /// </summary>
@@ -167,6 +221,7 @@ namespace Daany.MathExt
                 
             return parSum/(count-1);
         }
+
         /// <summary>
         /// Calculation covariance brtween two vectors
         /// </summary>
@@ -191,8 +246,9 @@ namespace Daany.MathExt
 
             return Sxy;
         }
+
         /// <summary>
-        /// Calculation of covariance matrix and return as 2D arry
+        /// Calculation of covariance matrix and return as 2D array
         /// </summary>
         /// <param name="Xi">arbitrary number of vectors </param>
         /// <returns></returns>
@@ -305,27 +361,23 @@ namespace Daany.MathExt
         /// <summary>
         /// Calculates the minimum and maximum value for each column in dataset
         /// </summary>
-        /// <param name="dataset"></param>
+        /// <param name="dataset">row based 2D array</param>
         /// <returns>tuple where the first value is MIN, and second value is MAX</returns>
-        public static Tuple<double[], double[]> calculateMinMax(this double[][] dataset)
+        public static (double[] min, double[] max) calculateMinMax(this double[][] dataset)
         {
             //
             if (dataset == null || dataset.Length == 0)
                 throw new Exception("data cannot be null or empty!");
 
-            var minMax = new Tuple<double[], double[]>( new double[dataset[0].Length], new double[dataset[0].Length]);
+            var colSet = dataset.ToColumnVector<double>();
+            var minMax = (new double[dataset[0].Length], new double[dataset[0].Length]);
+            
 
-
-            for (int i = 0; i < dataset.Length; i++)
+            for (int i = 0; i < colSet.Length; i++)
             {
-                for (int j = 0; j < dataset[0].Length; j++)
-                {
-                    if (dataset[i][j] > minMax.Item2[j])
-                        minMax.Item2[j] = dataset[i][j];
-
-                    if (dataset[i][j] < minMax.Item1[j])
-                        minMax.Item1[j] = dataset[i][j];
-                }
+                //initialize first values
+                minMax.Item1[i] = colSet[i].Min();
+                minMax.Item2[i] = colSet[i].Max();
             }
 
             return minMax;
@@ -336,53 +388,26 @@ namespace Daany.MathExt
         /// </summary>
         /// <param name="dataset"></param>
         /// <returns>return tuple of mean and StDev</returns>
-        public static Tuple<double[], double[]> calculateMeanStDev(this double[][] dataset)
+        public static (double[] means, double[] stdevs) calculateMeanStDev(this double[][] dataset)
         {
             //
             if (dataset == null || dataset.Length <= 1)
                 throw new Exception("data cannot be null or empty!");
 
-            var meanStdev = new Tuple<double[], double[]>(new double[dataset[0].Length], new double[dataset[0].Length]);
+            var colSet = dataset.ToColumnVector<double>();
             double[] means = new double[dataset[0].Length];
             double[] stdevs = new double[dataset[0].Length];
 
-            //first calculate means
-            for (int i = 0; i < dataset.Length; i++)
+            //
+            for (int i = 0; i < colSet.Length; i++)
             {
-                for (int j = 0; j < dataset[0].Length; j++)
-                { 
-                    means[j] += dataset[i][j];
-                }
+                //initialize first values
+                means[i] = colSet[i].MeanOf();
+                stdevs[i] = colSet[i].Stdev();
             }
-            //devide by number of rows
-            for (int i = 0; i < means.Length; i++)
-            {
-                means[i] = means[i]/ dataset.Length;
-            }
-
-            //calculate standard deviation
-            for (int i = 0; i < dataset.Length; i++)
-            {
-                for (int j = 0; j < dataset[0].Length; j++)
-                {
-                    var v = dataset[i][j] - means[j];
-                    stdevs[j] += v*v;
-                }
-            }
-
-            //calculate stdev
-            for (int i = 0; i < means.Length; i++)
-            {
-                stdevs[i] = Sqrt(stdevs[i]/( dataset.Length - 1));
-            }
-
-            return new Tuple<double[], double[]>(means, stdevs);
+            return (means, stdevs);
         }
 
 
-        public static double[] Description(this double[] vector)
-        {
-            return null;
-        }
     }
 }

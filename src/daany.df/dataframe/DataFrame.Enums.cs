@@ -38,6 +38,7 @@ namespace Daany
     public enum ColType
     {
         I2,//bool
+        IN,//categorical
         I32,//int
         I64,//long
         F32,//float

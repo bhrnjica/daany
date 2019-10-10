@@ -31,7 +31,7 @@ namespace Unit.Test.DF
             List<int> index = new List<int>();
             List<string> cols = new List<string>();
             CreateRowAndCol(row, col, ref index, ref cols);
-            var df = new DataFrame(nd, index, cols);
+            var df = new DataFrame(nd, cols);
 
             //row test
             var r1 = df[0].ToList();
@@ -147,7 +147,7 @@ namespace Unit.Test.DF
             List<int> index = new List<int>();
             List<string> cols = new List<string>();
             CreateRowAndCol(row, col, ref index, ref cols);
-            var df = new DataFrame(nd, index, cols);
+            var df = new DataFrame(nd, cols);
 
             var cell1 = (int)df["col1", 1];
             Assert.Equal(11, cell1);
@@ -444,5 +444,6 @@ namespace Unit.Test.DF
 
 
         }
+        
     }
 }
