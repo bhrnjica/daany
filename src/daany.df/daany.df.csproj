@@ -16,7 +16,7 @@ Daany - C# library for data analysis and transformation with the implementation 
     <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
     <PackageIcon>daanyIcon.png</PackageIcon>
     <PackageTags>ml.net, data preparation, data analytics</PackageTags>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <PackageReleaseNotes>MIT License
 
 Copyright (c) 2019 Bahrudin Hrnjica
