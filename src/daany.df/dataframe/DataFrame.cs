@@ -43,6 +43,13 @@ namespace Daany
         /// 
         public IList<string> Columns => _columns;
 
+
+        /// <summary>
+        /// Types of columns (names) in the data frame.
+        /// </summary>
+        /// 
+        public IList<ColType> ColTypes => columnsTypes();
+
         /// <summary>
         /// Index for rows in the data frame.
         /// </summary>
@@ -136,12 +143,24 @@ namespace Daany
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
 
+            var  rows = new List<string>();
+            var line = ""; long lCounter = 0;
+            //
+            using (var sr = new StreamReader(filePath))
+            {
+                //
+                while ((line = sr.ReadLine()) != null)
+                {
+                    rows.Add(line);
+                    lCounter++;
+                    if (nRows > -1 && lCounter >= nRows)
+                        break;
 
-            var rows = File.ReadAllLines(filePath);
-            if (nRows > -1 && rows.Length > 0)
-                rows = rows.Take(nRows).ToArray();
+                }
+            }
 
-            return FromStrArray(rows, sep, names, textQaualifier, dformat);
+
+            return FromStrArray(rows.ToArray(), sep, names, textQaualifier, dformat);
         }
 
         public static DataFrame FromStrArray(string[] rows, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = "dd/mm/yyyy")
@@ -178,7 +197,6 @@ namespace Daany
             }
 
             //create data frame
-            var ind = Enumerable.Range(0, rowCount);
             var df = new DataFrame(llst.ToArray(), header.ToList());
             return df;
         }
@@ -850,7 +868,51 @@ namespace Daany
             }
             this._values = vals;
             return true;
+        }
 
+        public DataFrame RemoveRows(Func<IDictionary<string, object>, int, bool> removeConditions)
+        {
+            //define processing row before apply condition
+            var processingRow = new Dictionary<string, object>();
+            //values in case of new data frame to be generated
+            var vals = new List<object>();
+            var removedRows = new List<int>();
+            //
+            for (int i = 0; i < _index.Count; i++)
+            {              
+                rowToDictionary(processingRow, i);
+                var isRemoved = removeConditions(processingRow, i);
+                if (isRemoved)
+                    removedRows.Add(i);
+            }
+            //perform removal
+            for (int i = 0; i < this._index.Count; i++)
+            {
+                //check if the current row is removed
+                bool remRow = false;
+                for (int r = 0; r < removedRows.Count; r++)
+                {
+                    if (i == removedRows[r])
+                    {
+                        remRow = true;
+                        break;
+                    }
+                    else if (i < removedRows[r])
+                    {
+                        break;
+                    }
+                }
+
+                if (remRow)
+                    continue;
+
+                int iRow = calculateIndex(i, 0);
+                for (int j = 0; j < this.Columns.Count; j++)
+                    vals.Add(_values[iRow + j]);
+            }
+
+            var df = new DataFrame(vals, this._columns.ToList());
+            return df;
         }
 
         /// <summary>
@@ -868,26 +930,40 @@ namespace Daany
             //define processing row before adding column
             var processingRow = new Dictionary<string, object>();
             var colIndex = getColumnIndex(colName);
-            var index = 0;
+
             //
             for (int i = 0; i < Index.Count; i++)
             {
-                processingRow.Clear();
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    var value = _values[index++];
-                    processingRow.Add(this._columns[j],value);
-                }
+                rowToDictionary(processingRow, i);
                 //once the processing row is initialized perform apply 
                 var v = callBack(processingRow, i);
-                var applyIndex = i * Columns.Count + colIndex;
+                var applyIndex = calculateIndex(i, colIndex);// i * Columns.Count + colIndex;
                 _values[applyIndex] = v;
 
             }
 
             return true;
         }
-        
+
+        private void rowToDictionary(Dictionary<string, object> processingRow, int rowIndex)
+        {
+            if (processingRow == null)
+                throw new ArgumentException($"'{nameof(processingRow)}' cannot be null");
+
+            //clear dictionary before process
+            processingRow.Clear();
+            //
+            var i = calculateIndex(rowIndex, 0);
+            //
+            for (int j = 0; j < this._columns.Count; j++)
+            {
+                var value = _values[i+j];
+                processingRow.Add(this._columns[j], value);
+            }
+
+            return;
+        }
+
         /// <summary>
         /// Rolling method for performing various operation.
         /// </summary>
@@ -1364,7 +1440,7 @@ namespace Daany
             return new DataFrame(lst,Columns.ToArray());
         }
 
-        internal string ToStringBuilder()
+        public string ToStringBuilder(int rowCount=10)
         {
             StringBuilder sb = new StringBuilder();
             int rows = this.RowCount();
@@ -1381,7 +1457,8 @@ namespace Daany
             }
             sb.AppendLine();
             //
-            for (int i = 0; i < rows; i++)
+            var rr = Math.Min(rowCount, rows);
+            for (int i = 0; i < rr; i++)
             {
                 IList<object> row = this[i].ToList();
                 foreach (object obj in row)
@@ -1392,6 +1469,49 @@ namespace Daany
             }
             return sb.ToString();
         }
+        public string ToConsole(int rowCount = 15)
+        {
+            StringBuilder sb = new StringBuilder();
+            int rows = this.RowCount();
+            int cols = this.ColCount();
+            int longestColumnName = 0;
+            for (int i = 0; i < cols; i++)
+            {
+                longestColumnName = Math.Max(longestColumnName, this.Columns[i].Length);
+            }
+            sb.AppendLine();
+            sb.Append("index".PadRight(longestColumnName));
+            for (int i = 0; i < cols; i++)
+            {
+                // Left align by 10
+                sb.Append(string.Format(this.Columns[i].PadRight(longestColumnName)));
+            }
+            sb.AppendLine();
+            int lenCols = sb.Length;
+            for (int i=0; i< lenCols; i++)
+                sb.Append("-");
+            for (int i = 0; i < lenCols; i++)
+                sb.Insert(0,"-");
+            
+            sb.AppendLine();
+            //
+            var rr = Math.Min(rowCount, rows);
+            for (int i = 0; i < rr; i++)
+            {
+                IList<object> row = this[i].ToList();
+
+                sb.Append((Index[i] ?? "null").ToString().PadRight(longestColumnName));
+                foreach (object obj in row)
+                {
+                    sb.Append((obj ?? "null").ToString().PadRight(longestColumnName));
+                }
+                sb.AppendLine();
+            }
+            for (int i = 0; i < lenCols; i++)
+                sb.Append("_");
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Prints basic descriptive statistics values of the data frame
         /// </summary>
@@ -1488,6 +1608,11 @@ namespace Daany
                     var val = this[columns[i].cName].Where(x => x != null).Select(x => x).ToArray();
                     describeCatColumn(dicColumn, val);
                 }
+                else if (isDateTime(columns[i].cType))
+                {
+                    var val = this[columns[i].cName].Where(x => x != null).Select(x => Convert.ToDateTime(x)).ToArray();
+                    describeDTColumn(dicColumn, val);
+                }
                 else if(isObject(columns[i].cType))
                 {
                     var val = this[columns[i].cName].Where(x => x != null).Select(x => x).ToArray();
@@ -1582,6 +1707,23 @@ namespace Daany
             return;
         }
 
+        static private void describeDTColumn(Dictionary<string, object> dic, DateTime[] colValue)
+        {
+            //
+            dic["count"] = colValue.Length;
+            dic["unique"] = Math.Round((double)colValue.Distinct().Count(), 6);
+            dic["top"] = colValue.First();
+            dic["mode"] = colValue.ModeOf();
+            dic["mean"] = null;
+            dic["std"] = null;
+            dic["min"] = colValue.Min();
+            dic["25%"] = null;
+            dic["50%"] = null;
+            dic["75%"] = null;
+            dic["max"] = colValue.Max();
+            return;
+        }
+
         static private bool isNumeric(ColType cType)
         {
             if (cType == ColType.I32 || cType == ColType.I64 || cType == ColType.F32 || cType == ColType.DD)
@@ -1598,14 +1740,21 @@ namespace Daany
                 return false;
         }
 
-        private bool isObject(ColType cType)
+        static private bool isObject(ColType cType)
         {
-            if (cType == ColType.STR || cType == ColType.DT)
+            if (cType == ColType.STR)
                 return true;
             else
                 return false;
         }
 
+        static private bool isDateTime(ColType cType)
+        {
+            if (cType == ColType.DT)
+                return true;
+            else
+                return false;
+        }
         private DataFrame reverse()
         {
             var cols = this.Columns;
@@ -1740,8 +1889,11 @@ namespace Daany
             else //if (IsDateTime(value))
             {
                 //
-                //if (DateTime.TryParseExact(value, dformat, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out dateTime))
-                if (DateTime.TryParse(value, out DateTime dateTime))
+                if (DateTime.TryParseExact(value, dformat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTimee)) 
+                {
+                    return dateTimee;
+                }
+                else if (DateTime.TryParse(value, out DateTime dateTime))
                 {
                     return dateTime;
                 }

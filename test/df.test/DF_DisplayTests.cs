@@ -35,7 +35,7 @@ namespace Unit.Test.DF
 2           5           64          SJ          PR          
 ";
             //
-            var df = new DataFrame(dict);
+            var df = new DataFrame(dict);   
             var actual = df.Head(10);
             Assert.Equal(7, actual.RowCount());
             Assert.Equal(expected, actual.ToStringBuilder());
