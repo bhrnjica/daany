@@ -35,11 +35,11 @@ namespace Unit.Test.DF
             var e2 = new object[] { "bar", 2, "bar", 6 };
             var e3 = new object[] { "foo", 4, "foo", 8 };
             for (int i = 0; i < r1.Count; i++)
-                Assert.Equal(r1[i].ToString(), e1[i].ToString());
+                Assert.Equal(r1[i], e1[i]);
             for (int i = 0; i < r2.Count; i++)
-                Assert.Equal(r2[i].ToString(), e2[i].ToString());
+                Assert.Equal(r2[i], e2[i]);
             for (int i = 0; i < r3.Count; i++)
-                Assert.Equal(r3[i].ToString(), e3[i].ToString());
+                Assert.Equal(r3[i], e3[i]);
 
             //column test
             var c1 = new string[] { "foo","bar","baz","foo"};
@@ -49,7 +49,7 @@ namespace Unit.Test.DF
             var cc2 = mergedDf["value1"].ToList();
             var cc3 = mergedDf["value2"].ToList();
             for (int i = 0; i < c1.Count(); i++)
-                Assert.Equal(c1[i].ToString(), cc1[i].ToString());
+                Assert.Equal(c1[i], cc1[i]);
             for (int i = 0; i < c2.Count(); i++)
                 Assert.Equal((int)c2[i], cc2[i]);
             for (int i = 0; i < c3.Count(); i++)
@@ -95,8 +95,9 @@ namespace Unit.Test.DF
             var cc1 = mergedDf["itemID"].ToList();
             var cc2 = mergedDf["catID"].ToList();
             var cc3 = mergedDf["value1"].ToList();
+
             for (int i = 0; i < c1.Count(); i++)
-                Assert.Equal(c1[i].ToString(), cc1[i].ToString());
+                Assert.Equal(c1[i], cc1[i]);
             for (int i = 0; i < c2.Count(); i++)
                 Assert.Equal(c2[i], cc2[i]);
             for (int i = 0; i < c3.Count(); i++)

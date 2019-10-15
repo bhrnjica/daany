@@ -8,7 +8,7 @@ using Microsoft.ML;
 
 namespace Unit.Test.DF
 {
-    public class DF_Extensions_Tests
+    public class DataFrameExtensionTests
     {
         private void CreateRowAndCol(int row, int col, ref List<int> indexs, ref List<string> columns)
         {

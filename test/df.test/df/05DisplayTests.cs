@@ -8,7 +8,7 @@ using Microsoft.ML;
 
 namespace Unit.Test.DF
 {
-    public class DF_Display_Tests
+    public class DisplayDataFrame_Tests
     {
         
 

@@ -547,14 +547,14 @@ namespace Daany
             var rightInd = df2.getColumnIndex(rightOn);
 
             //merge columns
-            var tot = Columns.ToList();//.Union(df2.Columns);
+            var tot = Columns.ToList();
             tot.AddRange(df2.Columns);
 
             var totalColumns = new List<string>();
             var totCount = tot.Count();
             for (int i = 0; i < totCount; i++)
             {
-                var strVal = tot.ElementAt(i).ToString();
+                var strVal = tot.ElementAt(i).ToString(CultureInfo.InvariantCulture);
                 //
                 addNewColumnName(totalColumns, strVal);
             }
@@ -2105,7 +2105,7 @@ namespace Daany
                 else if (this._dfTypes[leftInd[k]] == ColType.I2)
                 {
                     //
-                    if ((bool)_values[li] != (bool)df2._values[ri])
+                    if (Convert.ToBoolean(_values[li], CultureInfo.InvariantCulture) != Convert.ToBoolean(df2._values[ri], CultureInfo.InvariantCulture))
                     {
                         return false;
                     }
@@ -2113,7 +2113,7 @@ namespace Daany
                 else if (this._dfTypes[leftInd[k]] == ColType.I32)
                 {
                     //
-                    if ((int)_values[li] != (int)df2._values[ri])
+                    if (Convert.ToInt32(_values[li], CultureInfo.InvariantCulture) != Convert.ToInt32(df2._values[ri], CultureInfo.InvariantCulture))
                     {
                         return false;
                     }
@@ -2121,7 +2121,7 @@ namespace Daany
                 else if (this._dfTypes[leftInd[k]] == ColType.I64)
                 {
                     //
-                    if ((long)_values[li] != (long)df2._values[ri])
+                    if (Convert.ToInt64(_values[li], CultureInfo.InvariantCulture) != Convert.ToInt64(df2._values[ri], CultureInfo.InvariantCulture))
                     {
                         return false;
                     }
@@ -2129,7 +2129,7 @@ namespace Daany
                 else if (this._dfTypes[leftInd[k]] == ColType.F32)
                 {
                     //
-                    if ((float)_values[li] != (float)df2._values[ri])
+                    if (Convert.ToSingle(_values[li], CultureInfo.InvariantCulture) != Convert.ToSingle(df2._values[ri], CultureInfo.InvariantCulture))
                     {
                         return false;
                     }
@@ -2137,7 +2137,7 @@ namespace Daany
                 else if (this._dfTypes[leftInd[k]] == ColType.DD)
                 {
                     //
-                    if ((int)_values[li] != (int)df2._values[ri])
+                    if (Convert.ToDouble(_values[li], CultureInfo.InvariantCulture) != Convert.ToDouble(df2._values[ri], CultureInfo.InvariantCulture))
                     {
                         return false;
                     }
@@ -2145,7 +2145,7 @@ namespace Daany
                 else if (this._dfTypes[leftInd[k]] == ColType.STR)
                 {
                     //
-                    if (_values[li].ToString() != df2._values[ri].ToString())
+                    if (Convert.ToString(_values[li], CultureInfo.InvariantCulture) != Convert.ToString(df2._values[ri], CultureInfo.InvariantCulture))
                     {
                         return false;
                     }
@@ -2153,7 +2153,7 @@ namespace Daany
                 else if (this._dfTypes[leftInd[k]] == ColType.DT)
                 {
                     //
-                    if ((DateTime)_values[li] != (DateTime)df2._values[ri])
+                    if (Convert.ToDateTime(_values[li], CultureInfo.InvariantCulture) != Convert.ToDateTime(df2._values[ri], CultureInfo.InvariantCulture))
                     {
                         return false;
                     }

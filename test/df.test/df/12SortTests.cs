@@ -6,7 +6,7 @@ using Daany;
 
 namespace Unit.Test.DF
 {
-    public class DataFrame_Sort_Tests
+    public class DataFrameSortTests
     {
       
 

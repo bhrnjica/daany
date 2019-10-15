@@ -6,7 +6,7 @@ using Daany;
 
 namespace Unit.Test.DF
 {
-    public class DataFrame_Grouping_Tests
+    public class DataFrameGroupingRollingTests
     {
         [Fact]
         public void GroupBy_Test01()
