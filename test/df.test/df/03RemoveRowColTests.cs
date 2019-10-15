@@ -3,19 +3,48 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
-using Daany.Ext;
-using Microsoft.ML;
+
 
 namespace Unit.Test.DF
 {
-    public class DF_Remove_Tests
+    public class RemoveRowsColsTests
     {
+       
+        [Fact]
+        public void RemoveColumns_Test()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "catId",new List<object>() { "A", "A", "B", "B" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+            };
 
+            //
+            var df1 = new DataFrame(dict);
+
+            var df2 = df1.Remove("catId");
+
+            //test
+            var c1f1 = df1["itemID"].ToList();
+            var c1f2 = df1["value1"].ToList();
+            Assert.Equal(3, df1.Columns.Count);
+
+            var c2f1 = df2["itemID"].ToList();
+            var c2f2 = df2["value1"].ToList();
+            Assert.Equal(2, df2.Columns.Count);
+
+            for (int i = 0; i < c1f1.Count(); i++)
+                Assert.Equal(c1f1[i].ToString(), c2f1[i].ToString());
+            for (int i = 0; i < c2f2.Count(); i++)
+                Assert.Equal(c1f2[i], c2f2[i]);
+
+
+        }
 
         [Fact]
         public void Remove_Test01()
         {
-            var mlContext = new MLContext();
             var dict = new Dictionary<string, List<object>>
             {
                 {"product_id",new List<object>() {1,1,2,2,2,2,2 } },
@@ -30,7 +59,7 @@ namespace Unit.Test.DF
 
             //remove rows with 'Miami'
             DataFrame newDf = null;
-            df = df.RemoveRows((row, i)=> row["city"].ToString()=="Miami");
+            df = df.RemoveRows((row, i) => row["city"].ToString() == "Miami");
 
             Assert.True(newDf == null);
 
@@ -62,7 +91,7 @@ namespace Unit.Test.DF
 
             Assert.True(newDf != null);
 
-            for(int i=0; i<df.Values.Count; i++)
+            for (int i = 0; i < df.Values.Count; i++)
                 Assert.True(df.Values[i] == newDf.Values[i]);
 
             Assert.Equal(1f, Convert.ToSingle(newDf["product_id", 0]));
@@ -90,7 +119,6 @@ namespace Unit.Test.DF
         [Fact]
         public void Remove_Test02()
         {
-            var mlContext = new MLContext();
             var dict = new Dictionary<string, List<object>>
             {
                 {"product_id",new List<object>()    { 1,    1,      2,      2,      2,          2,          2 } },

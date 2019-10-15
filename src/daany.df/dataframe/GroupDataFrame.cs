@@ -56,19 +56,19 @@ namespace Daany
             Group = grp;
         }
 
-        public GroupDataFrame(string colName1, string colName2, TwoKeysDictionary<object, object, DataFrame> grp)
+        public GroupDataFrame(string firstGroupedColumn, string secondGroupedColumn, TwoKeysDictionary<object, object, DataFrame> grp)
         {
-            GroupedColumn = colName1;
-            GroupedColumn2 = colName2;
+            GroupedColumn = firstGroupedColumn;
+            SecondGroupedColumn = secondGroupedColumn;
             Groups = grp;
         }
        
 
         public string GroupedColumn { get; set; }
-        public string GroupedColumn2 { get; set; }
+        public string SecondGroupedColumn { get; set; }
 
-        public Dictionary<object, DataFrame> Group { get; set; }
-        public TwoKeysDictionary<object, object, DataFrame> Groups { get; set; }
+        public Dictionary<object, DataFrame> Group { get; }
+        public TwoKeysDictionary<object, object, DataFrame> Groups { get; }
 
         public DataFrame this[object Key]
         {
@@ -156,7 +156,7 @@ namespace Daany
                 {
                     var lst = new List<object>();
                     lst.Add(GroupedColumn);
-                    lst.Add(GroupedColumn2);
+                    lst.Add(SecondGroupedColumn);
                     foreach(var g2 in gr.Value)
                     {
                         var row = g2.Value.Aggregations(lst, agg);

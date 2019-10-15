@@ -18,10 +18,21 @@ using System.Text;
 
 namespace Daany
 {
+    /// <summary>
+    /// Class implementation for generating various vector or matrix numbers and elements.
+    /// nc - stands for 
+    /// </summary>
     public class nc
     {
         private static readonly Random _rnd = new Random(1);
 
+        /// <summary>
+        /// Create vector of randomly generated double values stored in 1D array. 
+        /// Vector.Length = row * col
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <returns></returns>
         public static object[] Rand(int row, int col)
         {
             var size = row * col;

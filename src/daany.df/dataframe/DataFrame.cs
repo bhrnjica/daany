@@ -561,9 +561,9 @@ namespace Daany
 
             var lst = new List<object>();
             var leftRCount = Index.Count;
-            var leftCCount = getColumnCount();
+            var leftCCount =  ColCount();
             var rightRCount = df2.Index.Count;
-            var rightCCount = df2.getColumnCount();
+            var rightCCount = df2.ColCount();
             var lastIndex = 0;
             //left df enumeration
             for (int i = 0; i < leftRCount; i++)
@@ -1017,7 +1017,7 @@ namespace Daany
             var aggrValues = new Dictionary<string, List<object>>();
             for (int i = 0; i < Index.Count; i++)
             {
-                for (int j = 0; j < getColumnCount(); j++)
+                for (int j = 0; j < ColCount(); j++)
                 {
                     var colValue = Columns[j];
                     if (agg.ContainsKey(colValue))
@@ -1341,7 +1341,7 @@ namespace Daany
         {
             get
             {
-                var cols = getColumnCount();
+                var cols = ColCount();
                 var colIndex = getColumnIndex(col);
                 for (int i = colIndex; i < _values.Count; i += cols)
                     yield return _values[i];
@@ -1357,7 +1357,7 @@ namespace Daany
         {
             get
             {
-                var cols = getColumnCount();
+                var cols = ColCount();
                 var start = row * cols;
                 for (int i = start; i < start + cols; i++)
                     yield return _values[i];
@@ -1846,23 +1846,31 @@ namespace Daany
         private Dictionary<object, DataFrame> groupDFBy(string groupCol)
         {
             var Group = new Dictionary<object, DataFrame>();
-            //var distValues = this[groupCol].Distinct();
+            
             //go through all data to group
             var index = 0;
-            for (int i = 0; i < Index.Count; i++)
+            var rows = Index.Count;
+            //
+            for (int i = 0; i < rows; i++)
             {
                 var row = new List<object>();
                 object groupValue = null;
-                for (int j = 0; j < getColumnCount(); j++)
+                var colCnt = ColCount();
+                var grpColIndex = getColumnIndex(groupCol);
+
+                //
+                for (int j = 0; j < colCnt; j++)
                 {
                     row.Add(_values[index]);
-                    if (Columns[j].Equals(groupCol, StringComparison.InvariantCultureIgnoreCase))
+                   // if (Columns[j].Equals(groupCol, StringComparison.InvariantCultureIgnoreCase))
+                   if(grpColIndex==j)
                         groupValue = _values[index];
                     index++;
                 }
+
                 //add to group
                 if (!Group.ContainsKey(groupValue))
-                    Group.Add(groupValue, new DataFrame(row.ToArray(), Columns));
+                    Group.Add(groupValue, new DataFrame(row, Columns));
                 else
                     Group[groupValue].AddRow(row);
             }
@@ -2084,7 +2092,7 @@ namespace Daany
         {
             bool isEqual = true;
             int lInd = calculateIndex(i, 0);
-            var numCols = df2.getColumnCount();
+            var numCols = df2.ColCount();
             var rInd = j * numCols;
 
             for (int k = 0; k < leftInd.Length; k++)
@@ -2160,7 +2168,7 @@ namespace Daany
 
         private ColType[] columnsTypes()
         {
-            int cc = getColumnCount();
+            int cc = ColCount();
             var types = new ColType[cc];
             var k = 0;
             for (int i = 0; i < Columns.Count; i++)
@@ -2236,14 +2244,9 @@ namespace Daany
 
         private int calculateIndex(int row, int col)
         {
-            var numCols = getColumnCount();
+            var numCols = ColCount();
             var iind = row * numCols + col;
             return iind;
-        }
-
-        private int getColumnCount()
-        {
-            return Columns.Count;
         }
 
         private int[] getColumnIndex(params string[] cols)

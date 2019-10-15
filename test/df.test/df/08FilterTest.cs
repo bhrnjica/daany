@@ -6,7 +6,7 @@ using Daany;
 
 namespace Unit.Test.DF
 {
-    public class DataFrame_Filter_Tests
+    public class DataFrameFilterTests
     {
         private void CreateRowAndCol(int row, int col, ref List<int> indexs, ref List<string> columns)
         {

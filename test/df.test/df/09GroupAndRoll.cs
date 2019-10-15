@@ -24,8 +24,13 @@ namespace Unit.Test.DF
 
             //
             var df = new DataFrame(dict);
-            var agg = new Dictionary<string, Aggregation>() { { "quantity", Aggregation.Sum }, { "retail_price", Aggregation.Avg },
+            var agg = new Dictionary<string, Aggregation>()
+            { 
+                { "quantity", Aggregation.Sum }, 
+                { "retail_price", Aggregation.Avg },
                 { "C", Aggregation.Avg } };
+
+            //
             var group = df.GroupBy("city");
 
             Assert.Equal(4, group.Keys.Count);
