@@ -128,8 +128,8 @@ namespace Daany
                 //
                 else if (m_dfTypes[colInd] == ColType.I32)
                 {
-                    var ll = (int)l;
-                    var rr = (int)r;
+                    var ll = Convert.ToInt32(l);
+                    var rr = Convert.ToInt32(r);
 
                     if (ll > rr)
                         return false;
@@ -141,8 +141,34 @@ namespace Daany
                 }
                 else if (m_dfTypes[colInd] == ColType.I64)
                 {
-                    var ll = (long)l;
-                    var rr = (long)r;
+                    var ll = Convert.ToInt64(l);
+                    var rr = Convert.ToInt64(r);
+
+                    if (ll > rr)
+                        return false;
+
+                    if (ll == rr)
+                        prevEqual = true;
+                    else
+                        prevEqual = false;
+                }
+                else if (m_dfTypes[colInd] == ColType.DD)
+                {
+                    var ll = Convert.ToDouble(l);
+                    var rr = Convert.ToDouble(r);
+
+                    if (ll > rr)
+                        return false;
+
+                    if (ll == rr)
+                        prevEqual = true;
+                    else
+                        prevEqual = false;
+                }
+                else if (m_dfTypes[colInd] == ColType.F32)
+                {
+                    var ll = Convert.ToSingle(l);
+                    var rr = Convert.ToSingle(r);
 
                     if (ll > rr)
                         return false;
@@ -154,8 +180,8 @@ namespace Daany
                 }
                 else if (m_dfTypes[colInd] == ColType.DT)
                 {
-                    var ll = (DateTime)l;
-                    var rr = (DateTime)r;
+                    var ll = Convert.ToDateTime(l);
+                    var rr = Convert.ToDateTime(r);
 
                     if (ll > rr)
                         return false;
@@ -241,7 +267,6 @@ namespace Daany
                 if (indexLeft < leftCount && indexRight < rightCount)
                 {
                     //If item on left array is less than item on right array, add that item to the result array 
-                    //if (left[indexLeft] <= right[indexRight])
                     if(lessThanOrEqual(left, right, indCols, indexLeft, indexRight))
                     {
                         for (int i = 0; i < m_ColCount; i++)

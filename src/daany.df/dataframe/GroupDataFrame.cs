@@ -168,5 +168,43 @@ namespace Daany
             }
             return df;
         }
+
+        /// <summary>
+        /// Returns number of rows for each group
+        /// </summary>
+        /// <returns></returns>
+        public DataFrame GCount()
+        {
+            //
+            var cols = new string[] {GroupedColumn,"count" };
+            var lst = new List<object>();
+            var ind = new List<object> ();
+            foreach (var gr in Group)
+            {
+                var cnt = gr.Value.RowCount();
+                ind.Add(gr.Key);
+                lst.Add(gr.Key);
+                lst.Add(cnt);
+            }
+
+            var df =  new DataFrame(lst,cols);
+            //df.SetIndex(ind);
+            return df;
+        }
+
+        //public DataFrame NLargest(int nCount = 10)
+        //{
+        //    DataFrame df = null;
+        //    var cols = new string[] { GroupedColumn, "count" };
+        //    var lst = new List<object>();
+        //    foreach (var gr in nCount > 0 ? Group.OrderByDescending(x => x.Value.RowCount()).Take(nCount) : Group.OrderByDescending(x => x.Value.RowCount()))
+        //    {
+        //        var cnt = gr.Value.RowCount();
+        //        lst.Add(gr.Key);
+        //        lst.Add(cnt);
+        //    }
+
+        //    return new DataFrame(lst, cols);
+        //}
     }
 }

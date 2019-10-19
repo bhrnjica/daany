@@ -179,8 +179,9 @@ namespace Daany.MathExt
             var sortedData = new double[data.Length];
 
             Array.Copy(data, sortedData, data.Length);
+
             //sort the values
-            Array.Sort(data);
+            Array.Sort(sortedData);
 
             //
             if (p >= 100.0d) 

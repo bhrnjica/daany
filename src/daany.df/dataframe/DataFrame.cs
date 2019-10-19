@@ -201,6 +201,18 @@ namespace Daany
             return df;
         }
 
+        internal void SetIndex(List<object> ind)
+        {
+            if (ind == null)
+                throw new Exception("Index cannot be null.");
+
+            if (ind.Count != _index.Count)
+                throw new Exception("Wrong count of index list.");
+
+            this._index = ind;
+        }
+
+
         /// <summary>
         /// Saves data frame .NET object in a csv file.
         /// </summary>
@@ -358,7 +370,7 @@ namespace Daany
 
             //
             this._values = new List<object>();
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < Columns.Count; j++)
                 {
@@ -443,7 +455,7 @@ namespace Daany
         /// <returns>returns filtered df</returns>
         public DataFrame Filter(string[] cols, object[] filteValues, FilterOperator[] fOpers)
         {
-            if (Index.Count == 0)
+            if (_index.Count == 0)
                 return new DataFrame(Array.Empty<object>(), Columns.ToList());
 
             //check for non-null arguments
@@ -478,7 +490,7 @@ namespace Daany
 
             //filtered values
             var lst = new List<object>();
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 rowIndex = i * Columns.Count;
 
@@ -560,7 +572,7 @@ namespace Daany
             }
 
             var lst = new List<object>();
-            var leftRCount = Index.Count;
+            var leftRCount = _index.Count;
             var leftCCount =  ColCount();
             var rightRCount = df2.Index.Count;
             var rightCCount = df2.ColCount();
@@ -614,12 +626,30 @@ namespace Daany
             return newDf;
 
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="colName"></param>
+        /// <returns></returns>
+        public DataFrame NLargest(int n=10, string colName=null)
+        {
+            var cc = colName;
+
+            if (n < 1)
+                throw new ArgumentException("Argument 'n' must be greather than 0.");
+
+            if (colName == null)
+                cc = this.Columns.Last();    
+
+            var df = SortByDescending(cc);
+           return df.Take(n);
+        }
 
         /// <summary>
         /// Sorts data-frame by specified column in ascending order
         /// </summary>
         /// <param name="cols">Sorting columns</param>
-       
+
         /// <returns>New ordered df.</returns>
         public DataFrame SortBy(params string[] cols)
         {
@@ -677,7 +707,7 @@ namespace Daany
         public void FillNA(object value)
         {
             int index = 0;
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < Columns.Count; j++)
                 {
@@ -698,7 +728,7 @@ namespace Daany
         {
             var colIndex = getColumnIndex(col);
             int index = 0;
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < Columns.Count; j++)
                 {
@@ -722,7 +752,7 @@ namespace Daany
         {
             var colIndexes = getColumnIndex(cols);
             int index = 0;
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < Columns.Count; j++)
                 {
@@ -752,7 +782,7 @@ namespace Daany
 
             var colIndex = getColumnIndex(col);
             int index = 0;
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < Columns.Count; j++)
                 {
@@ -784,7 +814,7 @@ namespace Daany
             var vals = new List<object>();
             int oldInd = 0;
             //
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 //define processing row before adding column
                 var processingRow = new Dictionary<string, object>();
@@ -831,7 +861,7 @@ namespace Daany
 
             int oldInd = 0;
             //
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 
                 for (int j = 0; j <= this.Columns.Count; j++)
@@ -878,7 +908,7 @@ namespace Daany
             var processingRow = new object[this.Columns.Count];          
             int oldInd = 0;
             //
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
 
                 for (int j = 0; j <= this.Columns.Count; j++)
@@ -1009,7 +1039,7 @@ namespace Daany
             var colIndex = getColumnIndex(colName);
 
             //
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 rowToDictionary(processingRow, i);
                 //once the processing row is initialized perform apply 
@@ -1042,7 +1072,7 @@ namespace Daany
             var colIndex = getColumnIndex(colName);
 
             //
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 rowToArray(processingRow, i);
                 //once the processing row is initialized perform apply 
@@ -1108,7 +1138,7 @@ namespace Daany
             int rolIndex = 1;
             var rRolls = new Dictionary<string, Queue<object>>();
             var aggrValues = new Dictionary<string, List<object>>();
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < ColCount(); j++)
                 {
@@ -1166,7 +1196,7 @@ namespace Daany
             var val = new List<object>();
             //go through all rows
             var index = 0;
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < Columns.Count; j++)
                 {
@@ -1195,7 +1225,7 @@ namespace Daany
         {
             var selected = new List<int>();
             double needed = rows;
-            double available = Index.Count;
+            double available = _index.Count;
             var rand = new Random();
             while (selected.Count < rows)
             {
@@ -1223,7 +1253,7 @@ namespace Daany
         {
             var val = new List<object>();
             int counter = 1;
-            for (int i = Index.Count-1; i >=0 ; i--)
+            for (int i = _index.Count-1; i >=0 ; i--)
             {
                 val.InsertRange(0,this[i]);
                 if (counter >= rows)
@@ -1245,9 +1275,11 @@ namespace Daany
         public DataFrame Take(int rows)
         {
             var val = new List<object>();
+            var ind = new List<object>();
             int counter = 1;
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
+                ind.Add(_index[i]);
                 val.AddRange(this[i]);
                 if (counter >= rows)
                     break;
@@ -1256,7 +1288,7 @@ namespace Daany
             }
             //
             var df = new DataFrame(val.ToArray(), Columns.ToArray());
-
+            df._index = ind;
             //
             return df;
         }
@@ -1315,7 +1347,7 @@ namespace Daany
             //
             int index = 0;
             var vals = new List<object>();
-            for (int i = 0; i < Index.Count; i++)
+            for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < Columns.Count; j++)
                 {
@@ -1359,7 +1391,7 @@ namespace Daany
             foreach (var v in row)
                 _values.Add(v);
             //add row index
-            Index.Add(Index.Count);
+            _index.Add(_index.Count);
         }
         #endregion
 
@@ -1543,6 +1575,8 @@ namespace Daany
             {
                 longestColumnName = Math.Max(longestColumnName, this.Columns[i].Length);
             }
+            //add space for idnex
+            sb.Append(string.Format(" ".PadRight(longestColumnName)));
             for (int i = 0; i < cols; i++)
             {
                 // Left align by 10
@@ -1553,6 +1587,7 @@ namespace Daany
             var rr = Math.Min(rowCount, rows);
             for (int i = 0; i < rr; i++)
             {
+                sb.Append((_index[i]).ToString().PadRight(longestColumnName));
                 IList<object> row = this[i].ToList();
                 foreach (object obj in row)
                 {
