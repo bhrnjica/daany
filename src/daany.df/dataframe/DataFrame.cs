@@ -671,54 +671,6 @@ namespace Daany
 
 
         /// <summary>
-        /// Removes rows with missing values for specified set of columns. In case cols is null, removed values 
-        /// will be applied to all columns.
-        /// </summary>
-        /// <param name="cols">List of columns</param>
-        /// <returns>New df with fixed NAN</returns>
-        public DataFrame DropNA(params string[] cols)
-        {
-            var missIndx = Enumerable.Range(0, Index.Count).ToList();
-            for (int i = 0; i < Index.Count; i++)
-            {
-                var row = this[i];
-                if (cols == null || cols.Length == 0)
-                {
-                    if (row.Contains(NAN))
-                        missIndx.Remove(i);
-
-                }
-                else
-                {
-                    var iList = getColumnIndex(cols);
-                    for (int ii = 0; ii < iList.Length; ii++)
-                    {
-                        var value = row.ElementAt(iList[ii]);
-                        if (value == NAN)
-                        {
-                            missIndx.Remove(i);
-                            break;
-                        }
-                    }
-
-                }
-            }
-            IList<object> val = new List<object>();
-            foreach (var startInd in missIndx)
-            {
-                int i = startInd * Columns.Count;
-                int cnt = i + Columns.Count;
-                for (; i < cnt; i++)
-                    val.Add(_values[i]);
-            }
-
-            var cc = Columns.ToList();
-            //create new dataframe
-            var df = new DataFrame(val.ToArray(), cc);
-            return df;
-        }
-
-        /// <summary>
         /// Replace NAN values with specified value.
         /// </summary>
         /// <param name="value"></param>
@@ -762,6 +714,33 @@ namespace Daany
         }
 
         /// <summary>
+        /// Replaces the missing values from specified columns with 'replacedValue'. 
+        /// </summary>
+        /// <param name="col">Column to replace the missing value</param>
+        /// <param name="replacedValue">Replaced value</param>
+        public void FillNA(string[] cols, object replacedValue)
+        {
+            var colIndexes = getColumnIndex(cols);
+            int index = 0;
+            for (int i = 0; i < Index.Count; i++)
+            {
+                for (int j = 0; j < Columns.Count; j++)
+                {
+                    for(int k=0; k < colIndexes.Length; k++)
+                    {
+                        if (j == colIndexes[k])
+                        {
+                            if (_values[index] == DataFrame.NAN)
+                                _values[index] = replacedValue;
+                        }
+                    }
+                    
+                    index++;
+                }
+            }
+        }
+
+        /// <summary>
         /// Replaces the missing values from specified column with replacedDelegate. 
         /// </summary>
         /// <param name="col">Column to replace the missing value</param>
@@ -788,48 +767,7 @@ namespace Daany
             }
         }
 
-        ///// <summary>
-        ///// Add additional column into DataFrame. The values of the columns are 
-        ///// calculated by calling Func delegate for each row.
-        ///// </summary>
-        ///// <param name="colName">New calculated column name.</param>
-        ///// <param name="callBack">Func delegate for wor value calculation.</param>
-        ///// <returns>True if calculated column is created successfully</returns>
-        //public bool AddCalculatedColumn(string colName, Func<object[], int, object> callBack)
-        //{
-        //    //define processing row before adding column
-        //    var processingRow = new object[Columns.Count];
-        //    //add new column
-        //    addNewColumnName(this.Columns, colName);
-        //    //
-        //    var size = Index.Count * Columns.Count;
-        //    var vals = new List<object>();
-        //    int oldInd = 0;
-        //    //
-        //    for (int i = 0; i < Index.Count; i++)
-        //    {
-
-        //        for (int j = 0; j < Columns.Count; j++)
-        //        {
-
-        //            if (j + 1 >= Columns.Count)
-        //            {
-        //                var v = callBack(processingRow, i);
-        //                vals.Add(v);
-        //            }
-        //            else
-        //            {
-        //                var value = _values[oldInd++];
-        //                processingRow[j] = value;
-        //                vals.Add(value);
-        //            }
-        //        }
-
-        //    }
-        //    this._values = vals;
-        //    return true;
-        //}
-
+        
         /// <summary>
         /// Add additional column into DataFrame. The values of the columns are 
         /// calculated by calling Func delegate for each row.
@@ -837,6 +775,7 @@ namespace Daany
         /// <param name="colName">New calculated column name.</param>
         /// <param name="callBack">Func delegate for row value calculation.</param>
         /// <returns>True if calculated column is created successfully</returns>
+        [Obsolete("This method is obsolute and will be replaced in the future. Use 'AddCalculatedColumnc' instead.")]
         public bool AddCalculatedColumn(string colName, Func<IDictionary<string,object>, int, object> callBack)
         {
             //add new column
@@ -870,47 +809,182 @@ namespace Daany
             return true;
         }
 
+        
+        /// <summary>
+        /// Add additional columns into DataFrame. The values of the columns are 
+        /// calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colNames">New column names</param>
+        /// <param name="callBack">Callback for calculation new columns.</param>
+        /// <returns></returns>
+        public bool AddCalculatedColumns(string[] colNames, Func<IDictionary<string, object>, int, object[]> callBack)
+        {
+            if (colNames == null || colNames.Length == 0)
+                throw new Exception("column names are not defined properly.");
+            //
+            var vals = new List<object>();
+
+            //define processing row before adding columns
+            var processingRow = new Dictionary<string, object>();
+            for (int j = 0; j < this.Columns.Count; j++)
+                processingRow.Add(this.Columns[j], null);
+
+            int oldInd = 0;
+            //
+            for (int i = 0; i < Index.Count; i++)
+            {
+                
+                for (int j = 0; j <= this.Columns.Count; j++)
+                {
+
+                    if (j >= Columns.Count)
+                    {
+                        var vs = callBack(processingRow, i);
+                        foreach (var v in vs)
+                            vals.Add(v);
+                    }
+                    else
+                    {
+                        var value = _values[oldInd++];
+                        processingRow[this.Columns[j]]= value;
+                        vals.Add(value);
+                    }
+                }
+
+            }
+            //add new columns
+            foreach (var colName in colNames)
+                addNewColumnName(this.Columns, colName);
+            //apply new dataframe values
+            this._values = vals;
+            return true;
+        }
+
+        /// <summary>
+        /// Add additional columns into DataFrame. The values of the columns are 
+        /// calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colNames">New column names</param>
+        /// <param name="callBack">Callback for calculation new columns.</param>
+        /// <returns></returns>
+        public bool AddCalculatedColumns(string[] colNames, Func<object[], int, object[]> callBack)
+        {
+            if (colNames == null || colNames.Length == 0)
+                throw new Exception("column names are not defined properly.");
+            //
+            var vals = new List<object>();
+
+            //define processing row before adding column
+            var processingRow = new object[this.Columns.Count];          
+            int oldInd = 0;
+            //
+            for (int i = 0; i < Index.Count; i++)
+            {
+
+                for (int j = 0; j <= this.Columns.Count; j++)
+                {
+
+                    if (j >= Columns.Count)
+                    {
+                        var vs = callBack(processingRow, i);
+                        foreach (var v in vs)
+                            vals.Add(v);
+                    }
+                    else
+                    {
+                        var value = _values[oldInd++];
+                        processingRow[j] = value;
+                        vals.Add(value);
+                    }
+                }
+
+            }
+            //add new column
+            foreach (var colName in colNames)
+                addNewColumnName(this.Columns, colName);
+
+            this._values = vals;
+            return true;
+        }
+
+        /// <summary>
+        /// Removes rows with missing values for specified set of columns. In case cols is null, removed values 
+        /// will be applied to all columns.
+        /// </summary>
+        /// <param name="cols">List of columns</param>
+        /// <returns>New df with fixed NAN</returns>
+        public DataFrame DropNA(params string[] cols)
+        {
+            return RemoveRows((r, i) =>
+            {
+                for (int j = 0; j < r.Length; j++)
+                {
+                    if (r[j] == NAN)
+                        return true;
+                }
+                return false;
+            });
+
+        }
+
+        /// <summary>
+        /// Removes rows satisfying the callback condition.
+        /// </summary>
+        /// <param name="removeConditions"></param>
+        /// <returns></returns>
         public DataFrame RemoveRows(Func<IDictionary<string, object>, int, bool> removeConditions)
         {
             //define processing row before apply condition
+            //define processing row before adding column
             var processingRow = new Dictionary<string, object>();
+            for (int j = 0; j < this.Columns.Count; j++)
+                processingRow.Add(this.Columns[j], null);
+
             //values in case of new data frame to be generated
             var vals = new List<object>();
-            var removedRows = new List<int>();
             //
             for (int i = 0; i < _index.Count; i++)
             {              
                 rowToDictionary(processingRow, i);
                 var isRemoved = removeConditions(processingRow, i);
-                if (isRemoved)
-                    removedRows.Add(i);
-            }
-            //perform removal
-            for (int i = 0; i < this._index.Count; i++)
-            {
-                //check if the current row is removed
-                bool remRow = false;
-                for (int r = 0; r < removedRows.Count; r++)
+                if (!isRemoved)
                 {
-                    if (i == removedRows[r])
-                    {
-                        remRow = true;
-                        break;
-                    }
-                    else if (i < removedRows[r])
-                    {
-                        break;
-                    }
+                    int iRow = calculateIndex(i, 0);
+                    for (int j = 0; j < this.Columns.Count; j++)
+                        vals.Add(_values[iRow + j]);
                 }
-
-                if (remRow)
-                    continue;
-
-                int iRow = calculateIndex(i, 0);
-                for (int j = 0; j < this.Columns.Count; j++)
-                    vals.Add(_values[iRow + j]);
             }
+            //create new df
+            var df = new DataFrame(vals, this._columns.ToList());
+            return df;
+        }
 
+        /// <summary>
+        /// Removes rows satisfying the callback condition.
+        /// </summary>
+        /// <param name="removeConditions"></param>
+        /// <returns></returns>
+        public DataFrame RemoveRows(Func<object[], int, bool> removeConditions)
+        {
+            //define processing row before apply condition
+            var processingRow = new object[ColCount()];
+            
+            //values in case of new data frame to be generated
+            var vals = new List<object>();
+            var removedRows = new List<int>();
+            //
+            for (int i = 0; i < _index.Count; i++)
+            {
+                rowToArray(processingRow, i);
+                var isRemoved = removeConditions(processingRow, i);
+                if (!isRemoved)
+                {
+                    int iRow = calculateIndex(i, 0);
+                    for (int j = 0; j < this.Columns.Count; j++)
+                        vals.Add(_values[iRow + j]);
+                }
+            }
+            //create new df
             var df = new DataFrame(vals, this._columns.ToList());
             return df;
         }
@@ -925,10 +999,13 @@ namespace Daany
         public bool Apply(string colName, Func<IDictionary<string, object>, int, object> callBack)
         {
             if (!Columns.Contains(colName))
-                return AddCalculatedColumn(colName, callBack);
+                throw new Exception($"'{colName}' does not exist in the data frame.");
 
             //define processing row before adding column
             var processingRow = new Dictionary<string, object>();
+            for (int j = 0; j < this.Columns.Count; j++)
+                processingRow.Add(this.Columns[j], null);
+            //
             var colIndex = getColumnIndex(colName);
 
             //
@@ -945,23 +1022,36 @@ namespace Daany
             return true;
         }
 
-        private void rowToDictionary(Dictionary<string, object> processingRow, int rowIndex)
+
+        /// <summary>
+        /// Apply set of operations on existing column in the DataFrame. The values of the column are 
+        /// calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colName">Existing column in the data frame.</param>
+        /// <param name="callBack">Func delegate for row value calculation.</param>
+        /// <returns>True if calculated column is updated successfully</returns>
+        public bool Apply(string colName, Func<object[], int, object> callBack)
         {
-            if (processingRow == null)
-                throw new ArgumentException($"'{nameof(processingRow)}' cannot be null");
+            //if column doesnt existi add new calculated column
+            if (!Columns.Contains(colName))
+                throw new Exception($"'{colName}' does not exist in the data frame.");
 
-            //clear dictionary before process
-            processingRow.Clear();
+            //define processing row before adding column
+            var processingRow = new object[ColCount()];
             //
-            var i = calculateIndex(rowIndex, 0);
+            var colIndex = getColumnIndex(colName);
+
             //
-            for (int j = 0; j < this._columns.Count; j++)
+            for (int i = 0; i < Index.Count; i++)
             {
-                var value = _values[i+j];
-                processingRow.Add(this._columns[j], value);
-            }
+                rowToArray(processingRow, i);
+                //once the processing row is initialized perform apply 
+                var v = callBack(processingRow, i);
+                var applyIndex = calculateIndex(i, colIndex);
+                _values[applyIndex] = v;
 
-            return;
+            }
+            return true;
         }
 
         /// <summary>
@@ -974,7 +1064,7 @@ namespace Daany
         public DataFrame Rolling(string indexColumn, int window, Aggregation agg)
         {
             var aggD = new Dictionary<string, Aggregation>();
-            foreach (var col in Columns.Where(x => !indexColumn.Equals(x)))
+            foreach (var col in Columns.Where(x => indexColumn!=x))
                 aggD.Add(col, agg);
             //
             return Rolling(indexColumn, window, aggD);
@@ -1011,6 +1101,9 @@ namespace Daany
         /// <returns></returns>
         public DataFrame Rolling(string indexColumn, int window, Dictionary<string, Aggregation> agg)
         {
+            if (agg == null || agg.Count == 0)
+                throw new Exception($"aggregation is empty.");
+
             int index = 0;
             int rolIndex = 1;
             var rRolls = new Dictionary<string, Queue<object>>();
@@ -1565,6 +1658,38 @@ namespace Daany
         #endregion
 
         #region Private
+        private void rowToArray(object[] processingRow, int rowIndex)
+        {
+            if (processingRow == null && processingRow.Length != ColCount())
+                throw new ArgumentException($"'{nameof(processingRow)}' cannot be null or with different length than columns count.");
+
+            //
+            var i = calculateIndex(rowIndex, 0);
+            //
+            for (int j = 0; j < this._columns.Count; j++)
+            {
+                var value = _values[i + j];
+                processingRow[j] = value;
+            }
+
+            return;
+        }
+        private void rowToDictionary(Dictionary<string, object> processingRow, int rowIndex)
+        {
+            if (processingRow == null)
+                throw new ArgumentException($"'{nameof(processingRow)}' cannot be null");
+
+            //
+            var i = calculateIndex(rowIndex, 0);
+            //
+            for (int j = 0; j < this._columns.Count; j++)
+            {
+                var value = _values[i + j];
+                processingRow[this._columns[j]] = value;
+            }
+
+            return;
+        }
 
         private DataFrame describeColumns(List<(string cName, ColType cType)> columns)
         {
@@ -1601,22 +1726,26 @@ namespace Daany
                     //exclude null values
                     var val = this[columns[i].cName].Where(x=> x!=null).Select(x => Convert.ToDouble(x)).ToArray();
                     describeColumn(dicColumn, val);
+                    dicColumn["count"] = this[columns[i].cName].Count();
                 }
                 else if(isCategorical(columns[i].cType))
                 {
                     //exclude null values
                     var val = this[columns[i].cName].Where(x => x != null).Select(x => x).ToArray();
                     describeCatColumn(dicColumn, val);
+                    dicColumn["count"] = this[columns[i].cName].Count();//count with missing values
                 }
                 else if (isDateTime(columns[i].cType))
                 {
                     var val = this[columns[i].cName].Where(x => x != null).Select(x => Convert.ToDateTime(x)).ToArray();
                     describeDTColumn(dicColumn, val);
+                    dicColumn["count"] = this[columns[i].cName].Count();//count with missing values
                 }
                 else if(isObject(columns[i].cType))
                 {
                     var val = this[columns[i].cName].Where(x => x != null).Select(x => x).ToArray();
                     describeObjColumn(dicColumn, val);
+                    dicColumn["count"] = this[columns[i].cName].Count();//count with missing values
                 }
                 else
                     throw new Exception("Unknown column type.");
@@ -1659,7 +1788,6 @@ namespace Daany
         private void describeColumn(Dictionary<string, object> dic, double[] colValue)
         {
             //
-            dic["count"]    = colValue.Length;
             dic["unique"]   = null;
             dic["top"]      = null;
             dic["mode"]     = null;
@@ -1676,7 +1804,7 @@ namespace Daany
         static private void describeCatColumn(Dictionary<string, object> dic, object[] colValue)
         {
             //
-            dic["count"]    = colValue.Length;
+            //dic["count"]    = colValue.Length;
             dic["unique"]   = Math.Round((double)colValue.Distinct().Count(), 6); 
             dic["top"]      = colValue.First();
             dic["mode"]     = colValue.ModeOf();
@@ -1693,7 +1821,7 @@ namespace Daany
         static private void describeObjColumn(Dictionary<string, object> dic, object[] colValue)
         {
             //
-            dic["count"] = colValue.Length;
+            //dic["count"] = colValue.Length;
             dic["unique"] = Math.Round((double)colValue.Distinct().Count(), 6);
             dic["top"] = colValue.First();
             dic["mode"] = colValue.ModeOf();
@@ -1710,7 +1838,7 @@ namespace Daany
         static private void describeDTColumn(Dictionary<string, object> dic, DateTime[] colValue)
         {
             //
-            dic["count"] = colValue.Length;
+            //dic["count"] = colValue.Length;
             dic["unique"] = Math.Round((double)colValue.Distinct().Count(), 6);
             dic["top"] = colValue.First();
             dic["mode"] = colValue.ModeOf();

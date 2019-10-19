@@ -519,38 +519,7 @@ namespace Daany.MathExt
             return rmse/rsr;
         }
 
-        /// <summary>
-        /// Calculate Mahanalobis distance of vector using mean and covariance matrix
-        /// </summary>
-        /// <param name="vector"> vector distance is calculating</param>
-        /// <param name="mean">mean value </param>
-        /// <param name="covMatrix">cov matrix</param>
-        /// <returns></returns>
-        public static double MD(double [] vector, double [] mean, double[][] covMatrix)
-        {
-            //create matrix from arrays
-            var covM = new double[covMatrix.Length, covMatrix.Length];// Matrix(covMatrix.Length, covMatrix.Length);
-            var m = new double[1, mean.Length]; //new Matrix(1,mean.Length);
-            var v = new double[1, vector.Length]; //new Matrix(1, vector.Length);
-            //init matrices
-            for (int i= 0; i < vector.Length; i++)
-            {
-                v[0, i] = vector[i];
-                m[0, i] = mean[i];
-                for (int j = 0; j < vector.Length; j++)
-                    covM[i, j] = covMatrix[i][j];
-            }
-
-
-            //perform calculation
-            var vm = v.Substract(m);// v - m;
-            var trm = vm.Transpose();//Matrix.Transpose(vm);
-            var tmp = vm.Dot(covM);//(vm * covM);
-            var retVal = Math.Sqrt(tmp.Dot(trm)[0,0]);// //Sqrt((tmp * trm)[0, 0]);
-            //return value
-            return retVal;
-
-        }
+       
 
 
         /// <summary>

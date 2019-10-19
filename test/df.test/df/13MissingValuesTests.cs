@@ -92,7 +92,39 @@ namespace Unit.Test.DF
 
 
         }
+        [Fact]
+        public void RemoveMissingValues_Test02()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() {  1, 11, "", 31, 41, 51, "", 71, 81, "?"} },
+                { "col2",new List<object>() {  2, 12, 22,"?", 42, 52, 62, 72, 82, 92 } },
+                { "col3",new List<object>() {  3, "", 23, 33, 43, 53, 63, 73, 83, 93 } },
+                { "col4",new List<object>() {  4, 14, 24, 34, 44, 54, 64, 74, 84, 94} },
+                { "col5",new List<object>() {"?", 15, 25, 35, 45, "", 65, "", 85, 95 } },
 
+            };
+            //
+            var df = new DataFrame(dict);
+
+            //
+            var c1 = new int[] { 1, 11, 33333, 31, 41, 51, 33333, 71, 81, 33333 };
+            var c2 = new object[] { 2, 12, 22, 33333, 42, 52, 62, 72, 82, 92 };
+            var c5 = new object[] { 33333, 15, 25, 35, 45, 33333, 65, 33333, 85, 95 };
+
+            df.FillNA(new string[] { "col1", "col2", "col5"}, 33333);
+
+            for (int i = 0; i < c1.Length; i++)
+                Assert.Equal(c1[i], df["col1", i]);
+
+            for(int i = 0; i < c2.Length; i++)
+                Assert.Equal(c2[i], df["col2", i]);
+
+            for(int i = 0; i < c5.Length; i++)
+                Assert.Equal(c5[i], df["col5", i]);
+
+
+        }
         [Fact]
         public void ReplaceMissingValue_Test01()
         {
