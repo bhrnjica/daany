@@ -626,25 +626,7 @@ namespace Daany
             return newDf;
 
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="colName"></param>
-        /// <returns></returns>
-        public DataFrame NLargest(int n=10, string colName=null)
-        {
-            var cc = colName;
-
-            if (n < 1)
-                throw new ArgumentException("Argument 'n' must be greather than 0.");
-
-            if (colName == null)
-                cc = this.Columns.Last();    
-
-            var df = SortByDescending(cc);
-           return df.Take(n);
-        }
-
+        
         /// <summary>
         /// Sorts data-frame by specified column in ascending order
         /// </summary>
@@ -1576,7 +1558,7 @@ namespace Daany
                 longestColumnName = Math.Max(longestColumnName, this.Columns[i].Length);
             }
             //add space for idnex
-            sb.Append(string.Format(" ".PadRight(longestColumnName)));
+            sb.Append(string.Format("".PadRight(longestColumnName)));
             for (int i = 0; i < cols; i++)
             {
                 // Left align by 10

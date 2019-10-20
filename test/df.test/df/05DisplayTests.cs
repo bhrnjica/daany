@@ -25,18 +25,21 @@ namespace Unit.Test.DF
                 { "state" ,new List<object>() { "CA","CA","CA","CA","FL","FL","PR" } },
             };
 
-            var expected = @"product_id  retail_pricequantity    city        state       
-1           2           1           SF          CA          
-1           2           2           SJ          CA          
-2           5           4           SF          CA          
-2           5           8           SJ          CA          
-2           5           16          Miami       FL          
-2           5           32          Orlando     FL          
-2           5           64          SJ          PR          
+            var expected = @"            product_id  retail_pricequantity    city        state       
+0           1           2           1           SF          CA          
+1           1           2           2           SJ          CA          
+2           2           5           4           SF          CA          
+3           2           5           8           SJ          CA          
+4           2           5           16          Miami       FL          
+5           2           5           32          Orlando     FL          
+6           2           5           64          SJ          PR          
 ";
-            //
+
             var df = new DataFrame(dict);   
             var actual = df.Head(10);
+
+
+
             Assert.Equal(7, actual.RowCount());
             Assert.Equal(expected, actual.ToStringBuilder());
 
@@ -45,18 +48,20 @@ namespace Unit.Test.DF
             Assert.Equal(expected, actual1.ToStringBuilder());
 
             var actual2 = df.Tail(10);
+
             Assert.Equal(7, actual2.RowCount());
             Assert.Equal(expected, actual1.ToStringBuilder());
 
-            var expected1 = @"product_id  retail_pricequantity    city        state       
-2           5           4           SF          CA          
-2           5           8           SJ          CA          
-2           5           16          Miami       FL          
-2           5           32          Orlando     FL          
-2           5           64          SJ          PR          
+            var expected1 = @"            product_id  retail_pricequantity    city        state       
+0           2           5           4           SF          CA          
+1           2           5           8           SJ          CA          
+2           2           5           16          Miami       FL          
+3           2           5           32          Orlando     FL          
+4           2           5           64          SJ          PR          
 ";
 
             var actual3 = df.Tail(5);
+            var ss = actual3.ToStringBuilder();
             Assert.Equal(5, actual3.RowCount());
             Assert.Equal(expected1, actual3.ToStringBuilder());
 
