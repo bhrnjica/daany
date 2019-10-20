@@ -163,7 +163,7 @@ namespace Daany
             return FromStrArray(rows.ToArray(), sep, names, textQaualifier, dformat);
         }
 
-        public static DataFrame FromStrArray(string[] rows, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = "dd/mm/yyyy")
+        public static DataFrame FromStrArray(string[] rows, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = null)
         {
             if (rows==null)
                 throw new ArgumentNullException(nameof(rows));
@@ -2042,11 +2042,11 @@ namespace Daany
             else //if (IsDateTime(value))
             {
                 //
-                if (DateTime.TryParseExact(value, dformat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTimee)) 
+                if (!string.IsNullOrEmpty(dformat) && DateTime.TryParseExact(value, dformat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTimee)) 
                 {
                     return dateTimee;
                 }
-                else if (DateTime.TryParse(value, out DateTime dateTime))
+                else if (string.IsNullOrEmpty(dformat) && DateTime.TryParse(value, out DateTime dateTime))
                 {
                     return dateTime;
                 }
