@@ -87,6 +87,7 @@ namespace Daany
         internal static bool qsAlgo = false;
         #endregion
 
+        #region Enumerators
         /// <summary>
         /// Returns strongly typed row enumerator.
         /// </summary>
@@ -139,6 +140,7 @@ namespace Daany
             }
 
         }
+        #endregion
 
         #region Static members
         /// <summary>
@@ -154,6 +156,9 @@ namespace Daany
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
+            if (File.Exists(filePath))
+                throw new ArgumentException(nameof(filePath), "File name does not exist.");
+
 
             var  rows = new List<string>();
             var line = ""; long lCounter = 0;
@@ -375,6 +380,12 @@ namespace Daany
 
             if (data == null || data.Count == 0)
                 throw new Exception($"'{data}' dictionary cannot be empty!");
+
+            //each list in directory musbe with the same count
+            var counts = data.Select(x => x.Value.Count);
+            var count = counts.First();
+            if (!counts.All(x => x == count))
+                throw new Exception("All lists within dictionary must be with same length.");
 
             //row column indexes preparation
             this._index = Enumerable.Range(0, data.Values.First().Count()).Select(x => (object)x).ToList();
@@ -1383,7 +1394,7 @@ namespace Daany
         }
         #endregion
 
-        #region Operators
+        #region Indexers
         /// <summary>
         /// Returns specific value from Data Frame positioned at (rowIndex,colIndex )
         /// </summary>
@@ -1487,7 +1498,9 @@ namespace Daany
                     yield return _values[i];
             }
         }
+        #endregion
 
+        #region Interface Implementation
         /// <summary>
         /// Returns the number of rows in the data frame
         /// </summary>
@@ -1505,8 +1518,6 @@ namespace Daany
         {
             return Columns.Count;
         }
-
-
 
         #endregion
 

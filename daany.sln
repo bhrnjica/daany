@@ -19,7 +19,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "daany.test", "test\df.test\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{BBC8D700-8755-4C1F-9479-D033A86E1E37}"
 	ProjectSection(SolutionItems) = preProject
+		docs\01create_data_frame.md = docs\01create_data_frame.md
+		docs\02data_frame_indexers.md = docs\02data_frame_indexers.md
+		docs\03data_frame_save_csv.md = docs\03data_frame_save_csv.md
+		docs\04data_frame_filtering.md = docs\04data_frame_filtering.md
+		docs\05data_frame_join.md = docs\05data_frame_join.md
+		docs\06data_frame_grouping.md = docs\06data_frame_grouping.md
+		docs\07data_frame_aggregate_operations.md = docs\07data_frame_aggregate_operations.md
 		docs\daany_logo.png = docs\daany_logo.png
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global

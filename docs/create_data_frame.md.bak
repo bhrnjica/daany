@@ -8,7 +8,7 @@ Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than 
 
 The ``DataFrame`` implementation contains basic capabilities like:
 
-- [create a data frame from a list, a dictionary or from csv file](docs/01create_data_frame.md),
+- create a data frame from a list, a dictionary or from csv file,
 - access data frame elements (row, column or cell) through indexers, 
 - persisting ``DataFrame`` into csv file,
 - filtering capabilities,
