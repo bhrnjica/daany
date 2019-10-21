@@ -392,20 +392,18 @@ namespace Daany
         /// <returns>New data frame with renamed column names.</returns>
         public DataFrame Create(params (string oldName, string newName)[] colNames)
         {
-            var dict = new Dictionary<string, List<object>>();
-            foreach (var c in colNames)
+            var oldCols = colNames.Select(x=>x.oldName).ToArray();
+            var newDf = this[oldCols];
+            for(int i=0; i < colNames.Length; i++)
             {
-                if (!Columns.Contains(c.oldName))
-                    throw new Exception($"The column name '{c.oldName}' does not exist!");
+                var newName = colNames[i].oldName;
+                if (!string.IsNullOrEmpty(colNames[i].newName))
+                    newName = colNames[i].newName;
                 //
-                var newName = c.oldName;
-                if (!string.IsNullOrEmpty(c.newName))
-                    newName = c.newName;
-
-                dict.Add(newName, this[c.oldName].ToList());
+                newDf._columns[i] = newName;
             }
-
-            return new DataFrame(dict);
+            //
+            return newDf;
         }
 
         /// <summary>
@@ -631,7 +629,6 @@ namespace Daany
         /// Sorts data-frame by specified column in ascending order
         /// </summary>
         /// <param name="cols">Sorting columns</param>
-
         /// <returns>New ordered df.</returns>
         public DataFrame SortBy(params string[] cols)
         {
@@ -738,15 +735,12 @@ namespace Daany
             {
                 for (int j = 0; j < Columns.Count; j++)
                 {
-                    for(int k=0; k < colIndexes.Length; k++)
+                    if (colIndexes.Contains(j))
                     {
-                        if (j == colIndexes[k])
-                        {
-                            if (_values[index] == DataFrame.NAN)
-                                _values[index] = replacedValue;
-                        }
+                        if (_values[index] == DataFrame.NAN)
+                            _values[index] = replacedValue;
                     }
-                    
+
                     index++;
                 }
             }
@@ -1427,15 +1421,26 @@ namespace Daany
         public DataFrame this[params string[] cols]
         {
             get
-            {
-                var lstCols = new Dictionary<string, List<object>>();
-                foreach (var col in cols)
+            {   //get indexes of the columns
+                var idxs = getColumnIndex(cols);
+                //reserve for space
+                var lst = new object[cols.Length * _index.Count];
+                var counter = 0;
+                var newCounter = 0;
+                for (int i = 0; i < _index.Count; i++)
                 {
-                    var name = col;
-                    var colValues = this[col].ToList();
-                    lstCols.Add(col, colValues);
+                    for (int j = 0; j < _columns.Count; j++)
+                    {
+                        if (idxs.Contains(j))
+                        {
+                            lst[newCounter] = this._values[counter];
+                            newCounter++;
+                        }
+                        counter++;
+                    }
                 }
-                return new DataFrame(lstCols);
+                var df = new DataFrame(lst.ToArray(),cols);
+                return df;
             }
         }
 
@@ -1465,10 +1470,9 @@ namespace Daany
             get
             {
                 var cols = ColCount();
-                var start = row * cols;
+                var start = calculateIndex(row, 0);// row * cols;
                 for (int i = start; i < start + cols; i++)
                     yield return _values[i];
-                //return Values.Skip(row * cols).Take(cols);
             }
         }
 
@@ -2416,13 +2420,13 @@ namespace Daany
             for (int i = 0; i < Columns.Count; i++)
             {
                 var colStr = Columns[i];
-                if (string.Equals(colStr, col, StringComparison.InvariantCultureIgnoreCase))
+                if(colStr==col)
                 {
                     return i;
                 }
             }
 
-            throw new Exception($"Column '{col}' does not exist in the Data Frame.");
+            throw new Exception($"Column '{col}' does not exist in the Data Frame. Column names are case sensitive.");
         }
 
         #endregion

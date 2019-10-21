@@ -74,7 +74,7 @@ namespace Unit.Test.DF
             //
             var df1 = new DataFrame(dict);
             var df2 = new DataFrame(dict1);
-            var mergedDf = df1.Join(df2, new string[] { "itemID", "catID" }, new string[] { "item2ID", "cat2ID" }, JoinType.Inner);
+            var mergedDf = df1.Join(df2, new string[] { "itemID", "catId" }, new string[] { "item2ID", "cat2ID" }, JoinType.Inner);
 
             //row test
             var r1 = mergedDf[0].ToList();
@@ -93,7 +93,7 @@ namespace Unit.Test.DF
             var c2 = new string[] {"A","B"};
             var c3 = new int[] { 1,4 };
             var cc1 = mergedDf["itemID"].ToList();
-            var cc2 = mergedDf["catID"].ToList();
+            var cc2 = mergedDf["catId"].ToList();
             var cc3 = mergedDf["value1"].ToList();
 
             for (int i = 0; i < c1.Count(); i++)
