@@ -1,1 +1,3 @@
-# Create ``DataFrame`` from the .NET standard collections
+# Grouping capabilities in  ``DataFrame``
+
+see unittest ```09GroupAndRoll.cs```

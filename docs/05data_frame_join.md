@@ -1,1 +1,3 @@
-# Create ``DataFrame`` from the .NET standard collections
+# Join two ``DataFrame``s 
+
+see unittests ```03JoinDataFramesTests.cs```

@@ -9,14 +9,13 @@ Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than 
 The ``DataFrame`` implementation contains basic capabilities like:
 
 - [create a data frame from a list, a dictionary or from csv file](docs/01create_data_frame.md),
-- access data frame elements (row, column or cell) through indexers, 
-- persisting ``DataFrame`` into csv file,
-- filtering capabilities,
-- joining two or more data frames by common column,
-- handling missing values, 
-- grouping data in the data frame,
-- aggregation on grouped data,
-- calculated columns, remove columns
+- [access data frame elements: row, column or cell through indexers](docs/02data_frame_indexers.md), 
+- [persisting ``DataFrame`` into csv file](docs/03data_frame_save_csv.md),
+- [filtering capabilities](test/df.test/df/08FilterTest.cs),
+- [joining two or more data frames by common column](test/df.test/df/03JoinDataFramesTests.cs),
+- [handling missing values](test/df.test/df/13MissingValuesTests.cs), 
+- [grouping, aggregating data in the data frame](test/df.test/df/09GroupAndRoll.cs),
+- [calculated columns](test/df.test/df/11CalculatedColumn.cs), [remove columns](test/df.test/df/03RemoveRowColTests.cs),
 - apply an operation on a specific column/row in the data frame,
 - ...
 
