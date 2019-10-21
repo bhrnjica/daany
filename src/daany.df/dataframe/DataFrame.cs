@@ -109,9 +109,9 @@ namespace Daany
         }
 
         /// <summary>
-        /// Return row enumerators
+        /// Return row enumerators by returning row as dictionary 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>dictionary</returns>
         public IEnumerable<IDictionary<string, object>> GetEnumerator()
         {
             var dic = new Dictionary<string, object>();
@@ -126,7 +126,19 @@ namespace Daany
             }
 
         }
+        /// <summary>
+        /// Return row enumerators by returning object array
+        /// </summary>
+        /// <returns>object array</returns>
+        public IEnumerable<object[]> GetRowEnumerator()
+        {
+            var r = new object[this._columns.Count];
+            for (int i = 0; i < Index.Count; i++)
+            {
+                yield return this[i].ToArray();
+            }
 
+        }
 
         #region Static members
         /// <summary>
