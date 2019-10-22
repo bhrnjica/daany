@@ -55,7 +55,7 @@ namespace Unit.Test.DF
             };
             //
             var df = new DataFrame(dict);
-
+            
             //check the size of the data frame
             Assert.Equal(10, df.RowCount());
             Assert.Equal(10, df.ColCount());
@@ -97,13 +97,13 @@ namespace Unit.Test.DF
         [Fact]
         public void CreateFromCSVFile_Failed_Test01()
         {
-            var filePath = $"..\\..\\..\\testdata\\group_sample_testdata.txt";
+            var filePath = $"..\\..\\..\\testdata\\group_sample_testdata1.txt";
             
             //invalid path
             var exception = Assert.ThrowsAny<System.ArgumentException>(() => DataFrame.FromCsv(filePath: filePath,
                                                                                         sep: '\t',
                                                                                         names: null, dformat: null));
-            Assert.Equal("File name does not exist.", exception.Message);
+            Assert.Equal("filePath\r\nParameter name: File name does not exist.", exception.Message);
         }
 
 

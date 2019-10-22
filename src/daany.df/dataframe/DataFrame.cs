@@ -156,7 +156,8 @@ namespace Daany
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
-            if (File.Exists(filePath))
+
+            if (!File.Exists(filePath))
                 throw new ArgumentException(nameof(filePath), "File name does not exist.");
 
 
