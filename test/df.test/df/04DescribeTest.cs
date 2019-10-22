@@ -59,7 +59,16 @@ namespace Unit.Test.DF
             Assert.Equal(64, Convert.ToSingle(descDf[10, 1]));
             Assert.Equal(float.NaN, Convert.ToSingle(descDf[10, 2]));
 
-           
+            //
+            var descDf1 = df.Describe(false,  "quantity", "product_id", "state");
+            Assert.Equal(64, Convert.ToSingle(descDf1[10, 0]));
+            Assert.Equal(2, Convert.ToSingle(descDf1[10, 1]));
+            Assert.Equal(float.NaN, Convert.ToSingle(descDf1[10, 2]));
+
+            var descDf3 = df.Describe(false, "state", "quantity", "product_id");
+            Assert.Equal(64, Convert.ToSingle(descDf3[10, 1]));
+            Assert.Equal(2, Convert.ToSingle(descDf3[10, 2]));
+            Assert.Equal(float.NaN, Convert.ToSingle(descDf3[10, 0]));
         }
 
         [Fact]
