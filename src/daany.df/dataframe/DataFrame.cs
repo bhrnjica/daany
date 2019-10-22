@@ -323,6 +323,7 @@ namespace Daany
 
             if (data.Length % columns.Count != 0)
                 throw new Exception("The Columns count must be divisible by data length.");
+
             //calculate row count
             int rows = data.Length / columns.Count;
 
@@ -596,9 +597,10 @@ namespace Daany
             var lst = new List<object>();
             var leftRCount = _index.Count;
             var leftCCount =  ColCount();
-            var rightRCount = df2.Index.Count;
+            var rightRCount = df2.RowCount();
             var rightCCount = df2.ColCount();
             var lastIndex = 0;
+
             //left df enumeration
             for (int i = 0; i < leftRCount; i++)
             {
@@ -1453,15 +1455,13 @@ namespace Daany
                 var newCounter = 0;
                 for (int i = 0; i < _index.Count; i++)
                 {
-                    for (int j = 0; j < _columns.Count; j++)
+                    for (int j = 0; j < idxs.Length; j++)
                     {
-                        if (idxs.Contains(j))
-                        {
-                            lst[newCounter] = this._values[counter];
-                            newCounter++;
-                        }
-                        counter++;
+                        lst[newCounter + j] = this._values[counter + idxs[j]];                   
                     }
+                    //increase indexes
+                    newCounter += idxs.Length;
+                    counter +=_columns.Count;
                 }
                 var df = new DataFrame(lst.ToArray(),cols);
                 return df;
@@ -1660,6 +1660,7 @@ namespace Daany
         {
             var types = this.columnsTypes();
             var lstCols = new List<(string cName, ColType cType)>();
+            var idxs = getColumnIndex(inclColumns);
 
             //include columns
             if (inclColumns == null || inclColumns.Length==0)
@@ -1671,14 +1672,12 @@ namespace Daany
             }
             else
             {
-                for (int i = 0; i < this.Columns.Count(); i++)
+                for (int i = 0; i < idxs.Length; i++)
                 {
-                    var c = this.Columns[i];
-                    if(inclColumns.Contains(c))
-                        lstCols.Add((this.Columns[i], types[i]));
+                    var c = this.Columns[idxs[i]];
+                    lstCols.Add((c, types[idxs[i]]));
                 }
             }
-
 
             //only numeric columns
             var finalCols = new List<(string cName, ColType cType)>();

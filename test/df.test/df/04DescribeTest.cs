@@ -10,7 +10,57 @@ namespace Unit.Test.DF
 {
     public class DataFrameDescribeTests
     {
+        [Fact]
+        public void Describe_Test03()
+        {
+            var mlContext = new MLContext();
+            var dict = new Dictionary<string, List<object>>
+            {
+                {"product_id",new List<object>() {1,1,2,2,2,2,2 } },
+                { "retail_price",new List<object>() { 2,2,5,5,5,5,5 } },
+                { "quantity",new List<object>() { 1,2,4,8,16,32,64 } },
+                { "city",new List<object>() { "SF","SJ","SF","SJ","Miami", "Orlando","SJ"} },
+                { "state" ,new List<object>() { "CA","CA","CA","CA","FL","FL","PR" } },
+            };
 
+
+            var df = new DataFrame(dict);
+            var descDf = df.Describe(false, "product_id", "quantity", "state");
+
+            Assert.True(descDf.RowCount() == 11);
+            Assert.True(descDf.ColCount() == 3);
+
+            Assert.Equal("count", descDf.Index[0].ToString());
+            Assert.Equal("unique", descDf.Index[1].ToString());
+            Assert.Equal("top", descDf.Index[2].ToString());
+            Assert.Equal("mode", descDf.Index[3].ToString());
+            Assert.Equal("mean", descDf.Index[4].ToString());
+            Assert.Equal("std", descDf.Index[5].ToString());
+            Assert.Equal("min", descDf.Index[6].ToString());
+            Assert.Equal("25%", descDf.Index[7].ToString());
+            Assert.Equal("50%", descDf.Index[8].ToString());
+            Assert.Equal("75%", descDf.Index[9].ToString());
+            Assert.Equal("max", descDf.Index[10].ToString());
+
+
+            Assert.Equal(7f, Convert.ToSingle(descDf["product_id", 0]));
+            Assert.Equal(7f, Convert.ToSingle(descDf["state", 0]));
+            Assert.Equal(7f, Convert.ToSingle(descDf["quantity", 0]));
+
+            Assert.Equal(float.NaN, Convert.ToSingle(descDf["product_id", 1]));
+            Assert.Equal(3, Convert.ToSingle(descDf["state", 1]));
+            Assert.Equal(float.NaN, Convert.ToSingle(descDf["quantity", 1]));
+
+            Assert.Equal(float.NaN, Convert.ToSingle(descDf["product_id", 2]));
+            Assert.Equal("CA", descDf["state", 2].ToString());
+            Assert.Equal(float.NaN, Convert.ToSingle(descDf["quantity", 2]));
+
+            Assert.Equal(2, Convert.ToSingle(descDf[10, 0]));
+            Assert.Equal(64, Convert.ToSingle(descDf[10, 1]));
+            Assert.Equal(float.NaN, Convert.ToSingle(descDf[10, 2]));
+
+           
+        }
 
         [Fact]
         public void Describe_Test01()
