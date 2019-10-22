@@ -4,7 +4,7 @@ Daany - DAta ANalYtics C# library with the implementation of DataFrame, Time ser
 
 # Data Frame
 
-Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require for any class type implementation prior to data loading and data transformation.     
+Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require for any class type implementation prior to data loading and transformation.     
 
 The ``DataFrame`` implementation contains basic capabilities like:
 
@@ -32,16 +32,24 @@ var df = DataFrame.FromCsv(orgdataPath,sep:'\t');
 ```
 Now that we have data frame we can perform one of many supported data transofrmations. For this example we are going to create two new columns into ```df```:
 ```csharp
-//calculate two new columns into dataset: r argument represents a current row, and i represent the current row index
-df.AddCalculatedColumn("SepalArea", (r, i) => Convert.ToSingle(r["sepal_width"]) * Convert.ToSingle(r["sepal_length"]));
-df.AddCalculatedColumn("PetalArea", (r, i) => Convert.ToSingle(r["petal_width"]) * Convert.ToSingle(r["petal_length"]));
+//calculate two new columns into dataset
+df.AddCalculatedColumns(new string[] { "SepalArea", "PetalArea" }, 
+        (r, i) =>
+        {
+            var aRow = new object[2];
+            aRow[0]=Convert.ToSingle(r["sepal_width"]) * Convert.ToSingle(r["sepal_length"]);
+            aRow[1] = Convert.ToSingle(r["petal_width"]) * Convert.ToSingle(r["petal_length"]);
+            return aRow;
+
+        });
+
 ```
 Now the ```df``` object has two new columns:```SepalArea``` and ```PetalArea```. 
 
 Now we are going to create a new Data Frame containing only three columns: ```SepalArea```, ```PetalArea``` and ```Species```:
 ```csharp
 //create new data-frame by selecting only three columns
-var derivedDF = df.Create(("SepalArea", null), ("PetalArea", null), ("species", null));
+var derivedDF = df["SepalArea","PetalArea","species"];
 ```
 For this purpose, we use ```Create``` method by passing tuples of the old and new column name. In our case, we pass ```null``` for the new column name, which means keep old column name.
 
@@ -82,12 +90,23 @@ var testData = trainTestData.TestSet;
 Create the pipeline to prepare the train data for machine learning:
 ```csharp
 //prepare data for ML
-var dataPipeline = PrepareIrisData(mlContext);
+//one encoding output category column by defining KeyValues for each category
+var dataPipeline = mlContext.Transforms.Conversion.MapValueToKey(
+                            outputColumnName: "Label", 
+                            inputColumnName: nameof(Iris.Species))
+                
+//define features columns
+.Append(mlContext.Transforms.Concatenate("Features",nameof(Iris.SepalArea), nameof(Iris.PetalArea)));
+
 ```
 Use datapipeline and trainSet and train and build the model. Algorithm selection and training process is implemented in the ```Train``` method.:
 ```csharp
 //train and build the model 
-var model = Train(mlContext, dataPipeline, trainData);
+//create Trainer
+var lightGbm = mlContext.MulticlassClassification.Trainers.LightGbm();
+
+//train the ML model
+var model = transformationPipeline.Append(lightGbm).Fit(preparedData);
 ```
 ### Model Evaluation
 Once we have trained model, we can evaluate the model how it predicts the Iris flower from the test set:
