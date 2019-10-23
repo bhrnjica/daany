@@ -1,6 +1,6 @@
 ![Daany Logo](./docs/img/daany_logo_small.png)
 
-Daany - DAta ANalYtics C# library with the implementation of DataFrame, Time series decomposition and various statistical parameters.
+Daany - **DA**ta **AN**al**Y**tics C# library with the implementation of DataFrame, Time series decomposition and various statistical parameters.
 
 # Data Frame
 
