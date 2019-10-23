@@ -60,9 +60,9 @@ So let's create the Iris class with only three properties since we want to use o
 ```csharp
 class Iris
 {
-public float PetalArea { get; set; }
-public float SepalArea { get; set; }
-public string Species { get; set; }
+        public float PetalArea { get; set; }
+        public float SepalArea { get; set; }
+        public string Species { get; set; }
 }
 ```
 Now that we have class type implemented we can load the data frame into ML.NET:
@@ -99,7 +99,7 @@ var dataPipeline = mlContext.Transforms.Conversion.MapValueToKey(
 .Append(mlContext.Transforms.Concatenate("Features",nameof(Iris.SepalArea), nameof(Iris.PetalArea)));
 
 ```
-Use datapipeline and trainSet and train and build the model. Algorithm selection and training process is implemented in the ```Train``` method.:
+Use datapipeline and trainSet to train and build the model. 
 ```csharp
 //train and build the model 
 //create Trainer
