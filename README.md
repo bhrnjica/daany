@@ -134,8 +134,8 @@ With SSA, you can decompose the time series into any number of components (signa
 
 ```csharp
 var strPath = $"{root}/AirPassengers.csv";
-var mlDF = DataFrame.FromCsv(strPath, sep: ",");
-var ts = mlDF["#Passengers"].Select(f => Convert.ToDouble(f));//create time series
+var mlDF = DataFrame.FromCsv(strPath, sep: ',');
+var ts = mlDF["#Passengers"].Select(f => Convert.ToDouble(f));//create time series from data frame
 ```
 Now that we have AirPasanger time series, we can create SSA object by passing the time series into it:
 ```csharp
