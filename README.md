@@ -1,6 +1,6 @@
 ![Daany Logo](./docs/img/daany_logo_small.png)
 
-Daany - DAta ANalYtics C# library with the implementation of DataFrame, Time series decomposition and various statistical parameters.
+Daany - **DA**ta **AN**al**Y**tics C# library with the implementation of DataFrame, Time series decomposition and various statistical parameters.
 
 # Data Frame
 
@@ -60,9 +60,9 @@ So let's create the Iris class with only three properties since we want to use o
 ```csharp
 class Iris
 {
-public float PetalArea { get; set; }
-public float SepalArea { get; set; }
-public string Species { get; set; }
+        public float PetalArea { get; set; }
+        public float SepalArea { get; set; }
+        public string Species { get; set; }
 }
 ```
 Now that we have class type implemented we can load the data frame into ML.NET:
@@ -99,7 +99,7 @@ var dataPipeline = mlContext.Transforms.Conversion.MapValueToKey(
 .Append(mlContext.Transforms.Concatenate("Features",nameof(Iris.SepalArea), nameof(Iris.PetalArea)));
 
 ```
-Use datapipeline and trainSet and train and build the model. Algorithm selection and training process is implemented in the ```Train``` method.:
+Use datapipeline and trainSet to train and build the model. 
 ```csharp
 //train and build the model 
 //create Trainer
@@ -134,8 +134,8 @@ With SSA, you can decompose the time series into any number of components (signa
 
 ```csharp
 var strPath = $"{root}/AirPassengers.csv";
-var mlDF = DataFrame.FromCsv(strPath, sep: ",");
-var ts = mlDF["#Passengers"].Select(f => Convert.ToDouble(f));//create time series
+var mlDF = DataFrame.FromCsv(strPath, sep: ',');
+var ts = mlDF["#Passengers"].Select(f => Convert.ToDouble(f));//create time series from data frame
 ```
 Now that we have AirPasanger time series, we can create SSA object by passing the time series into it:
 ```csharp
