@@ -28,8 +28,11 @@ namespace Unit.Test.DF
             };
             //
             var df = new DataFrame(dict);
-            var df01 = df.AddCalculatedColumn("col11", (row, i) => i + 11);
-
+            var sCols = new string[] { "col11" };
+            var df01 = df.AddCalculatedColumns(sCols, (row, i) => calculate(row,i) );
+            //local function declaration
+            object[] calculate(object[] row, int i)
+                {return new object[1] { i + 11 };}
             //column test
             var c1 = new int[] { 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
 

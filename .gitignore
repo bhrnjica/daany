@@ -21,3 +21,4 @@ bin-release/
 /test/Daany.Test.App
 /build.ps1
 /build.ps1.bak
+/nuget.exe
