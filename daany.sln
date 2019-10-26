@@ -7,15 +7,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F5844D1E-B64
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{68B2BA8B-2360-401E-BA8A-5B5E937DD816}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "daany.math", "src\daany.math\daany.math.csproj", "{73358BCE-42AA-477A-BD90-99C2392CD9CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.Math", "src\daany.math\Daany.Math.csproj", "{73358BCE-42AA-477A-BD90-99C2392CD9CC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "daany.df", "src\daany.df\daany.df.csproj", "{3AF3BD6B-CCCD-43CB-92E0-17834E88E037}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.DataFrame", "src\daany.df\Daany.DataFrame.csproj", "{3AF3BD6B-CCCD-43CB-92E0-17834E88E037}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "daany.df.ext", "src\daany.ext\daany.df.ext.csproj", "{BAAAFCA3-4022-4A59-AEBD-1E24E0ED2F1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.DataFrame.Ext", "src\daany.ext\Daany.DataFrame.Ext.csproj", "{BAAAFCA3-4022-4A59-AEBD-1E24E0ED2F1C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "daany.stat", "src\daany.stat\daany.stat.csproj", "{7A793B6F-AC5F-4DD9-AFCE-29D74FCF89C0}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "daany.test", "test\df.test\daany.test.csproj", "{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.Stat", "src\daany.stat\Daany.Stat.csproj", "{7A793B6F-AC5F-4DD9-AFCE-29D74FCF89C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{BBC8D700-8755-4C1F-9479-D033A86E1E37}"
 	ProjectSection(SolutionItems) = preProject
@@ -29,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{BBC8D700-8
 		docs\daany_logo.png = docs\daany_logo.png
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnit.Test", "test\XUnit.Test\XUnit.Test.csproj", "{55490194-3CD8-4DB2-93CC-3CCF971335F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,14 +70,14 @@ Global
 		{7A793B6F-AC5F-4DD9-AFCE-29D74FCF89C0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7A793B6F-AC5F-4DD9-AFCE-29D74FCF89C0}.Release|x64.ActiveCfg = Release|Any CPU
 		{7A793B6F-AC5F-4DD9-AFCE-29D74FCF89C0}.Release|x64.Build.0 = Release|Any CPU
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}.Debug|x64.Build.0 = Debug|Any CPU
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}.Release|x64.ActiveCfg = Release|Any CPU
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C}.Release|x64.Build.0 = Release|Any CPU
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1}.Debug|x64.Build.0 = Debug|Any CPU
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1}.Release|x64.ActiveCfg = Release|Any CPU
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,7 +87,7 @@ Global
 		{3AF3BD6B-CCCD-43CB-92E0-17834E88E037} = {F5844D1E-B64A-4EA3-9D66-AAA711048D6D}
 		{BAAAFCA3-4022-4A59-AEBD-1E24E0ED2F1C} = {F5844D1E-B64A-4EA3-9D66-AAA711048D6D}
 		{7A793B6F-AC5F-4DD9-AFCE-29D74FCF89C0} = {F5844D1E-B64A-4EA3-9D66-AAA711048D6D}
-		{8105CCE4-7DCC-4DB2-B40B-4B655FCF665C} = {68B2BA8B-2360-401E-BA8A-5B5E937DD816}
+		{55490194-3CD8-4DB2-93CC-3CCF971335F1} = {68B2BA8B-2360-401E-BA8A-5B5E937DD816}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1667E7B5-785D-4943-B8A0-7E34EE2E788E}

@@ -19,3 +19,5 @@ bin-release/
 /.vs/daany/v16
 /.vs/daany/DesignTimeBuild
 /test/Daany.Test.App
+/build.ps1
+/build.ps1.bak

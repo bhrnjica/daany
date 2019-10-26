@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon />
+    <StartupObject />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OxyPlot.Core" Version="1.0.0" />
+    <PackageReference Include="OxyPlot.WindowsForms" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\daany.df\daany.df.csproj" />
+    <ProjectReference Include="..\..\src\daany.ext\daany.df.ext.csproj" />
+    <ProjectReference Include="..\..\src\daany.math\daany.math.csproj" />
+    <ProjectReference Include="..\..\src\daany.stat\daany.stat.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AirPassengers.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
