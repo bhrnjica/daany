@@ -985,6 +985,10 @@ namespace Daany
         [Obsolete("This method is obsolute and will be replaced in the future. Use 'AddCalculatedColumnc' instead.")]
         public bool AddCalculatedColumn(string colName, Func<IDictionary<string,object>, int, object> callBack)
         {
+            //
+            if (this._columns.Contains(colName))
+               throw new Exception($"Column '{colName}' already exists in the Data Frame.");
+
             //add new column
             addNewColumnName(this.Columns, colName);
             //
@@ -1010,7 +1014,6 @@ namespace Daany
                         vals.Add(value);
                     }
                 }
-
             }
             this._values = vals;
             return true;
@@ -1028,6 +1031,14 @@ namespace Daany
         {
             if (colNames == null || colNames.Length == 0)
                 throw new Exception("column names are not defined properly.");
+
+            //check if column exists
+            foreach(var col in colNames)
+            {
+                if (this._columns.Contains(col))
+                    throw new Exception($"Column '{col}' already exists in the Data Frame.");
+
+            }
             //
             var vals = new List<object>();
 
@@ -1078,6 +1089,14 @@ namespace Daany
         {
             if (colNames == null || colNames.Length == 0)
                 throw new Exception("column names are not defined properly.");
+
+            //check if column exists
+            foreach (var col in colNames)
+            {
+                if (this._columns.Contains(col))
+                    throw new Exception($"Column '{col}' already exists in the Data Frame.");
+
+            }
             //
             var vals = new List<object>();
 
