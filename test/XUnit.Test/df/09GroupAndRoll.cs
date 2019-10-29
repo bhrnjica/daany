@@ -25,8 +25,8 @@ namespace Unit.Test.DF
             //
             var df = new DataFrame(dict);
             var agg = new Dictionary<string, Aggregation>()
-            { 
-                { "quantity", Aggregation.Sum }, 
+            {
+                { "quantity", Aggregation.Sum },
                 { "retail_price", Aggregation.Avg },
                 { "C", Aggregation.Avg } };
 
@@ -53,6 +53,7 @@ namespace Unit.Test.DF
                 Assert.Equal(gdf.Values[i], c1[i]);
 
         }
+       
 
         [Fact]
         public void GroupBy_TwoColumns_Test02()
@@ -61,18 +62,26 @@ namespace Unit.Test.DF
             var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\group_sample_testdata.txt", sep: '\t', names: null, dformat: null);
             var resultDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\group_result_testdata.txt", sep: '\t', names: null, dformat: null);
 
-
-            var result = sampleDf.GroupBy("col1", "col2" ).Aggregation(Aggregation.Sum);
+            var aggs = new Dictionary<string, Aggregation>();
+            aggs.Add("col3", Aggregation.Sum);
+            aggs.Add("col4", Aggregation.Sum);
+            aggs.Add("col5", Aggregation.Sum);
+            var result = sampleDf.GroupBy("col1", "col2" ).Aggregation(aggs);
 
             Assert.Equal(result.RowCount(), resultDf.RowCount());
-            for (int i = 0; i < result.Values.Count; i++)
-            {
-                var expected = Convert.ToInt32(resultDf.Values[i]);
-                var actual = Convert.ToInt32(result.Values[i]);
-                Assert.Equal<int>(expected, actual);
-            }
 
+            for (int i = 0; i < resultDf.Index.Count; i++)
+            {
+                for (int j = 0; i < resultDf.Columns.Count; i++)
+                {
+                    if (resultDf.ColTypes[j] == ColType.I32)
+                        Assert.Equal(resultDf[i,j], result[i, j]);
+                    else
+                        Assert.Equal(Convert.ToSingle(resultDf[i, j]), Convert.ToSingle(result[i, j]));
+                }
+            }
         }
+
 
         [Fact]
         public void RollingAggregation_Test01()
@@ -86,7 +95,7 @@ namespace Unit.Test.DF
                 };
             //
             var df = new DataFrame(dict);
-            var rollingdf = df.Rolling("ID", 3, Aggregation.Sum);
+            var rollingdf = df.Rolling(3, new Dictionary<string, Aggregation> { { "A", Aggregation.Sum } });
 
             //column test
             var c1 = new object[] { DataFrame.NAN, DataFrame.NAN, -2.655105, -0.971785, -0.214335, 1.514216, 1.074618, 2.718061, -0.289082, 0.212673 };
@@ -100,6 +109,40 @@ namespace Unit.Test.DF
                     Assert.Equal(c1[i], cc1[i]);
             }
                 
+
+        }
+        [Fact]
+        public void GroupByThreeColumns_Test01()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                {"product_id",new List<object>() {1,1,2,2,2,2,2 } },
+                { "retail_price",new List<object>() { 2,2,5,5,5,5,5 } },
+                { "quantity",new List<object>() { 1,2,4,8,16,32,64 } },
+                { "city",new List<object>() { "SF","SJ","SF","SJ","Miami", "Orlando","SJ"} },
+                { "state" ,new List<object>() { "CA","CA","CA","CA","FL","FL","PR" } },
+            };
+
+
+            var c1 = new object[] { 1, 2, 1, "SF", "CA", 2, 5, 4, "SF", "CA" };
+
+            //
+            var df = new DataFrame(dict);
+
+            DataFrame.SaveToCsv("testdf",df);
+            var agg = new Dictionary<string, Aggregation>()
+            {
+                { "quantity", Aggregation.Sum },
+                { "retail_price", Aggregation.Avg },
+                { "C", Aggregation.Avg } };
+
+            //
+            var group = df.GroupBy("city", "state", "product_id");
+
+            Assert.Equal(7, group.Keys3.Count);
+            Assert.Equal("SF", group.Keys3[0].key1);
+            Assert.Equal("CA", group.Keys3[0].key2);
+            Assert.Equal(1, group.Keys3[0].key3);
 
         }
 
@@ -116,7 +159,7 @@ namespace Unit.Test.DF
             //
             var df = new DataFrame(dict);
             var agg = new Dictionary<string, Aggregation>() { { "A", Aggregation.Std }, { "B", Aggregation.Min }, { "C", Aggregation.Avg } };
-            var rollingdf = df.Rolling("ID", 5, agg);
+            var rollingdf = df.Rolling(5, agg);
 
             //column test
             var c1 = new object[] { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, 1.139954626, 1.402105188, 1.433931328, 1.521038952, 1.494833302, 1.545961242 };
@@ -171,22 +214,22 @@ namespace Unit.Test.DF
             var df = telDf.GroupBy("machineID").Rolling(3, 3, agg);
 
             var row1 = df[0].ToList();
-            Assert.Equal("1", row1[5].ToString());
-            Assert.Equal(170.0289916, (double)row1[1], 5);
-            Assert.Equal(449.5338134, (double)row1[2], 5);
-            Assert.Equal(94.59212239, (double)row1[3], 5);
-            Assert.Equal(40.89350128, (double)row1[4], 5);
+            Assert.Equal("1", row1[1].ToString());
+            Assert.Equal(170.0289916f, Convert.ToSingle(row1[2]), 5);
+            Assert.Equal(449.5338134f, Convert.ToSingle(row1[3]), 5);
+            Assert.Equal(94.59212239f, Convert.ToSingle(row1[4]), 5);
+            Assert.Equal(40.89350128f, Convert.ToSingle(row1[5]), 5);
             Assert.Equal(new DateTime(2015, 1, 1, 8, 0, 0), row1[0]);
             var row2 = df[1].ToList();
             var row3 = df[2].ToList();
             var row4 = df[3].ToList();
 
             var row5 = df[17].ToList();
-            Assert.Equal("2", row5[5].ToString());
-            Assert.Equal(167.69433085123697, (double)row5[1], 5);
-            Assert.Equal(437.20892333984375, (double)row5[2], 5);
-            Assert.Equal(94.930048624674484, (double)row5[3], 5);
-            Assert.Equal(40.247873942057289, (double)row5[4], 5);
+            Assert.Equal("2", row5[1].ToString());
+            Assert.Equal(167.69433085123697f, Convert.ToSingle(row5[2]), 5);
+            Assert.Equal(437.20892333984375f, Convert.ToSingle(row5[3]), 5);
+            Assert.Equal(94.930048624674484f, Convert.ToSingle(row5[4]), 5);
+            Assert.Equal(40.247873942057289f, Convert.ToSingle(row5[5]), 5);
             Assert.Equal(new DateTime(2015, 1, 1, 8, 0, 0), row1[0]);
             var row6 = df[18].ToList();
             var row7 = df[19].ToList();

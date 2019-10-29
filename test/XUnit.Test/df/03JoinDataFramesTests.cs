@@ -25,7 +25,7 @@ namespace Unit.Test.DF
             //
             var df1 = new DataFrame(dict);
             var df2 = new DataFrame(dict1);
-            var mergedDf = df1.Join(df2,new string[]{ "itemID"}, new string[] { "item2ID"}, JoinType.Inner,true);
+            var mergedDf = df1.Join(df2,new string[]{ "itemID"}, new string[] { "item2ID"}, JoinType.Inner);
 
             //row test
             var r1 = mergedDf[0].ToList();
@@ -33,7 +33,7 @@ namespace Unit.Test.DF
             var r3 = mergedDf[3].ToList();
             var e1 = new object[] { "foo", 1, "foo", 5 };
             var e2 = new object[] { "bar", 2, "bar", 6 };
-            var e3 = new object[] { "foo", 4, "foo", 8 };
+            var e3 = new object[] { "foo", 4, "foo", 5 };
             for (int i = 0; i < r1.Count; i++)
                 Assert.Equal(r1[i], e1[i]);
             for (int i = 0; i < r2.Count; i++)
@@ -44,7 +44,7 @@ namespace Unit.Test.DF
             //column test
             var c1 = new string[] { "foo","bar","baz","foo"};
             var c2 = new int[] { 1,2,3,4 };
-            var c3 = new int[] { 5,6,7,8 };
+            var c3 = new int[] { 5,6,7,5 };
             var cc1 = mergedDf["itemID"].ToList();
             var cc2 = mergedDf["value1"].ToList();
             var cc3 = mergedDf["value2"].ToList();

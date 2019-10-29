@@ -650,7 +650,182 @@ namespace Daany
             return newDf;
 
         }
-        
+
+        /// <summary>
+        /// Join two df with Inner or Left join type.
+        /// </summary>
+        /// <param name="df2">Right data frame</param>
+        /// <param name="leftOn">Join columns from the left df</param>
+        /// <param name="rightOn">Join columns from the right df.</param>
+        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
+        /// <param name="sortedDataFrames">Optimization provides the right df starts from the last index of the previously joined row </param>
+        /// <returns>New joined df.</returns>
+        internal DataFrame Join1(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
+        {
+            if (df2 == null)
+                throw new ArgumentException(nameof(df2));
+
+            if (leftOn == null)
+                throw new ArgumentException(nameof(leftOn));
+
+
+            if (rightOn == null)
+                throw new ArgumentException(nameof(rightOn));
+
+            if (leftOn.Length != rightOn.Length)
+                throw new Exception("Join column numbers are different!");
+
+            if (leftOn.Length > 3)
+                throw new Exception("Join can be performed with less than 4 columns.");
+
+            Dictionary<object, int> dic1 = null;
+            TwoKeysDictionary<object, object, int> dic2 = null;
+            ThreeKeysDictionary<object, object, object, int> dic3 = null;
+
+            if(leftOn.Length==1)
+                dic1 = df2.getIndex(rightOn[0]);
+            else if(leftOn.Length==2)
+                dic2 = df2.getIndex(rightOn[0], rightOn[1]);
+            else if (leftOn.Length==3)
+                dic3 = df2.getIndex(rightOn[0], rightOn[1], rightOn[2]);
+
+           
+            //get column indexes
+            var leftInd = getColumnIndex(leftOn);
+            var rightInd = df2.getColumnIndex(rightOn);
+
+            //merge columns
+            var tot = Columns.ToList();
+            tot.AddRange(df2.Columns);
+
+            var totalColumns = new List<string>();
+            var totCount = tot.Count();
+            for (int i = 0; i < totCount; i++)
+            {
+                var strVal = tot.ElementAt(i).ToString(CultureInfo.InvariantCulture);
+                //
+                addNewColumnName(totalColumns, strVal);
+            }
+
+            var lst = new List<object>();
+            var leftRCount = _index.Count;
+            var leftCCount = ColCount();
+            var rightRCount = df2.RowCount();
+            var rightCCount = df2.ColCount();
+
+            //left df enumeration
+            for (int i = 0; i < leftRCount; i++)
+            {
+                if (jType == JoinType.Left)
+                {
+                    int startL = i * leftCCount;
+                    for (int r = startL; r < startL + leftCCount; r++)
+                        lst.Add(_values[r]);
+                }
+
+                int j = containsKeys(dic1, dic2, dic3, i, leftInd);
+                if (j >= 0)
+                {
+                    if (jType == JoinType.Inner)
+                    {
+                        int startL = i * leftCCount;
+                        for (int r = startL; r < startL + leftCCount; r++)
+                            lst.Add(_values[r]);
+                    }
+                    //
+                    int startR = j * rightCCount;
+                    for (int r = startR; r < startR + rightCCount; r++)
+                        lst.Add(df2._values[r]);
+                }
+                else
+                {
+                    for (int r = 0; r < rightCCount; r++)
+                        lst.Add(DataFrame.NAN);
+                }
+            }
+            //Now construct the Data frame
+            var newDf = new DataFrame(lst, totalColumns);
+            return newDf;
+
+        }
+
+        private int containsKeys(IDictionary<object, int> dic1, TwoKeysDictionary<object,object, int> dic2, ThreeKeysDictionary<object,object, object, int> dic3,int i, int[] leftInd)
+        {
+            if (leftInd.Length == 1)
+            {
+                var val = this[i, leftInd[0]];
+                if (dic1.ContainsKey(val))
+                    return dic1[val];
+            }
+            else if (leftInd.Length == 2)
+            {
+                var val1 = this[i, leftInd[0]];
+                var val2 = this[i, leftInd[1]];
+                if (dic2.ContainsKey(val1, val2))
+                    return dic2[val1][val2];
+            }
+            else if (leftInd.Length == 3)
+            {
+                var val1 = this[i, leftInd[0]];
+                var val2 = this[i, leftInd[1]];
+                var val3 = this[i, leftInd[2]];
+                if (dic3.ContainsKey(val1, val2, val3))
+                    return dic3[val1][val2][val3];
+            }
+            else
+                throw new Exception("Not supported keys");
+
+            return -1;
+        }
+
+        private Dictionary<object, int> getIndex(string colName)
+        {
+            var colInd = this.getColumnIndex(colName);
+            //make  indexes for right df.
+            var dict = new Dictionary<object, int>();
+            for (int i = 0; i < this.RowCount(); i++)
+            {
+                var key = this[i, colInd];
+                
+                dict.Add(key,i);
+            }
+
+            return dict;
+        }
+        private TwoKeysDictionary<object, object, int> getIndex(string colName1, string colName2)
+        {
+            var colInd = this.getColumnIndex(new string[] { colName1, colName2 });
+            //
+            //make  indexes for right df.
+            var dict = new TwoKeysDictionary<object,object, int>();
+            for (int i = 0; i < this.RowCount(); i++)
+            {
+                var key1 = this[i, colInd[0]];
+                var key2 = this[i, colInd[1]];
+
+                dict.Add(key1,key2, i);
+            }
+
+            return dict;
+        }
+        private ThreeKeysDictionary<object, object, object, int> getIndex(string colName1, string colName2, string colName3)
+        {
+            var colInd = this.getColumnIndex(new string[] { colName1, colName2, colName3 });
+            //
+            //make  indexes for right df.
+            var dict = new ThreeKeysDictionary<object, object, object, int>();
+            for (int i = 0; i < this.RowCount(); i++)
+            {
+                var key1 = this[i, colInd[0]];
+                var key2 = this[i, colInd[1]];
+                var key3 = this[i, colInd[2]];
+
+                dict.Add(key1, key2, key3, i);
+            }
+
+            return dict;
+        }
+
         /// <summary>
         /// Sorts data-frame by specified column in ascending order
         /// </summary>
@@ -1086,21 +1261,21 @@ namespace Daany
             return true;
         }
 
-        /// <summary>
-        /// Rolling method for performing various operation.
-        /// </summary>
-        /// <param name="indexColumn"></param>
-        /// <param name="window">Rolling window size</param>
-        /// <param name="agg">Aggregated operation.</param>
-        /// <returns>New df with computed rolling operations</returns>
-        public DataFrame Rolling(string indexColumn, int window, Aggregation agg)
-        {
-            var aggD = new Dictionary<string, Aggregation>();
-            foreach (var col in Columns.Where(x => indexColumn!=x))
-                aggD.Add(col, agg);
-            //
-            return Rolling(indexColumn, window, aggD);
-        }
+        ///// <summary>
+        ///// Rolling method for performing various operation.
+        ///// </summary>
+        ///// <param name="indexColumn"></param>
+        ///// <param name="window">Rolling window size</param>
+        ///// <param name="agg">Aggregated operation.</param>
+        ///// <returns>New df with computed rolling operations</returns>
+        //public DataFrame Rolling(string indexColumn, int window, Aggregation agg)
+        //{
+        //    var aggD = new Dictionary<string, Aggregation>();
+        //    foreach (var col in Columns.Where(x => indexColumn != x))
+        //        aggD.Add(col, agg);
+        //    //
+        //    return Rolling(new string[] { indexColumn}, window, aggD);
+        //}
 
         /// <summary>
         /// Perform aggregate operation of list of columns, the rest of the column will be ignored and takes the last element
@@ -1108,33 +1283,65 @@ namespace Daany
         /// <param name="indCols">indexes of the columns</param>
         /// <param name="agg"></param>
         /// <returns></returns>
-        public List<object> Aggregations(List<object> indCols, Aggregation agg)
+        //public List<object> Aggregations(List<string> indCols, Aggregation agg)
+        //{
+        //    if (indCols == null || indCols.Count == 0)
+        //        throw new Exception("'indCols' argument cannot be null");
+
+        //    var aggValues = new List<object>();
+        //    for (int i = 0; i < Columns.Count; i++)
+        //    {
+        //        if (indCols.Contains(Columns[i]))//grouped columns just skip and take the last one
+        //            aggValues.Add(this[Columns[i]].Last());
+        //        else
+        //        {
+        //            var ag = calculateAggregation(this[Columns[i]], agg);
+        //            aggValues.Add(ag);
+        //        }
+        //    }
+        //    return aggValues;
+        //}
+
+        //public List<object> Aggregations(string[] indCols, Aggregation agg)
+        //{
+        //    return Aggregations(indCols.ToList(), agg);
+        //}
+        /// <summary>
+        /// Perform aggregate operation on the list of columns. For incomplete list, the rest of the column will be ignored and takes the last element
+        /// </summary>
+        /// <param name="indCols">indexes of the columns</param>
+        /// <param name="agg"></param>
+        /// <returns></returns>
+        public List<object> Aggregations(IDictionary<string, Aggregation> aggs)
         {
+            if (aggs == null)
+                throw new Exception("List of columns or list of aggregation cannot be null.");
+
             var aggValues = new List<object>();
             for (int i = 0; i < Columns.Count; i++)
             {
-                if (indCols.Contains(Columns[i]))//grouped columns just skip and take the last one
+                if (!aggs.ContainsKey(Columns[i])) 
                     aggValues.Add(this[Columns[i]].Last());
                 else
                 {
-                    var ag = calculateAggregation(this[Columns[i]], agg);
+                    var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]]);
                     aggValues.Add(ag);
                 }
             }
             return aggValues;
         }
-        
+
         /// <summary>
         /// Create new dataFrame containing rolling values of specified columns of the data frame
         /// </summary>
-        /// <param name="indexColumn">column to perform rolling</param>
         /// <param name="window">rolling width</param>
-        /// <param name="agg">aggregation operations of set of columns</param>
+        /// <param name="agg">key value pair of column and its aggregate operation.</param>
         /// <returns></returns>
-        public DataFrame Rolling(string indexColumn, int window, Dictionary<string, Aggregation> agg)
+        public DataFrame Rolling(int window, Dictionary<string, Aggregation> agg)
         {
+            string[] indexColumn = this._columns.Where(x => !agg.Keys.Contains(x)).Select(x => x).ToArray();
             if (agg == null || agg.Count == 0)
-                throw new Exception($"aggregation is empty.");
+                throw new Exception($"Aggregation is empty.");
 
             int index = 0;
             int rolIndex = 1;
@@ -1183,10 +1390,30 @@ namespace Daany
             }
 
             //add index column to rolledValues
-            aggrValues.Add(indexColumn, this[indexColumn].ToList());
-            //create new data frame
-            return new DataFrame(aggrValues);
+            var newColList = new List<string>();
+            DataFrame dff=null;
+            foreach (var colName in this._columns)
+            {
+                if (agg.Keys.Contains(colName))
+                {
+                    if (dff == null)
+                        dff = new DataFrame(aggrValues[colName], new List<string> { colName });
+                    else
+                        dff.InsertColumn(colName, aggrValues[colName], -1);
+                }
+                else
+                {
+                    if (dff == null)
+                        dff = new DataFrame(this[colName].ToList(), new List<string> { colName });
+                    else
+                        dff.InsertColumn(colName, this[colName].ToList(), -1);
+                }
+
+            }
+            //
+            return dff;
         }
+
 
         /// <summary>
         /// Returns data frame consisted of every nth row
@@ -1316,12 +1543,12 @@ namespace Daany
         {
             if (groupCols == null || groupCols.Length == 0)
                 throw new Exception("Group columns cannot be null or empty.");
-            if (groupCols.Length > 2)
-                throw new Exception("Grouping with more than two group columns is not supported.");
+            if (groupCols.Length > 3)
+                throw new Exception("Grouping with more than three group columns is not supported.");
             //grouping
             if (groupCols.Length == 1)
                 return GroupBy(groupCols[0]);
-            else //if (groupCols.Length == 2)
+            else if (groupCols.Length == 2)
             {
                 var grp = new TwoKeysDictionary<object, object, DataFrame>();
                 //first group
@@ -1335,11 +1562,26 @@ namespace Daany
 
                 return new GroupDataFrame(groupCols[0], groupCols[1], grp);
             }
+            else //if (groupCols.Length == 3)
+            {
+                var grp = new ThreeKeysDictionary<object, object, object, DataFrame>();
+                //two columns grouping 
+                var gp2 = GroupBy(groupCols[0], groupCols[1]);
+                foreach (var g in gp2.Keys2)
+                {
+                    var df2 = gp2.Groups[g.key1][g.key2];
+                    var group3 = df2.groupDFBy(groupCols[2]);
+                    foreach (var g1 in group3)
+                        grp.Add(g.key1, g.key2, g1.Key, g1.Value);
+                }
+
+                return new GroupDataFrame(groupCols[0], groupCols[1], groupCols[2], grp);
+            }
 
         }
 
         /// <summary>
-        /// Add new column int dataframe
+        /// Add new columns int dataframe
         /// </summary>
         /// <param name="cols"></param>
         public void AddColumns(Dictionary<string, List<object>> cols)
@@ -1363,6 +1605,55 @@ namespace Daany
             //
             this._values = vals;
             this._columns = Columns.Union(cols.Keys).ToList();
+        }
+
+        /// <summary>
+        /// Insert new columns at specific position
+        /// </summary>
+        /// <param name="cName">new Column name.</param>
+        /// <param name="nPos">Zero based index position of the new column. -1 insert the column at last position.</param>
+        /// <param name="value">column value</param>
+        public void InsertColumn(string cName, List<object> value, int nPos =-1)
+        {
+            if (nPos == -1)
+                nPos = this._columns.Count;
+
+            if (this._columns.Contains(cName))
+                throw new Exception($"{cName} already exists.");
+            if(nPos < -1 && nPos >= ColCount())
+                throw new Exception("Index position must be between 0 and ColCount.");
+
+            if (RowCount() != value.Count)
+                throw new Exception("Row counts must be equal.");
+            //
+            int index = 0;
+            var vals = new List<object>();
+            for (int i = 0; i < _index.Count; i++)
+            {
+                for (int j = 0; j <= this._columns.Count; j++)
+                {
+                    if(j==nPos && nPos < this._columns.Count)
+                    {
+                        vals.Add(value[i]);
+
+                    }
+                    else if(j==nPos && (nPos==this._columns.Count))
+                    {
+                        vals.Add(value[i]);
+                    }
+                    else
+                    {
+                        vals.Add(_values[index]);
+                        index++;
+                    }                                      
+                }              
+            }
+            //
+            this._values = vals;
+            if(nPos== this._columns.Count)
+                this._columns.Add(cName);
+            else
+                this._columns.Insert(nPos,cName);
         }
 
         /// <summary>

@@ -22,3 +22,4 @@ bin-release/
 /build.ps1
 /build.ps1.bak
 /nuget.exe
+/daany_build_test_publish_script.ps1
