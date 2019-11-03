@@ -30,6 +30,9 @@ namespace Daany
 
         public List<object> QuickSort(List<object> array, int[] indCols)
         {
+            if (array == null)
+                throw new Exception("data array cannot be null.");
+
             int end = array.Count / m_ColCount - 1;
             var sortedList = array.ToList();
             quickSort(sortedList, 0, end, indCols);
