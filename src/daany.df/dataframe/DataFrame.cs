@@ -200,7 +200,8 @@ namespace Daany
                 if (i == 0 && names == null)
                     continue;
                 var row = ParseText(rows[i], sep, textQaualifier).ToArray();
-
+                if (row.Length != header.Length)
+                    throw new Exception($"The number of parsed elements at the line '{i+1}' is not equal to column count.");
                 //
                 for (int j = 0; j < header.Length; j++)
                 {
@@ -859,7 +860,7 @@ namespace Daany
         {
             var df = SortBy(cols);
             DataFrame newDf = df.reverse();
-            return df;
+            return newDf;
         }
 
         
