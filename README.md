@@ -2,6 +2,10 @@
 
 Daany - **DA**ta **AN**al**Y**tics C# library with the implementation of DataFrame, Time series decomposition and various statistical parameters.
 
+
+![License](https://img.shields.io/github/license/bhrnjica/Daany)
+[![NuGet Status](https://img.shields.io/nuget/v/Daany.DataFrame?color=red&style=plastic)](https://www.nuget.org/packages/Daany.DataFrame/)
+![](https://img.shields.io/gitlab/pipeline/bhrnjica/daany)
 # Data Frame
 
 Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require for any class type implementation prior to data loading and transformation.     
