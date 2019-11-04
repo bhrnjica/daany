@@ -33,7 +33,7 @@ namespace Daany
     /// accessing data frame (df) elements etc.
     /// </summary>
   
-    public class DataFrame : IDataFrame
+    public partial class DataFrame : IDataFrame
     {
         #region Properties
 
@@ -277,8 +277,38 @@ namespace Daany
 
         #region Constructors
         private DataFrame()
+        { 
+        }
+        internal DataFrame(TwoKeysDictionary<string, object, object> aggValues)
         {
+            this._columns = new List<string>();
+            var index = new List<object>();
+            this._values = new List<object>();
 
+            //define index and columns
+            foreach(var c in aggValues)
+            {
+                this._columns.Add(c.Key);
+                foreach(var i in c.Value)
+                {
+                    if (!index.Contains(i.Key))
+                        index.Add(i.Key);
+                }
+            }
+
+            //fill data frame
+            for(int i=0; i< index.Count; i++)
+            {
+                for (int j=0; j < this._columns.Count; j++)
+                {
+                    if (aggValues.ContainsKey(this._columns[j], index[i]))
+                        this._values.Add(aggValues[this._columns[j], index[i]]);
+                    else
+                        this._values.Add(DataFrame.NAN);
+                }
+            }
+            //define index
+            this._index = index.Select(x=>(object)x).ToList();
         }
         /// <summary>
         /// Create data frame from another data frame.
@@ -562,7 +592,106 @@ namespace Daany
         /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
         /// <param name="sortedDataFrames">Optimization provides the right df starts from the last index of the previously joined row </param>
         /// <returns>New joined df.</returns>
-        public DataFrame Join(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType, bool sortedDataFrames = false)
+        //public DataFrame Join(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType, bool sortedDataFrames = false)
+        //{
+        //    if (df2 == null)
+        //        throw new ArgumentException(nameof(df2));
+
+        //    if (leftOn == null)
+        //        throw new ArgumentException(nameof(leftOn));
+
+
+        //    if (rightOn == null)
+        //        throw new ArgumentException(nameof(rightOn));
+
+        //    if (leftOn.Length != rightOn.Length)
+        //        throw new Exception("Join column numbers are different!");
+
+        //    _dfTypes = columnsTypes();
+        //    //get column indexes
+        //    var leftInd = getColumnIndex(leftOn);
+        //    var rightInd = df2.getColumnIndex(rightOn);
+
+        //    //merge columns
+        //    var tot = Columns.ToList();
+        //    tot.AddRange(df2.Columns);
+
+        //    var totalColumns = new List<string>();
+        //    var totCount = tot.Count();
+        //    for (int i = 0; i < totCount; i++)
+        //    {
+        //        var strVal = tot.ElementAt(i).ToString(CultureInfo.InvariantCulture);
+        //        //
+        //        addNewColumnName(totalColumns, strVal);
+        //    }
+
+        //    var lst = new List<object>();
+        //    var leftRCount = _index.Count;
+        //    var leftCCount =  ColCount();
+        //    var rightRCount = df2.RowCount();
+        //    var rightCCount = df2.ColCount();
+        //    var lastIndex = 0;
+
+        //    //left df enumeration
+        //    for (int i = 0; i < leftRCount; i++)
+        //    {
+        //        if (jType == JoinType.Left)
+        //        {
+        //            int startL = i * leftCCount;
+        //            for (int r = startL; r < startL + leftCCount; r++)
+        //                lst.Add(_values[r]);
+        //        }
+
+        //        //right df enumeration
+        //        var notFound = true;
+        //        for (int j = lastIndex; j < rightRCount; j++)
+        //        {
+        //            //
+        //            if (isEqual(df2, leftInd, rightInd, i, j))
+        //            {
+        //                if (jType == JoinType.Inner)
+        //                {
+        //                    int startL = i * leftCCount;
+        //                    for (int r = startL; r < startL + leftCCount; r++)
+        //                        lst.Add(_values[r]);
+        //                }
+        //                //
+        //                int startR = j * rightCCount;
+        //                for (int r = startR; r < startR + rightCCount; r++)
+        //                    lst.Add(df2._values[r]);
+
+        //                //when dfs are sorted, next row of the right df should not start from zero
+        //                if (sortedDataFrames)
+        //                    lastIndex = j + 1;
+        //                //
+        //                notFound = false;
+        //                break;
+        //            }
+        //        }
+        //        //in case of Left join and no right data found
+        //        // fill with NAN numbers
+        //        if (jType == JoinType.Left && notFound)
+        //        {
+        //            for (int r = 0; r < rightCCount; r++)
+        //                lst.Add(DataFrame.NAN);
+        //        }
+        //    }
+        //    //Now construct the Data frame
+        //    var newDf = new DataFrame(lst, totalColumns);
+        //    return newDf;
+
+        //}
+
+
+        /// <summary>
+        /// Join two df with Inner or Left join type.
+        /// </summary>
+        /// <param name="df2">Right data frame</param>
+        /// <param name="leftOn">Join columns from the left df</param>
+        /// <param name="rightOn">Join columns from the right df.</param>
+        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
+        /// <returns>New joined df.</returns>
+        public DataFrame Join(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
         {
             if (df2 == null)
                 throw new ArgumentException(nameof(df2));
@@ -577,10 +706,14 @@ namespace Daany
             if (leftOn.Length != rightOn.Length)
                 throw new Exception("Join column numbers are different!");
 
+            //we allow three column maximum to be criterion for join
+            if(leftOn.Length>3)
+                throw new Exception("Three columns for join is exceeded.");
+
             _dfTypes = columnsTypes();
+
             //get column indexes
             var leftInd = getColumnIndex(leftOn);
-            var rightInd = df2.getColumnIndex(rightOn);
 
             //merge columns
             var tot = Columns.ToList();
@@ -595,13 +728,20 @@ namespace Daany
                 addNewColumnName(totalColumns, strVal);
             }
 
+            //create right lookup 
+            var right = new List<ILookup<object, int>>();
+            var ind = Enumerable.Range(0, this.RowCount()).ToList();
+            foreach (var l in rightOn)
+            {
+                var lo = df2[l].Zip(ind, (key, value) => (key, value)).ToLookup(x => x.key, x => x.value);
+                right.Add(lo);
+            }
+
             var lst = new List<object>();
             var leftRCount = _index.Count;
-            var leftCCount =  ColCount();
+            var leftCCount = ColCount();
             var rightRCount = df2.RowCount();
             var rightCCount = df2.ColCount();
-            var lastIndex = 0;
-
             //left df enumeration
             for (int i = 0; i < leftRCount; i++)
             {
@@ -612,13 +752,13 @@ namespace Daany
                         lst.Add(_values[r]);
                 }
 
-                //right df enumeration
-                var notFound = true;
-                for (int j = lastIndex; j < rightRCount; j++)
+                var leftKey = this[i, leftInd[0]];
+                var rPos = containsKey(i, leftInd, right);
+                if (rPos != null)
                 {
-                    //
-                    if (isEqual(df2, leftInd, rightInd, i, j))
+                    for(int k=0;k<rPos.Length; k++)
                     {
+                        int j = rPos[k];
                         if (jType == JoinType.Inner)
                         {
                             int startL = i * leftCCount;
@@ -630,201 +770,76 @@ namespace Daany
                         for (int r = startR; r < startR + rightCCount; r++)
                             lst.Add(df2._values[r]);
 
-                        //when dfs are sorted, next row of the right df should not start from zero
-                        if (sortedDataFrames)
-                            lastIndex = j + 1;
-                        //
-                        notFound = false;
-                        break;
                     }
-                }
-                //in case of Left join and no right data found
-                // fill with NAN numbers
-                if (jType == JoinType.Left && notFound)
-                {
-                    for (int r = 0; r < rightCCount; r++)
-                        lst.Add(DataFrame.NAN);
-                }
-            }
-            //Now construct the Data frame
-            var newDf = new DataFrame(lst, totalColumns);
-            return newDf;
-
-        }
-
-        /// <summary>
-        /// Join two df with Inner or Left join type.
-        /// </summary>
-        /// <param name="df2">Right data frame</param>
-        /// <param name="leftOn">Join columns from the left df</param>
-        /// <param name="rightOn">Join columns from the right df.</param>
-        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
-        /// <param name="sortedDataFrames">Optimization provides the right df starts from the last index of the previously joined row </param>
-        /// <returns>New joined df.</returns>
-        internal DataFrame Join1(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
-        {
-            if (df2 == null)
-                throw new ArgumentException(nameof(df2));
-
-            if (leftOn == null)
-                throw new ArgumentException(nameof(leftOn));
-
-
-            if (rightOn == null)
-                throw new ArgumentException(nameof(rightOn));
-
-            if (leftOn.Length != rightOn.Length)
-                throw new Exception("Join column numbers are different!");
-
-            if (leftOn.Length > 3)
-                throw new Exception("Join can be performed with less than 4 columns.");
-
-            Dictionary<object, int> dic1 = null;
-            TwoKeysDictionary<object, object, int> dic2 = null;
-            ThreeKeysDictionary<object, object, object, int> dic3 = null;
-
-            if(leftOn.Length==1)
-                dic1 = df2.getIndex(rightOn[0]);
-            else if(leftOn.Length==2)
-                dic2 = df2.getIndex(rightOn[0], rightOn[1]);
-            else if (leftOn.Length==3)
-                dic3 = df2.getIndex(rightOn[0], rightOn[1], rightOn[2]);
-
-           
-            //get column indexes
-            var leftInd = getColumnIndex(leftOn);
-            var rightInd = df2.getColumnIndex(rightOn);
-
-            //merge columns
-            var tot = Columns.ToList();
-            tot.AddRange(df2.Columns);
-
-            var totalColumns = new List<string>();
-            var totCount = tot.Count();
-            for (int i = 0; i < totCount; i++)
-            {
-                var strVal = tot.ElementAt(i).ToString(CultureInfo.InvariantCulture);
-                //
-                addNewColumnName(totalColumns, strVal);
-            }
-
-            var lst = new List<object>();
-            var leftRCount = _index.Count;
-            var leftCCount = ColCount();
-            var rightRCount = df2.RowCount();
-            var rightCCount = df2.ColCount();
-
-            //left df enumeration
-            for (int i = 0; i < leftRCount; i++)
-            {
-                if (jType == JoinType.Left)
-                {
-                    int startL = i * leftCCount;
-                    for (int r = startL; r < startL + leftCCount; r++)
-                        lst.Add(_values[r]);
-                }
-
-                int j = containsKeys(dic1, dic2, dic3, i, leftInd);
-                if (j >= 0)
-                {
-                    if (jType == JoinType.Inner)
-                    {
-                        int startL = i * leftCCount;
-                        for (int r = startL; r < startL + leftCCount; r++)
-                            lst.Add(_values[r]);
-                    }
-                    //
-                    int startR = j * rightCCount;
-                    for (int r = startR; r < startR + rightCCount; r++)
-                        lst.Add(df2._values[r]);
+                   
                 }
                 else
                 {
-                    for (int r = 0; r < rightCCount; r++)
-                        lst.Add(DataFrame.NAN);
+                    //in case of Left join and no right data found
+                    // fill with NAN numbers
+                    if (jType == JoinType.Left)
+                    {
+                        for (int r = 0; r < rightCCount; r++)
+                            lst.Add(DataFrame.NAN);
+                    }
                 }
+
+                
+                
             }
             //Now construct the Data frame
             var newDf = new DataFrame(lst, totalColumns);
             return newDf;
 
         }
-
-        private int containsKeys(IDictionary<object, int> dic1, TwoKeysDictionary<object,object, int> dic2, ThreeKeysDictionary<object,object, object, int> dic3,int i, int[] leftInd)
+        /// <summary>
+        /// returns null if the left indexes are not contained in the right indexes. Otherwise returns list of position of the right df
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="leftInd"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        private int[] containsKey(int i, int[] leftInd, List<ILookup<object, int>> right)
         {
+            if (leftInd.Length != right.Count)
+                throw new Exception("The number o elements must be equal.");
+
+            var leftRow = this[i];
+
+            //try the first column
+            var lftValue = this[i, leftInd[0]];
+            if (!right[0].Contains(lftValue))
+                return null;
+
+            //in case one one joined column return
+            var firstIndexes= right[0][lftValue].ToArray();
             if (leftInd.Length == 1)
-            {
-                var val = this[i, leftInd[0]];
-                if (dic1.ContainsKey(val))
-                    return dic1[val];
-            }
-            else if (leftInd.Length == 2)
-            {
-                var val1 = this[i, leftInd[0]];
-                var val2 = this[i, leftInd[1]];
-                if (dic2.ContainsKey(val1, val2))
-                    return dic2[val1][val2];
-            }
-            else if (leftInd.Length == 3)
-            {
-                var val1 = this[i, leftInd[0]];
-                var val2 = this[i, leftInd[1]];
-                var val3 = this[i, leftInd[2]];
-                if (dic3.ContainsKey(val1, val2, val3))
-                    return dic3[val1][val2][val3];
-            }
-            else
-                throw new Exception("Not supported keys");
+                return firstIndexes;
 
-            return -1;
-        }
+            //check the second column
+            var lftValue2 = this[i, leftInd[1]];
+            if (!right[1].Contains(lftValue2))
+                return null;
+            var secondIndexes = right[1][lftValue2].ToArray();
+            //intersect two arrays
+            var firstSecondIndexes = firstIndexes.Intersect(secondIndexes).ToArray();
 
-        private Dictionary<object, int> getIndex(string colName)
-        {
-            var colInd = this.getColumnIndex(colName);
-            //make  indexes for right df.
-            var dict = new Dictionary<object, int>();
-            for (int i = 0; i < this.RowCount(); i++)
-            {
-                var key = this[i, colInd];
-                
-                dict.Add(key,i);
-            }
+            //no intersected elements
+            if (firstSecondIndexes.Length <= 0)
+                return null;
 
-            return dict;
-        }
-        private TwoKeysDictionary<object, object, int> getIndex(string colName1, string colName2)
-        {
-            var colInd = this.getColumnIndex(new string[] { colName1, colName2 });
-            //
-            //make  indexes for right df.
-            var dict = new TwoKeysDictionary<object,object, int>();
-            for (int i = 0; i < this.RowCount(); i++)
-            {
-                var key1 = this[i, colInd[0]];
-                var key2 = this[i, colInd[1]];
+            if (leftInd.Length == 2)
+                return firstSecondIndexes;
 
-                dict.Add(key1,key2, i);
-            }
+            //check the third column
+            var lftValue3 = this[i, leftInd[2]];
+            if (!right[2].Contains(lftValue3))
+                return null;
+            var thirdIndexes = right[2][lftValue3].ToArray();
 
-            return dict;
-        }
-        private ThreeKeysDictionary<object, object, object, int> getIndex(string colName1, string colName2, string colName3)
-        {
-            var colInd = this.getColumnIndex(new string[] { colName1, colName2, colName3 });
-            //
-            //make  indexes for right df.
-            var dict = new ThreeKeysDictionary<object, object, object, int>();
-            for (int i = 0; i < this.RowCount(); i++)
-            {
-                var key1 = this[i, colInd[0]];
-                var key2 = this[i, colInd[1]];
-                var key3 = this[i, colInd[2]];
+            var finalIndexes = firstSecondIndexes.Intersect(thirdIndexes).ToArray();
 
-                dict.Add(key1, key2, key3, i);
-            }
-
-            return dict;
+            return finalIndexes;
         }
 
         /// <summary>
@@ -1281,62 +1296,17 @@ namespace Daany
             return true;
         }
 
-        ///// <summary>
-        ///// Rolling method for performing various operation.
-        ///// </summary>
-        ///// <param name="indexColumn"></param>
-        ///// <param name="window">Rolling window size</param>
-        ///// <param name="agg">Aggregated operation.</param>
-        ///// <returns>New df with computed rolling operations</returns>
-        //public DataFrame Rolling(string indexColumn, int window, Aggregation agg)
-        //{
-        //    var aggD = new Dictionary<string, Aggregation>();
-        //    foreach (var col in Columns.Where(x => indexColumn != x))
-        //        aggD.Add(col, agg);
-        //    //
-        //    return Rolling(new string[] { indexColumn}, window, aggD);
-        //}
-
-        /// <summary>
-        /// Perform aggregate operation of list of columns, the rest of the column will be ignored and takes the last element
-        /// </summary>
-        /// <param name="indCols">indexes of the columns</param>
-        /// <param name="agg"></param>
-        /// <returns></returns>
-        //public List<object> Aggregations(List<string> indCols, Aggregation agg)
-        //{
-        //    if (indCols == null || indCols.Count == 0)
-        //        throw new Exception("'indCols' argument cannot be null");
-
-        //    var aggValues = new List<object>();
-        //    for (int i = 0; i < Columns.Count; i++)
-        //    {
-        //        if (indCols.Contains(Columns[i]))//grouped columns just skip and take the last one
-        //            aggValues.Add(this[Columns[i]].Last());
-        //        else
-        //        {
-        //            var ag = calculateAggregation(this[Columns[i]], agg);
-        //            aggValues.Add(ag);
-        //        }
-        //    }
-        //    return aggValues;
-        //}
-
-        //public List<object> Aggregations(string[] indCols, Aggregation agg)
-        //{
-        //    return Aggregations(indCols.ToList(), agg);
-        //}
         /// <summary>
         /// Perform aggregate operation on the list of columns. For incomplete list, the rest of the column will be ignored and takes the last element
         /// </summary>
         /// <param name="indCols">indexes of the columns</param>
         /// <param name="agg"></param>
         /// <returns></returns>
-        public List<object> Aggregations(IDictionary<string, Aggregation> aggs)
+        public List<object> Aggragate(IDictionary<string, Aggregation> aggs)
         {
             if (aggs == null)
                 throw new Exception("List of columns or list of aggregation cannot be null.");
-
+            this._dfTypes = columnsTypes();
             var aggValues = new List<object>();
             for (int i = 0; i < Columns.Count; i++)
             {
@@ -1344,13 +1314,67 @@ namespace Daany
                     aggValues.Add(this[Columns[i]].Last());
                 else
                 {
-                    var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]]);
+                    var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]], this._dfTypes[i]);
                     aggValues.Add(ag);
                 }
             }
             return aggValues;
         }
 
+        /// <summary>
+        /// Perform aggregate operation on the list of columns. 
+        /// For one column it can be setup more than one aggregate operations
+        /// </summary>
+        /// <param name="indCols">indexes of the columns</param>
+        /// <param name="agg"></param>
+        /// <returns></returns>
+        public DataFrame Aggragate(IDictionary<string, Aggregation[]> aggs)
+        {
+            if (aggs == null)
+                throw new Exception("List of columns or list of aggregation cannot be null.");
+            //
+            this._dfTypes = columnsTypes();
+            //
+            var aggValues = new TwoKeysDictionary<string, object, object>();
+            for (int i = 0; i < Columns.Count; i++)
+            {
+                if (aggs.ContainsKey(Columns[i]))
+                {
+                    for(int j=0; j < aggs[Columns[i]].Length; j++)
+                    {
+                        var column = Columns[i];
+                        var key = aggs[Columns[i]][j];
+                        var value = calculateAggregation(this[Columns[i]], key, this._dfTypes[i]);
+                        //
+                        if (value is double)
+                            value = Math.Round(Convert.ToDouble(value), 6);
+                        //
+                        else if (value is float)
+                            value = Math.Round(Convert.ToSingle(value), 6);
+                        aggValues.Add(column,key.GetEnumDescription(), value);
+                    }                    
+                }
+            }
+
+            //create dataframe
+            var df = new DataFrame(aggValues);
+            return df;
+        }
+
+        /// <summary>
+        /// Create new DataFrame containing rolling values of all column supported the aggregate operation. 
+        /// In case the aggregation is not support for certain columns the column is dropped
+        /// </summary>
+        /// <param name="window">Rolling size.</param>
+        /// <param name="agg">Aggregate operation.</param>
+        /// <returns></returns>
+        public DataFrame Rolling(int window, Aggregation agg)
+        {
+            var dic = new Dictionary<string, Aggregation>();
+            foreach (var c in this._columns)
+                dic.Add(c, agg);
+            return Rolling(window,dic);
+        }
         /// <summary>
         /// Create new dataFrame containing rolling values of specified columns of the data frame
         /// </summary>
@@ -1367,37 +1391,42 @@ namespace Daany
             int rolIndex = 1;
             var rRolls = new Dictionary<string, Queue<object>>();
             var aggrValues = new Dictionary<string, List<object>>();
+            this._dfTypes = columnsTypes();
+            //
             for (int i = 0; i < _index.Count; i++)
             {
                 for (int j = 0; j < ColCount(); j++)
                 {
-                    var colValue = Columns[j];
-                    if (agg.ContainsKey(colValue))
+                    var colName = this._columns[j];
+                    if (agg.ContainsKey(colName) && isOperationSupported(this._dfTypes[j], agg[colName]))
                     {
                         if (i == 0)
                         {
                             //add coll used for rolling operation
-                            rRolls.Add(colValue, new Queue<object>(window));
+                            rRolls.Add(colName, new Queue<object>(window));
                             //add calculated rolling column
-                            aggrValues.Add(colValue, new List<object>());
+                            aggrValues.Add(colName, new List<object>());
                         }
 
                         //add value to rolling list
-                        rRolls[colValue].Enqueue(_values[index]);
+                        rRolls[colName].Enqueue(_values[index]);
 
                         //rolling aggregation calculation
                         if (i + 1 < window)
                         {
-                            aggrValues[colValue].Add(NAN);
+                            if (agg[colName] == Aggregation.Count)
+                                aggrValues[colName].Add(i + 1);
+                            else
+                                aggrValues[colName].Add(NAN);
                         }
                         else
                         {
-                            var vals = rRolls[colValue].Select(x => x);
-                            var value = calculateAggregation(vals, agg[colValue]);
-                            aggrValues[colValue].Add(value);
+                            var vals = rRolls[colName].Select(x => x);
+                            var value = calculateAggregation(vals, agg[colName], this._dfTypes[j]);
+                            aggrValues[colName].Add(value);
 
                             //remove the last one, so the next item can be add to the first position
-                            rRolls[colValue].Dequeue();
+                            rRolls[colName].Dequeue();
                         }
                     }
 
@@ -1409,31 +1438,30 @@ namespace Daany
                 }
             }
 
-            //add index column to rolledValues
-            var newColList = new List<string>();
-            DataFrame dff=null;
-            foreach (var colName in this._columns)
-            {
-                if (agg.Keys.Contains(colName))
-                {
-                    if (dff == null)
-                        dff = new DataFrame(aggrValues[colName], new List<string> { colName });
-                    else
-                        dff.InsertColumn(colName, aggrValues[colName], -1);
-                }
-                else
-                {
-                    if (dff == null)
-                        dff = new DataFrame(this[colName].ToList(), new List<string> { colName });
-                    else
-                        dff.InsertColumn(colName, this[colName].ToList(), -1);
-                }
+            ////add index column to rolledValues
+            //var newColList = new List<string>();
+            //DataFrame dff=null;
+            //foreach (var colName in this._columns)
+            //{
+            //    if (agg.Keys.Contains(colName))
+            //    {
+            //        if (dff == null)
+            //            dff = new DataFrame(aggrValues[colName], new List<string> { colName });
+            //        else
+            //            dff.InsertColumn(colName, aggrValues[colName], -1);
+            //    }
+            //    else
+            //    {
+            //        if (dff == null)
+            //            dff = new DataFrame(this[colName].ToList(), new List<string> { colName });
+            //        else
+            //            dff.InsertColumn(colName, this[colName].ToList(), -1);
+            //    }
 
-            }
+            //}
             //
-            return dff;
+            return new DataFrame(aggrValues);
         }
-
 
         /// <summary>
         /// Returns data frame consisted of every nth row
@@ -1918,6 +1946,7 @@ namespace Daany
             }
             return sb.ToString();
         }
+
         public string ToConsole(int rowCount = 15)
         {
             StringBuilder sb = new StringBuilder();
@@ -1960,21 +1989,26 @@ namespace Daany
                 sb.Append("_");
             return sb.ToString();
         }
-
+       
         /// <summary>
         /// Prints basic descriptive statistics values of the data frame
         /// </summary>
-        /// <param name="numericOnly">Include only numeric columns.</param>
-        /// <param name="inclColumns">Specified columns</param>
+        /// <param name="numericOnly"></param>
+        /// <param name="inclColumns"></param>
         /// <returns></returns>
         public DataFrame Describe(bool numericOnly = true, params string[] inclColumns)
         {
+            var aggOp = new Aggregation[] 
+            {
+                Aggregation.Count,Aggregation.Unique,Aggregation.Top, Aggregation.Frequency, Aggregation.Avg, 
+                Aggregation.Std,Aggregation.Min, Aggregation.FirstQuartile,Aggregation.Median, Aggregation.ThirdQuartile, Aggregation.Max
+            };
             var types = this.columnsTypes();
             var lstCols = new List<(string cName, ColType cType)>();
             var idxs = getColumnIndex(inclColumns);
 
             //include columns
-            if (inclColumns == null || inclColumns.Length==0)
+            if (inclColumns == null || inclColumns.Length == 0)
             {
                 for (int i = 0; i < this.Columns.Count(); i++)
                 {
@@ -1991,28 +2025,63 @@ namespace Daany
             }
 
             //only numeric columns
-            var finalCols = new List<(string cName, ColType cType)>();
+            var finalCols = new Dictionary<string, Aggregation[]>(); // new List<(string cName, ColType cType)>();
             for (int i = 0; i < lstCols.Count(); i++)
             {
-                if(numericOnly)
+                if (numericOnly)
                 {
                     if (isNumeric(lstCols[i].cType))
-                        finalCols.Add(lstCols[i]);
+                        finalCols.Add(lstCols[i].cName,aggOp);
                 }
                 else //if(!isNumeric(lstCols[i].cType) && !numericOnly)
-                    finalCols.Add(lstCols[i]);
+                    finalCols.Add(lstCols[i].cName, aggOp);
             }
 
-            DataFrame dfDescr = describeColumns(finalCols);
+            DataFrame dfDescr = Aggragate(finalCols);
             //
             return dfDescr;
         }
 
 
-
         #endregion
 
         #region Private
+
+        private bool isOperationSupported(ColType colType, Aggregation aggOperation)
+        {
+            switch (colType)
+            {
+                case ColType.I2://boolean
+                case ColType.IN://categorical
+                case ColType.STR://string
+                    {
+                        if (aggOperation == Aggregation.Count
+                            || aggOperation == Aggregation.First
+                            || aggOperation == Aggregation.Last
+                            )
+                            return true;
+                        else
+                            return false;
+                    }
+                case ColType.I32:
+                case ColType.I64:
+                case ColType.F32:
+                case ColType.DD:
+                    return true;
+                case ColType.DT:
+                    {
+                        if (aggOperation == Aggregation.Avg
+                           || aggOperation == Aggregation.Std
+                           || aggOperation == Aggregation.Sum
+                           )
+                            return false;
+                        else
+                            return true;
+                    }
+                default:
+                    throw new Exception("The column type is not supported.");
+            }
+        }
         private void rowToArray(object[] processingRow, int rowIndex)
         {
             if (processingRow == null && processingRow.Length != ColCount())
@@ -2046,167 +2115,7 @@ namespace Daany
             return;
         }
 
-        private DataFrame describeColumns(List<(string cName, ColType cType)> columns)
-        {
-            var dicDf = new Dictionary<string, List<object>>();
-            // 
-            var dicColumn = new Dictionary<string, object>();
-            dicColumn.Add("count",    null); 
-            dicColumn.Add("unique",   null);
-            dicColumn.Add("top",      null);
-            dicColumn.Add("mode",     null); 
-            dicColumn.Add("mean",     null); 
-            dicColumn.Add("std",      null);
-            dicColumn.Add("min",      null); 
-            dicColumn.Add("25%",      null); 
-            dicColumn.Add("50%",      null); 
-            dicColumn.Add("75%",      null);
-            dicColumn.Add("max",      null);
-            dicDf.Add("count", new List<object>());
-            dicDf.Add("unique", new List<object>());
-            dicDf.Add("top", new List<object>());
-            dicDf.Add("mode", new List<object>());
-            dicDf.Add("mean", new List<object>());
-            dicDf.Add("std", new List<object>());
-            dicDf.Add("min", new List<object>());
-            dicDf.Add("25%", new List<object>());
-            dicDf.Add("50%", new List<object>());
-            dicDf.Add("75%", new List<object>());
-            dicDf.Add("max", new List<object>());
-            //
-            for (int i=0; i < columns.Count(); i++)
-            {
-                if (isNumeric(columns[i].cType))
-                {
-                    //exclude null values
-                    var val = this[columns[i].cName].Where(x=> x!=null).Select(x => Convert.ToDouble(x)).ToArray();
-                    describeColumn(dicColumn, val);
-                    dicColumn["count"] = this[columns[i].cName].Count();
-                }
-                else if(isCategorical(columns[i].cType))
-                {
-                    //exclude null values
-                    var val = this[columns[i].cName].Where(x => x != null).Select(x => x).ToArray();
-                    describeCatColumn(dicColumn, val);
-                    dicColumn["count"] = this[columns[i].cName].Count();//count with missing values
-                }
-                else if (isDateTime(columns[i].cType))
-                {
-                    var val = this[columns[i].cName].Where(x => x != null).Select(x => Convert.ToDateTime(x)).ToArray();
-                    describeDTColumn(dicColumn, val);
-                    dicColumn["count"] = this[columns[i].cName].Count();//count with missing values
-                }
-                else if(isObject(columns[i].cType))
-                {
-                    var val = this[columns[i].cName].Where(x => x != null).Select(x => x).ToArray();
-                    describeObjColumn(dicColumn, val);
-                    dicColumn["count"] = this[columns[i].cName].Count();//count with missing values
-                }
-                else
-                    throw new Exception("Unknown column type.");
-                //add calculated values to df dictionary
-                foreach (var d in dicColumn)
-                    dicDf[d.Key].Add(d.Value);
-            }
-
-            //constuct the data frame
-           var lst = new List<object>();
-           var index = new List<object>();
-           foreach(var v in dicDf)
-            {
-                var l = dicDf[v.Key];
-                //check if some row is null
-                if(l.Any(d=> d!=null))
-                {
-                    index.Add(v.Key);
-                    for (int i = 0; i < l.Count; i++)
-                    {
-                        lst.Add(l[i]==null?float.NaN:l[i]);
-                    }
-                }
-                
-            }
-
-            //
-            var lstCols = new List<string>();
-            lstCols.AddRange(columns.Select(c=>c.cName));
-
-           //cretae data frame
-           var df = new DataFrame();
-           df._values = lst;
-           df._index = index;
-           df._columns = lstCols;
-           return df;
-
-        }
- 
-        private void describeColumn(Dictionary<string, object> dic, double[] colValue)
-        {
-            //
-            dic["unique"]   = null;
-            dic["top"]      = null;
-            dic["mode"]     = null;
-            dic["mean"]     = Math.Round(colValue.MeanOf(),6);
-            dic["std"]      = Math.Round(colValue.Stdev(),6);
-            dic["min"]      = Math.Round(colValue.Min(),6);
-            dic["25%"]      = Math.Round(colValue.Percentile(25), 6);
-            dic["50%"]      = Math.Round(colValue.MedianOf(),6);
-            dic["75%"]      = Math.Round(colValue.Percentile(75), 6);
-            dic["max"]      = Math.Round(colValue.Max(),6);
-            return;
-        }
-        
-        static private void describeCatColumn(Dictionary<string, object> dic, object[] colValue)
-        {
-            //
-            //dic["count"]    = colValue.Length;
-            dic["unique"]   = Math.Round((double)colValue.Distinct().Count(), 6); 
-            dic["top"]      = colValue.First();
-            dic["mode"]     = colValue.ModeOf();
-            dic["mean"]     = null;
-            dic["std"]  = null;
-            dic["min"]  = null;
-            dic["25%"]  = null;
-            dic["50%"]  = null;
-            dic["75%"]  = null;
-            dic["max"]  = null;
-            return;
-        }
-
-        static private void describeObjColumn(Dictionary<string, object> dic, object[] colValue)
-        {
-            //
-            //dic["count"] = colValue.Length;
-            dic["unique"] = Math.Round((double)colValue.Distinct().Count(), 6);
-            dic["top"] = colValue.First();
-            dic["mode"] = colValue.ModeOf();
-            dic["mean"] = null;
-            dic["std"] = null;
-            dic["min"] = null;
-            dic["25%"] = null;
-            dic["50%"] = null;
-            dic["75%"] = null;
-            dic["max"] = null;
-            return;
-        }
-
-        static private void describeDTColumn(Dictionary<string, object> dic, DateTime[] colValue)
-        {
-            //
-            //dic["count"] = colValue.Length;
-            dic["unique"] = Math.Round((double)colValue.Distinct().Count(), 6);
-            dic["top"] = colValue.First();
-            dic["mode"] = colValue.ModeOf();
-            dic["mean"] = null;
-            dic["std"] = null;
-            dic["min"] = colValue.Min();
-            dic["25%"] = null;
-            dic["50%"] = null;
-            dic["75%"] = null;
-            dic["max"] = colValue.Max();
-            return;
-        }
-
+      
         static private bool isNumeric(ColType cType)
         {
             if (cType == ColType.I32 || cType == ColType.I64 || cType == ColType.F32 || cType == ColType.DD)
@@ -2398,10 +2307,8 @@ namespace Daany
                 }
 
             }
-
-
         }
-
+        
         private static readonly string[] _missingCharacters = new string[] { "n/a", "?", "*", };
 
         private static bool IsNumeric(string value)
@@ -2571,83 +2478,83 @@ namespace Daany
             return true;
         }
 
-        private bool isEqual(DataFrame df2, int[] leftInd, int[] rightInd, int i, int j)
-        {
-            bool isEqual = true;
-            int lInd = calculateIndex(i, 0);
-            var numCols = df2.ColCount();
-            var rInd = j * numCols;
+        //private bool isEqual(DataFrame df2, int[] leftInd, int[] rightInd, int i, int j)
+        //{
+        //    bool isEqual = true;
+        //    int lInd = calculateIndex(i, 0);
+        //    var numCols = df2.ColCount();
+        //    var rInd = j * numCols;
 
-            for (int k = 0; k < leftInd.Length; k++)
-            {
-                var li = lInd + leftInd[k];
-                var ri = rInd + rightInd[k];
+        //    for (int k = 0; k < leftInd.Length; k++)
+        //    {
+        //        var li = lInd + leftInd[k];
+        //        var ri = rInd + rightInd[k];
 
-                if (df2._values[ri] == NAN || _values[li] == NAN)
-                    return false;
-                else if (this._dfTypes[leftInd[k]] == ColType.I2)
-                {
-                    //
-                    if (Convert.ToBoolean(_values[li], CultureInfo.InvariantCulture) != Convert.ToBoolean(df2._values[ri], CultureInfo.InvariantCulture))
-                    {
-                        return false;
-                    }
-                }
-                else if (this._dfTypes[leftInd[k]] == ColType.I32)
-                {
-                    //
-                    if (Convert.ToInt32(_values[li], CultureInfo.InvariantCulture) != Convert.ToInt32(df2._values[ri], CultureInfo.InvariantCulture))
-                    {
-                        return false;
-                    }
-                }
-                else if (this._dfTypes[leftInd[k]] == ColType.I64)
-                {
-                    //
-                    if (Convert.ToInt64(_values[li], CultureInfo.InvariantCulture) != Convert.ToInt64(df2._values[ri], CultureInfo.InvariantCulture))
-                    {
-                        return false;
-                    }
-                }
-                else if (this._dfTypes[leftInd[k]] == ColType.F32)
-                {
-                    //
-                    if (Convert.ToSingle(_values[li], CultureInfo.InvariantCulture) != Convert.ToSingle(df2._values[ri], CultureInfo.InvariantCulture))
-                    {
-                        return false;
-                    }
-                }
-                else if (this._dfTypes[leftInd[k]] == ColType.DD)
-                {
-                    //
-                    if (Convert.ToDouble(_values[li], CultureInfo.InvariantCulture) != Convert.ToDouble(df2._values[ri], CultureInfo.InvariantCulture))
-                    {
-                        return false;
-                    }
-                }
-                else if (this._dfTypes[leftInd[k]] == ColType.STR)
-                {
-                    //
-                    if (Convert.ToString(_values[li], CultureInfo.InvariantCulture) != Convert.ToString(df2._values[ri], CultureInfo.InvariantCulture))
-                    {
-                        return false;
-                    }
-                }
-                else if (this._dfTypes[leftInd[k]] == ColType.DT)
-                {
-                    //
-                    if (Convert.ToDateTime(_values[li], CultureInfo.InvariantCulture) != Convert.ToDateTime(df2._values[ri], CultureInfo.InvariantCulture))
-                    {
-                        return false;
-                    }
-                }
-                else
-                    throw new Exception("Unknown column type");
+        //        if (df2._values[ri] == NAN || _values[li] == NAN)
+        //            return false;
+        //        else if (this._dfTypes[leftInd[k]] == ColType.I2)
+        //        {
+        //            //
+        //            if (Convert.ToBoolean(_values[li], CultureInfo.InvariantCulture) != Convert.ToBoolean(df2._values[ri], CultureInfo.InvariantCulture))
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        else if (this._dfTypes[leftInd[k]] == ColType.I32)
+        //        {
+        //            //
+        //            if (Convert.ToInt32(_values[li], CultureInfo.InvariantCulture) != Convert.ToInt32(df2._values[ri], CultureInfo.InvariantCulture))
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        else if (this._dfTypes[leftInd[k]] == ColType.I64)
+        //        {
+        //            //
+        //            if (Convert.ToInt64(_values[li], CultureInfo.InvariantCulture) != Convert.ToInt64(df2._values[ri], CultureInfo.InvariantCulture))
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        else if (this._dfTypes[leftInd[k]] == ColType.F32)
+        //        {
+        //            //
+        //            if (Convert.ToSingle(_values[li], CultureInfo.InvariantCulture) != Convert.ToSingle(df2._values[ri], CultureInfo.InvariantCulture))
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        else if (this._dfTypes[leftInd[k]] == ColType.DD)
+        //        {
+        //            //
+        //            if (Convert.ToDouble(_values[li], CultureInfo.InvariantCulture) != Convert.ToDouble(df2._values[ri], CultureInfo.InvariantCulture))
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        else if (this._dfTypes[leftInd[k]] == ColType.STR)
+        //        {
+        //            //
+        //            if (Convert.ToString(_values[li], CultureInfo.InvariantCulture) != Convert.ToString(df2._values[ri], CultureInfo.InvariantCulture))
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        else if (this._dfTypes[leftInd[k]] == ColType.DT)
+        //        {
+        //            //
+        //            if (Convert.ToDateTime(_values[li], CultureInfo.InvariantCulture) != Convert.ToDateTime(df2._values[ri], CultureInfo.InvariantCulture))
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        else
+        //            throw new Exception("Unknown column type");
 
-            }
+        //    }
 
-            return isEqual;
-        }
+        //    return isEqual;
+        //}
 
         private ColType[] columnsTypes()
         {
@@ -2690,31 +2597,6 @@ namespace Daany
                     throw new Exception("Unknown column type");
             }
             return types;
-        }
-
-        private static object calculateAggregation(IEnumerable<object> vals, Aggregation aggregation)
-        {
-            switch (aggregation)
-            {
-                case Aggregation.First:
-                    return vals.First();
-                case Aggregation.Last:
-                    return vals.Last();
-                case Aggregation.Count:
-                    return vals.Count();
-                case Aggregation.Sum:
-                    return vals.Sum(x => Convert.ToDouble(x));
-                case Aggregation.Avg:
-                    return vals.Average(x => Convert.ToDouble(x));
-                case Aggregation.Min:
-                    return vals.Min(x => Convert.ToDouble(x));
-                case Aggregation.Max:
-                    return vals.Max(x => Convert.ToDouble(x));
-                case Aggregation.Std:
-                    return vals.Select(x => Convert.ToDouble(x)).ToArray().Stdev();
-                default:
-                    throw new Exception("Aggregation function is unknown.");
-            }
         }
 
         private int calculateIndex(string col, int row)

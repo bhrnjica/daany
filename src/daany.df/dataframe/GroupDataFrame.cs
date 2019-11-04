@@ -192,12 +192,22 @@ namespace Daany
 
         public DataFrame Rolling(int rollingWindow, int window, Dictionary<string, Aggregation> agg)
         {
+            //create columns and aggregation
+            var ag = new Dictionary<string, Aggregation>();
+            ag.Add(this.GroupedColumn, Daany.Aggregation.Last);
+            if (Groups != null && Groups.Count > 0)
+                ag.Add(this.SecondGroupedColumn,Daany.Aggregation.Last);
+            if (Group3 != null && Group3.Count > 0)
+                ag.Add(this.ThirdGroupedColumn, Daany.Aggregation.Last);
+            foreach (var d in agg)
+                ag.Add(d.Key,d.Value);
+            //
             DataFrame df = null;
             if(Group!=null && Group.Count >0)
             {
                 foreach (var gr in Group)
                 {
-                    var df1 = gr.Value.Rolling(rollingWindow, agg).TakeEvery(window);
+                    var df1 = gr.Value.Rolling(rollingWindow, ag).TakeEvery(window);
                     if (df == null)
                         df = new DataFrame(df1);
                     else
@@ -208,7 +218,7 @@ namespace Daany
             {
                 foreach (var gr in Keys2)
                 {
-                    var df1 = this.Groups[gr.key1][gr.key2].Rolling(rollingWindow, agg).TakeEvery(window);
+                    var df1 = this.Groups[gr.key1][gr.key2].Rolling(rollingWindow, ag).TakeEvery(window);
                     if (df == null)
                         df = new DataFrame(df1);
                     else
@@ -219,7 +229,7 @@ namespace Daany
             {
                 foreach (var gr in Keys3)
                 {
-                    var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Rolling(rollingWindow, agg).TakeEvery(window);
+                    var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Rolling(rollingWindow, ag).TakeEvery(window);
                     if (df == null)
                         df = new DataFrame(df1);
                     else
@@ -249,7 +259,7 @@ namespace Daany
                 {
                     var lst = new List<string>();
                     lst.Add(GroupedColumn);
-                    var row = gr.Value.Aggregations(agg);
+                    var row = gr.Value.Aggragate(agg);
                     df1.AddRow(row);
                 }
 
@@ -266,7 +276,7 @@ namespace Daany
                     lst.Add(SecondGroupedColumn);
                     foreach(var g2 in gr.Value)
                     {
-                        var row = g2.Value.Aggregations(agg);
+                        var row = g2.Value.Aggragate(agg);
                         df1.AddRow(row);
                     }
                    
@@ -287,7 +297,7 @@ namespace Daany
                     {
                         foreach (var g3 in g2.Value)
                         {
-                            var row = g3.Value.Aggregations(agg);
+                            var row = g3.Value.Aggragate(agg);
                             df1.AddRow(row);
                         }
                     }

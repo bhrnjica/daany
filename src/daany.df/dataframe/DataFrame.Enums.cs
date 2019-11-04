@@ -12,6 +12,8 @@
 // Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
+using System.ComponentModel;
+
 namespace Daany
 {
     public enum FilterOperator
@@ -52,9 +54,20 @@ namespace Daany
         Last,
         Count,
         Sum,
+        [Description("Mean")]
         Avg,
         Min,
         Max,
         Std,
+        Unique,
+        Top,
+        Mode,
+        Median,
+        [Description("25%")]
+        FirstQuartile,
+        [Description("75%")]
+        ThirdQuartile,
+        [Description("Freq")]
+        Frequency
     }
 }

@@ -26,39 +26,7 @@ namespace Daany.MathExt
     /// </summary>
     public static class BasicStatistics
     {
-        /// <summary>
-        /// Calculate mode value of array of numbers. Mode represent the most frequent element in the array 
-        /// </summary>
-        /// <param name="colData"> array of values </param>
-        /// <returns>calculated mode</returns>
-        //public static double ModeOf(this double[] colData)
-        //{
-        //    if (colData == null || colData.Length < 2)
-        //        throw new Exception("'coldData' cannot be null or empty!");
-
-        //    Dictionary<int, int> counts = new Dictionary<int, int>();
-        //    foreach (int a in colData)
-        //    {
-        //        if (counts.ContainsKey(a))
-        //            counts[a] = counts[a] + 1;
-        //        else
-        //            counts[a] = 1;
-        //    }
-
-        //    int result = int.MinValue;
-        //    int max = int.MinValue;
-        //    foreach (int key in counts.Keys)
-        //    {
-        //        if (counts[key] > max)
-        //        {
-        //            max = counts[key];
-        //            result = key;
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
+      
         /// <summary>
         /// Calculate mode value of array of numbers. Mode represent the most frequent element in the array 
         /// </summary>
@@ -95,21 +63,7 @@ namespace Daany.MathExt
             return result;
         }
 
-        ///// <summary>
-        ///// Select random element from the array
-        ///// </summary>
-        ///// <param name="colData"> array of values </param>
-        ///// <returns>random element</returns>
-        //public static double RandomOf(this double[] colData)
-        //{
-        //    if (colData == null || colData.Length < 2)
-        //        throw new Exception("'coldData' cannot be null or empty!");
-
-        //    Random rand = new Random((int)DateTime.Now.Ticks);
-        //    var randIndex= rand.Next(0,colData.Length);
-        //    return colData[randIndex];
-        //}
-
+        
         /// <summary>
         /// Select random element from the array
         /// </summary>
@@ -125,7 +79,24 @@ namespace Daany.MathExt
             return colData[randIndex];
         }
 
+        /// <summary>
+        /// Calculate frequency of the set
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <returns></returns>
+        public static List<(object, int)> FrequencyOf(this object[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or empty!");
 
+            var query = from r in colData
+                        group r by r into g
+                        select (g.Key, g.Count());
+
+            return query.OrderByDescending(x=>x.Item2).ToList();
+        }
+
+        #region Mean-Average
         /// <summary>
         /// Calculate mean value of array of numbers. 
         /// </summary>
@@ -146,7 +117,69 @@ namespace Daany.MathExt
 
             return retVal;
         }
+        /// <summary>
+        /// Calculate mean value of array of numbers. 
+        /// </summary>
+        /// <param name="colData"> array of values </param>
+        /// <returns>calculated mean</returns>
+        public static float MeanOf(this float[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or empty!");
 
+            //calculate summ of the values
+            float sum = 0;
+            for (int i = 0; i < colData.Length; i++)
+                sum += colData[i];
+
+            //calculate mean
+            float retVal = sum / colData.Length;
+
+            return retVal;
+        }
+        /// <summary>
+        /// Calculate mean value of array of numbers. 
+        /// </summary>
+        /// <param name="colData"> array of values </param>
+        /// <returns>calculated mean</returns>
+        public static float MeanOf(this int[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or empty!");
+
+            //calculate summ of the values
+            float sum = 0;
+            for (int i = 0; i < colData.Length; i++)
+                sum += colData[i];
+
+            //calculate mean
+            float retVal = sum / colData.Length;
+
+            return retVal;
+        }
+        /// <summary>
+        /// Calculate mean value of array of numbers. 
+        /// </summary>
+        /// <param name="colData"> array of values </param>
+        /// <returns>calculated mean</returns>
+        public static float MeanOf(this long[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or empty!");
+
+            //calculate summ of the values
+            float sum = 0;
+            for (int i = 0; i < colData.Length; i++)
+                sum += colData[i];
+
+            //calculate mean
+            float retVal = sum / colData.Length;
+
+            return retVal;
+        }
+        #endregion 
+
+        #region Median
         /// <summary>
         /// Calculate median value of array of numbers. 
         /// If there is an odd number of data values 
@@ -163,9 +196,178 @@ namespace Daany.MathExt
             if (colData == null || colData.Length < 2)
                 throw new Exception("'coldData' cannot be null or empty!");
 
-            return Percentile(colData, 50);
+            //initial mean value
+            double median = 0;
+            int medianIndex = colData.Length / 2;
+
+            //make a deep copy of the data
+            var temp = new double[colData.Length];
+            Array.Copy(colData, temp, colData.Length);
+            //sort the values
+
+            Array.Sort(temp);
+
+            //in case we have odd number of elements in data set
+            // median is just in the middle of the dataset
+            if (temp.Length % 2 == 1)
+            {
+                // 
+                median = temp[medianIndex];
+            }
+            else//otherwise calculate average between two element in the middle
+            {
+                var val1 = temp[medianIndex - 1];
+                var val2 = temp[medianIndex];
+
+                //calculate the median
+                median = (val1 + val2) / 2;
+            }
+
+            return median;
         }
 
+        /// <summary>
+        /// Calculate median value of array of numbers. 
+        /// If there is an odd number of data values 
+        /// then the median will be the value in the middle. 
+        /// If there is an even number of data values the median 
+        /// is the mean of the two data values in the middle. 
+        /// For the data set 1, 1, 2, 5, 6, 6, 9 the median is 5. 
+        /// For the data set 1, 1, 2, 6, 6, 9 the median is 4.
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <returns></returns>
+        public static float MedianOf(this float[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or empty!");
+
+            //initial mean value
+            float median = 0;
+            int medianIndex = colData.Length / 2;
+
+            //make a deep copy of the data
+            var temp = new float[colData.Length];
+            Array.Copy(colData, temp, colData.Length);
+            //sort the values
+
+            Array.Sort(temp);
+
+            //in case we have odd number of elements in data set
+            // median is just in the middle of the dataset
+            if (temp.Length % 2 == 1)
+            {
+                // 
+                median = temp[medianIndex];
+            }
+            else//otherwise calculate average between two element in the middle
+            {
+                var val1 = temp[medianIndex - 1];
+                var val2 = temp[medianIndex];
+
+                //calculate the median
+                median = (val1 + val2) / 2;
+            }
+
+            return median;
+        }
+
+        /// <summary>
+        /// Calculate median value of array of numbers. 
+        /// If there is an odd number of data values 
+        /// then the median will be the value in the middle. 
+        /// If there is an even number of data values the median 
+        /// is the mean of the two data values in the middle. 
+        /// For the data set 1, 1, 2, 5, 6, 6, 9 the median is 5. 
+        /// For the data set 1, 1, 2, 6, 6, 9 the median is 4.
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <returns></returns>
+        public static float MedianOf(this int[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or empty!");
+
+            //initial mean value
+            float median = 0;
+            int medianIndex = colData.Length / 2;
+
+            //make a deep copy of the data
+            var temp = new int[colData.Length];
+            Array.Copy(colData, temp, colData.Length);
+            //sort the values
+
+            Array.Sort(temp);
+
+            //in case we have odd number of elements in data set
+            // median is just in the middle of the dataset
+            if (temp.Length % 2 == 1)
+            {
+                // 
+                median = temp[medianIndex];
+            }
+            else//otherwise calculate average between two element in the middle
+            {
+                var val1 = temp[medianIndex - 1];
+                var val2 = temp[medianIndex];
+
+                //calculate the median
+                median = (val1 + val2) / 2f;
+            }
+
+            return median;
+        }
+
+        /// <summary>
+        /// Calculate median value of array of numbers. 
+        /// If there is an odd number of data values 
+        /// then the median will be the value in the middle. 
+        /// If there is an even number of data values the median 
+        /// is the mean of the two data values in the middle. 
+        /// For the data set 1, 1, 2, 5, 6, 6, 9 the median is 5. 
+        /// For the data set 1, 1, 2, 6, 6, 9 the median is 4.
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <returns></returns>
+        public static float MedianOf(this long[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or empty!");
+
+            //initial mean value
+            float median = 0;
+            int medianIndex = colData.Length / 2;
+
+            //make a deep copy of the data
+            var temp = new long[colData.Length];
+            Array.Copy(colData, temp, colData.Length);
+            //sort the values
+
+            Array.Sort(temp);
+
+            //in case we have odd number of elements in data set
+            // median is just in the middle of the dataset
+            if (temp.Length % 2 == 1)
+            {
+                // 
+                median = temp[medianIndex];
+            }
+            else//otherwise calculate average between two element in the middle
+            {
+                var val1 = temp[medianIndex - 1];
+                var val2 = temp[medianIndex];
+
+                //calculate the median
+                median = (val1 + val2) / 2f;
+            }
+
+            return median;
+        }
+
+
+        #endregion
+
+        #region Precentile
         /// <summary>
         /// Calculate percentile of a sorted data set
         /// </summary>
@@ -208,10 +410,221 @@ namespace Daany.MathExt
                 return leftNumber;
             double part = n - Math.Floor(n);
             return leftNumber + part * (rightNumber - leftNumber);
-        } 
+        }
 
+        /// <summary>
+        /// Calculate percentile of a sorted data set
+        /// </summary>
+        /// <param name="sortedData"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static double Percentile(this float[] data, double p)
+        {
 
+            //make a deep copy of the data
+            var sortedData = new double[data.Length];
 
+            Array.Copy(data, sortedData, data.Length);
+
+            //sort the values
+            Array.Sort(sortedData);
+
+            //
+            if (p >= 100.0d)
+                return sortedData[sortedData.Length - 1];
+
+            double position = (sortedData.Length + 1) * p / 100.0;
+            double leftNumber = 0.0d, rightNumber = 0.0d;
+
+            double n = p / 100.0d * (sortedData.Length - 1) + 1.0d;
+
+            if (position >= 1)
+            {
+                leftNumber = sortedData[(int)Math.Floor(n) - 1];
+                rightNumber = sortedData[(int)Math.Floor(n)];
+            }
+            else
+            {
+                leftNumber = sortedData[0]; // first data
+                rightNumber = sortedData[1]; // first data
+            }
+
+            //if (leftNumber == rightNumber)
+            if (Equals(leftNumber, rightNumber))
+                return leftNumber;
+            double part = n - Math.Floor(n);
+            return leftNumber + part * (rightNumber - leftNumber);
+        }
+
+        /// <summary>
+        /// Calculate percentile of a sorted data set
+        /// </summary>
+        /// <param name="sortedData"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static double Percentile(this long[] data, double p)
+        {
+
+            //make a deep copy of the data
+            var sortedData = new double[data.Length];
+
+            Array.Copy(data, sortedData, data.Length);
+
+            //sort the values
+            Array.Sort(sortedData);
+
+            //
+            if (p >= 100.0d)
+                return sortedData[sortedData.Length - 1];
+
+            double position = (sortedData.Length + 1) * p / 100.0;
+            double leftNumber = 0.0d, rightNumber = 0.0d;
+
+            double n = p / 100.0d * (sortedData.Length - 1) + 1.0d;
+
+            if (position >= 1)
+            {
+                leftNumber = sortedData[(int)Math.Floor(n) - 1];
+                rightNumber = sortedData[(int)Math.Floor(n)];
+            }
+            else
+            {
+                leftNumber = sortedData[0]; // first data
+                rightNumber = sortedData[1]; // first data
+            }
+
+            //if (leftNumber == rightNumber)
+            if (Equals(leftNumber, rightNumber))
+                return leftNumber;
+            double part = n - Math.Floor(n);
+            return leftNumber + part * (rightNumber - leftNumber);
+        }
+
+        /// <summary>
+        /// Calculate percentile of a sorted data set
+        /// </summary>
+        /// <param name="sortedData"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static double Percentile(this int[] data, double p)
+        {
+
+            //make a deep copy of the data
+            var sortedData = new double[data.Length];
+
+            Array.Copy(data, sortedData, data.Length);
+
+            //sort the values
+            Array.Sort(sortedData);
+
+            //
+            if (p >= 100.0d)
+                return sortedData[sortedData.Length - 1];
+
+            double position = (sortedData.Length + 1) * p / 100.0;
+            double leftNumber = 0.0d, rightNumber = 0.0d;
+
+            double n = p / 100.0d * (sortedData.Length - 1) + 1.0d;
+
+            if (position >= 1)
+            {
+                leftNumber = sortedData[(int)Math.Floor(n) - 1];
+                rightNumber = sortedData[(int)Math.Floor(n)];
+            }
+            else
+            {
+                leftNumber = sortedData[0]; // first data
+                rightNumber = sortedData[1]; // first data
+            }
+
+            //if (leftNumber == rightNumber)
+            if (Equals(leftNumber, rightNumber))
+                return leftNumber;
+            double part = n - Math.Floor(n);
+            return leftNumber + part * (rightNumber - leftNumber);
+        }
+        #endregion
+
+        #region STD
+        /// <summary>
+        /// Calculate Standard Deviation
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <returns></returns>
+        public static double Stdev(this double[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
+            //number of elements
+            int count = colData.Length;
+
+            //calculate the mean
+            var vars = colData.VarianceOfS();
+
+            //calculate sum of square 
+            return Sqrt(vars);
+        }
+        /// <summary>
+        /// Calculate Standard Deviation
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <returns></returns>
+        public static double Stdev(this int[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
+            //number of elements
+            int count = colData.Length;
+
+            //calculate the mean
+            var vars = colData.VarianceOfS();
+
+            //calculate sum of square 
+            return Sqrt(vars);
+        }
+        /// <summary>
+        /// Calculate Standard Deviation
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <returns></returns>
+        public static double Stdev(this long[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
+            //number of elements
+            int count = colData.Length;
+
+            //calculate the mean
+            var vars = colData.VarianceOfS();
+
+            //calculate sum of square 
+            return Sqrt(vars);
+        }
+        /// <summary>
+        /// Calculate Standard Deviation
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <returns></returns>
+        public static double Stdev(this float[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
+            //number of elements
+            int count = colData.Length;
+
+            //calculate the mean
+            var vars = colData.VarianceOfS();
+
+            //calculate sum of square 
+            return Sqrt(vars);
+        }
+        #endregion 
+
+        #region Variance
         /// <summary>
         /// Calculate variance for the sample data .
         /// </summary>
@@ -220,29 +633,114 @@ namespace Daany.MathExt
         /// <returns></returns>
         public static double VarianceOfS(this double[] colData)
         {
-            if (colData == null || colData.Length < 3)
-                throw new Exception("'coldData' cannot be null or less than 4 elements!");
-            
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
             //number of elements
             int count = colData.Length;
 
             //calculate the mean
-            var mean = colData.MeanOf();
+            var mean = colData.Average();
 
-            //calculate summ of square 
+            //calculate sum of square 
             double parSum = 0;
             for (int i = 0; i < colData.Length; i++)
             {
                 var res = (colData[i] - mean);
 
-                parSum += res*res;
+                parSum += res * res;
             }
-                
-            return parSum/(count-1);
+
+            return parSum / (count - 1);
         }
+        /// <summary>
+        /// Calculate variance for the sample data .
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public static double VarianceOfS(this int[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
+            //number of elements
+            int count = colData.Length;
+
+            //calculate the mean
+            var mean = colData.Average();
+
+            //calculate sum of square 
+            double parSum = 0;
+            for (int i = 0; i < colData.Length; i++)
+            {
+                var res = (colData[i] - mean);
+
+                parSum += res * res;
+            }
+
+            return parSum / (count - 1);
+        }
+        /// <summary>
+        /// Calculate variance for the sample data .
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public static double VarianceOfS(this long[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
+            //number of elements
+            int count = colData.Length;
+
+            //calculate the mean
+            var mean = colData.Average();
+
+            //calculate sum of square 
+            double parSum = 0;
+            for (int i = 0; i < colData.Length; i++)
+            {
+                var res = (colData[i] - mean);
+
+                parSum += res * res;
+            }
+
+            return parSum / (count - 1);
+        }
+        /// <summary>
+        /// Calculate variance for the sample data .
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public static double VarianceOfS(this float[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
+            //number of elements
+            int count = colData.Length;
+
+            //calculate the mean
+            var mean = colData.Average();
+
+            //calculate sum of square 
+            double parSum = 0;
+            for (int i = 0; i < colData.Length; i++)
+            {
+                var res = (colData[i] - mean);
+
+                parSum += res * res;
+            }
+
+            return parSum / (count - 1);
+        }
+        #endregion
 
         /// <summary>
-        /// Calculation covariance brtween two vectors
+        /// Calculation covariance between two vectors
         /// </summary>
         /// <param name="X"></param>
         /// <param name="Y"></param>
@@ -329,26 +827,6 @@ namespace Daany.MathExt
         }
 
         /// <summary>
-        /// Calculate Standard Deviation
-        /// </summary>
-        /// <param name="colData"></param>
-        /// <returns></returns>
-        public static double Stdev(this double[] colData)
-        {
-            if (colData == null || colData.Length < 3)
-                throw new Exception("'coldData' cannot be null or less than 4 elements!");
-
-            //number of elements
-            int count = colData.Length;
-
-            //calculate the mean
-            var vars = colData.VarianceOfS();
-
-            //calculate summ of square 
-            return Sqrt(vars);
-        }
-
-        /// <summary>
         /// Calculate variance for the whole population.
         /// </summary>
         /// <param name="colData"></param>
@@ -356,8 +834,8 @@ namespace Daany.MathExt
         /// <returns></returns>
         public static double VarianceOfP(this double[] colData)
         {
-            if (colData == null || colData.Length < 4)
-                throw new Exception("'coldData' cannot be null or less than 4 elements!");
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
 
             //number of elements
             int count = colData.Length;
@@ -376,9 +854,7 @@ namespace Daany.MathExt
 
             return parSum / count;
         }
-
-
-        
+ 
 
         /// <summary>
         /// Calculates the minimum and maximum value for each column in dataset

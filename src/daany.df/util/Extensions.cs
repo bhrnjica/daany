@@ -13,7 +13,11 @@
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 
 
@@ -31,6 +35,21 @@ namespace Daany
                 stream.Position = 0;
                 return (T)formatter.Deserialize(stream);
             }
+        }
+
+        public static string GetEnumDescription(this Enum value)
+        {
+            
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+
+            DescriptionAttribute[] attributes = fi.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
+
+            if (attributes != null && attributes.Any())
+            {
+                return attributes.First().Description;
+            }
+
+            return value.ToString();
         }
 
     }
