@@ -5,7 +5,7 @@ Daany - **DA**ta **AN**al**Y**tics C# library with the implementation of DataFra
 
 ![License](https://img.shields.io/github/license/bhrnjica/Daany)
 [![NuGet Status](https://img.shields.io/nuget/v/Daany.DataFrame?color=red&style=plastic)](https://www.nuget.org/packages/Daany.DataFrame/)
-![](https://img.shields.io/azure-devops/build/bhrnjicaorg/daany/506aa60c-4e55-4a7d-9823-4c284890124f)
+![](https://img.shields.io/azure-devops/build/bhrnjicaorg/506aa60c-4e55-4a7d-9823-4c284890124f/1)
 # Data Frame
 
 Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require for any class type implementation prior to data loading and transformation.     
