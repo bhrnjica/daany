@@ -71,10 +71,13 @@ namespace Unit.Test.DF
             };
 
             //add three new columns
-            df.AddColumns(d);
+            var newDf =  df.AddColumns(d);
+            
+            Assert.Equal(7, df.ColCount());
+            Assert.Equal(8, newDf.ColCount());
 
-            for (int i = 0; i < df.Values.Count; i++)
-                Assert.Equal(i+1, df.Values[i]);
+            for (int i = 0; i < newDf.Values.Count; i++)
+                Assert.Equal(i+1, newDf.Values[i]);
 
         }
 

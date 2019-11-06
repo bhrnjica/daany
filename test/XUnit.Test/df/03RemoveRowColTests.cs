@@ -23,7 +23,7 @@ namespace Unit.Test.DF
             //
             var df1 = new DataFrame(dict);
 
-            var df2 = df1.Remove("catId");
+            var df2 = df1.Drop("catId");
 
             //test
             var c1f1 = df1["itemID"].ToList();

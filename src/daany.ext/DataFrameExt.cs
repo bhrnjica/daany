@@ -65,7 +65,7 @@ namespace Daany.Ext
             return;
         }
 
-        public static void CategoryToKey(this DataFrame df, MLContext mlContext, string colName)
+        public static DataFrame CategoryToKey(this DataFrame df, MLContext mlContext, string colName)
         {
             var colVector = df[colName];
             IDataView data = mlContext.Data.LoadFromEnumerable<CategoryColumn>(colVector.Select(x => new CategoryColumn() { Classes = x.ToString() }));
@@ -80,8 +80,8 @@ namespace Daany.Ext
                 colValues.Add(r.Classes);
             }
             dict.Add(colName+"_cvalues",colValues);
-            df.AddColumns(dict);
-            return;
+            var newDf = df.AddColumns(dict);
+            return newDf;
         }
 
     }

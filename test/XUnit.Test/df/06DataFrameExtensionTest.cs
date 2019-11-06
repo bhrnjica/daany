@@ -71,7 +71,7 @@ namespace Unit.Test.DF
             var df = new DataFrame(dict);
 
             //add one hot encoding columns
-            df.CategoryToKey(mlContext, "state");
+            df = df.CategoryToKey(mlContext, "state");
             var col = df["state_cvalues"].Select(x=>Convert.ToInt32(x)).ToArray();
             Assert.Equal(1, col[0]);
             Assert.Equal(1, col[1]);

@@ -220,18 +220,6 @@ namespace Daany
             return df;
         }
 
-        internal void SetIndex(List<object> ind)
-        {
-            if (ind == null)
-                throw new Exception("Index cannot be null.");
-
-            if (ind.Count != _index.Count)
-                throw new Exception("Wrong count of index list.");
-
-            this._index = ind;
-        }
-
-
         /// <summary>
         /// Saves data frame .NET object in a csv file.
         /// </summary>
@@ -275,10 +263,25 @@ namespace Daany
         }
         #endregion
 
+        #region Index Related Members
+
+        internal void SetIndex(List<object> ind)
+        {
+            if (ind == null)
+                throw new Exception("Index cannot be null.");
+
+            if (ind.Count != _index.Count)
+                throw new Exception("Wrong count of index list.");
+
+            this._index = ind;
+        }
+        #endregion
+
         #region Constructors
         private DataFrame()
         { 
         }
+
         internal DataFrame(TwoKeysDictionary<string, object, object> aggValues)
         {
             this._columns = new List<string>();
@@ -310,6 +313,7 @@ namespace Daany
             //define index
             this._index = index.Select(x=>(object)x).ToList();
         }
+
         /// <summary>
         /// Create data frame from another data frame.
         /// </summary>
@@ -324,14 +328,13 @@ namespace Daany
             this._columns = dataFrame.Columns.Select(x => (string)x).ToList();
         }
 
-
         /// <summary>
         /// Create data frame from the 1d array values, list of indexed rows and list of column names.
         /// </summary>
         /// <param name="data">1d object array of values.</param>
         /// <param name="index">Row index.</param>
         /// <param name="columns">List of column names.</param>
-        [Obsolete("The constructor is obsolete and will be replaced in the next version.")]
+        [Obsolete("The constructor is obsolete and will be replaced in the future.")]
         public DataFrame(object[] data, IList<int> index, IList<string> columns)
         {
             this._index = index.Select(x=>(object)x).ToList();
@@ -369,14 +372,13 @@ namespace Daany
         /// <param name="data">list of df values </param>
         /// <param name="index">row index</param>
         /// <param name="columns">column index</param>
-        [Obsolete("The constructor is obsolete and will be replaced in the next version.")]
+        [Obsolete("The constructor is obsolete and will be replaced in the future.")]
         public DataFrame(List<object> data, IList<int> index, IList<string> columns)
         {
             this._index = index.Select(x => (object)x).ToList();
             this._columns = columns;
             this._values = data;
         }
-
 
         /// <summary>
         /// Create data frame by list of values and column names.
@@ -400,7 +402,6 @@ namespace Daany
             this._columns = columns;
             this._values = data;
         }
-
 
         /// <summary>
         /// Create data frame from dictionary.
@@ -438,9 +439,6 @@ namespace Daany
             }
         }
 
-        #endregion
-
-        #region Data Frame Operations
         /// <summary>
         /// Create new data frame from the existing by changing column names  
         /// </summary>
@@ -448,9 +446,9 @@ namespace Daany
         /// <returns>New data frame with renamed column names.</returns>
         public DataFrame Create(params (string oldName, string newName)[] colNames)
         {
-            var oldCols = colNames.Select(x=>x.oldName).ToArray();
+            var oldCols = colNames.Select(x => x.oldName).ToArray();
             var newDf = this[oldCols];
-            for(int i=0; i < colNames.Length; i++)
+            for (int i = 0; i < colNames.Length; i++)
             {
                 var newName = colNames[i].oldName;
                 if (!string.IsNullOrEmpty(colNames[i].newName))
@@ -461,44 +459,485 @@ namespace Daany
             //
             return newDf;
         }
+        #endregion
+
+        #region Data Frame Operations
+
+        /// <summary>
+        /// Add one or more column into current data frame and returns new data frame with added columns.
+        /// </summary>
+        /// <param name="cols">list of columns</param>
+        /// <returns>New data frame with added columns.</returns>
+        public DataFrame AddColumns(Dictionary<string, List<object>> cols)
+        {
+            if (RowCount() != cols.ElementAt(0).Value.Count)
+                throw new Exception("Row counts must be equal.");
+            //
+            int index = 0;
+            var vals = new List<object>();
+            for (int i = 0; i < _index.Count; i++)
+            {
+                for (int j = 0; j < Columns.Count; j++)
+                {
+                    vals.Add(_values[index]);
+                    //
+                    index++;
+                }
+                for (int k = 0; k < cols.Keys.Count; k++)
+                    vals.Add(cols.ElementAt(k).Value[i]);
+            }
+            //
+            return new DataFrame(vals, Columns.Union(cols.Keys).ToList());
+        }
+
+        /// <summary>
+        /// Add new rows at the end of the data frame
+        /// </summary>
+        /// <param name="df">Add df at the end. It must be the same shape and types as the first df.</param>
+        public void AddRows(DataFrame df)
+        {
+            if (Columns.Count != df.Columns.Count)
+                throw new Exception("Data frames are not consisted!");
+
+            // 
+            foreach (var v in df._values)
+                _values.Add(v);
+            this._index = Enumerable.Range(0, Index.Count + df.Index.Count).Select(x => (object)x).ToList();
+        }
+
+        /// <summary>
+        /// Add one row in the data frame
+        /// </summary>
+        /// <param name="row">List of row values</param>
+        public void AddRow(List<object> row)
+        {
+            if (row == null || row.Count != Columns.Count)
+                throw new Exception("Inconsistent row, and cannot be inserted in the DataFrame");
+
+            //add data to df
+            foreach (var v in row)
+                _values.Add(v);
+            //add row index
+            _index.Add(_index.Count);
+        }
+
+        /// <summary>
+        /// Apply set of operations on existing column in the DataFrame. The values of the column are 
+        /// calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colName">Existing column in the data frame.</param>
+        /// <param name="callBack">Func delegate for wor value calculation.</param>
+        /// <returns>True if calculated column is created/updated successfully</returns>
+        public bool Apply(string colName, Func<IDictionary<string, object>, int, object> callBack)
+        {
+            if (!Columns.Contains(colName))
+                throw new Exception($"'{colName}' does not exist in the data frame.");
+
+            //define processing row before adding column
+            var processingRow = new Dictionary<string, object>();
+            for (int j = 0; j < this.Columns.Count; j++)
+                processingRow.Add(this.Columns[j], null);
+            //
+            var colIndex = getColumnIndex(colName);
+
+            //
+            for (int i = 0; i < _index.Count; i++)
+            {
+                rowToDictionary(processingRow, i);
+                //once the processing row is initialized perform apply 
+                var v = callBack(processingRow, i);
+                var applyIndex = calculateIndex(i, colIndex);// i * Columns.Count + colIndex;
+                _values[applyIndex] = v;
+
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Apply set of operations on existing column in the DataFrame. The values of the column are 
+        /// calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colName">Existing column in the data frame.</param>
+        /// <param name="callBack">Func delegate for row value calculation.</param>
+        /// <returns>True if calculated column is updated successfully</returns>
+        public bool Apply(string colName, Func<object[], int, object> callBack)
+        {
+            //if column doesnt existi add new calculated column
+            if (!Columns.Contains(colName))
+                throw new Exception($"'{colName}' does not exist in the data frame.");
+
+            //define processing row before adding column
+            var processingRow = new object[ColCount()];
+            //
+            var colIndex = getColumnIndex(colName);
+
+            //
+            for (int i = 0; i < _index.Count; i++)
+            {
+                rowToArray(processingRow, i);
+                //once the processing row is initialized perform apply 
+                var v = callBack(processingRow, i);
+                var applyIndex = calculateIndex(i, colIndex);
+                _values[applyIndex] = v;
+
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Add additional column into DataFrame. The values of the columns are 
+        /// calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colName">New calculated column name.</param>
+        /// <param name="callBack">Func delegate for row value calculation.</param>
+        /// <returns>True if calculated column is created successfully</returns>
+        [Obsolete("This method is obsolute and will be replaced in the future. Use 'AddCalculatedColumnc' instead.")]
+        public bool AddCalculatedColumn(string colName, Func<IDictionary<string, object>, int, object> callBack)
+        {
+            //
+            if (this._columns.Contains(colName))
+                throw new Exception($"Column '{colName}' already exists in the Data Frame.");
+
+            //add new column
+            addNewColumnName(this.Columns, colName);
+            //
+            var vals = new List<object>();
+            int oldInd = 0;
+            //
+            for (int i = 0; i < _index.Count; i++)
+            {
+                //define processing row before adding column
+                var processingRow = new Dictionary<string, object>();
+                for (int j = 0; j < this.Columns.Count; j++)
+                {
+
+                    if (j + 1 >= Columns.Count)
+                    {
+                        var v = callBack(processingRow, i);
+                        vals.Add(v);
+                    }
+                    else
+                    {
+                        var value = _values[oldInd++];
+                        processingRow.Add(this.Columns[j], value);
+                        vals.Add(value);
+                    }
+                }
+            }
+            this._values = vals;
+            return true;
+        }
+
+        /// <summary>
+        /// Add additional columns into DataFrame. The values of the columns are 
+        /// calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colNames">New column names</param>
+        /// <param name="callBack">Callback for calculation new columns.</param>
+        /// <returns></returns>
+        public bool AddCalculatedColumns(string[] colNames, Func<IDictionary<string, object>, int, object[]> callBack)
+        {
+            if (colNames == null || colNames.Length == 0)
+                throw new Exception("column names are not defined properly.");
+
+            //check if column exists
+            foreach (var col in colNames)
+            {
+                if (this._columns.Contains(col))
+                    throw new Exception($"Column '{col}' already exists in the Data Frame.");
+
+            }
+            //
+            var vals = new List<object>();
+
+            //define processing row before adding columns
+            var processingRow = new Dictionary<string, object>();
+            for (int j = 0; j < this.Columns.Count; j++)
+                processingRow.Add(this.Columns[j], null);
+
+            int oldInd = 0;
+            //
+            for (int i = 0; i < _index.Count; i++)
+            {
+
+                for (int j = 0; j <= this.Columns.Count; j++)
+                {
+
+                    if (j >= Columns.Count)
+                    {
+                        var vs = callBack(processingRow, i);
+                        foreach (var v in vs)
+                            vals.Add(v);
+                    }
+                    else
+                    {
+                        var value = _values[oldInd++];
+                        processingRow[this.Columns[j]] = value;
+                        vals.Add(value);
+                    }
+                }
+
+            }
+            //add new columns
+            foreach (var colName in colNames)
+                addNewColumnName(this.Columns, colName);
+            //apply new data frame values
+            this._values = vals;
+            return true;
+        }
+
+        /// <summary>
+        /// Add additional columns into DataFrame. The values of the columns are 
+        /// calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colNames">New column names</param>
+        /// <param name="callBack">Callback for calculation new columns.</param>
+        /// <returns></returns>
+        public bool AddCalculatedColumns(string[] colNames, Func<object[], int, object[]> callBack)
+        {
+            if (colNames == null || colNames.Length == 0)
+                throw new Exception("column names are not defined properly.");
+
+            //check if column exists
+            foreach (var col in colNames)
+            {
+                if (this._columns.Contains(col))
+                    throw new Exception($"Column '{col}' already exists in the Data Frame.");
+
+            }
+            //
+            var vals = new List<object>();
+
+            //define processing row before adding column
+            var processingRow = new object[this.Columns.Count];
+            int oldInd = 0;
+            //
+            for (int i = 0; i < _index.Count; i++)
+            {
+
+                for (int j = 0; j <= this.Columns.Count; j++)
+                {
+
+                    if (j >= Columns.Count)
+                    {
+                        var vs = callBack(processingRow, i);
+                        foreach (var v in vs)
+                            vals.Add(v);
+                    }
+                    else
+                    {
+                        var value = _values[oldInd++];
+                        processingRow[j] = value;
+                        vals.Add(value);
+                    }
+                }
+
+            }
+            //add new column
+            foreach (var colName in colNames)
+                addNewColumnName(this.Columns, colName);
+
+            this._values = vals;
+            return true;
+        }
+
+        /// <summary>
+        /// Perform aggregate operation on the list of columns. For incomplete list, the rest of the column will be ignored and takes the last element
+        /// </summary>
+        /// <param name="indCols">indexes of the columns</param>
+        /// <param name="agg"></param>
+        /// <returns></returns>
+        public List<object> Aggragate(IDictionary<string, Aggregation> aggs)
+        {
+            if (aggs == null)
+                throw new Exception("List of columns or list of aggregation cannot be null.");
+            this._dfTypes = columnsTypes();
+            var aggValues = new List<object>();
+            for (int i = 0; i < Columns.Count; i++)
+            {
+                if (!aggs.ContainsKey(Columns[i]))
+                    aggValues.Add(this[Columns[i]].Last());
+                else
+                {
+                    var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]], this._dfTypes[i]);
+                    aggValues.Add(ag);
+                }
+            }
+            return aggValues;
+        }
+
+        /// <summary>
+        /// Perform aggregate operation on the list of columns. 
+        /// For one column it can be setup more than one aggregate operations
+        /// </summary>
+        /// <param name="indCols">indexes of the columns</param>
+        /// <param name="agg"></param>
+        /// <returns></returns>
+        public DataFrame Aggragate(IDictionary<string, Aggregation[]> aggs)
+        {
+            if (aggs == null)
+                throw new Exception("List of columns or list of aggregation cannot be null.");
+            //
+            this._dfTypes = columnsTypes();
+            //
+            var aggValues = new TwoKeysDictionary<string, object, object>();
+            for (int i = 0; i < Columns.Count; i++)
+            {
+                if (aggs.ContainsKey(Columns[i]))
+                {
+                    for (int j = 0; j < aggs[Columns[i]].Length; j++)
+                    {
+                        var column = Columns[i];
+                        var key = aggs[Columns[i]][j];
+                        var value = calculateAggregation(this[Columns[i]], key, this._dfTypes[i]);
+                        //
+                        if (value is double)
+                            value = Math.Round(Convert.ToDouble(value), 6);
+                        //
+                        else if (value is float)
+                            value = Math.Round(Convert.ToSingle(value), 6);
+                        aggValues.Add(column, key.GetEnumDescription(), value);
+                    }
+                }
+            }
+
+            //create dataframe
+            var df = new DataFrame(aggValues);
+            return df;
+        }
 
         /// <summary>
         /// Removes specified columns from the data frame.
         /// </summary>
         /// <param name="colName">List of column names to be removed.</param>
         /// <returns></returns>
-        public DataFrame Remove(params string[] colName)
+        public DataFrame Drop(params string[] colName)
         {
             //
             var cols = new List<(string oldName, string newName)>();
-            foreach(var c in this.Columns)
+            foreach (var c in this.Columns)
             {
                 if (colName.Contains(c))
                     continue;
-                cols.Add((c,null));
+                cols.Add((c, null));
             }
 
             return Create(cols.ToArray());
         }
 
         /// <summary>
-        /// Rename column name within the data frame.
+        /// Removes rows with missing values for specified set of columns. In case cols is null, removed values 
+        /// will be applied to all columns.
         /// </summary>
-        /// <param name="colNames">Tuple of old and new name</param>
-        /// <returns></returns>
-        public bool Rename(params (string oldName, string newName)[] colNames)
+        /// <param name="cols">List of columns</param>
+        /// <returns>New df with fixed NAN</returns>
+        public DataFrame DropNA(params string[] cols)
         {
-            foreach (var (oldName, newName) in colNames)
+            return RemoveRows((r, i) =>
             {
-                var index = Columns.IndexOf(oldName);
-                if (index == -1)
-                    throw new Exception($"The column name '{oldName}' does not exist!");
-                Columns[index] = newName;
-            }
-            //
-            return true;
+                for (int j = 0; j < r.Length; j++)
+                {
+                    if (r[j] == NAN)
+                        return true;
+                }
+                return false;
+            });
+
         }
 
+        /// <summary>
+        /// Replace NAN values with specified value.
+        /// </summary>
+        /// <param name="value"></param>
+        public void FillNA(object value)
+        {
+            int index = 0;
+            for (int i = 0; i < _index.Count; i++)
+            {
+                for (int j = 0; j < Columns.Count; j++)
+                {
+                    if (_values[index] == DataFrame.NAN)
+                        _values[index] = value;
+                    index++;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replaces the missing values from specified column with 'replacedValue'. 
+        /// </summary>
+        /// <param name="col">Column to replace the missing value</param>
+        /// <param name="replacedValue">Replaced value</param>
+        public void FillNA(string col, object replacedValue)
+        {
+            var colIndex = getColumnIndex(col);
+            int index = 0;
+            for (int i = 0; i < _index.Count; i++)
+            {
+                for (int j = 0; j < Columns.Count; j++)
+                {
+                    if (j == colIndex)
+                    {
+                        if (_values[index] == DataFrame.NAN)
+                            _values[index] = replacedValue;
+
+                    }
+                    index++;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replaces the missing values from specified columns with 'replacedValue'. 
+        /// </summary>
+        /// <param name="col">Column to replace the missing value</param>
+        /// <param name="replacedValue">Replaced value</param>
+        public void FillNA(string[] cols, object replacedValue)
+        {
+            var colIndexes = getColumnIndex(cols);
+            int index = 0;
+            for (int i = 0; i < _index.Count; i++)
+            {
+                for (int j = 0; j < Columns.Count; j++)
+                {
+                    if (colIndexes.Contains(j))
+                    {
+                        if (_values[index] == DataFrame.NAN)
+                            _values[index] = replacedValue;
+                    }
+
+                    index++;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replaces the missing values from specified column with replacedDelegate. 
+        /// </summary>
+        /// <param name="col">Column to replace the missing value</param>
+        /// <param name="replacedValue">Delegate for replaced value</param>
+        public void FillNA(string col, Func<object> replDelg)
+        {
+            if (string.IsNullOrEmpty(col))
+                throw new ArgumentException(nameof(col));
+
+            var colIndex = getColumnIndex(col);
+            int index = 0;
+            for (int i = 0; i < _index.Count; i++)
+            {
+                for (int j = 0; j < Columns.Count; j++)
+                {
+                    if (j == colIndex)
+                    {
+                        if (_values[index] == DataFrame.NAN)
+                            _values[index] = replDelg();
+
+                    }
+                    index++;
+                }
+            }
+        }   
 
         /// <summary>
         /// Filter data frame based on selected columns and coresponded values and operators.
@@ -581,6 +1020,113 @@ namespace Daany
         public DataFrame Filter(string col, object value, FilterOperator fOper)
         {
             return Filter(new string[] { col }, new object[] { value }, new FilterOperator[] { fOper });
+        }
+
+        /// <summary>
+        /// Create GroupedDataFrame
+        /// </summary>
+        /// <param name="groupCol"></param>
+        /// <returns></returns>
+        public GroupDataFrame GroupBy(string groupCol)
+        {
+            var Group = groupDFBy(groupCol);
+
+            return new GroupDataFrame(groupCol, Group);
+        }
+
+        /// <summary>
+        /// Grouping with two columns
+        /// </summary>
+        /// <param name="groupCols"></param>
+        /// <returns></returns>
+        public GroupDataFrame GroupBy(params string[] groupCols)
+        {
+            if (groupCols == null || groupCols.Length == 0)
+                throw new Exception("Group columns cannot be null or empty.");
+            if (groupCols.Length > 3)
+                throw new Exception("Grouping with more than three group columns is not supported.");
+            //grouping
+            if (groupCols.Length == 1)
+                return GroupBy(groupCols[0]);
+            else if (groupCols.Length == 2)
+            {
+                var grp = new TwoKeysDictionary<object, object, DataFrame>();
+                //first group
+                var group1 = groupDFBy(groupCols[0]);
+                foreach (var g in group1)
+                {
+                    var group2 = group1[g.Key].groupDFBy(groupCols[1]);
+                    foreach (var g1 in group2)
+                        grp.Add(g.Key, g1.Key, g1.Value);
+                }
+
+                return new GroupDataFrame(groupCols[0], groupCols[1], grp);
+            }
+            else //if (groupCols.Length == 3)
+            {
+                var grp = new ThreeKeysDictionary<object, object, object, DataFrame>();
+                //two columns grouping 
+                var gp2 = GroupBy(groupCols[0], groupCols[1]);
+                foreach (var g in gp2.Keys2)
+                {
+                    var df2 = gp2.Groups[g.key1][g.key2];
+                    var group3 = df2.groupDFBy(groupCols[2]);
+                    foreach (var g1 in group3)
+                        grp.Add(g.key1, g.key2, g1.Key, g1.Value);
+                }
+
+                return new GroupDataFrame(groupCols[0], groupCols[1], groupCols[2], grp);
+            }
+
+        }
+
+        /// <summary>
+        /// Insert new columns at specific position
+        /// </summary>
+        /// <param name="cName">new Column name.</param>
+        /// <param name="nPos">Zero based index position of the new column. -1 insert the column at last position.</param>
+        /// <param name="value">column value</param>
+        public void InsertColumn(string cName, List<object> value, int nPos = -1)
+        {
+            if (nPos == -1)
+                nPos = this._columns.Count;
+
+            if (this._columns.Contains(cName))
+                throw new Exception($"{cName} already exists.");
+            if (nPos < -1 && nPos >= ColCount())
+                throw new Exception("Index position must be between 0 and ColCount.");
+
+            if (RowCount() != value.Count)
+                throw new Exception("Row counts must be equal.");
+            //
+            int index = 0;
+            var vals = new List<object>();
+            for (int i = 0; i < _index.Count; i++)
+            {
+                for (int j = 0; j <= this._columns.Count; j++)
+                {
+                    if (j == nPos && nPos < this._columns.Count)
+                    {
+                        vals.Add(value[i]);
+
+                    }
+                    else if (j == nPos && (nPos == this._columns.Count))
+                    {
+                        vals.Add(value[i]);
+                    }
+                    else
+                    {
+                        vals.Add(_values[index]);
+                        index++;
+                    }
+                }
+            }
+            //
+            this._values = vals;
+            if (nPos == this._columns.Count)
+                this._columns.Add(cName);
+            else
+                this._columns.Insert(nPos, cName);
         }
 
         /// <summary>
@@ -799,47 +1345,24 @@ namespace Daany
         /// <param name="leftInd"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        private int[] containsKey(int i, int[] leftInd, List<ILookup<object, int>> right)
+
+
+        /// <summary>
+        /// Rename column name within the data frame.
+        /// </summary>
+        /// <param name="colNames">Tuple of old and new name</param>
+        /// <returns></returns>
+        public bool Rename(params (string oldName, string newName)[] colNames)
         {
-            if (leftInd.Length != right.Count)
-                throw new Exception("The number o elements must be equal.");
-
-            var leftRow = this[i];
-
-            //try the first column
-            var lftValue = this[i, leftInd[0]];
-            if (!right[0].Contains(lftValue))
-                return null;
-
-            //in case one one joined column return
-            var firstIndexes= right[0][lftValue].ToArray();
-            if (leftInd.Length == 1)
-                return firstIndexes;
-
-            //check the second column
-            var lftValue2 = this[i, leftInd[1]];
-            if (!right[1].Contains(lftValue2))
-                return null;
-            var secondIndexes = right[1][lftValue2].ToArray();
-            //intersect two arrays
-            var firstSecondIndexes = firstIndexes.Intersect(secondIndexes).ToArray();
-
-            //no intersected elements
-            if (firstSecondIndexes.Length <= 0)
-                return null;
-
-            if (leftInd.Length == 2)
-                return firstSecondIndexes;
-
-            //check the third column
-            var lftValue3 = this[i, leftInd[2]];
-            if (!right[2].Contains(lftValue3))
-                return null;
-            var thirdIndexes = right[2][lftValue3].ToArray();
-
-            var finalIndexes = firstSecondIndexes.Intersect(thirdIndexes).ToArray();
-
-            return finalIndexes;
+            foreach (var (oldName, newName) in colNames)
+            {
+                var index = Columns.IndexOf(oldName);
+                if (index == -1)
+                    throw new Exception($"The column name '{oldName}' does not exist!");
+                Columns[index] = newName;
+            }
+            //
+            return true;
         }
 
         /// <summary>
@@ -893,280 +1416,6 @@ namespace Daany
             }
 
             return dc.Where(x => x.Value > 0).ToDictionary(x => x.Key, y => y.Value);
-        }
-
-
-        /// <summary>
-        /// Replace NAN values with specified value.
-        /// </summary>
-        /// <param name="value"></param>
-        public void FillNA(object value)
-        {
-            int index = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    if (_values[index] == DataFrame.NAN)
-                        _values[index] = value;
-                    index++;
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Replaces the missing values from specified column with 'replacedValue'. 
-        /// </summary>
-        /// <param name="col">Column to replace the missing value</param>
-        /// <param name="replacedValue">Replaced value</param>
-        public void FillNA(string col, object replacedValue)
-        {
-            var colIndex = getColumnIndex(col);
-            int index = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    if (j == colIndex)
-                    {
-                        if (_values[index] == DataFrame.NAN)
-                            _values[index] = replacedValue;
-
-                    }
-                    index++;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Replaces the missing values from specified columns with 'replacedValue'. 
-        /// </summary>
-        /// <param name="col">Column to replace the missing value</param>
-        /// <param name="replacedValue">Replaced value</param>
-        public void FillNA(string[] cols, object replacedValue)
-        {
-            var colIndexes = getColumnIndex(cols);
-            int index = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    if (colIndexes.Contains(j))
-                    {
-                        if (_values[index] == DataFrame.NAN)
-                            _values[index] = replacedValue;
-                    }
-
-                    index++;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Replaces the missing values from specified column with replacedDelegate. 
-        /// </summary>
-        /// <param name="col">Column to replace the missing value</param>
-        /// <param name="replacedValue">Delegate for replaced value</param>
-        public void FillNA(string col, Func<object> replDelg)
-        {
-            if (string.IsNullOrEmpty(col))
-                throw new ArgumentException(nameof(col));
-
-            var colIndex = getColumnIndex(col);
-            int index = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    if (j == colIndex)
-                    {
-                        if (_values[index] == DataFrame.NAN)
-                            _values[index] = replDelg();
-
-                    }
-                    index++;
-                }
-            }
-        }
-
-        
-        /// <summary>
-        /// Add additional column into DataFrame. The values of the columns are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colName">New calculated column name.</param>
-        /// <param name="callBack">Func delegate for row value calculation.</param>
-        /// <returns>True if calculated column is created successfully</returns>
-        [Obsolete("This method is obsolute and will be replaced in the future. Use 'AddCalculatedColumnc' instead.")]
-        public bool AddCalculatedColumn(string colName, Func<IDictionary<string,object>, int, object> callBack)
-        {
-            //
-            if (this._columns.Contains(colName))
-               throw new Exception($"Column '{colName}' already exists in the Data Frame.");
-
-            //add new column
-            addNewColumnName(this.Columns, colName);
-            //
-            var vals = new List<object>();
-            int oldInd = 0;
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
-                //define processing row before adding column
-                var processingRow = new Dictionary<string, object>();
-                for (int j = 0; j < this.Columns.Count; j++)
-                {
-
-                    if (j + 1 >= Columns.Count)
-                    {
-                        var v = callBack(processingRow, i);
-                        vals.Add(v);
-                    }
-                    else
-                    {
-                        var value = _values[oldInd++];
-                        processingRow.Add(this.Columns[j],value);
-                        vals.Add(value);
-                    }
-                }
-            }
-            this._values = vals;
-            return true;
-        }
-
-        
-        /// <summary>
-        /// Add additional columns into DataFrame. The values of the columns are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colNames">New column names</param>
-        /// <param name="callBack">Callback for calculation new columns.</param>
-        /// <returns></returns>
-        public bool AddCalculatedColumns(string[] colNames, Func<IDictionary<string, object>, int, object[]> callBack)
-        {
-            if (colNames == null || colNames.Length == 0)
-                throw new Exception("column names are not defined properly.");
-
-            //check if column exists
-            foreach(var col in colNames)
-            {
-                if (this._columns.Contains(col))
-                    throw new Exception($"Column '{col}' already exists in the Data Frame.");
-
-            }
-            //
-            var vals = new List<object>();
-
-            //define processing row before adding columns
-            var processingRow = new Dictionary<string, object>();
-            for (int j = 0; j < this.Columns.Count; j++)
-                processingRow.Add(this.Columns[j], null);
-
-            int oldInd = 0;
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
-                
-                for (int j = 0; j <= this.Columns.Count; j++)
-                {
-
-                    if (j >= Columns.Count)
-                    {
-                        var vs = callBack(processingRow, i);
-                        foreach (var v in vs)
-                            vals.Add(v);
-                    }
-                    else
-                    {
-                        var value = _values[oldInd++];
-                        processingRow[this.Columns[j]]= value;
-                        vals.Add(value);
-                    }
-                }
-
-            }
-            //add new columns
-            foreach (var colName in colNames)
-                addNewColumnName(this.Columns, colName);
-            //apply new dataframe values
-            this._values = vals;
-            return true;
-        }
-
-        /// <summary>
-        /// Add additional columns into DataFrame. The values of the columns are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colNames">New column names</param>
-        /// <param name="callBack">Callback for calculation new columns.</param>
-        /// <returns></returns>
-        public bool AddCalculatedColumns(string[] colNames, Func<object[], int, object[]> callBack)
-        {
-            if (colNames == null || colNames.Length == 0)
-                throw new Exception("column names are not defined properly.");
-
-            //check if column exists
-            foreach (var col in colNames)
-            {
-                if (this._columns.Contains(col))
-                    throw new Exception($"Column '{col}' already exists in the Data Frame.");
-
-            }
-            //
-            var vals = new List<object>();
-
-            //define processing row before adding column
-            var processingRow = new object[this.Columns.Count];          
-            int oldInd = 0;
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
-
-                for (int j = 0; j <= this.Columns.Count; j++)
-                {
-
-                    if (j >= Columns.Count)
-                    {
-                        var vs = callBack(processingRow, i);
-                        foreach (var v in vs)
-                            vals.Add(v);
-                    }
-                    else
-                    {
-                        var value = _values[oldInd++];
-                        processingRow[j] = value;
-                        vals.Add(value);
-                    }
-                }
-
-            }
-            //add new column
-            foreach (var colName in colNames)
-                addNewColumnName(this.Columns, colName);
-
-            this._values = vals;
-            return true;
-        }
-
-        /// <summary>
-        /// Removes rows with missing values for specified set of columns. In case cols is null, removed values 
-        /// will be applied to all columns.
-        /// </summary>
-        /// <param name="cols">List of columns</param>
-        /// <returns>New df with fixed NAN</returns>
-        public DataFrame DropNA(params string[] cols)
-        {
-            return RemoveRows((r, i) =>
-            {
-                for (int j = 0; j < r.Length; j++)
-                {
-                    if (r[j] == NAN)
-                        return true;
-                }
-                return false;
-            });
-
         }
 
         /// <summary>
@@ -1232,136 +1481,6 @@ namespace Daany
         }
 
         /// <summary>
-        /// Apply set of operations on existing column in the DataFrame. The values of the column are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colName">Existing column in the data frame.</param>
-        /// <param name="callBack">Func delegate for wor value calculation.</param>
-        /// <returns>True if calculated column is created/updated successfully</returns>
-        public bool Apply(string colName, Func<IDictionary<string, object>, int, object> callBack)
-        {
-            if (!Columns.Contains(colName))
-                throw new Exception($"'{colName}' does not exist in the data frame.");
-
-            //define processing row before adding column
-            var processingRow = new Dictionary<string, object>();
-            for (int j = 0; j < this.Columns.Count; j++)
-                processingRow.Add(this.Columns[j], null);
-            //
-            var colIndex = getColumnIndex(colName);
-
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
-                rowToDictionary(processingRow, i);
-                //once the processing row is initialized perform apply 
-                var v = callBack(processingRow, i);
-                var applyIndex = calculateIndex(i, colIndex);// i * Columns.Count + colIndex;
-                _values[applyIndex] = v;
-
-            }
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Apply set of operations on existing column in the DataFrame. The values of the column are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colName">Existing column in the data frame.</param>
-        /// <param name="callBack">Func delegate for row value calculation.</param>
-        /// <returns>True if calculated column is updated successfully</returns>
-        public bool Apply(string colName, Func<object[], int, object> callBack)
-        {
-            //if column doesnt existi add new calculated column
-            if (!Columns.Contains(colName))
-                throw new Exception($"'{colName}' does not exist in the data frame.");
-
-            //define processing row before adding column
-            var processingRow = new object[ColCount()];
-            //
-            var colIndex = getColumnIndex(colName);
-
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
-                rowToArray(processingRow, i);
-                //once the processing row is initialized perform apply 
-                var v = callBack(processingRow, i);
-                var applyIndex = calculateIndex(i, colIndex);
-                _values[applyIndex] = v;
-
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Perform aggregate operation on the list of columns. For incomplete list, the rest of the column will be ignored and takes the last element
-        /// </summary>
-        /// <param name="indCols">indexes of the columns</param>
-        /// <param name="agg"></param>
-        /// <returns></returns>
-        public List<object> Aggragate(IDictionary<string, Aggregation> aggs)
-        {
-            if (aggs == null)
-                throw new Exception("List of columns or list of aggregation cannot be null.");
-            this._dfTypes = columnsTypes();
-            var aggValues = new List<object>();
-            for (int i = 0; i < Columns.Count; i++)
-            {
-                if (!aggs.ContainsKey(Columns[i])) 
-                    aggValues.Add(this[Columns[i]].Last());
-                else
-                {
-                    var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]], this._dfTypes[i]);
-                    aggValues.Add(ag);
-                }
-            }
-            return aggValues;
-        }
-
-        /// <summary>
-        /// Perform aggregate operation on the list of columns. 
-        /// For one column it can be setup more than one aggregate operations
-        /// </summary>
-        /// <param name="indCols">indexes of the columns</param>
-        /// <param name="agg"></param>
-        /// <returns></returns>
-        public DataFrame Aggragate(IDictionary<string, Aggregation[]> aggs)
-        {
-            if (aggs == null)
-                throw new Exception("List of columns or list of aggregation cannot be null.");
-            //
-            this._dfTypes = columnsTypes();
-            //
-            var aggValues = new TwoKeysDictionary<string, object, object>();
-            for (int i = 0; i < Columns.Count; i++)
-            {
-                if (aggs.ContainsKey(Columns[i]))
-                {
-                    for(int j=0; j < aggs[Columns[i]].Length; j++)
-                    {
-                        var column = Columns[i];
-                        var key = aggs[Columns[i]][j];
-                        var value = calculateAggregation(this[Columns[i]], key, this._dfTypes[i]);
-                        //
-                        if (value is double)
-                            value = Math.Round(Convert.ToDouble(value), 6);
-                        //
-                        else if (value is float)
-                            value = Math.Round(Convert.ToSingle(value), 6);
-                        aggValues.Add(column,key.GetEnumDescription(), value);
-                    }                    
-                }
-            }
-
-            //create dataframe
-            var df = new DataFrame(aggValues);
-            return df;
-        }
-
-        /// <summary>
         /// Create new DataFrame containing rolling values of all column supported the aggregate operation. 
         /// In case the aggregation is not support for certain columns the column is dropped
         /// </summary>
@@ -1375,6 +1494,7 @@ namespace Daany
                 dic.Add(c, agg);
             return Rolling(window,dic);
         }
+
         /// <summary>
         /// Create new dataFrame containing rolling values of specified columns of the data frame
         /// </summary>
@@ -1570,170 +1690,6 @@ namespace Daany
             return df;
         }
 
-        /// <summary>
-        /// Create GroupedDataFrame
-        /// </summary>
-        /// <param name="groupCol"></param>
-        /// <returns></returns>
-        public GroupDataFrame GroupBy(string groupCol)
-        {
-            var Group = groupDFBy(groupCol);
-
-            return new GroupDataFrame(groupCol, Group);
-        }
-
-        /// <summary>
-        /// Grouping with two columns
-        /// </summary>
-        /// <param name="groupCols"></param>
-        /// <returns></returns>
-        public GroupDataFrame GroupBy(params string[] groupCols)
-        {
-            if (groupCols == null || groupCols.Length == 0)
-                throw new Exception("Group columns cannot be null or empty.");
-            if (groupCols.Length > 3)
-                throw new Exception("Grouping with more than three group columns is not supported.");
-            //grouping
-            if (groupCols.Length == 1)
-                return GroupBy(groupCols[0]);
-            else if (groupCols.Length == 2)
-            {
-                var grp = new TwoKeysDictionary<object, object, DataFrame>();
-                //first group
-                var group1 = groupDFBy(groupCols[0]);
-                foreach (var g in group1)
-                {
-                    var group2 = group1[g.Key].groupDFBy(groupCols[1]);
-                    foreach (var g1 in group2)
-                        grp.Add(g.Key, g1.Key, g1.Value);
-                }
-
-                return new GroupDataFrame(groupCols[0], groupCols[1], grp);
-            }
-            else //if (groupCols.Length == 3)
-            {
-                var grp = new ThreeKeysDictionary<object, object, object, DataFrame>();
-                //two columns grouping 
-                var gp2 = GroupBy(groupCols[0], groupCols[1]);
-                foreach (var g in gp2.Keys2)
-                {
-                    var df2 = gp2.Groups[g.key1][g.key2];
-                    var group3 = df2.groupDFBy(groupCols[2]);
-                    foreach (var g1 in group3)
-                        grp.Add(g.key1, g.key2, g1.Key, g1.Value);
-                }
-
-                return new GroupDataFrame(groupCols[0], groupCols[1], groupCols[2], grp);
-            }
-
-        }
-
-        /// <summary>
-        /// Add new columns int dataframe
-        /// </summary>
-        /// <param name="cols"></param>
-        public void AddColumns(Dictionary<string, List<object>> cols)
-        {
-            if (RowCount() != cols.ElementAt(0).Value.Count)
-                throw new Exception("Row counts must be equal.");
-            //
-            int index = 0;
-            var vals = new List<object>();
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    vals.Add(_values[index]);
-                    //
-                    index++;
-                }
-                for (int k = 0; k < cols.Keys.Count; k++)
-                    vals.Add(cols.ElementAt(k).Value[i]);
-            }
-            //
-            this._values = vals;
-            this._columns = Columns.Union(cols.Keys).ToList();
-        }
-
-        /// <summary>
-        /// Insert new columns at specific position
-        /// </summary>
-        /// <param name="cName">new Column name.</param>
-        /// <param name="nPos">Zero based index position of the new column. -1 insert the column at last position.</param>
-        /// <param name="value">column value</param>
-        public void InsertColumn(string cName, List<object> value, int nPos =-1)
-        {
-            if (nPos == -1)
-                nPos = this._columns.Count;
-
-            if (this._columns.Contains(cName))
-                throw new Exception($"{cName} already exists.");
-            if(nPos < -1 && nPos >= ColCount())
-                throw new Exception("Index position must be between 0 and ColCount.");
-
-            if (RowCount() != value.Count)
-                throw new Exception("Row counts must be equal.");
-            //
-            int index = 0;
-            var vals = new List<object>();
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j <= this._columns.Count; j++)
-                {
-                    if(j==nPos && nPos < this._columns.Count)
-                    {
-                        vals.Add(value[i]);
-
-                    }
-                    else if(j==nPos && (nPos==this._columns.Count))
-                    {
-                        vals.Add(value[i]);
-                    }
-                    else
-                    {
-                        vals.Add(_values[index]);
-                        index++;
-                    }                                      
-                }              
-            }
-            //
-            this._values = vals;
-            if(nPos== this._columns.Count)
-                this._columns.Add(cName);
-            else
-                this._columns.Insert(nPos,cName);
-        }
-
-        /// <summary>
-        /// Add new rows at the end of the df.
-        /// </summary>
-        /// <param name="df">Add df at the end. It must be the same shape and types as the first df.</param>
-        public void AddRows(DataFrame df)
-        {
-            if (Columns.Count != df.Columns.Count)
-                throw new Exception("Data frames are not consisted!");
-
-            // 
-            foreach (var v in df._values)
-                _values.Add(v);
-            this._index = Enumerable.Range(0, Index.Count + df.Index.Count).Select(x=>(object)x).ToList();
-        }
-
-        /// <summary>
-        /// Add one row in the df.
-        /// </summary>
-        /// <param name="row">List of row values</param>
-        public void AddRow(List<object> row)
-        {
-            if (row == null || row.Count != Columns.Count)
-                throw new Exception("Inconsistent row, and cannot be inserted in the DataFrame");
-
-            //add data to df
-            foreach (var v in row)
-                _values.Add(v);
-            //add row index
-            _index.Add(_index.Count);
-        }
         #endregion
 
         #region Indexers
@@ -2046,7 +2002,48 @@ namespace Daany
         #endregion
 
         #region Private
+        private int[] containsKey(int i, int[] leftInd, List<ILookup<object, int>> right)
+        {
+            if (leftInd.Length != right.Count)
+                throw new Exception("The number o elements must be equal.");
 
+            var leftRow = this[i];
+
+            //try the first column
+            var lftValue = this[i, leftInd[0]];
+            if (!right[0].Contains(lftValue))
+                return null;
+
+            //in case one one joined column return
+            var firstIndexes = right[0][lftValue].ToArray();
+            if (leftInd.Length == 1)
+                return firstIndexes;
+
+            //check the second column
+            var lftValue2 = this[i, leftInd[1]];
+            if (!right[1].Contains(lftValue2))
+                return null;
+            var secondIndexes = right[1][lftValue2].ToArray();
+            //intersect two arrays
+            var firstSecondIndexes = firstIndexes.Intersect(secondIndexes).ToArray();
+
+            //no intersected elements
+            if (firstSecondIndexes.Length <= 0)
+                return null;
+
+            if (leftInd.Length == 2)
+                return firstSecondIndexes;
+
+            //check the third column
+            var lftValue3 = this[i, leftInd[2]];
+            if (!right[2].Contains(lftValue3))
+                return null;
+            var thirdIndexes = right[2][lftValue3].ToArray();
+
+            var finalIndexes = firstSecondIndexes.Intersect(thirdIndexes).ToArray();
+
+            return finalIndexes;
+        }
         private bool isOperationSupported(ColType colType, Aggregation aggOperation)
         {
             switch (colType)
@@ -2082,6 +2079,7 @@ namespace Daany
                     throw new Exception("The column type is not supported.");
             }
         }
+
         private void rowToArray(object[] processingRow, int rowIndex)
         {
             if (processingRow == null && processingRow.Length != ColCount())
@@ -2098,6 +2096,7 @@ namespace Daany
 
             return;
         }
+
         private void rowToDictionary(Dictionary<string, object> processingRow, int rowIndex)
         {
             if (processingRow == null)
@@ -2114,7 +2113,6 @@ namespace Daany
 
             return;
         }
-
       
         static private bool isNumeric(ColType cType)
         {
@@ -2147,6 +2145,7 @@ namespace Daany
             else
                 return false;
         }
+
         private DataFrame reverse()
         {
             var cols = this.Columns;
@@ -2235,6 +2234,7 @@ namespace Daany
 
             }
         }
+
         private Dictionary<object, DataFrame> groupDFBy(string groupCol)
         {
             var Group = new Dictionary<object, DataFrame>();
