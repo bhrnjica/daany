@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Daany.MathExt
+namespace Daany.MathStuff
 {
     /// <summary>
     /// Implementation of Confusion matrix for n-classes 

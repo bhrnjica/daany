@@ -17,7 +17,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using Accord.Math.Decompositions;
-using Daany.MathExt;
+using Daany.MathStuff;
 
 namespace Daany.Stat
 {

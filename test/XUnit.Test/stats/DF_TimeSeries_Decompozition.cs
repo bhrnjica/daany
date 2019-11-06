@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Xunit;
 using Daany;
 using Daany.stl;
-using Daany.MathExt;
+using Daany.MathStuff;
 using Daany.Stat;
 
 namespace Unit.Test.DF

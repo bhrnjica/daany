@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 
-using Daany.MathExt;
+using Daany.MathStuff;
 
 
 namespace Daany

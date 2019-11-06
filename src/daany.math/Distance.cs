@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Daany.MathExt
+namespace Daany.MathStuff
 {
     /// <summary>
     /// Implementation of various distance

@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using static System.Math;
-namespace Daany.MathExt
+namespace Daany.MathStuff
 {
     /// <summary>
     /// Implement extension methods for statistics calculation on one data set eg. mean, median, variance,... 

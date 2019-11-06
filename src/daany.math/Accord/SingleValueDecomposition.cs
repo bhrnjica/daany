@@ -30,7 +30,7 @@ namespace Accord.Math.Decompositions
     using System;
     using Accord.Math;
     using System.Diagnostics;
-    using Daany.MathExt;
+    using Daany.MathStuff;
     //using Accord.Compat;
 
     /// <summary>

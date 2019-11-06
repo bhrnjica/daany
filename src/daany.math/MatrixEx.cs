@@ -13,10 +13,10 @@
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 using Accord;
-using Daany.MathExt.MatrixExt;
+using Daany.MathStuff.MatrixExt;
 using System;
 
-namespace Daany.MathExt
+namespace Daany.MathStuff
 {
     /// <summary>
     /// Matrix implementation based on 2D array type

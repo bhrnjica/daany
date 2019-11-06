@@ -36,7 +36,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-namespace Daany.MathExt.MatrixExt
+namespace Daany.MathStuff.MatrixExt
 {
     internal class Matrix
     {

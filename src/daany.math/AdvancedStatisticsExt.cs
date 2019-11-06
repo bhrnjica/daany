@@ -18,7 +18,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using static System.Math;
 
-namespace Daany.MathExt
+namespace Daany.MathStuff
 {
     /// <summary>
     /// Implement extension methods for statistics calculation between two data sets X and Y eg. sum of square error, pearson coeff,... 
