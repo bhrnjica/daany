@@ -74,7 +74,7 @@ namespace Unit.Test.DF
             var newDf =  df.AddColumns(d);
             
             Assert.Equal(7, df.ColCount());
-            Assert.Equal(8, newDf.ColCount());
+            Assert.Equal(10, newDf.ColCount());
 
             for (int i = 0; i < newDf.Values.Count; i++)
                 Assert.Equal(i+1, newDf.Values[i]);

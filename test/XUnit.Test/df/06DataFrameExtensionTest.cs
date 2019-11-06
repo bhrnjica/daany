@@ -41,7 +41,7 @@ namespace Unit.Test.DF
             var df = new DataFrame(dict);
 
             //add one hot encoding columns
-            df.EncodeColumn(mlContext, "state");
+            df = df.EncodeColumn(mlContext, "state");
 
             Assert.Equal("CA", df.Columns[5]);
             Assert.Equal("FL", df.Columns[6]);

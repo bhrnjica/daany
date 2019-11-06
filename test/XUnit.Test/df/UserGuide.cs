@@ -254,7 +254,7 @@ namespace Unit.Test.DF
 
             //check for values
             Assert.Equal(7, row.Length);
-            Assert.Equal(2, row[0]);
+            Assert.Equal(3, row[0]);
             Assert.Equal("Berlin", row[1]);
 
         }

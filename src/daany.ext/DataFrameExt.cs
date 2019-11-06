@@ -32,7 +32,7 @@ namespace Daany.Ext
     /// </summary>
     public static class DataFrameExt
     {
-        public static void EncodeColumn(this DataFrame df, MLContext mlContext, string colName)
+        public static DataFrame EncodeColumn(this DataFrame df, MLContext mlContext, string colName)
         {
             var colVector = df[colName];
             IDataView data = mlContext.Data.LoadFromEnumerable<CategoryColumn>(colVector.Select(x => new CategoryColumn() { Classes = x.ToString() }));
@@ -61,8 +61,8 @@ namespace Daany.Ext
                 }
                 
             }
-            df.AddColumns(dict);
-            return;
+            var newDf = df.AddColumns(dict);
+            return newDf;
         }
 
         public static DataFrame CategoryToKey(this DataFrame df, MLContext mlContext, string colName)
