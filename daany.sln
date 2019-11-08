@@ -24,8 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{BBC8D700-8
 		docs\05data_frame_join.md = docs\05data_frame_join.md
 		docs\06data_frame_grouping.md = docs\06data_frame_grouping.md
 		docs\07data_frame_aggregate_operations.md = docs\07data_frame_aggregate_operations.md
-		docs\Daany-user guid.md = docs\Daany-user guid.md
 		docs\daany_logo.png = docs\daany_logo.png
+		docs\Index.md = docs\Index.md
 		README.md = README.md
 	EndProjectSection
 EndProject
