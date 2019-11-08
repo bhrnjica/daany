@@ -259,7 +259,7 @@ namespace Daany
                 {
                     var lst = new List<string>();
                     lst.Add(GroupedColumn);
-                    var row = gr.Value.Aggragate(agg);
+                    var row = gr.Value.Aggragate(agg, true);
                     df1.AddRow(row);
                 }
 
@@ -276,7 +276,7 @@ namespace Daany
                     lst.Add(SecondGroupedColumn);
                     foreach(var g2 in gr.Value)
                     {
-                        var row = g2.Value.Aggragate(agg);
+                        var row = g2.Value.Aggragate(agg, true);
                         df1.AddRow(row);
                     }
                    
@@ -297,7 +297,7 @@ namespace Daany
                     {
                         foreach (var g3 in g2.Value)
                         {
-                            var row = g3.Value.Aggragate(agg);
+                            var row = g3.Value.Aggragate(agg, true);
                             df1.AddRow(row);
                         }
                     }

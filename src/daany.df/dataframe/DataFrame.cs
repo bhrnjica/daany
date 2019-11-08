@@ -226,7 +226,7 @@ namespace Daany
         /// <param name="filePath">Full or relative file path.</param>
         /// <param name="dataFrame">Data frame to persist into file.</param>
         /// <returns>True if save successfully passed</returns>
-        public static bool SaveToCsv(string filePath, DataFrame dataFrame)
+        public static bool ToCsv(string filePath, DataFrame dataFrame)
         {
             if (dataFrame == null)
                 throw new ArgumentNullException(nameof(dataFrame));
@@ -743,12 +743,12 @@ namespace Daany
         }
 
         /// <summary>
-        /// Perform aggregate operation on the list of columns. For incomplete list, the rest of the column will be ignored and takes the last element
+        /// Perform aggregate operation on the list of columns. For incomplete list, the rest of the column will be ommited
         /// </summary>
         /// <param name="indCols">indexes of the columns</param>
         /// <param name="agg"></param>
-        /// <returns></returns>
-        public List<object> Aggragate(IDictionary<string, Aggregation> aggs)
+        /// <returns>List of aggregated values</returns>
+        public List<object> Aggragate(IDictionary<string, Aggregation> aggs, bool allColumns = false)
         {
             if (aggs == null)
                 throw new Exception("List of columns or list of aggregation cannot be null.");
@@ -756,9 +756,9 @@ namespace Daany
             var aggValues = new List<object>();
             for (int i = 0; i < Columns.Count; i++)
             {
-                if (!aggs.ContainsKey(Columns[i]))
+                if (!aggs.ContainsKey(Columns[i]) && allColumns)
                     aggValues.Add(this[Columns[i]].Last());
-                else
+                else if(aggs.ContainsKey(Columns[i]))
                 {
                     var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]], this._dfTypes[i]);
                     aggValues.Add(ag);
@@ -806,6 +806,59 @@ namespace Daany
             var df = new DataFrame(aggValues);
             return df;
         }
+
+        /// <summary>
+        /// Creates new data frame of basic descriptive statistics values of the data frame
+        /// </summary>
+        /// <param name="numericOnly"></param>
+        /// <param name="inclColumns"></param>
+        /// <returns></returns>
+        public DataFrame Describe(bool numericOnly = true, params string[] inclColumns)
+        {
+            var aggOp = new Aggregation[]
+            {
+                Aggregation.Count,Aggregation.Unique,Aggregation.Top, Aggregation.Frequency, Aggregation.Avg,
+                Aggregation.Std,Aggregation.Min, Aggregation.FirstQuartile,Aggregation.Median, Aggregation.ThirdQuartile, Aggregation.Max
+            };
+            var types = this.columnsTypes();
+            var lstCols = new List<(string cName, ColType cType)>();
+            var idxs = getColumnIndex(inclColumns);
+
+            //include columns
+            if (inclColumns == null || inclColumns.Length == 0)
+            {
+                for (int i = 0; i < this.Columns.Count(); i++)
+                {
+                    lstCols.Add((this.Columns[i], types[i]));
+                }
+            }
+            else
+            {
+                for (int i = 0; i < idxs.Length; i++)
+                {
+                    var c = this.Columns[idxs[i]];
+                    lstCols.Add((c, types[idxs[i]]));
+                }
+            }
+
+            //only numeric columns
+            var finalCols = new Dictionary<string, Aggregation[]>(); // new List<(string cName, ColType cType)>();
+            for (int i = 0; i < lstCols.Count(); i++)
+            {
+                if (numericOnly)
+                {
+                    if (isNumeric(lstCols[i].cType))
+                        finalCols.Add(lstCols[i].cName, aggOp);
+                }
+                else //if(!isNumeric(lstCols[i].cType) && !numericOnly)
+                    finalCols.Add(lstCols[i].cName, aggOp);
+            }
+
+            DataFrame dfDescr = Aggragate(finalCols);
+            //
+            return dfDescr;
+        }
+
 
         /// <summary>
         /// Removes specified columns from the data frame.
@@ -1870,7 +1923,7 @@ namespace Daany
             return new DataFrame(lst,Columns.ToArray());
         }
 
-        public string ToStringBuilder(int rowCount=10)
+        public string ToStringBuilder(int rowCount=15)
         {
             StringBuilder sb = new StringBuilder();
             int rows = this.RowCount();
@@ -1946,59 +1999,6 @@ namespace Daany
             return sb.ToString();
         }
        
-        /// <summary>
-        /// Prints basic descriptive statistics values of the data frame
-        /// </summary>
-        /// <param name="numericOnly"></param>
-        /// <param name="inclColumns"></param>
-        /// <returns></returns>
-        public DataFrame Describe(bool numericOnly = true, params string[] inclColumns)
-        {
-            var aggOp = new Aggregation[] 
-            {
-                Aggregation.Count,Aggregation.Unique,Aggregation.Top, Aggregation.Frequency, Aggregation.Avg, 
-                Aggregation.Std,Aggregation.Min, Aggregation.FirstQuartile,Aggregation.Median, Aggregation.ThirdQuartile, Aggregation.Max
-            };
-            var types = this.columnsTypes();
-            var lstCols = new List<(string cName, ColType cType)>();
-            var idxs = getColumnIndex(inclColumns);
-
-            //include columns
-            if (inclColumns == null || inclColumns.Length == 0)
-            {
-                for (int i = 0; i < this.Columns.Count(); i++)
-                {
-                    lstCols.Add((this.Columns[i], types[i]));
-                }
-            }
-            else
-            {
-                for (int i = 0; i < idxs.Length; i++)
-                {
-                    var c = this.Columns[idxs[i]];
-                    lstCols.Add((c, types[idxs[i]]));
-                }
-            }
-
-            //only numeric columns
-            var finalCols = new Dictionary<string, Aggregation[]>(); // new List<(string cName, ColType cType)>();
-            for (int i = 0; i < lstCols.Count(); i++)
-            {
-                if (numericOnly)
-                {
-                    if (isNumeric(lstCols[i].cType))
-                        finalCols.Add(lstCols[i].cName,aggOp);
-                }
-                else //if(!isNumeric(lstCols[i].cType) && !numericOnly)
-                    finalCols.Add(lstCols[i].cName, aggOp);
-            }
-
-            DataFrame dfDescr = Aggragate(finalCols);
-            //
-            return dfDescr;
-        }
-
-
         #endregion
 
         #region Private

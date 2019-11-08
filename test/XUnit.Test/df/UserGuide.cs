@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
+using System.Globalization;
 
 namespace Unit.Test.DF
 {
@@ -74,7 +75,7 @@ namespace Unit.Test.DF
             var df = new DataFrame(dict);
 
             //first Save data frame on disk and load it
-            DataFrame.SaveToCsv(filename, df);
+            DataFrame.ToCsv(filename, df);
 
             //create data frame with 3 rows and 7 columns
             var dfFromFile = DataFrame.FromCsv(filename, sep:',');
@@ -285,7 +286,7 @@ namespace Unit.Test.DF
 
             //add Age column
             var newCols =  new Dictionary<string, List<object>>(){ { "Age", new List<object>() { 31, 25, 45 } },
-                                                  { "Gender", new List<object>() { "male", "female", "male" } } };
+                                                    { "Gender", new List<object>() { "male", "female", "male" } } };
 
             //add column
             var newDf = df.AddColumns(newCols);
@@ -332,37 +333,37 @@ namespace Unit.Test.DF
         [Fact]
         public void AddCalculatedColumnsByDictionary()
         {
-            var dict = new Dictionary<string, List<object>>
-            {
-                { "col1",new List<object>() {  1,13,25,37,49} },
-                { "col2",new List<object>() {  2,14,26,38,50} },
-                { "col3",new List<object>() {  3,15,27,39,51} },
-                { "col4",new List<object>() {  4,16,28,40,52} },
-                { "col5",new List<object>() {  5,17,29,41,53} },
-                { "col6",new List<object>() {  6,18,30,42,54} },
-                { "col7",new List<object>() {  7,19,31,43,55} },
-                { "col8",new List<object>() {  8,20,32,44,56} },
-                { "col9",new List<object>() {  9,21,33,45,57} },
-                { "col10",new List<object>(){ 10,22,34,46,58} },
-            };
-            //
-            var df = new DataFrame(dict);
-            var sCols = new string[] { "col11", "col12" };
-            var df01 = df.AddCalculatedColumns(sCols, (row, i) => calculate(row, i));
+                var dict = new Dictionary<string, List<object>>
+                {
+                    { "col1",new List<object>() {  1,13,25,37,49} },
+                    { "col2",new List<object>() {  2,14,26,38,50} },
+                    { "col3",new List<object>() {  3,15,27,39,51} },
+                    { "col4",new List<object>() {  4,16,28,40,52} },
+                    { "col5",new List<object>() {  5,17,29,41,53} },
+                    { "col6",new List<object>() {  6,18,30,42,54} },
+                    { "col7",new List<object>() {  7,19,31,43,55} },
+                    { "col8",new List<object>() {  8,20,32,44,56} },
+                    { "col9",new List<object>() {  9,21,33,45,57} },
+                    { "col10",new List<object>(){ 10,22,34,46,58} },
+                };
+                //
+                var df = new DataFrame(dict);
+                var sCols = new string[] { "col11", "col12" };
+                var df01 = df.AddCalculatedColumns(sCols, (row, i) => calculate(row, i));
 
-            //column test
-            var c1 = new int[] { 11, 23, 35, 47, 59};
-            var c2 = new int[] { 12, 24, 36, 48, 60};
+                //column test
+                var c1 = new int[] { 11, 23, 35, 47, 59};
+                var c2 = new int[] { 12, 24, 36, 48, 60};
 
-            for (int i = 0; i < df.Values.Count; i++)
-                Assert.Equal(i+1, df.Values[i]);
+                for (int i = 0; i < df.Values.Count; i++)
+                    Assert.Equal(i+1, df.Values[i]);
 
-            //local function declaration
-            object[] calculate(IDictionary<string, object> row, int i)
-            {
-                return new object[2] {  i * (row.Count() +2) + row.Count() + 1, 
-                                        i * (row.Count()+ 2) + row.Count() +2};
-            }
+                //local function declaration
+                object[] calculate(IDictionary<string, object> row, int i)
+                {
+                    return new object[2] {  i * (row.Count() +2) + row.Count() + 1, 
+                                            i * (row.Count()+ 2) + row.Count() +2};
+                }
         }
 
         [Fact]
@@ -387,24 +388,574 @@ namespace Unit.Test.DF
         #endregion
 
         #region Aggregate
+        [Fact]
+        public void AggregateDataFrame1()
+        {
+            var date = DateTime.Now.AddDays(-5);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { DateTime.Now.AddDays(-20) , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+
+            //define aggregation
+            var agg = new Dictionary<string, Aggregation>() { {"ID",Aggregation.Count},
+                                                                {"City",Aggregation.Top},
+                                                                {"Date", Aggregation.Max},
+                                                                {"Values",Aggregation.Avg },
+                                                            };
+            var row = df.Aggragate(agg,allColumns:false);
+
+            var val = new List<object>() { 3, "Sarajevo", 3.6333333333333329, date };
+
+            Assert.Equal(val, row);
+        }
+
+        [Fact]
+        public void AggregateDataFrame()
+        {
+            var date = DateTime.Now.AddDays(-5);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { DateTime.Now.AddDays(-20) , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+
+            //define aggregation
+            var agg = new Dictionary<string, Aggregation[]>() { {"ID",new Aggregation[]{Aggregation.Count,Aggregation.Sum }},
+                                                              {"City",new Aggregation[]{Aggregation.Top,Aggregation.Frequency }},
+                                                              {"Date", new Aggregation[]{Aggregation.Max }},
+                                                              {"Values",new Aggregation[]{Aggregation.Avg } },
+                                                            };
+            var newDf = df.Aggragate(agg);
+            var str = newDf.ToStringBuilder();
+            var val = new List<object>() { 3, null, null, null, 6, null, null, null, null, "Sarajevo", null, null, 
+                null, 1, null, null, null, null, 3.633333, null, null, null, null, date};
+
+            //
+            Assert.Equal(new string[] {"Count", "Sum", "Top", "Freq", "Mean", "Max" }, newDf.Index);
+            for (int i = 0; i < newDf.Values.Count; i++)
+                Assert.Equal(val[i], newDf.Values[i]);
+        }
+
+        [Fact]
+        public void DescribeDataFrame()
+        {
+            var date = DateTime.Now.AddDays(-5);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { DateTime.Now.AddDays(-20) , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+            var newDf = df.Describe();
+
+            
+           var str = newDf.ToStringBuilder();
+            var val = new List<object>() { 3,3,3,3,3,3,3,3,1,71000,3.14, 31,1,1,1,1,2d,59738.666667,3.633333, 33.666667,1d,
+                                            45061.039384,0.794628, 10.263203,1,10115,3.14, 25,1.5,40557.5,3.175,28d,2d,71000d,3.21, 
+                                            31d,2.5,84550.5,3.88, 38d,3,98101,4.55,45 };
+
+            //
+            Assert.Equal(new string[] { "Count", "Unique", "Top", "Freq", "Mean", "Std", "Min", "25%", "Median", "75%", "Max" }, newDf.Index);
+            for (int i = 0; i < newDf.Values.Count; i++)
+                Assert.Equal(val[i], newDf.Values[i]);
+        }
+        [Fact]
+        public void DescribeDataFrame1()
+        {
+            var date = DateTime.Now.AddDays(-5);
+            var date2 = DateTime.Now.AddDays(-20);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { date2 , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+            var newDf = df.Describe(false);
+
+            var val = new List<object>() {
+                                        3,3,3,3,3,3,3,3,3,
+                                        3,3,3,3,2,3,3,3,2,
+                                        1,"Sarajevo",71000,"BiH",false,3.14,date2,31,"male",
+                                        1,1,1,1,2,1,1,1,2,
+                                        2d,null,59738.666667,null,null,3.633333,null,33.666667,null,
+                                        1d,null,45061.039384,null,null,0.794628,null,10.263203,null,
+                                        1,null,10115,null,null,3.14,date2,25,null,
+                                        1.5, null,40557.5,null,null,3.175,null,28d,null,
+                                        2d,null,71000d,null,null,3.21,null,31d,null,
+                                        2.5, null,84550.5,null,null,3.88,null,38d,null,
+                                        3,null,98101,null,null,4.55,date,45,null,             
+            };
+
+            //
+            Assert.Equal(new string[] { "Count", "Unique", "Top", "Freq", "Mean", "Std", "Min", "25%", "Median", "75%", "Max" }, newDf.Index);
+            for (int i = 0; i < newDf.Values.Count; i++)
+                Assert.Equal(val[i], newDf.Values[i]);
+        }
+
+        [Fact]
+        public void DescribeDataFrame2()
+        {
+            var date = DateTime.Now.AddDays(-5);
+            var date2 = DateTime.Now.AddDays(-20);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { date2 , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+            var newDf = df.Describe(false, "ID", "City", "Zip Code", "State", "IsHome");
+
+            var val = new List<object>() {
+                                        3,3,3,3,3, 
+                                        3,3,3,3,2, 
+                                        1,"Sarajevo",71000,"BiH",false, 
+                                        1,1,1,1,2, 
+                                        2d,null,59738.666667,null,null, 
+                                        1d,null,45061.039384,null,null, 
+                                        1,null,10115,null,null, 
+                                        1.5, null,40557.5,null,null, 
+                                        2d,null,71000d,null,null, 
+                                        2.5, null,84550.5,null,null, 
+                                        3,null,98101,null,null, 
+            };
+
+            //
+            Assert.Equal(new string[] { "Count", "Unique", "Top", "Freq", "Mean", "Std", "Min", "25%", "Median", "75%", "Max" }, newDf.Index);
+            for (int i = 0; i < newDf.Values.Count; i++)
+                Assert.Equal(val[i], newDf.Values[i]);
+        }
+
+        [Fact]
+        public void DescribeDataFrame3()
+        {
+            var date = DateTime.Now.AddDays(-5);
+            var date2 = DateTime.Now.AddDays(-20);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { date2 , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+            var newDf = df.Describe(true, "ID", "City", "Zip Code", "State", "IsHome");
+
+            var val = new List<object>() {
+                                        3,3,
+                                        3,3,
+                                        1,71000,
+                                        1,1,
+                                        2d,59738.666667,
+                                        1d,45061.039384,
+                                        1,10115,
+                                        1.5, 40557.5,
+                                        2d,71000d,
+                                        2.5,84550.5,
+                                        3,98101,
+            };
+
+            //
+            Assert.Equal(new string[] { "Count", "Unique", "Top", "Freq", "Mean", "Std", "Min", "25%", "Median", "75%", "Max" }, newDf.Index);
+            for (int i = 0; i < newDf.Values.Count; i++)
+                Assert.Equal(val[i], newDf.Values[i]);
+        }
         #endregion
 
         #region Drop and Missing Values
+        [Fact]
+        public void DropColumn()
+        {
+            var date1 = DateTime.Now.AddDays(-20);
+            var date2 = DateTime.Now.AddDays(-10);
+            var date3 = DateTime.Now.AddDays(-5);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { date1 , date2 , date3 } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+            var df2 = df.Drop("ID", "Date", "Age", "Gender");
+            var lst = new List<object>() {"Sarajevo", 71000, "BiH", true, 3.14,"Seattle", 98101, "USA", false, 3.21, "Berlin",10115, "GER", false, 4.55 };
+            //
+            Assert.Equal(new string[] { "City", "Zip Code", "State", "IsHome", "Values" }, df2.Columns);
+            Assert.Equal(lst, df2.Values);
+
+        }
+
+        [Fact]
+        public void DropNA()
+        {
+            var date = DateTime.Now.AddDays(-20);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", DataFrame.NAN } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { date , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", DataFrame.NAN, "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+
+            //drop rows with missing values
+            var newDf = df.DropNA();
+
+            //check for values
+            Assert.Equal(9, newDf.ColCount());
+            Assert.Equal(1, newDf.RowCount());
+            Assert.Equal(new object[] {1, "Sarajevo", 71000, "BiH", true, 3.14,date, 31, "male" }, newDf[0]);
+
+        }
+
+        [Fact]
+        public void FillNA1()
+        {
+            var date = DateTime.Now.AddDays(-20);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", DataFrame.NAN } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { date , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+
+            //drop rows with missing values
+            string replValue = "Berlin";
+            df.FillNA(replValue);
+
+            //check for values
+            Assert.Equal(9, df.ColCount());
+            Assert.Equal(3, df.RowCount());
+            Assert.Equal(new object[] { 3, "Berlin", 10115, "GER", false, 4.55, date, 45, "male" }, df[2]);
+
+        }
+
+        [Fact]
+        public void FillNA2()
+        {
+            var date = DateTime.Now.AddDays(-20);
+            var date2= DateTime.Now.AddDays(-10);
+
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", DataFrame.NAN } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { DateTime.Now.AddDays(-10), date2 , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", DataFrame.NAN, "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+
+            //drop rows with missing values
+            string replValue = "Berlin";
+            var replValue2 = "female";
+            df.FillNA("City",replValue);
+            df.FillNA("Gender", replValue2);
+
+            //check for values
+            Assert.Equal(9, df.ColCount());
+            Assert.Equal(3, df.RowCount());
+            Assert.Equal(new object[] { 2, "Seattle", 98101, "USA", false, 3.21, date2, 25, "female" }, df[1]);
+            Assert.Equal(new object[] { 3, "Berlin", 10115, "GER", false, 4.55, date, 45, "male" }, df[2]);
+
+        }
+
+        [Fact]
+        public void FillNA3()
+        {
+            var date = DateTime.Now.AddDays(-20);
+            var date2 = DateTime.Now.AddDays(-10);
+
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101, DataFrame.NAN } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { DataFrame.NAN, 3.21, 4.55 } },
+                { "Date",new List<object>() { date, date2 , date } },
+                { "Age", new List<object>() { 31, 25, DataFrame.NAN } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+
+            //drop rows with missing values
+            int replValue = 40;
+            var replValue2 = 10115;
+            df.FillNA(new string[] { "Age", "Values" }, replValue);
+            df.FillNA("Zip Code", replValue2);
+
+            //check for values
+            Assert.Equal(9, df.ColCount());
+            Assert.Equal(3, df.RowCount());
+            Assert.Equal(new object[] { 1, "Sarajevo", 71000, "BiH", true, 40, date, 31, "male" }, df[0]);
+            Assert.Equal(new object[] { 2, "Seattle", 98101, "USA", false, 3.21, date2, 25, "female" }, df[1]);
+            Assert.Equal(new object[] { 3, "Berlin", 10115, "GER", false, 4.55, date, 40, "male" }, df[2]);
+
+        }
+
         #endregion
 
-        #region GrouBy
+        #region GrouBy and Rolling
+        [Fact]
+        //more unit test ara one 09GroupAndRoll
+        public void GroupByWithRolling()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>()  { 1,2,3,4,5,6,7,8,9,10} },
+                { "A",new List<object>()  { -2.385977,-1.004295,0.735167, -0.702657,-0.246845,2.463718, -1.142255,1.396598, -0.543425,-0.64050} },
+                { "B",new List<object>()  { -0.102758,0.905829, -0.165272,-1.340923,0.211596, 3.157577, 2.340594, -1.647453,1.761277, 0.289374} },
+                { "C",new List<object>()  { 0.438822, -0.954544,-1.619346,-0.706334,-0.901819,-1.380906,-0.039875,1.677227, -0.220481,-1.55067} },
+                { "D",new List<object>()  { "chair", "label", "item", "window", "computer", "label", "chair", "item", "abaqus", "window" } },
+                {"E", new List<object>() { DateTime.ParseExact("12/20/2016", "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("6/13/2016" , "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("8/25/2016",  "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("11/4/2016" , "MM/d/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("6/18/2016",  "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("3/8/2016" ,  "M/d/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("9/3/2016" ,  "M/d/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("11/24/2016", "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("6/16/2016",  "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                           DateTime.ParseExact("1/31/2016",  "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None)}
+                }
+            };
+
+            //
+            var df = new DataFrame(dict);
+            var rollingdf = df.Rolling(3, new Dictionary<string, Aggregation> { { "A", Aggregation.Sum } });
+
+            //column test
+            var c1 = new object[] { DataFrame.NAN, DataFrame.NAN, -2.655105, -0.971785, -0.214335, 1.514216, 1.074618, 2.718061, -0.289082, 0.212673 };
+
+            var cc1 = rollingdf["A"].ToList();
+            for (int i = 0; i < 10; i++)
+            {
+                if (cc1[i] != null)
+                    Assert.Equal((double)c1[i], (double)cc1[i], 6);
+                else
+                    Assert.Equal(c1[i], cc1[i]);
+            }
+
+        }
+
         #endregion
 
         #region Insert and rename
+        [Fact]
+        public void InserColumn()
+        {
+            //create data frame with 3 rows and 7 columns
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+
+            //add Age column
+            var newCol = new List<object>(){ 31, 25, 45 };
+
+            //add column
+            df.InsertColumn("Age", newCol, 2 );
+
+            var str = df.ToStringBuilder();
+            Assert.Equal(new string[] { "ID","City","Age","Zip Code","State","IsHome","Values","Date" }, df.Columns);
+            Assert.Equal(new object[] { 1, "Sarajevo", 31, 71000 }, df[0].Take(4));
+            Assert.Equal(new object[] { 2, "Seattle", 25, 98101 }, df[1].Take(4));
+            Assert.Equal(new object[] { 3, "Berlin", 45, 10115 }, df[2].Take(4));
+
+
+        }
+
+        [Fact]
+        public void RenameColumn()
+        {
+            //create data frame with 3 rows and 7 columns
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+
+            //add Age column
+            var newCol = new List<object>() { 31, 25, 45 };
+
+            //add column
+            df.InsertColumn("Age", newCol, 2);
+            df.Rename(("Age", "How old are you"), ("State", "Country"));
+            var str = df.ToStringBuilder();
+            Assert.Equal(new string[] { "ID", "City", "How old are you", "Zip Code", "Country", "IsHome", "Values", "Date" }, df.Columns);
+            Assert.Equal(new object[] { 1, "Sarajevo", 31, 71000 }, df[0].Take(4));
+            Assert.Equal(new object[] { 2, "Seattle", 25, 98101 }, df[1].Take(4));
+            Assert.Equal(new object[] { 3, "Berlin", 45, 10115 }, df[2].Take(4));
+
+
+        }
         #endregion
 
         #region Sorting
+        [Fact]
+        public void SortBy()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1,31,41,51,61,11,21,71,81,91} },
+                { "col2",new List<object>() { 2,32,42,52,62,12,22,72,82,92 } },
+                { "col3",new List<object>() { 3,43,33,63,53,13,23,73,83,93 } },
+                { "col4",new List<object>() { 4,54,44,34,64,14,24,74,84,94} },
+
+            };
+            //
+            var df = new DataFrame(dict);
+
+            var dict1 = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1,11,21,31,41,51,61,71,81,91} },
+                { "col2",new List<object>() { 2,12,22,32,42,52,62,72,82,92 } },
+                { "col3",new List<object>() { 3,13,23,43,33,63,53,73,83,93 } },
+                { "col4",new List<object>() { 4,14,24,54,44,34,64,74,84,94} },
+            };
+            var df1 = new DataFrame(dict1);
+
+            var result = df.SortBy(new string[] { "col1", "col2", "col3", "col4" });
+
+            for (int i = 0; i < result.Values.Count; i++)
+            {
+                var expected = Convert.ToInt32(df1.Values[i]);
+                var actual = Convert.ToInt32(result.Values[i]);
+                Assert.Equal<int>(expected, actual);
+            }
+        }
+        [Fact]
+        public void SortByDescending()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1,31,41,51,61,11,21,71,81,91} },
+                { "col2",new List<object>() { 2,32,42,52,62,12,22,72,82,92 } },
+                { "col3",new List<object>() { 3,43,33,63,53,13,23,73,83,93 } },
+                { "col4",new List<object>() { 4,54,44,34,64,14,24,74,84,94} },
+
+            };
+            var dictExp = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 91,81,71,61,51,41,31,21,11,1} },
+                { "col2",new List<object>() { 92,82,72,62,52,42,32,22,12,2} },
+                { "col3",new List<object>() { 93,83,73,53,63,33,43,23,13,3} },
+                { "col4",new List<object>() { 94,84,74,64,34,44,54,24,14,4} },
+
+            };
+
+            //
+            var df = new DataFrame(dict);
+            var dfExpected = new DataFrame(dictExp);
+
+            //reverse sorting
+            var result = df.SortByDescending(new string[] { "col1", "col2", "col3", "col4" });
+
+            for (int i = 0; i < result.Values.Count; i++)
+            {
+                var expected = Convert.ToInt32(dfExpected.Values[i]);
+                var actual = Convert.ToInt32(result.Values[i]);
+                Assert.Equal<int>(expected, actual);
+            }
+        }
+
         #endregion
 
-        #region Rolling
-        #endregion
+        #region Remove Rows
 
-        #region Take 
+
         #endregion
 
     }

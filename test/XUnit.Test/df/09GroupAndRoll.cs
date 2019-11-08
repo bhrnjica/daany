@@ -127,7 +127,7 @@ namespace Unit.Test.DF
             //
             var df = new DataFrame(dict);
 
-            DataFrame.SaveToCsv("testdf",df);
+            DataFrame.ToCsv("testdf",df);
             var agg = new Dictionary<string, Aggregation>()
             {
                 { "quantity", Aggregation.Sum },
