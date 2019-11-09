@@ -679,6 +679,7 @@ var df = new DataFrame(dict);
 df.Describe()
 ```
 The following image shows the output of the `Describe` method.
+
 ![Daany Describe method](img/daany_describe.png)
 
 
