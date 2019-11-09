@@ -7,7 +7,7 @@ Daany - .NET **DA**ta **AN**al**Y**tics C# library with the implementation of Da
 [![NuGet Status](https://img.shields.io/nuget/v/Daany.DataFrame?color=red&style=plastic)](https://www.nuget.org/packages/Daany.DataFrame/)
 ![](https://img.shields.io/azure-devops/build/bhrnjicaorg/506aa60c-4e55-4a7d-9823-4c284890124f/1)
 
-*[Daany Developer Guide](/docs/developer_guide.md)* - complete guide for developers.
+*[Daany Developer Guide](/docs/DevGuide/developer_guide.md)* - complete guide for developers.
 
 # Data Frame
 
