@@ -1,7 +1,7 @@
 ```Daany``` – .NET DAta ANalYtics library 
 ====================================
 
-![Daany - .NET DAta ANalYtics library ](img/daany_logo.png)
+![Daany - .NET DAta ANalYtics library ](../img/daany_logo.png)
 
 Introduction
 =======================
@@ -60,7 +60,7 @@ packages.
 
 2.  Install ```Daany.Stat``` package. This package already contains ```DataFrame```, as well as time series decomposition and related statistics features.
 
-![](img/daany_nuget.png)
+![](../img/daany_nuget.png)
 
 Once you install the packages, you can start developing your app using Daany
 packages.
@@ -70,7 +70,7 @@ Using ```Daany``` as assembly reference
 
 Since ```Daany``` has no dependency to other libraries you can copy three dlls and add them as reference to your project.
 
-![file explorer](img/daany_file_exp.png)
+![file explorer](../img/daany_file_exp.png)
 
 In order to do so clone the project from [http://github.com/bhrnjica/daany](http://github.com/bhrnjica/daany),build it and copy ```Daany.DataFrame.dll```, ```Daany.Math.dll``` and ```Daany.Stat.dll``` to your project as assembly references. Whole project is just 270 KB.
 
@@ -96,7 +96,7 @@ Usually, rows indicate a zero axis, while columns indicate axis one.
 
 The following image shows a DataFrame structure
 
-![data frame structure](img/daany_data_frame_structure.png)
+![data frame structure](../img/daany_data_frame_structure.png)
 
 The basic components of the DataFrame are:
 
@@ -680,12 +680,12 @@ df.Describe()
 ```
 The following image shows the output of the `Describe` method.
 
-![Daany Describe method](img/daany_describe.png)
+![Daany Describe method](../img/daany_describe.png)
 
 
 In case all columns should be presented the `Describe` method should be called with `df.Describe(numericOnly:false)`and the output should looks like:
 
-![Daany describe full](img/daany_describe_full.png)
+![Daany describe full](../img/daany_describe_full.png)
 
 
 
@@ -922,7 +922,7 @@ var rollingdf = df.Rolling(3, new Dictionary<string, Aggregation> { { "A", Aggre
 
 The `rollingdf` data frame looks like the following image:
 
-![rolling operation](img/daany_rolling.png)
+![rolling operation](../img/daany_rolling.png)
 
 GroupBy operation perform grouping similar rows in data frame. The following code groups data frame based on `Gender` column:
 ```csharp
@@ -950,7 +950,7 @@ var gDf = df.GroupBy("Gender");
 var swqs = gDf.ToStringBuilder();
 ```
 The output of the code above:
-![rolling operation](img/daany_groupby_one_column.png)
+![rolling operation](../img/daany_groupby_one_column.png)
 
 In case two grouping columns should be applied (`Gender` and `City`), the following code is used:
 ```csharp
@@ -978,7 +978,7 @@ var gDf = df.GroupBy("Gender","City");
 var swqs = gDf.ToStringBuilder();
 ```
 The output of the code above:
-![rolling operation](img/daany_groupby_two_columns.png)
+![rolling operation](../img/daany_groupby_two_columns.png)
 
 Often, after grouping aggregation is applied on each group of data frame. The following code shows combination of  grouping and rolling. The following code, groups data by `Gender` column, then perform aggregation on two columns `Age` and `Values`.
 
@@ -1014,7 +1014,7 @@ var gDf = df.GroupBy("Gender")
 ```
 The output of the code above is shown on the following image:
 
-![grouop and rolling operation](img/daany_groupby_and_rolling.png)
+![grouop and rolling operation](../img/daany_groupby_and_rolling.png)
 
 Select data from data frame
 ---------------------------

@@ -18,7 +18,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{BBC8D700-8755-4C1F-9479-D033A86E1E37}"
 	ProjectSection(SolutionItems) = preProject
 		docs\daany_logo.png = docs\daany_logo.png
-		docs\developer_guide.md = docs\developer_guide.md
 		README.md = README.md
 	EndProjectSection
 EndProject
