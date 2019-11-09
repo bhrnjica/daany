@@ -791,12 +791,6 @@ namespace Daany
                         var column = Columns[i];
                         var key = aggs[Columns[i]][j];
                         var value = calculateAggregation(this[Columns[i]], key, this._dfTypes[i]);
-                        //
-                        if (value is double)
-                            value = Math.Round(Convert.ToDouble(value), 6);
-                        //
-                        else if (value is float)
-                            value = Math.Round(Convert.ToSingle(value), 6);
                         aggValues.Add(column, key.GetEnumDescription(), value);
                     }
                 }
@@ -1122,7 +1116,7 @@ namespace Daany
                 var gp2 = GroupBy(groupCols[0], groupCols[1]);
                 foreach (var g in gp2.Keys2)
                 {
-                    var df2 = gp2.Groups[g.key1][g.key2];
+                    var df2 = gp2.Group2[g.key1][g.key2];
                     var group3 = df2.groupDFBy(groupCols[2]);
                     foreach (var g1 in group3)
                         grp.Add(g.key1, g.key2, g1.Key, g1.Value);
@@ -1139,13 +1133,16 @@ namespace Daany
         /// <param name="cName">new Column name.</param>
         /// <param name="nPos">Zero based index position of the new column. -1 insert the column at last position.</param>
         /// <param name="value">column value</param>
-        public void InsertColumn(string cName, List<object> value, int nPos = -1)
+        public DataFrame InsertColumn(string cName, List<object> value, int nPos = -1)
         {
+            if (value==null)
+                throw new Exception("value argument cannot be null");
             if (nPos == -1)
                 nPos = this._columns.Count;
 
             if (this._columns.Contains(cName))
                 throw new Exception($"{cName} already exists.");
+
             if (nPos < -1 && nPos >= ColCount())
                 throw new Exception("Index position must be between 0 and ColCount.");
 
@@ -1174,12 +1171,16 @@ namespace Daany
                     }
                 }
             }
-            //
-            this._values = vals;
+            //Create new Data Frame
+            var cols = this._columns.ToList();
             if (nPos == this._columns.Count)
-                this._columns.Add(cName);
+                cols.Add(cName);
             else
-                this._columns.Insert(nPos, cName);
+                cols.Insert(nPos, cName);
+
+            //new data frame
+            var newDf = new DataFrame(vals, cols);
+            return newDf;
         }
 
         /// <summary>
@@ -1695,26 +1696,46 @@ namespace Daany
         }
 
         /// <summary>
-        /// Returns data frame consisted of last n rows.
+        /// Returns the formated string of the first  'count' rows of the data frame
+        /// Suitable for the Jupyter notebooks
         /// </summary>
-        /// <param name="rows"></param>
+        /// <param name="count"></param>
         /// <returns></returns>
-        public DataFrame TakeLast(int rows)
+        public DataFrame Head(int count = 5)
         {
-            var val = new List<object>();
-            int counter = 1;
-            for (int i = _index.Count-1; i >=0 ; i--)
+            //
+            int rows = this.RowCount();
+            int cols = this.ColCount();
+            //
+            var lst = new List<object>();
+            long numR = Math.Min(rows, count);
+            for (int i = 0; i < numR; i++)
             {
-                val.InsertRange(0,this[i]);
-                if (counter >= rows)
-                    break;
-                counter++;
+                IList<object> row = this[i].ToList();
+                lst.AddRange(this[i].ToList());
+            }
+            return new DataFrame(lst, Columns.ToArray());
+        }
+
+        /// <summary>
+        /// Returns the formated string of the last  'count' rows of the data frame
+        /// Suitable for the Jupyter notebooks
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public DataFrame Tail(int count = 5)
+        {
+            int rows = this.RowCount();
+            int cols = this.ColCount();
+            //
+            var lst = new List<object>();
+            int numR = Math.Min(rows, count);
+            for (int i = rows - numR; i < rows; i++)
+            {
+                lst.AddRange(this[i].ToList());
             }
             //
-            var df = new DataFrame(val.ToArray(), Columns.ToArray());
-
-            //
-            return df;
+            return new DataFrame(lst, Columns.ToArray());
         }
 
         /// <summary>
@@ -1879,48 +1900,6 @@ namespace Daany
         {
             var str = $"({Index.Count},{Columns.Count})";
             return str;
-        }
-        /// <summary>
-        /// Returns the formated string of the first  'count' rows of the data frame
-        /// Suitable for the Jupyter notebooks
-        /// </summary>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        public DataFrame Head(int count = 5)
-        {
-            //
-            int rows = this.RowCount();
-            int cols = this.ColCount();
-            //
-            var lst = new List<object>();
-            long numR = Math.Min(rows, count);
-            for (int i = 0; i < numR; i++)
-            {
-                IList<object> row = this[i].ToList();
-                lst.AddRange(this[i].ToList());
-            }
-            return new DataFrame(lst, Columns.ToArray());
-        }
-
-        /// <summary>
-        /// Returns the formated string of the last  'count' rows of the data frame
-        /// Suitable for the Jupyter notebooks
-        /// </summary>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        public DataFrame Tail(int count = 5)
-        {
-            int rows = this.RowCount();
-            int cols = this.ColCount();
-            //
-            var lst = new List<object>();
-            int numR = Math.Min(rows, count);
-            for (int i = rows - numR; i < rows; i++)
-            {
-                lst.AddRange(this[i].ToList());
-            }
-            //
-            return new DataFrame(lst,Columns.ToArray());
         }
 
         public string ToStringBuilder(int rowCount=15)

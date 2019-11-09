@@ -60,7 +60,7 @@ packages.
 
 2.  Install ```Daany.Stat``` package. This package already contains ```DataFrame```, as well as time series decomposition and related statistics features.
 
-![](img/8f36e0b9833eadd79e9de40faf242948.png)
+![](img/daany_nuget.png)
 
 Once you install the packages, you can start developing your app using Daany
 packages.
@@ -70,7 +70,7 @@ Using ```Daany``` as assembly reference
 
 Since ```Daany``` has no dependency to other libraries you can copy three dlls and add them as reference to your project.
 
-![file explorer](img/d225b845186633526a150aea4b29506b.png)
+![file explorer](img/daany_file_exp.png)
 
 In order to do so clone the project from [http://github.com/bhrnjica/daany](http://github.com/bhrnjica/daany),build it and copy ```Daany.DataFrame.dll```, ```Daany.Math.dll``` and ```Daany.Stat.dll``` to your project as assembly references. Whole project is just 270 KB.
 
@@ -96,7 +96,7 @@ Usually, rows indicate a zero axis, while columns indicate axis one.
 
 The following image shows a DataFrame structure
 
-![A picture containing indoor, map, computer, sky Description automatically generated](media/e2dc7cfdb55fcb7b692444da3c50041b.png)
+![data frame structure](img/daany_data_frame_structure.png)
 
 The basic components of the DataFrame are:
 
@@ -398,6 +398,7 @@ Assert.Equal(71000, zipCodes[0]);
 Assert.Equal(98101, zipCodes[1]);
 Assert.Equal(10115, zipCodes[2]);
 ```
+
 ## Two or more columns selection
 
 Selecting more than one column at once returns data frame. The following code
@@ -414,6 +415,7 @@ var citiesDf = df["City", "Zip Code"];
 Assert.Equal(3, citiesDf.RowCount());
 Assert.Equal(2, citiesDf.ColCount());
 ```
+
 ## Row selection
 Selecting data by rows returns whole row from the data frame. The following code
 returns third rows from the existing data frame.
@@ -452,24 +454,21 @@ Operations in `Daany.DataFrame`
 
 ```Daany.DataFrame```  supports the following operations:
 
--   AddColumns
--   AddRows
--   AddCalculatedColumns
--   Aggregate
--   Drop
--   DropNA and FillNA
--   Filter
--   GroupBy
--   InsertColumn
--   Rename
--   SortBy and SortByDescending
--   Rolling
--   Select
+-   Add/Insert Column,
+-   AddRows,
+-   AddCalculatedColumns,
+-   Aggregate,
+-   Describe,
+-   Drop, DropNA and FillNA,
+-   Filter and RemoveRows,
+-   SortBy and SortByDescending,
+-   GroupBy and Rolling
+-   Select.
 
 In the next section eery feature is going to be presented.
 
 
-Add new columns into data frame
+Add/Insert new columns into data frame
 --------------------------
 
 Adding one or more new columns into data frame can be achieve by calling
@@ -494,6 +493,12 @@ var newDf = df.AddColumns(newCols);
 Assert.Equal(9, newDf.ColCount());
 Assert.Equal(25, newDf["Age", 1]);
 Assert.Equal("female", newDf["Gender", 1]);
+```
+Similarly, column can be inserted at any column list position. In case the above column should be inserted somewhere in column header, `InsertColumn` should be called:
+
+```csharp
+//inser column at third position
+var newDf= df.InsertColumn("Age", newCol, 2 );
 ```
 
 
@@ -527,10 +532,7 @@ method by passing DataFrame object containing new rows. The data frame object mu
 Add calculated column
 ---------------------
 
-Adding calculated column into data frame is often task. We use this feature whe performing features engineering or feature selection during data preparation. In order to add new column into data frame which is based on the calculation on each rows in the
-data frame use `AddCalculatedColumn` method. The method has two variants
-with current row as dictionary or as list collection. Both methods are very
-similar, so we are going to show the example by using the first variant. The
+Adding calculated column into data frame is often task. We use this feature when performing features engineering or feature selection during data preparation. In order to add new column into data frame which is based on the calculation on each rows in the data frame use `AddCalculatedColumn` method. The method has two variants with current row as dictionary or as list collection. Both methods are very similar, so we are going to show the example by using the first variant. The
 following code shows adding calculated column into existing data frame:
 
 ```csharp
@@ -613,9 +615,78 @@ Assert.Equal(val, row);
 ```
 
 As can be seen from the code above. The aggregation process included performing
-different operation on four column ({"ID","City","Date","Values"). In case
-default argument allColumns:true then all columns from data frame will be shows
+different operation on four columns ({`"ID"`,`"City"`,`"Date"`,`"Values"`). In case
+default argument `allColumns:true` then all columns from data frame will be shown
 in the aggregate result.
+
+In case more than one aggregate operation should be applied to single column, then the second aggregate method will be used. 
+```csharp
+var date = DateTime.Now.AddDays(-5);
+//define a dictionary of data
+var dict = new Dictionary<string, List<object>>
+{
+    { "ID",new List<object>() { 1,2,3} },
+    { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+    { "Zip Code",new List<object>() { 71000,98101,10115 } },
+    { "State",new List<object>() {"BiH","USA","GER" } },
+    { "IsHome",new List<object>() { true, false, false} },
+    { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+    { "Date",new List<object>() { DateTime.Now.AddDays(-20) , DateTime.Now.AddDays(-10) , date } },
+    { "Age", new List<object>() { 31, 25, 45 } },
+    { "Gender", new List<object>() { "male", "female", "male" } }
+};
+
+//create df
+var df = new DataFrame(dict);
+
+//define aggregation
+var agg = new Dictionary<string, Aggregation[]>() { {"ID",new Aggregation[]{Aggregation.Count,Aggregation.Sum }},
+                                                    {"City",new Aggregation[]{Aggregation.Top,Aggregation.Frequency }},
+                                                    {"Date", new Aggregation[]{Aggregation.Max }},
+                                                    {"Values",new Aggregation[]{Aggregation.Avg } },
+                                                };
+var newDf = df.Aggragate(agg);
+var val = new List<object>() { 3, null, null, null, 6, null, null, null, null, "Sarajevo", null, null, 
+    null, 1, null, null, null, null, 3.633333, null, null, null, null, date};
+
+//
+Assert.Equal(new string[] {"Count", "Sum", "Top", "Freq", "Mean", "Max" }, newDf.Index);
+for (int i = 0; i < newDf.Values.Count; i++)
+    Assert.Equal(val[i], newDf.Values[i]);
+```
+
+Describe data frame
+------------------------------------
+Describe data frame method prints out the based descriptive statistics for specified columns in the data frame. The following code shows usage of `Describe` method.
+```csharp
+var date = DateTime.Now.AddDays(-5);
+//define a dictionary of data
+var dict = new Dictionary<string, List<object>>
+{
+    { "ID",new List<object>() { 1,2,3} },
+    { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+    { "Zip Code",new List<object>() { 71000,98101,10115 } },
+    { "State",new List<object>() {"BiH","USA","GER" } },
+    { "IsHome",new List<object>() { true, false, false} },
+    { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+    { "Date",new List<object>() { DateTime.Now.AddDays(-20) , DateTime.Now.AddDays(-10) , date } },
+    { "Age", new List<object>() { 31, 25, 45 } },
+    { "Gender", new List<object>() { "male", "female", "male" } }
+};
+
+//create df
+var df = new DataFrame(dict);
+df.Describe()
+```
+The following image shows the output of the `Describe` method.
+![Daany Describe method](img/daany_describe.png)
+
+
+In case all columns should be presented the `Describe` method should be called with `df.Describe(numericOnly:false)`and the output should looks like:
+
+![Daany describe full](img/daany_describe_full.png)
+
+
 
 Drop columns and missing value handling
 -------------------------------------
@@ -716,9 +787,45 @@ Assert.Equal(3, df.RowCount());
 Assert.Equal(new object[] { 3, "Berlin", 10115, "GER", false, 4.55, date, 45,
 "male" }, df[2]);
 ```
-Remove rows from a data frame based on condition
+
+
+Filter and Conditional Remove
 ----------------------------------------------------
-Removing rows with condition is achieved by delegate implementation. The following code shows how to remove rows containing `Miami` as column value.
+Filter operation returns data frame with specific filter condition. Also, RemoveRows acts very similarly by using delegate implementation. The following code shows filter data frame between dates:
+
+```csharp
+var date1 = DateTime.Now.AddDays(-20);
+var date2 = DateTime.Now.AddDays(-10);
+var date3 = DateTime.Now.AddDays(-5);
+//define a dictionary of data
+var dict = new Dictionary<string, List<object>>
+{
+    { "ID",new List<object>() { 1,2,3} },
+    { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+    { "Zip Code",new List<object>() { 71000,98101,10115 } },
+    { "State",new List<object>() {"BiH","USA","GER" } },
+    { "IsHome",new List<object>() { true, false, false} },
+    { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+    { "Date",new List<object>() { date3 , date2 , date1 } },
+    { "Age", new List<object>() { 31, 25, 45 } },
+    { "Gender", new List<object>() { "male", "female", "male" } }
+};
+
+//create df
+var df = new DataFrame(dict);
+
+//filter data frame between dates
+var opers = new FilterOperator[2] { FilterOperator.Greather, FilterOperator.Less };
+var cols = new string[] { "Date", "Date" };
+var values = (new DateTime[] { DateTime.Now.AddDays(-7), DateTime.Now.AddDays(-3) }).Select(x => (object)x).ToArray();
+//filter
+var filteredDF = df.Filter(cols, values, opers);
+//
+Assert.Equal(1, filteredDF.RowCount());
+Assert.Equal(new List<object>() { 1, "Sarajevo", 71000, "BiH", true, 3.14, date3, 31, "male" }, filteredDF[0]);
+
+```
+The following code shows how to remove rows containing `Miami` as column value.
 
 ```csharp
 var date = DateTime.Now.AddDays(-20);
@@ -747,7 +854,7 @@ As can be seen the Function delegate is implemented with boolean return type. Ev
 
 Sorting in data frame
 ----------------------------------------------------
-Data frame can be sorted by using `SortBy`. The following code sorts data frame in ascending and descending order:
+Data frame can be sorted by using `SortBy` or `SortByDescending`. The following code sorts data frame in ascending and descending order:
 
 ```csharp
 var dict = new Dictionary<string, List<object>>
@@ -779,4 +886,139 @@ for (int i = 0; i < result.Values.Count; i++)
     Assert.Equal<int>(expected, actual);
 }
 ```
-Similar implementation is when data frame would be sorted in descending order.
+Same implementation would be in case of descending sort, except that the `SortByDescenging` would be called.
+
+GroupBy and Rolling 
+---------------------------------
+Rolling operation provides calculation on specific number (window size) of successive data frame rows. The following code shows rolling of `sum` operation performed on column `A`.
+
+```csharp
+var dict = new Dictionary<string, List<object>>
+{
+    { "ID",new List<object>()  { 1,2,3,4,5,6,7,8,9,10} },
+    { "A",new List<object>()  { -2.385977,-1.004295,0.735167, -0.702657,-0.246845,2.463718, -1.142255,1.396598, -0.543425,-0.64050} },
+    { "B",new List<object>()  { -0.102758,0.905829, -0.165272,-1.340923,0.211596, 3.157577, 2.340594, -1.647453,1.761277, 0.289374} },
+    { "C",new List<object>()  { 0.438822, -0.954544,-1.619346,-0.706334,-0.901819,-1.380906,-0.039875,1.677227, -0.220481,-1.55067} },
+    { "D",new List<object>()  { "chair", "label", "item", "window", "computer", "label", "chair", "item", "abaqus", "window" } },
+    {"E", new List<object>() { DateTime.ParseExact("12/20/2016", "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("6/13/2016" , "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("8/25/2016",  "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("11/4/2016" , "MM/d/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("6/18/2016",  "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("3/8/2016" ,  "M/d/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("9/3/2016" ,  "M/d/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("11/24/2016", "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("6/16/2016",  "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+                                DateTime.ParseExact("1/31/2016",  "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None)}
+    }
+};
+
+//
+var df = new DataFrame(dict);
+var rollingdf = df.Rolling(3, new Dictionary<string, Aggregation> { { "A", Aggregation.Sum } });
+
+```
+
+The `rollingdf` data frame looks like the following image:
+
+![rolling operation](img/daany_rolling.png)
+
+GroupBy operation perform grouping similar rows in data frame. The following code groups data frame based on `Gender` column:
+```csharp
+var date1 = DateTime.Now.AddDays(-20);
+var date2 = DateTime.Now.AddDays(-10);
+var date3 = DateTime.Now.AddDays(-5);
+//define a dictionary of data
+var dict = new Dictionary<string, List<object>>
+{
+    { "ID",new List<object>() { 1,2,3} },
+    { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+    { "Zip Code",new List<object>() { 71000,98101,10115 } },
+    { "State",new List<object>() {"BiH","USA","GER" } },
+    { "IsHome",new List<object>() { true, false, false} },
+    { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+    { "Date",new List<object>() { date3 , date2 , date1 } },
+    { "Age", new List<object>() { 31, 25, 45 } },
+    { "Gender", new List<object>() { "male", "female", "male" } }
+};
+
+//create df
+var df = new DataFrame(dict);
+//group df by gender
+var gDf = df.GroupBy("Gender");
+var swqs = gDf.ToStringBuilder();
+```
+The output of the code above:
+![rolling operation](img/daany_groupby_one_column.png)
+
+In case two grouping columns should be applied (`Gender` and `City`), the following code is used:
+```csharp
+var date1 = DateTime.Now.AddDays(-20);
+var date2 = DateTime.Now.AddDays(-10);
+var date3 = DateTime.Now.AddDays(-5);
+//define a dictionary of data
+var dict = new Dictionary<string, List<object>>
+{
+    { "ID",new List<object>() { 1,2,3} },
+    { "City",new List<object>() { "Sarajevo", "Sarajevo", "Berlin" } },
+    { "Zip Code",new List<object>() { 71000,98101,10115 } },
+    { "State",new List<object>() {"BiH","USA","GER" } },
+    { "IsHome",new List<object>() { true, false, false} },
+    { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+    { "Date",new List<object>() { date3 , date2 , date1 } },
+    { "Age", new List<object>() { 31, 25, 45 } },
+    { "Gender", new List<object>() { "male", "female", "male" } }
+};
+
+//create df
+var df = new DataFrame(dict);
+//group df by gender
+var gDf = df.GroupBy("Gender","City");
+var swqs = gDf.ToStringBuilder();
+```
+The output of the code above:
+![rolling operation](img/daany_groupby_two_columns.png)
+
+Often, after grouping aggregation is applied on each group of data frame. The following code shows combination of  grouping and rolling. The following code, groups data by `Gender` column, then perform aggregation on two columns `Age` and `Values`.
+
+```csharp
+var date1 = DateTime.Now.AddDays(-20);
+var date2 = DateTime.Now.AddDays(-10);
+var date3 = DateTime.Now.AddDays(-5);
+//define a dictionary of data
+var dict = new Dictionary<string, List<object>>
+{
+    { "ID",new List<object>() { 1,2,3,4} },
+    { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin", "Amsterdam" } },
+    { "Zip Code",new List<object>() { 71000,98101,10115, 11000 } },
+    { "State",new List<object>() {"BiH","USA","GER", "NL" } },
+    { "IsHome",new List<object>() { true, false, false, true} },
+    { "Values",new List<object>() { 3.14, 3.21, 4.55, 5.55 } },
+    { "Date",new List<object>() { date3 , date2 , date1 , date2} },
+    { "Age", new List<object>() { 31, 25, 45, 33 } },
+    { "Gender", new List<object>() { "male", "female", "male", "female" } }
+};
+
+//create df
+var df = new DataFrame(dict);
+//group df by gender
+var gDf = df.GroupBy("Gender")
+            .Rolling(2, 2, 
+                new Dictionary<string, Aggregation>() 
+                    { 
+                        { "Values", Aggregation.Sum }, 
+                        {"Age", Aggregation.Avg } }
+            );
+
+```
+The output of the code above is shown on the following image:
+
+![grouop and rolling operation](img/daany_groupby_and_rolling.png)
+
+Select data from data frame
+---------------------------
+The data from data frame can be selected on many ways. It is useful to have set of `Linq` oriented methods. There are several methods for selecting data from data frame:
+- ```TakeEvery(int nthRow)``` - select every nth row, created data frame and return.
+- ```TakeRandom(int rows)``` - select randomly `nrows` and return data frame.
+- ```Tail(int count = 5)``` - select last `count` rows.
+- ```Head(int count = 5)``` - select first `count` rows.

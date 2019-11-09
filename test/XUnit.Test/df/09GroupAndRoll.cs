@@ -244,7 +244,7 @@ namespace Unit.Test.DF
             var rollingdf = df.Rolling(5, agg);
 
             //column test
-            var c1 = new object[] { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, 1.139954626, 1.402105188, 1.433931328, 1.521038952, 1.494833302, 1.545961242 };
+            var c1 = new object[] { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, 1.13996, 1.402105, 1.433931, 1.521039, 1.494833, 1.54596 };
             var c2 = new object[] { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, -1.340923, -1.340923, -1.340923, -1.647453, -1.647453, -1.647453 };
             var c3 = new object[] { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, -0.7486442, -1.1125898, -0.929656, -0.2703414, -0.1731708, -0.302941 };
 

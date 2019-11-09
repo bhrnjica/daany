@@ -150,7 +150,7 @@ namespace Unit.Test.DF
             };
             //
             var df = new DataFrame(dict);
-            var df1 = df.TakeLast(3);
+            var df1 = df.Tail(3);
             //row test
             var r1 = df1[0].ToList();
             var r2 = df1[1].ToList();
@@ -170,7 +170,7 @@ namespace Unit.Test.DF
                 Assert.Equal((int)r3[i], e3[i]);
 
             //last 4 rows
-            var df2 = df.TakeLast(4);
+            var df2 = df.Tail(4);
             //row test
             var r21 = df2[0].ToList();
             var r22 = df2[1].ToList();

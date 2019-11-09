@@ -15,6 +15,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System;
+using System.Text;
 
 namespace Daany
 {
@@ -96,7 +97,7 @@ namespace Daany
         {
             GroupedColumn = firstGroupedColumn;
             SecondGroupedColumn = secondGroupedColumn;
-            Groups = grp;
+            Group2 = grp;
         }
 
         internal GroupDataFrame(string firstGroupedColumn, string secondGroupedColumn, string thirdGroupedColumn, ThreeKeysDictionary<object, object, object, DataFrame> grp)
@@ -113,7 +114,7 @@ namespace Daany
         public string ThirdGroupedColumn { get; set; }
 
         public Dictionary<object, DataFrame> Group { get; }
-        public TwoKeysDictionary<object, object, DataFrame> Groups { get; }
+        public TwoKeysDictionary<object, object, DataFrame> Group2 { get; }
         public ThreeKeysDictionary<object, object,object, DataFrame> Group3 { get; }
 
         public DataFrame this[object Key]
@@ -128,7 +129,7 @@ namespace Daany
         {
             get
             {
-                return Groups[Key1,Key2];
+                return Group2[Key1,Key2];
             }
         }
 
@@ -153,7 +154,7 @@ namespace Daany
             get
             {
                 var lst = new List<(object key1, object key2)>();
-                foreach(var kk in Groups)
+                foreach(var kk in Group2)
                 {
                     var k1 = kk.Key;
                     foreach(var kkk in kk.Value)
@@ -195,7 +196,7 @@ namespace Daany
             //create columns and aggregation
             var ag = new Dictionary<string, Aggregation>();
             ag.Add(this.GroupedColumn, Daany.Aggregation.Last);
-            if (Groups != null && Groups.Count > 0)
+            if (Group2 != null && Group2.Count > 0)
                 ag.Add(this.SecondGroupedColumn,Daany.Aggregation.Last);
             if (Group3 != null && Group3.Count > 0)
                 ag.Add(this.ThirdGroupedColumn, Daany.Aggregation.Last);
@@ -214,11 +215,11 @@ namespace Daany
                         df.AddRows(df1);
                 }
             }
-            else if(Groups !=null && Groups.Count > 0)
+            else if(Group2 !=null && Group2.Count > 0)
             {
                 foreach (var gr in Keys2)
                 {
-                    var df1 = this.Groups[gr.key1][gr.key2].Rolling(rollingWindow, ag).TakeEvery(window);
+                    var df1 = this.Group2[gr.key1][gr.key2].Rolling(rollingWindow, ag).TakeEvery(window);
                     if (df == null)
                         df = new DataFrame(df1);
                     else
@@ -248,7 +249,7 @@ namespace Daany
         public DataFrame Aggregation(IDictionary<string, Aggregation> agg)
         {
             DataFrame df = null;
-            if (Group == null && Groups == null && Group3 == null)
+            if (Group == null && Group2 == null && Group3 == null)
                 throw new Exception("Group is  empty.");
 
             //grouping with one column
@@ -266,10 +267,10 @@ namespace Daany
                 return df1;
             }
             //grouping with two columns
-            else if(Groups!=null && Groups.Count>0)
+            else if(Group2!=null && Group2.Count>0)
             {
-                var df1 = DataFrame.CreateEmpty(Groups.ElementAt(0).Value.ElementAt(0).Value.Columns);
-                foreach (var gr in Groups)
+                var df1 = DataFrame.CreateEmpty(Group2.ElementAt(0).Value.ElementAt(0).Value.Columns);
+                foreach (var gr in Group2)
                 {
                     var lst = new List<string>();
                     lst.Add(GroupedColumn);
@@ -325,6 +326,68 @@ namespace Daany
             }
 
             return new DataFrame(lst, cols);
+        }
+
+        public string ToStringBuilder(int rowCount = 15)
+        {
+            StringBuilder sb = new StringBuilder();
+            int rows = this.Group != null ? this.Group.Count() : this.Group2 != null ? this.Group2.Count() : this.Group3.Count();
+            
+            int longestColumnName = 20;
+   
+            //add space for group
+            sb.Append(string.Format($"Group By Column: {this.GroupedColumn}".PadRight(longestColumnName)));
+            if(!string.IsNullOrEmpty(this.SecondGroupedColumn))
+                sb.Append(string.Format(", "+this.SecondGroupedColumn.PadRight(longestColumnName)));
+            if(!string.IsNullOrEmpty(this.ThirdGroupedColumn))
+                sb.Append(string.Format(", ",this.ThirdGroupedColumn.PadRight(longestColumnName)));
+
+            sb.AppendLine();
+            //
+            var rr = Math.Min(rowCount, rows);
+            for (int i = 0; i < rr; i++)
+            {
+                if(this.Group != null)
+                {
+                    var grp = this.Group.ElementAt(i);
+                    sb.Append((grp.Key).ToString().PadRight(longestColumnName));
+                    sb.AppendLine();
+                    sb.Append(grp.Value.ToStringBuilder());
+                    sb.AppendLine();
+                }
+                else if(this.Group2 !=null)
+                {
+                    var grp = this.Group2.ElementAt(i);
+                    sb.Append((grp.Key).ToString().PadRight(longestColumnName));
+                    foreach(var k2 in grp.Value)
+                    {
+                        sb.Append((k2.Key).ToString().PadRight(longestColumnName));
+                        sb.AppendLine();
+                        sb.Append(k2.Value.ToStringBuilder());
+                        sb.AppendLine();
+                    }
+                    
+                }
+                else if (this.Group3 != null)
+                {
+                    var grp = this.Group3.ElementAt(i);
+                    sb.Append((grp.Key).ToString().PadRight(longestColumnName));
+                    foreach (var k2 in grp.Value)
+                    {
+                        sb.Append((k2.Key).ToString().PadRight(longestColumnName));
+                        foreach (var k3 in k2.Value)
+                        {
+                            sb.Append((k3.Key).ToString().PadRight(longestColumnName));
+                            sb.AppendLine();
+                            sb.Append(k3.Value.ToStringBuilder());
+                            sb.AppendLine();
+                        }
+                    }
+
+                }
+
+            }
+            return sb.ToString();
         }
     }
 }

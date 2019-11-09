@@ -36,8 +36,20 @@ namespace Daany
     public partial class DataFrame
     {
         #region Private
-   
+
         private static object calculateAggregation(IEnumerable<object> vals, Aggregation aggregation, ColType colType)
+        {
+            var value =  _calculateAggregation(vals, aggregation, colType);
+            //
+            if (value is double)
+                value = Math.Round(Convert.ToDouble(value), 6);
+            //
+            else if (value is float)
+                value = Math.Round(Convert.ToSingle(value), 6);
+
+            return value;
+        }
+        private static object _calculateAggregation(IEnumerable<object> vals, Aggregation aggregation, ColType colType)
         {
             switch (aggregation)
             {

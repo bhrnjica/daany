@@ -105,7 +105,7 @@ namespace Unit.Test.DF
             var d = new List<object>() { 5, 15, 25, 35, 45, 55, 65, 75, 85, 95 };
 
             //add three new columns
-            df.InsertColumn("col5",d,4);
+            df = df.InsertColumn("col5",d,4);
             Assert.Equal("col5", df.Columns[4]);
 
             for (int i = 0; i < df.Values.Count; i++)
@@ -136,9 +136,9 @@ namespace Unit.Test.DF
             var d3 = new List<object>() { 6, 16, 26, 36, 46, 56, 66, 76, 86, 96 };
 
             //add three new columns
-            df.InsertColumn("col2", d1, 1);
-            df.InsertColumn("col5", d2, 4);
-            df.InsertColumn("col6", d3, 5);
+            df=df.InsertColumn("col2", d1, 1);
+            df=df.InsertColumn("col5", d2, 4);
+            df=df.InsertColumn("col6", d3, 5);
 
 
             Assert.Equal("col2", df.Columns[1]);
@@ -171,7 +171,7 @@ namespace Unit.Test.DF
             var d = new List<object>() { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
 
             //add three new columns
-            df.InsertColumn("col10", d);
+            df = df.InsertColumn("col10", d);
             Assert.Equal("col10", df.Columns[9]);
 
             for (int i = 0; i < df.Values.Count; i++)
