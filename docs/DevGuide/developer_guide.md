@@ -463,6 +463,7 @@ Operations in `Daany.DataFrame`
 -   Filter and RemoveRows,
 -   SortBy and SortByDescending,
 -   GroupBy and Rolling
+-   Join two data frames
 -   Select.
 
 In the next section eery feature is going to be presented.
@@ -1015,6 +1016,38 @@ var gDf = df.GroupBy("Gender")
 The output of the code above is shown on the following image:
 
 ![grouop and rolling operation](../img/daany_groupby_and_rolling.png)
+
+Join two data frame s
+-----------------------------------
+Join two data frames is similar like SQL LIKE. In order to call it, you have to provide two data frames, left and right key columns and type of joining. The following code shows joining two data frames with two keys columns with inner join type.
+
+```csharp
+var dict = new Dictionary<string, List<object>>
+{
+    { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+    { "catId",new List<object>() { "A", "A", "B", "B" } },
+    { "value1",new List<object>() { 1,2,3,4 } },
+};
+var dict1 = new Dictionary<string, List<object>>
+{
+    { "item2ID",new List<object>() {"foo", "bar", "baz","foo" } },
+    { "cat2ID",new List<object>() { "A", "B", "A", "B" } },
+    { "value2",new List<object>() { 5,6,7,8 } },
+};
+//
+var df1 = new DataFrame(dict);
+var df2 = new DataFrame(dict1);
+var mergedDf = df1.Join(df2, 
+                    new string[] { "itemID", "catId" }, //left key columns
+                    new string[] { "item2ID", "cat2ID" }, //right key columns
+                    JoinType.Inner);//join type
+
+```
+The following output is shown as the result:
+![daany join ](../img/daany_join.png)
+
+The limit for key columns is 3. That means you cannot join two data frames with more than 3 key columns.
+
 
 Select data from data frame
 ---------------------------
