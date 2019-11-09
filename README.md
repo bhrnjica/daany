@@ -6,22 +6,13 @@ Daany - .NET **DA**ta **AN**al**Y**tics C# library with the implementation of Da
 ![License](https://img.shields.io/github/license/bhrnjica/Daany)
 [![NuGet Status](https://img.shields.io/nuget/v/Daany.DataFrame?color=red&style=plastic)](https://www.nuget.org/packages/Daany.DataFrame/)
 ![](https://img.shields.io/azure-devops/build/bhrnjicaorg/506aa60c-4e55-4a7d-9823-4c284890124f/1)
+
+*[Daany Developer Guide](/docs/developer_guide.md)* - complete guide for developers.
+
 # Data Frame
 
 Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require for any class type implementation prior to data loading and transformation.     
 
-The ``DataFrame`` implementation contains basic capabilities like:
-
-- [create a data frame from a list, a dictionary or from csv file](docs/01create_data_frame.md),
-- [access data frame elements: row, column or cell through indexers](docs/02data_frame_indexers.md), 
-- [persisting ``DataFrame`` into csv file](docs/03data_frame_save_csv.md),
-- [filtering capabilities](test/df.test/df/08FilterTest.cs),
-- [joining two or more data frames by common column](test/df.test/df/03JoinDataFramesTests.cs),
-- [handling missing values](test/df.test/df/13MissingValuesTests.cs), 
-- [grouping, aggregating data in the data frame](test/df.test/df/09GroupAndRoll.cs),
-- [calculated columns](test/df.test/df/11CalculatedColumn.cs), [remove columns](test/df.test/df/03RemoveRowColTests.cs),
-- apply an operation on a specific column/row in the data frame,
-- ...
 
 Once the ``DataFrame`` completes the data transformation, the extension method provides the easy way to pass the data into ```MLContex``` of the ML.NET Framework.
 The following example shows Daany Data Frame in action:
