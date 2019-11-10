@@ -15,7 +15,7 @@ Daany - C# library for data analysis and transformation with the implementation 
     <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
     <PackageTags>ml.net, data preparation, data analytics</PackageTags>
-    <Version>0.3.6</Version>
+    <Version>0.5.0</Version>
     <PackageReleaseNotes>MIT License
 
 Copyright (c) 2019 Bahrudin Hrnjica
@@ -45,8 +45,24 @@ SOFTWARE.</PackageReleaseNotes>
     <PackageIcon>daanyIcon.png</PackageIcon>
     <ApplicationIcon>daany.ico</ApplicationIcon>
     <AssemblyName>Daany.MathStuff</AssemblyName>
+    <dependencies>
+      <group targetFramework="netstandard2.0" />
+    </dependencies>
+    
   </PropertyGroup>
-
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\README.MD">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
   <ItemGroup>
     <Content Include="..\..\docs\img\daanyIcon.png" Link="daanyIcon.png" Pack="true" Visible="false" PackagePath="\" />
   </ItemGroup>
@@ -57,16 +73,9 @@ SOFTWARE.</PackageReleaseNotes>
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if $(ConfigurationName) == Release copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;..\..\lib\$(TargetName).dll&quot;" />
+  </Target>
 
 </Project>

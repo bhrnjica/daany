@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F5844D1E-B64
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{68B2BA8B-2360-401E-BA8A-5B5E937DD816}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.Math", "src\daany.math\Daany.Math.csproj", "{73358BCE-42AA-477A-BD90-99C2392CD9CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.MathStuff", "src\daany.math\Daany.MathStuff.csproj", "{73358BCE-42AA-477A-BD90-99C2392CD9CC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.DataFrame", "src\daany.df\Daany.DataFrame.csproj", "{3AF3BD6B-CCCD-43CB-92E0-17834E88E037}"
 EndProject

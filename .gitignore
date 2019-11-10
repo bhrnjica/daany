@@ -19,8 +19,5 @@ bin-release/
 /.vs/daany/v16
 /.vs/daany/DesignTimeBuild
 /test/Daany.Test.App
-/build.ps1
-/build.ps1.bak
 /nuget.exe
-/daany_build_test_publish_script.ps1
-/*.nupkg
+

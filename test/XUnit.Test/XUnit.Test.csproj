@@ -23,7 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\daany.df\Daany.DataFrame.csproj" />
     <ProjectReference Include="..\..\src\daany.ext\Daany.DataFrame.Ext.csproj" />
-    <ProjectReference Include="..\..\src\daany.math\Daany.Math.csproj" />
+    <ProjectReference Include="..\..\src\daany.math\Daany.MathStuff.csproj" />
     <ProjectReference Include="..\..\src\daany.stat\Daany.Stat.csproj" />
   </ItemGroup>
 

@@ -1,0 +1,8 @@
+
+msbuild daany.sln -p:Configuration=Release
+
+./nuget.exe pack src/daany.df/Daany.DataFrame.csproj -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
+
+./nuget.exe pack src/daany.ext/Daany.DataFrame.Ext.csproj -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
+
+./nuget.exe pack src/daany.stat/Daany.Stat.csproj -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
