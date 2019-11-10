@@ -143,6 +143,20 @@ namespace Daany
         #endregion
 
         #region Static members
+        public static DataFrame FromWeb(string urlPath, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = "dd/mm/yyyy", int nRows = -1)
+        {
+            if (string.IsNullOrEmpty(urlPath))
+                throw new ArgumentNullException(nameof(urlPath), "Argument should not be null.");
+            var strPath = $"web_csv_{DateTime.Now.Ticks}";
+            using (System.Net.WebClient fileDownloader = new System.Net.WebClient())
+            {
+                fileDownloader.DownloadFile(urlPath, strPath);
+            }
+                       
+            var df =  FromCsv(strPath, sep, names, textQaualifier, dformat);
+            File.Delete(strPath);
+            return df;
+        }
         /// <summary>
         /// Method for loading data from the file into data frame object.
         /// </summary>

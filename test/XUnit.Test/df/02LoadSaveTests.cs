@@ -13,7 +13,7 @@ namespace Unit.Test.DF
         public void LoadromCSV_Test()
         {
             string path = "../../../testdata/titanic_full_1310.csv";
-            var df = DataFrame.FromCsv(path, '\t', names:null); //
+            var df = DataFrame.FromCsv(path, '\t', names: null); //
             //row test
             var r1 = df[393].ToList();
 
@@ -37,6 +37,18 @@ namespace Unit.Test.DF
                 }
 
             }
+        }
+
+        [Fact]
+        public void LoadFromWeb_Test()
+        {
+            string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+            var df = DataFrame.FromWeb(url, sep: ',', names: new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" }); //
+            //row test
+            var r100 = df[100].ToList();
+            //
+            Assert.Equal(new List<object> {6.3f, 3.3f,6f,2.5f, "Iris-virginica" },r100);
+            
         }
 
         [Fact]
