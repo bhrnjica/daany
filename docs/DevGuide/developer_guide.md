@@ -27,14 +27,14 @@ components:
 The main ```Daany``` component is ```Daany.DataFrame``` - a data frame implementation for
 data analysis. It is much like ```Pandas``` but the component is not going to follow
 pandas implementation. It is suitable for doing data exploration and preparation
-with ```C\# Jupyter Notebook```. In order to create or load data into data frame it
+with ```C# Jupyter Notebook```. In order to create or load data into data frame it
 doesn’t require any predefined class type. In order to defined relevant value type of each column all data are parsed internally during data frame creation. The ```Daany.DataFrame``` implements set of powerful features for data manipulation, handling missing values, calculated columns, merging two or more data frame into one, and similar. It is handy for extracting its rows or columns as series of elements and put into the chart to visualizing the data.
 
 ```Daany.Stat``` is a collection of statistics features e.g. time series
 decompositions, optimization, performance parameters and similar.
 
-```Daany.Math``` is a component with implementation of od matrix and related
-linear algebra capabilities. It also contains some implementation of other great open source projects. 
+```Daany.Math``` is a component within data frame with implementation of od matrix and related
+linear algebra capabilities. It also contains some implementation of other great open source projects. The component is not going to be separate NuGet package.
 
 ```Daany.DataFrame.Ext``` contains extensions for ```Daany.DataFrame``` component, but they are related to other projects mostly to ML.NET. The ```Daany.DataFrame```  should not be dependent on ```ML.NET```  and other libraries. So, any future data frame feature which depends on something other than ```Daany.Math```, should be placed in ```Daany.Ext```.
 
