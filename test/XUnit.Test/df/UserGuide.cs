@@ -139,6 +139,21 @@ namespace Unit.Test.DF
         }
 
         [Fact]
+        public void CreateDataFrameFromExistingOne1()
+        {
+            //create data frame with 3 rows and 7 columns
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", sep: ',', names: null, dformat: "MM/dd/yyyy");
+
+            //now create a new data frame with only three columns
+            var newDf = df["City", "Zip Code", "State", "State"];
+
+            //check the size of the data frame
+            Assert.Equal(3, newDf.RowCount());
+            Assert.Equal(new string[] { "City", "Zip Code", "State", "State" }, newDf.Columns);
+            Assert.Equal(4, newDf.ColCount());
+        }
+
+        [Fact]
         public void CreateDataFrameFromExistingOneUsingCrete()
         {
             //create data frame with 3 rows and 7 columns
@@ -151,6 +166,21 @@ namespace Unit.Test.DF
             Assert.Equal(3, newDf.RowCount());
             Assert.Equal(new string[] { "Place", "Country", "Zip Code", "Values" }, newDf.Columns);
             Assert.Equal(4, newDf.ColCount());
+        }
+
+        [Fact]
+        public void CreateDataFrameByDefiningNewColumns()
+        {
+            //create data frame with 3 rows and 7 columns
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", sep: ',', names: null, dformat: "MM/dd/yyyy");
+
+            //now create a new data frame with three columns which can be renamed during creation
+            var newDf = df.Create(("City", "Place"), ("State", "Country"), ("Zip Code", null), ("Values", "Values"), ("Values", "Values2"), ("Values", "Values3"));
+
+            //check the size of the data frame
+            Assert.Equal(3, newDf.RowCount());
+            Assert.Equal(new string[] { "Place", "Country", "Zip Code", "Values", "Values2", "Values3" }, newDf.Columns);
+            Assert.Equal(6, newDf.ColCount());
         }
 
         [Fact]
