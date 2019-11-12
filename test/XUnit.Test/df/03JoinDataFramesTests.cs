@@ -9,7 +9,7 @@ namespace Unit.Test.DF
     public class JoinDataFramesTests
     {
         [Fact]
-        public void JoinBySingleColumn_Test1()
+        public void JoinTwoDataFrameByIndex_Test1()
         {
             var dict = new Dictionary<string, List<object>>
             {
@@ -44,7 +44,7 @@ namespace Unit.Test.DF
 
 
         [Fact]
-        public void JoinBySingleColumn_Test2()
+        public void JoinByIndex_Test2()
         {
             var dict = new Dictionary<string, List<object>>
             {
@@ -97,7 +97,7 @@ namespace Unit.Test.DF
             var df1 = new DataFrame(dict);
             var df2 = new DataFrame(dict1);
             //
-            var mergedDf = df1.Join(df2, new string[] { "itemID" }, new string[] { "item2ID" }, JoinType.Inner);
+            var mergedDf = df1.Merge(df2, new string[] { "itemID" }, new string[] { "item2ID" }, JoinType.Inner);
             var e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, "foo", 5, };
             var dd = mergedDf.ToStringBuilder();
             //row test
@@ -105,7 +105,7 @@ namespace Unit.Test.DF
                 Assert.Equal(mergedDf.Values[i], e1[i]);
 
             //
-            mergedDf = df1.Join(df2, new string[] { "itemID" }, new string[] { "item2ID" }, JoinType.Left);
+            mergedDf = df1.Merge(df2, new string[] { "itemID" }, new string[] { "item2ID" }, JoinType.Left);
             e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, "foo", 5, };
             dd = mergedDf.ToStringBuilder();
             //row test
@@ -113,7 +113,7 @@ namespace Unit.Test.DF
                 Assert.Equal(mergedDf.Values[i], e1[i]);
 
             //
-            mergedDf = df1.Join(df2, new string[] { "value1" }, new string[] { "value2" }, JoinType.Inner);
+            mergedDf = df1.Merge(df2, new string[] { "value1" }, new string[] { "value2" }, JoinType.Inner);
             e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, "foo", 5, };
             dd = mergedDf.ToStringBuilder();
             //row test
@@ -138,7 +138,7 @@ namespace Unit.Test.DF
             var df1 = new DataFrame(dict);
             var df2 = new DataFrame(dict1);
             //
-            var mergedDf = df1.Join(df2, new string[] { "item2ID" }, new string[] { "itemID" }, JoinType.Inner);
+            var mergedDf = df1.Merge(df2, new string[] { "item2ID" }, new string[] { "itemID" }, JoinType.Inner);
             var e1 = new object[] { "foo", 5, "foo", 1, "foo", 5, "foo",4, "bar", 6, "bar", 2, "baz", 7, "baz", 3,  };
       
             //row test
@@ -146,7 +146,7 @@ namespace Unit.Test.DF
                 Assert.Equal(mergedDf.Values[i], e1[i]);
 
             //
-            mergedDf = df1.Join(df2, new string[] { "item2ID" }, new string[] { "itemID" }, JoinType.Left);
+            mergedDf = df1.Merge(df2, new string[] { "item2ID" }, new string[] { "itemID" }, JoinType.Left);
             e1 = new object[] { "foo", 5, "foo", 1, "foo", 5, "foo", 4, "bar", 6, "bar", 2, "baz", 7, "baz", 3, };
       
             //row test
@@ -154,7 +154,7 @@ namespace Unit.Test.DF
                 Assert.Equal(mergedDf.Values[i], e1[i]);
 
             //
-            mergedDf = df1.Join(df2, new string[] { "value2" }, new string[] { "value1" }, JoinType.Left);
+            mergedDf = df1.Merge(df2, new string[] { "value2" }, new string[] { "value1" }, JoinType.Left);
             e1 = new object[] { "foo", 5, DataFrame.NAN, DataFrame.NAN, "bar", 6, DataFrame.NAN, DataFrame.NAN, "baz", 7, DataFrame.NAN, DataFrame.NAN, };
          
             //row test
@@ -182,7 +182,7 @@ namespace Unit.Test.DF
             var df1 = new DataFrame(dict);
             var df2 = new DataFrame(dict1);
             //
-            var mergedDf = df1.Join(df2, new string[] { "itemID" }, new string[] { "item2ID" }, JoinType.Inner);
+            var mergedDf = df1.Merge(df2, new string[] { "itemID" }, new string[] { "item2ID" }, JoinType.Inner);
             var e1 = new object[] { "foo", 1, "foo", 5, "foo", 1, "foo", 8, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, "foo", 5, "foo", 4, "foo", 8 };
 
             //row test
@@ -209,7 +209,7 @@ namespace Unit.Test.DF
             //
             var df1 = new DataFrame(dict);
             var df2 = new DataFrame(dict1);
-            var mergedDf = df1.Join(df2, new string[] { "itemID", "catId" }, new string[] { "item2ID", "cat2ID" }, JoinType.Inner);
+            var mergedDf = df1.Merge(df2, new string[] { "itemID", "catId" }, new string[] { "item2ID", "cat2ID" }, JoinType.Inner);
 
             //row test
             var r1 = mergedDf[0].ToList();
@@ -259,7 +259,7 @@ namespace Unit.Test.DF
             //
             var df1 = new DataFrame(dict);
             var df2 = new DataFrame(dict1);
-            var mergedDf = df1.Join(df2, new string[] { "itemID", "catId","class1" }, new string[] { "item2ID", "cat2ID", "class2" }, JoinType.Inner);
+            var mergedDf = df1.Merge(df2, new string[] { "itemID", "catId","class1" }, new string[] { "item2ID", "cat2ID", "class2" }, JoinType.Inner);
             var e1 = new object[] { "foo","A",1 ,1, "foo", "A",5, 1, "foo","B",4, 5, "foo", "B",8,5 };
 
             //row test

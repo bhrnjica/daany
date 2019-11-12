@@ -209,11 +209,10 @@ First, we created data frame from the dictionary collection. Then we store data 
 In case the performance is important, you should pass column types to `FromCSV` method in order to achieve up to 50% of loading time. 
 For example the following code loads the data from the file, by passing predefined column types:
 ```csharp
-//defined column type prior to loading the data
-//predefine column types in order to spedup the data loading from csv up to 50%
-var colTypes = new ColType[] { ColType.DT, ColType.I32, ColType.I32, ColType.I32, ColType.F32, ColType.F32, };
+//defined types of the column 
+var colTypes1 = new ColType[] { ColType.I32, ColType.IN, ColType.I32, ColType.STR, ColType.I2, ColType.F32, ColType.DT };
 //create data frame with 3 rows and 7 columns
-var dfFromFile = DataFrame.FromCsv(filename, sep:',');
+var dfFromFile = DataFrame.FromCsv(filename, sep: ',', colTypes: colTypes1);
 ```   
 
 ## Other ways to create a ```DataFrame```
@@ -473,7 +472,7 @@ Operations in `Daany.DataFrame`
 -   Filter and RemoveRows,
 -   SortBy and SortByDescending,
 -   GroupBy and Rolling
--   Join two data frames
+-   Merge and Join two data frames
 -   Select.
 
 In the next section eery feature is going to be presented.
@@ -1027,9 +1026,9 @@ The output of the code above is shown on the following image:
 
 ![grouop and rolling operation](../img/daany_groupby_and_rolling.png)
 
-Join two data frame s
+Merge and Join two data frame s
 -----------------------------------
-Join two data frames is similar like SQL LIKE. In order to call it, you have to provide two data frames, left and right key columns and type of joining. The following code shows joining two data frames with two keys columns with inner join type.
+Merge two data frames is similar like SQL LIKE. In order to call it, you have to provide two data frames, left and right key columns and type of joining. The following code shows joining two data frames with two keys columns with inner join type.
 
 ```csharp
 var dict = new Dictionary<string, List<object>>
@@ -1056,8 +1055,40 @@ var mergedDf = df1.Join(df2,
 The following output is shown as the result:
 ![daany join ](../img/daany_join.png)
 
-The limit for key columns is 3. That means you cannot join two data frames with more than 3 key columns.
+The limit for key columns is 3. That means you cannot merge two data frames with more than 3 key columns.
 
+Unlike `Merge` which is working on ordinary columns, a `Join` method works only on data frame index. The following code joins two data frame base on their indexes:
+```csharp
+var dict = new Dictionary<string, List<object>>
+{
+    { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+    { "value1",new List<object>() { 1,2,3,4 } },
+};
+var dict1 = new Dictionary<string, List<object>>
+{
+    { "item2ID",new List<object>() {"foo", "bar", "baz" } },
+    { "value2",new List<object>() { 5,6,7 } },
+};
+//
+var df1 = new DataFrame(dict);
+var df2 = new DataFrame(dict1);
+//
+var mergedDf = df1.Join(df2, JoinType.Inner);
+var e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7 };
+var dd = mergedDf.ToStringBuilder();
+//row test
+for (int i = 0; i < mergedDf.Values.Count; i++)
+    Assert.Equal(mergedDf.Values[i], e1[i]);
+
+//
+mergedDf = df1.Join(df2, JoinType.Left);
+e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, DataFrame.NAN, DataFrame.NAN };
+dd = mergedDf.ToStringBuilder();
+//row test
+for (int i = 0; i < mergedDf.Values.Count; i++)
+    Assert.Equal(mergedDf.Values[i], e1[i]);
+
+```
 
 Select data from data frame
 ---------------------------
