@@ -194,7 +194,7 @@ var dict = new Dictionary<string, List<object>>
 var df = new DataFrame(dict);
 
 //first Save data frame on disk and load it
-DataFrame.SaveToCsv(filename, df);
+DataFrame.ToCsv(filename, df);
 
 //create data frame with 3 rows and 7 columns
 var dfFromFile = DataFrame.FromCsv(filename, sep:',');
@@ -205,6 +205,16 @@ Assert.Equal(new string[] { "ID", "City", "Zip Code", "State", "IsHome", "Values
 Assert.Equal(7, dfFromFile.ColCount());
 ```
 First, we created data frame from the dictionary collection. Then we store data frame to file. After successfully saving, we load the same data frame from the csv file. The end of the code snippet, put asserts in order to prove everything is correctly implemented.
+
+In case the performance is important, you should pass column types to `FromCSV` method in order to achieve up to 50% of loading time. 
+For example the following code loads the data from the file, by passing predefined column types:
+```csharp
+//defined column type prior to loading the data
+//predefine column types in order to spedup the data loading from csv up to 50%
+var colTypes = new ColType[] { ColType.DT, ColType.I32, ColType.I32, ColType.I32, ColType.F32, ColType.F32, };
+//create data frame with 3 rows and 7 columns
+var dfFromFile = DataFrame.FromCsv(filename, sep:',');
+```   
 
 ## Other ways to create a ```DataFrame```
 

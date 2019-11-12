@@ -143,6 +143,16 @@ namespace Daany
         #endregion
 
         #region Static members
+        /// <summary>
+        /// Load data from the remote server.
+        /// </summary>
+        /// </summary>
+        /// <param name="urlPath">Url of the file on remote server.</param>
+        /// <param name="sep"> Separator string.</param>
+        /// <param name="names">Column names in case the columns are provided separately from the file.</param>
+        /// <param name="dformat">Date time format.</param>
+        /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
+        /// <returns>Data Frame object.</returns>
         public static DataFrame FromWeb(string urlPath, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = "dd/mm/yyyy", int nRows = -1)
         {
             if (string.IsNullOrEmpty(urlPath))
@@ -166,7 +176,7 @@ namespace Daany
         /// <param name="dformat">Date time format.</param>
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
         /// <returns>Data Frame object.</returns>
-        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, char textQaualifier='"', string dformat = "dd/mm/yyyy", int nRows = -1)
+        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, char textQaualifier='"', string dformat = "dd/mm/yyyy", ColType[] colTypes=null, int nRows = -1)
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
@@ -195,7 +205,7 @@ namespace Daany
             return FromStrArray(rows.ToArray(), sep, names, textQaualifier, dformat);
         }
 
-        public static DataFrame FromStrArray(string[] rows, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = null)
+        public static DataFrame FromStrArray(string[] rows, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = null, ColType[] colTypes = null)
         {
             if (rows==null)
                 throw new ArgumentNullException(nameof(rows));
@@ -204,6 +214,9 @@ namespace Daany
             var header = names;
             if (header == null)
                 header = ParseText(rows[0], sep, textQaualifier).ToArray();
+
+            if (colTypes != null && colTypes.Length != header.Length)
+                throw new Exception("'colTypes' should be defined for all columns in the header.");
 
             //Initialize df
             var llst = new List<object>();
@@ -214,6 +227,7 @@ namespace Daany
                 if (i == 0 && names == null)
                     continue;
                 var row = ParseText(rows[i], sep, textQaualifier).ToArray();
+
                 if (row.Length == 1 && string.IsNullOrEmpty(row[0]))//skip empty line
                     continue;
 
@@ -226,7 +240,7 @@ namespace Daany
                     if (row.Length > j)
                         v = row[j];
 
-                    var value = parseValue(v, dformat);
+                    var value = colTypes==null ? parseValue(v, dformat) : parseValue(v, dformat, colTypes[j]);
                     llst.Add(value);
                 }
                 rowCount++;
@@ -2384,7 +2398,43 @@ namespace Daany
 
             }
         }
-        
+
+        private static object parseValue(string value, string dformat, ColType colType)
+        {
+            if (IsNumeric(value))
+                return int.Parse(value, CultureInfo.InvariantCulture);
+            else
+            {
+                switch (colType)
+                {
+                    case ColType.I2:
+                        return bool.Parse(value);
+                    case ColType.IN:
+                        return value;
+                    case ColType.I32:
+                        return int.Parse(value);
+                    case ColType.I64:
+                        return long.Parse(value);
+                    case ColType.F32:
+                        return float.Parse(value);
+                    case ColType.DD:
+                        return double.Parse(value);
+                    case ColType.STR:
+                        return value;
+                    case ColType.DT:
+                        {
+                            if (string.IsNullOrEmpty(dformat))
+                                return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
+                            else
+                                return DateTime.ParseExact(value, dformat, CultureInfo.InvariantCulture, DateTimeStyles.None);
+
+                        }
+                    default:
+                        throw new Exception("column type is not known.");
+                }
+            }
+        }
+
         private static readonly string[] _missingCharacters = new string[] { "n/a", "?", "*", };
 
         private static bool IsNumeric(string value)
