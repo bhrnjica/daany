@@ -2,14 +2,18 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Daany.DataFrame.Ext</id>
-        <version>0.5.0</version>
+        <version>0.5.1</version>
         <authors>Bahrudin Hrnjica, bhrnjica</authors>
         <owners>bhrnjica</owners>
+		<icon>daanyIcon.png</icon>
         <projectUrl>https://github.com/bhrnjica/daany</projectUrl>
+		<repository type="git" url="https://github.com/bhrnjica/daany.git" />
 		<licenseUrl>https://github.com/bhrnjica/daany/blob/master/LICENSE</licenseUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <releaseNotes>Bug fixes and performance improvements</releaseNotes>
+		<title>Daany.DataFrame.Ext</title>
         <description>Daany.DataFrame.Ext - A set of extensions for Daany.DataFrame.</description>
+		<summary>Daany.DataFrame.Ext - A set of extensions for Daany.DataFrame.</summary>
         <copyright>Copyright ©2019 Bahrudin Hrnjica</copyright>
         <tags>ml.net, data preparation, data analytics</tags>
         <dependencies>
@@ -22,6 +26,7 @@
     <!-- A readme.txt to display when the package is installed -->
     <files>
         <file src="README.MD"/>
+		<file src="daanyIcon.png"/>
 		<file src="LICENSE" />
 		<file src="lib/Daany.MathStuff.dll" target="lib/netstandard2.0" />
 		<file src="lib/Daany.DataFrame.dll" target="lib/netstandard2.0" />

@@ -1301,6 +1301,87 @@ namespace Daany
 
 
         /// <summary>
+        /// Join two data frames with Inner or Left join type,based on their index.
+        /// </summary>
+        /// <param name="df2">Right data frame</param>
+        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
+        /// <returns>New joined df.</returns>
+        public DataFrame Join(DataFrame df2, JoinType jType)
+        {
+            if (df2 == null)
+                throw new ArgumentException(nameof(df2));
+
+            _dfTypes = columnsTypes();
+
+            //merge columns
+            var tot = Columns.ToList();
+            tot.AddRange(df2.Columns);
+
+            var totalColumns = new List<string>();
+            var totCount = tot.Count();
+            for (int i = 0; i < totCount; i++)
+            {
+                var strVal = tot.ElementAt(i).ToString(CultureInfo.InvariantCulture);
+                //
+                addNewColumnName(totalColumns, strVal);
+            }
+
+
+            var lst = new List<object>();
+            var leftRCount = _index.Count;
+            var leftCCount = ColCount();
+            var rightRCount = df2.RowCount();
+            var rightCCount = df2.ColCount();
+
+            //create right lookup 
+            var ind = Enumerable.Range(0, df2.RowCount()).ToList();
+            var rightIndex = df2.Index.Zip(ind, (key, value) => (key, value)).ToLookup(x => x.key, x => x.value);
+
+
+            //left df enumeration
+            for (int i = 0; i < leftRCount; i++)
+            {
+                var leftKey = this._index[i];
+                if (rightIndex.Contains(leftKey))
+                {
+                    var rPos = rightIndex[leftKey].ToList();
+                    for (int k = 0; k < rPos.Count; k++)
+                    {
+                        int j = rPos[k];
+
+                        //fill left table
+                        int startL = i * leftCCount;
+                        for (int r = startL; r < startL + leftCCount; r++)
+                            lst.Add(_values[r]);
+                        //fill right table
+                        int startR = j * rightCCount;
+                        for (int r = startR; r < startR + rightCCount; r++)
+                            lst.Add(df2._values[r]);
+
+                    }
+                }
+                else
+                {
+                    //in case of Left join and no right data found
+                    // fill with NAN numbers
+                    if (jType == JoinType.Left)
+                    {
+                        int startL = i * leftCCount;
+                        for (int r = startL; r < startL + leftCCount; r++)
+                            lst.Add(_values[r]);
+
+                        for (int r = 0; r < rightCCount; r++)
+                            lst.Add(DataFrame.NAN);
+                    }
+                }
+            }
+            //Now construct the Data frame
+            var newDf = new DataFrame(lst, totalColumns);
+            return newDf;
+        }
+
+
+        /// <summary>
         /// Join two df with Inner or Left join type.
         /// </summary>
         /// <param name="df2">Right data frame</param>
@@ -1308,7 +1389,21 @@ namespace Daany
         /// <param name="rightOn">Join columns from the right df.</param>
         /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
         /// <returns>New joined df.</returns>
+        [Obsolete("This method will be deprecated. Please use 'Merge' with the same argument list.")]
         public DataFrame Join(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
+        {
+            return Merge(df2, leftOn, rightOn, jType);
+        }
+
+        /// <summary>
+        /// Merge two dfs with Inner or Left join type, by specified leftOn and RightOn columns.
+        /// </summary>
+        /// <param name="df2">Right data frame</param>
+        /// <param name="leftOn">Join columns from the left df</param>
+        /// <param name="rightOn">Join columns from the right df.</param>
+        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
+        /// <returns>New joined df.</returns>
+        public DataFrame Merge(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
         {
             if (df2 == null)
                 throw new ArgumentException(nameof(df2));
@@ -1324,7 +1419,7 @@ namespace Daany
                 throw new Exception("Join column numbers are different!");
 
             //we allow three column maximum to be criterion for join
-            if(leftOn.Length>3)
+            if (leftOn.Length > 3)
                 throw new Exception("Three columns for join is exceeded.");
 
             _dfTypes = columnsTypes();
@@ -1347,7 +1442,7 @@ namespace Daany
 
             //create right lookup 
             var right = new List<ILookup<object, int>>();
-            var ind = Enumerable.Range(0, this.RowCount()).ToList();
+            var ind = Enumerable.Range(0, df2.RowCount()).ToList();
             foreach (var l in rightOn)
             {
                 var lo = df2[l].Zip(ind, (key, value) => (key, value)).ToLookup(x => x.key, x => x.value);
@@ -1362,33 +1457,25 @@ namespace Daany
             //left df enumeration
             for (int i = 0; i < leftRCount; i++)
             {
-                if (jType == JoinType.Left)
-                {
-                    int startL = i * leftCCount;
-                    for (int r = startL; r < startL + leftCCount; r++)
-                        lst.Add(_values[r]);
-                }
-
                 var leftKey = this[i, leftInd[0]];
                 var rPos = containsKey(i, leftInd, right);
                 if (rPos != null)
                 {
-                    for(int k=0;k<rPos.Length; k++)
+                    for (int k = 0; k < rPos.Length; k++)
                     {
                         int j = rPos[k];
-                        if (jType == JoinType.Inner)
-                        {
-                            int startL = i * leftCCount;
-                            for (int r = startL; r < startL + leftCCount; r++)
-                                lst.Add(_values[r]);
-                        }
-                        //
+
+                        //fill left table
+                        int startL = i * leftCCount;
+                        for (int r = startL; r < startL + leftCCount; r++)
+                            lst.Add(_values[r]);
+                        //fill right table
                         int startR = j * rightCCount;
                         for (int r = startR; r < startR + rightCCount; r++)
                             lst.Add(df2._values[r]);
 
                     }
-                   
+
                 }
                 else
                 {
@@ -1396,27 +1483,20 @@ namespace Daany
                     // fill with NAN numbers
                     if (jType == JoinType.Left)
                     {
+                        int startL = i * leftCCount;
+                        for (int r = startL; r < startL + leftCCount; r++)
+                            lst.Add(_values[r]);
+
                         for (int r = 0; r < rightCCount; r++)
                             lst.Add(DataFrame.NAN);
                     }
                 }
-
-                
-                
             }
             //Now construct the Data frame
             var newDf = new DataFrame(lst, totalColumns);
             return newDf;
 
         }
-        /// <summary>
-        /// returns null if the left indexes are not contained in the right indexes. Otherwise returns list of position of the right df
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="leftInd"></param>
-        /// <param name="right"></param>
-        /// <returns></returns>
-
 
         /// <summary>
         /// Rename column name within the data frame.

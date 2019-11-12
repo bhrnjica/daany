@@ -8,7 +8,163 @@ namespace Unit.Test.DF
 {
     public class JoinDataFramesTests
     {
-    
+        [Fact]
+        public void JoinBySingleColumn_Test1()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+            };
+            var dict1 = new Dictionary<string, List<object>>
+            {
+                { "item2ID",new List<object>() {"foo", "bar", "baz" } },
+                { "value2",new List<object>() { 5,6,7 } },
+            };
+            //
+            var df1 = new DataFrame(dict);
+            var df2 = new DataFrame(dict1);
+            //
+            var mergedDf = df1.Join(df2, JoinType.Inner);
+            var e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7 };
+            var dd = mergedDf.ToStringBuilder();
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+            //
+            mergedDf = df1.Join(df2, JoinType.Left);
+            e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, DataFrame.NAN, DataFrame.NAN };
+            dd = mergedDf.ToStringBuilder();
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+        }
+
+
+        [Fact]
+        public void JoinBySingleColumn_Test2()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+            };
+            var dict1 = new Dictionary<string, List<object>>
+            {
+                { "item2ID",new List<object>() {"foo", "bar", "baz" } },
+                { "value2",new List<object>() { 5,6,7 } },
+            };
+            //
+            var df1 = new DataFrame(dict1);
+            var df2 = new DataFrame(dict);
+            //
+            var mergedDf = df1.Join(df2, JoinType.Inner);
+            var e1 = new object[] { "foo", 5, "foo", 1, "bar", 6, "bar", 2, "baz", 7, "baz", 3};
+            var dd = mergedDf.ToStringBuilder();
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+            //
+            mergedDf = df1.Join(df2, JoinType.Left);
+            e1 = new object[] { "foo", 5, "foo", 1, "bar", 6, "bar", 2, "baz", 7, "baz", 3 };
+            dd = mergedDf.ToStringBuilder();
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+        }
+
+
+
+
+        [Fact]
+        public void MergeWithSingleColumn_Test011()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+            };
+            var dict1 = new Dictionary<string, List<object>>
+            {
+                { "item2ID",new List<object>() {"foo", "bar", "baz" } },
+                { "value2",new List<object>() { 5,6,7 } },
+            };
+            //
+            var df1 = new DataFrame(dict);
+            var df2 = new DataFrame(dict1);
+            //
+            var mergedDf = df1.Join(df2, new string[] { "itemID" }, new string[] { "item2ID" }, JoinType.Inner);
+            var e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, "foo", 5, };
+            var dd = mergedDf.ToStringBuilder();
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+            //
+            mergedDf = df1.Join(df2, new string[] { "itemID" }, new string[] { "item2ID" }, JoinType.Left);
+            e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, "foo", 5, };
+            dd = mergedDf.ToStringBuilder();
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+            //
+            mergedDf = df1.Join(df2, new string[] { "value1" }, new string[] { "value2" }, JoinType.Inner);
+            e1 = new object[] { "foo", 1, "foo", 5, "bar", 2, "bar", 6, "baz", 3, "baz", 7, "foo", 4, "foo", 5, };
+            dd = mergedDf.ToStringBuilder();
+            //row test
+            Assert.Equal(0, mergedDf.RowCount());
+
+        }
+
+        [Fact]
+        public void MergeWithSingleColumn_Test0111()
+        {
+            var dict1 = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+            };
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "item2ID",new List<object>() {"foo", "bar", "baz" } },
+                { "value2",new List<object>() { 5,6,7 } },
+            };
+            //
+            var df1 = new DataFrame(dict);
+            var df2 = new DataFrame(dict1);
+            //
+            var mergedDf = df1.Join(df2, new string[] { "item2ID" }, new string[] { "itemID" }, JoinType.Inner);
+            var e1 = new object[] { "foo", 5, "foo", 1, "foo", 5, "foo",4, "bar", 6, "bar", 2, "baz", 7, "baz", 3,  };
+      
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+            //
+            mergedDf = df1.Join(df2, new string[] { "item2ID" }, new string[] { "itemID" }, JoinType.Left);
+            e1 = new object[] { "foo", 5, "foo", 1, "foo", 5, "foo", 4, "bar", 6, "bar", 2, "baz", 7, "baz", 3, };
+      
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+            //
+            mergedDf = df1.Join(df2, new string[] { "value2" }, new string[] { "value1" }, JoinType.Left);
+            e1 = new object[] { "foo", 5, DataFrame.NAN, DataFrame.NAN, "bar", 6, DataFrame.NAN, DataFrame.NAN, "baz", 7, DataFrame.NAN, DataFrame.NAN, };
+         
+            //row test
+            for (int i = 0; i < mergedDf.Values.Count; i++)
+                Assert.Equal(mergedDf.Values[i], e1[i]);
+
+        }
+
+
+
         [Fact]
         public void JoinBySingleColumn_Test01()
         {
