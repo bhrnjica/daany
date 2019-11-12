@@ -48,8 +48,8 @@ namespace Daany
         /// Types of columns (names) in the data frame.
         /// </summary>
         /// 
-        public IList<ColType> ColTypes => this._colType == null? columnsTypes() : this._colType;
-        private ColType[] _colType;
+        public IList<ColType> ColTypes => this._colsType == null? columnsTypes() : this._colsType;
+        
 
         /// <summary>
         /// Index for rows in the data frame.
@@ -74,7 +74,7 @@ namespace Daany
         /// Data type for each data frame column.
         /// </summary>
         /// 
-        private ColType[] _dfTypes;
+        private ColType[] _colsType;
         /// <summary>
         /// 1D element contains data frame values
         /// </summary>
@@ -250,7 +250,7 @@ namespace Daany
             //in case predefined column types
             var df = new DataFrame(llst.ToArray(), header.ToList());
             if (colTypes != null)
-                df._colType = colTypes;
+                df._colsType = colTypes;
 
             return df;
         }
@@ -789,8 +789,8 @@ namespace Daany
                 throw new Exception("List of columns or list of aggregation cannot be null.");
 
             //initialize column types
-            if(this._colType == null)
-                this._dfTypes = columnsTypes();
+            if(this._colsType == null)
+                this._colsType = columnsTypes();
             //
             var aggValues = new List<object>();
             for (int i = 0; i < Columns.Count; i++)
@@ -799,7 +799,7 @@ namespace Daany
                     aggValues.Add(this[Columns[i]].Last());
                 else if(aggs.ContainsKey(Columns[i]))
                 {
-                    var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]], this._dfTypes[i]);
+                    var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]], this._colsType[i]);
                     aggValues.Add(ag);
                 }
             }
@@ -819,8 +819,8 @@ namespace Daany
                 throw new Exception("List of columns or list of aggregation cannot be null.");
 
             //initialize column types
-            if (this._colType == null)
-                this._dfTypes = columnsTypes();
+            if (this._colsType == null)
+                this._colsType = columnsTypes();
             
             //
             var aggValues = new TwoKeysDictionary<string, object, object>();
@@ -832,7 +832,7 @@ namespace Daany
                     {
                         var column = Columns[i];
                         var key = aggs[Columns[i]][j];
-                        var value = calculateAggregation(this[Columns[i]], key, this._dfTypes[i]);
+                        var value = calculateAggregation(this[Columns[i]], key, this._colsType[i]);
                         aggValues.Add(column, key.GetEnumDescription(), value);
                     }
                 }
@@ -858,8 +858,8 @@ namespace Daany
             };
             
             //initialize column types
-            if (this._colType == null)
-                this._dfTypes = columnsTypes();
+            if (this._colsType == null)
+                this._colsType = columnsTypes();
 
             var lstCols = new List<(string cName, ColType cType)>();
             var idxs = getColumnIndex(inclColumns);
@@ -869,7 +869,7 @@ namespace Daany
             {
                 for (int i = 0; i < this.Columns.Count(); i++)
                 {
-                    lstCols.Add((this.Columns[i], this._dfTypes[i]));
+                    lstCols.Add((this.Columns[i], this._colsType[i]));
                 }
             }
             else
@@ -877,7 +877,7 @@ namespace Daany
                 for (int i = 0; i < idxs.Length; i++)
                 {
                     var c = this.Columns[idxs[i]];
-                    lstCols.Add((c, this._dfTypes[idxs[i]]));
+                    lstCols.Add((c, this._colsType[idxs[i]]));
                 }
             }
 
@@ -1059,14 +1059,14 @@ namespace Daany
                 throw new Exception("Inconsistent number of columns, filter values an doperators.");
 
             //initialize column types
-            if (this._colType == null)
-                this._dfTypes = columnsTypes();
+            if (this._colsType == null)
+                this._colsType = columnsTypes();
 
             int[] indCols = getColumnIndex(cols);
             //
             for (int i = 0; i < cols.Length; i++)
             {
-                if (this._dfTypes[indCols[i]] == ColType.I2 && fOpers[indCols[i]] != FilterOperator.Equal)
+                if (this._colsType[indCols[i]] == ColType.I2 && fOpers[indCols[i]] != FilterOperator.Equal)
                 {
                     throw new Exception("Boolean column and filterValue  must be connected with only 'Equal' operator.");
                 }
@@ -1343,8 +1343,8 @@ namespace Daany
                 throw new ArgumentException(nameof(df2));
 
             //initialize column types
-            if (this._colType == null)
-                this._dfTypes = columnsTypes();
+            if (this._colsType == null)
+                this._colsType = columnsTypes();
 
             //merge columns
             var tot = Columns.ToList();
@@ -1456,8 +1456,8 @@ namespace Daany
                 throw new Exception("Three columns for join is exceeded.");
 
             //initialize column types
-            if (this._colType == null)
-                this._dfTypes = columnsTypes();
+            if (this._colsType == null)
+                this._colsType = columnsTypes();
 
             //get column indexes
             var leftInd = getColumnIndex(leftOn);
@@ -1560,12 +1560,12 @@ namespace Daany
         {
 
             //initialize column types
-            if (this._colType == null)
-                this._dfTypes = columnsTypes();
+            if (this._colsType == null)
+                this._colsType = columnsTypes();
 
             var colInd = getColumnIndex(cols);
             //save
-            var sdf = new SortDataFrame(colInd, _dfTypes);
+            var sdf = new SortDataFrame(colInd, _colsType);
             List<object> sortedList;
             if (qsAlgo)
                 sortedList = sdf.QuickSort(_values, colInd);
@@ -1701,8 +1701,8 @@ namespace Daany
             var aggrValues = new Dictionary<string, List<object>>();
 
             //initialize column types
-            if (this._colType == null)
-                this._dfTypes = columnsTypes();
+            if (this._colsType == null)
+                this._colsType = columnsTypes();
 
             //
             for (int i = 0; i < _index.Count; i++)
@@ -1710,7 +1710,7 @@ namespace Daany
                 for (int j = 0; j < ColCount(); j++)
                 {
                     var colName = this._columns[j];
-                    if (agg.ContainsKey(colName) && isOperationSupported(this._dfTypes[j], agg[colName]))
+                    if (agg.ContainsKey(colName) && isOperationSupported(this._colsType[j], agg[colName]))
                     {
                         if (i == 0)
                         {
@@ -1734,7 +1734,7 @@ namespace Daany
                         else
                         {
                             var vals = rRolls[colName].Select(x => x);
-                            var value = calculateAggregation(vals, agg[colName], this._dfTypes[j]);
+                            var value = calculateAggregation(vals, agg[colName], this._colsType[j]);
                             aggrValues[colName].Add(value);
 
                             //remove the last one, so the next item can be add to the first position
@@ -2479,7 +2479,7 @@ namespace Daany
             for (int colIndex = 0; colIndex < rowValues.Length; colIndex++)
             {
                 var fOper = fOpers[colIndex];
-                if (this._dfTypes[indCols[colIndex]] == ColType.I2)
+                if (this._colsType[indCols[colIndex]] == ColType.I2)
                 {
                     var val1 = Convert.ToBoolean(rowValues[colIndex]);
                     var val2 = Convert.ToBoolean(filteValues[colIndex]);
@@ -2488,8 +2488,8 @@ namespace Daany
                     if (val1 != val2)
                         return false;
                 }
-                if (this._dfTypes[indCols[colIndex]] == ColType.I32 || this._dfTypes[indCols[colIndex]] == ColType.I64
-                    || this._dfTypes[indCols[colIndex]] == ColType.F32 || this._dfTypes[indCols[colIndex]] == ColType.DD)
+                if (this._colsType[indCols[colIndex]] == ColType.I32 || this._colsType[indCols[colIndex]] == ColType.I64
+                    || this._colsType[indCols[colIndex]] == ColType.F32 || this._colsType[indCols[colIndex]] == ColType.DD)
                 {
                     var val1 = Convert.ToDouble(rowValues[colIndex]);
                     var val2 = Convert.ToDouble(filteValues[colIndex]);
@@ -2498,7 +2498,7 @@ namespace Daany
                     if (!applyOperator(val1, val2, fOper))
                         return false;
                 }
-                else if (this._dfTypes[indCols[colIndex]] == ColType.STR)
+                else if (this._colsType[indCols[colIndex]] == ColType.STR || this._colsType[indCols[colIndex]] == ColType.IN)
                 {
                     var val1 = rowValues[colIndex].ToString();
                     var val2 = filteValues[colIndex].ToString();
@@ -2507,7 +2507,7 @@ namespace Daany
                         return false;
 
                 }
-                else if (this._dfTypes[indCols[colIndex]] == ColType.DT)
+                else if (this._colsType[indCols[colIndex]] == ColType.DT)
                 {
                     var val1 = Convert.ToDateTime(rowValues[colIndex]);
                     var val2 = Convert.ToDateTime(filteValues[colIndex]);
