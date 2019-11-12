@@ -48,7 +48,8 @@ namespace Daany
         /// Types of columns (names) in the data frame.
         /// </summary>
         /// 
-        public IList<ColType> ColTypes => columnsTypes();
+        public IList<ColType> ColTypes => this._colType == null? columnsTypes() : this._colType;
+        private ColType[] _colType;
 
         /// <summary>
         /// Index for rows in the data frame.
@@ -176,7 +177,7 @@ namespace Daany
         /// <param name="dformat">Date time format.</param>
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
         /// <returns>Data Frame object.</returns>
-        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, char textQaualifier='"', string dformat = "dd/mm/yyyy", ColType[] colTypes=null, int nRows = -1)
+        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, char textQaualifier='"', string dformat = null, ColType[] colTypes=null, int nRows = -1)
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
@@ -202,7 +203,7 @@ namespace Daany
             }
 
 
-            return FromStrArray(rows.ToArray(), sep, names, textQaualifier, dformat);
+            return FromStrArray(rows.ToArray(), sep, names, textQaualifier, dformat, colTypes);
         }
 
         public static DataFrame FromStrArray(string[] rows, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = null, ColType[] colTypes = null)
@@ -246,8 +247,11 @@ namespace Daany
                 rowCount++;
             }
 
-            //create data frame
+            //in case predefined column types
             var df = new DataFrame(llst.ToArray(), header.ToList());
+            if (colTypes != null)
+                df._colType = colTypes;
+
             return df;
         }
 
@@ -783,7 +787,11 @@ namespace Daany
         {
             if (aggs == null)
                 throw new Exception("List of columns or list of aggregation cannot be null.");
-            this._dfTypes = columnsTypes();
+
+            //initialize column types
+            if(this._colType == null)
+                this._dfTypes = columnsTypes();
+            //
             var aggValues = new List<object>();
             for (int i = 0; i < Columns.Count; i++)
             {
@@ -809,8 +817,11 @@ namespace Daany
         {
             if (aggs == null)
                 throw new Exception("List of columns or list of aggregation cannot be null.");
-            //
-            this._dfTypes = columnsTypes();
+
+            //initialize column types
+            if (this._colType == null)
+                this._dfTypes = columnsTypes();
+            
             //
             var aggValues = new TwoKeysDictionary<string, object, object>();
             for (int i = 0; i < Columns.Count; i++)
@@ -845,7 +856,11 @@ namespace Daany
                 Aggregation.Count,Aggregation.Unique,Aggregation.Top, Aggregation.Frequency, Aggregation.Avg,
                 Aggregation.Std,Aggregation.Min, Aggregation.FirstQuartile,Aggregation.Median, Aggregation.ThirdQuartile, Aggregation.Max
             };
-            var types = this.columnsTypes();
+            
+            //initialize column types
+            if (this._colType == null)
+                this._dfTypes = columnsTypes();
+
             var lstCols = new List<(string cName, ColType cType)>();
             var idxs = getColumnIndex(inclColumns);
 
@@ -854,7 +869,7 @@ namespace Daany
             {
                 for (int i = 0; i < this.Columns.Count(); i++)
                 {
-                    lstCols.Add((this.Columns[i], types[i]));
+                    lstCols.Add((this.Columns[i], this._dfTypes[i]));
                 }
             }
             else
@@ -862,7 +877,7 @@ namespace Daany
                 for (int i = 0; i < idxs.Length; i++)
                 {
                     var c = this.Columns[idxs[i]];
-                    lstCols.Add((c, types[idxs[i]]));
+                    lstCols.Add((c, this._dfTypes[idxs[i]]));
                 }
             }
 
@@ -1043,8 +1058,10 @@ namespace Daany
             if (!(cols.Length == filteValues.Length && cols.Length == fOpers.Length))
                 throw new Exception("Inconsistent number of columns, filter values an doperators.");
 
-            //
-            this._dfTypes = columnsTypes();
+            //initialize column types
+            if (this._colType == null)
+                this._dfTypes = columnsTypes();
+
             int[] indCols = getColumnIndex(cols);
             //
             for (int i = 0; i < cols.Length; i++)
@@ -1325,7 +1342,9 @@ namespace Daany
             if (df2 == null)
                 throw new ArgumentException(nameof(df2));
 
-            _dfTypes = columnsTypes();
+            //initialize column types
+            if (this._colType == null)
+                this._dfTypes = columnsTypes();
 
             //merge columns
             var tot = Columns.ToList();
@@ -1436,7 +1455,9 @@ namespace Daany
             if (leftOn.Length > 3)
                 throw new Exception("Three columns for join is exceeded.");
 
-            _dfTypes = columnsTypes();
+            //initialize column types
+            if (this._colType == null)
+                this._dfTypes = columnsTypes();
 
             //get column indexes
             var leftInd = getColumnIndex(leftOn);
@@ -1537,9 +1558,11 @@ namespace Daany
         /// <returns>New ordered df.</returns>
         public DataFrame SortBy(params string[] cols)
         {
-            
-            //determine column types
-            _dfTypes = columnsTypes();
+
+            //initialize column types
+            if (this._colType == null)
+                this._dfTypes = columnsTypes();
+
             var colInd = getColumnIndex(cols);
             //save
             var sdf = new SortDataFrame(colInd, _dfTypes);
@@ -1676,7 +1699,11 @@ namespace Daany
             int rolIndex = 1;
             var rRolls = new Dictionary<string, Queue<object>>();
             var aggrValues = new Dictionary<string, List<object>>();
-            this._dfTypes = columnsTypes();
+
+            //initialize column types
+            if (this._colType == null)
+                this._dfTypes = columnsTypes();
+
             //
             for (int i = 0; i < _index.Count; i++)
             {

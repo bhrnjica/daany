@@ -69,15 +69,6 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj">
-      <Private>true</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\daany.math\Daany.MathStuff.csproj">
-      <Private>true</Private>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="..\..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
@@ -95,6 +86,12 @@ SOFTWARE.</PackageReleaseNotes>
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+ 
+
+  <ItemGroup>
+    <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
+    <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
   </ItemGroup>
  
 

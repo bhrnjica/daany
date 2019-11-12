@@ -71,15 +71,6 @@ SOFTWARE.</PackageReleaseNotes>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj">
-      <Private>true</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\daany.math\Daany.MathStuff.csproj">
-      <Private>true</Private>
-    </ProjectReference>
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\..\LICENSE">
@@ -87,6 +78,12 @@ SOFTWARE.</PackageReleaseNotes>
       <PackagePath></PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
+    <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
+    <ProjectReference Include="..\daany.stat\Daany.Stat.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

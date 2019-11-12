@@ -85,6 +85,43 @@ namespace Unit.Test.DF
             Assert.Equal(new string[] { "ID", "City", "Zip Code", "State", "IsHome", "Values", "Date" }, dfFromFile.Columns);
             Assert.Equal(7, dfFromFile.ColCount());
         }
+        [Fact]
+        public void SaveLoadDataFrameToFromFileWithColumnTypes()
+        {
+            string filename = "df_file.txt";
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { DateTime.Now.AddDays(-20) , DateTime.Now.AddDays(-10) , DateTime.Now.AddDays(-5) } },
+
+            };
+
+            //create data frame with 3 rows and 7 columns
+            var df = new DataFrame(dict);
+
+            //first Save data frame on disk and load it
+            DataFrame.ToCsv(filename, df);
+
+            //defined types of the column 
+            var colTypes1 = new ColType[] { ColType.I32, ColType.IN, ColType.I32, ColType.STR, ColType.I2, ColType.F32, ColType.DT };
+            //create data frame with 3 rows and 7 columns
+            var dfFromFile = DataFrame.FromCsv(filename, sep: ',', colTypes: colTypes1);
+
+            //check the size of the data frame
+            Assert.Equal(3, dfFromFile.RowCount());
+            Assert.Equal(new string[] { "ID", "City", "Zip Code", "State", "IsHome", "Values", "Date" }, dfFromFile.Columns);
+
+            Assert.Equal(colTypes1, dfFromFile.ColTypes);
+            Assert.Equal(7, dfFromFile.ColCount());
+        }
+
+
 
         [Fact]
         public void CreateDataFrameFromExistingOne()

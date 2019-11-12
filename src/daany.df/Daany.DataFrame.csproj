@@ -71,7 +71,7 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\daany.math\Daany.MathStuff.csproj" />
+    <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
