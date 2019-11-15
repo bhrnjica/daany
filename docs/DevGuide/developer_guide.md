@@ -55,7 +55,7 @@ find four packages starting with Daany. You have few options to install the
 packages.
 
 1.  Install ```Daany.DataFrame```  – only. *Use this option if you want only data
-    analysis by using DataFrame. Once you click Install button, Daany.DataFrame
+    analysis by using data frame. Once you click Install button, Daany.DataFrame
     and Daany.Math will be installed into your project app.*
 
 2.  Install ```Daany.Stat``` package. This package already contains ```DataFrame```, as well as time series decomposition and related statistics features.
@@ -94,15 +94,15 @@ Working with ```Daany.DataFrame```
 The main part of ```Daany``` project is ```Daany.DataFrame``` -  an c\# implementation of data frame. A data frame is software component used for handling tabular data, especially for data preparation, feature engineering and analysis during development of machine learning models. The concept of ```Daany.DataFrame``` implementation is based on simplicity and .NET coding standard. It represents tabular data consisting of columns and rows. Each column has name and type and each row has its index and label.
 Usually, rows indicate a zero axis, while columns indicate axis one.
 
-The following image shows a DataFrame structure
+The following image shows a data frame structure
 
 ![data frame structure](../img/daany_data_frame_structure.png)
 
-The basic components of the DataFrame are:
+The basic components of the data frame are:
 
 -   ```header``` - list of column names,
 -   ```index```  – list of object representing each row,
--   ```data``` – list of values in the DataFrame,
+-   ```data``` – list of values in the data frame,
 -   ```missing value``` – data with no values in data frame.
 
 The image above shows the data frame components visually, and how they are
@@ -129,7 +129,7 @@ var lst = new List<object>() { 1, "Sarajevo", 77000, "BiH", true, 3.14,DateTime.
 3, "Berlin", 10115, "GER", false, 4.55, DateTime.Now.AddDays(-5),
 };
 
-//define column header for the DataFrame
+//define column header for the data frame
 var columns = new List<string>() { "ID", "City", "Zip Code", "IsHome",
 "Values", "Date" };
 
@@ -142,7 +142,7 @@ Assert.Equal(7, df.ColCount());
 
 ## Create ```DataFrame``` from dictionary
 
-Similarly ```Daany.DataFrame```  can be created by passing dictionary collection. The following code shows how to create DataFrame from the dictionary:
+Similarly ```Daany.DataFrame```  can be created by passing dictionary collection. The following code shows how to create data frame from the dictionary:
 
 ```csharp
 //define a dictionary of data
@@ -249,7 +249,7 @@ Assert.Equal(new string[] { "Place", "Zip Code", "Country" }, newDf.Columns);
 Assert.Equal(3, newDf.ColCount());
 ```
 
-In case you want to remain the same column name, pass ```null``` as second tuple
+In case you want the column names remains the same pass ```null``` as second tuple
 item, or write the same name.
 
 - It is handy to create an empty data frame with specific column header. To do so
@@ -537,7 +537,7 @@ Assert.Equal(5.55, df["Values", 3]);
 ```
 
 In case more than one rows should be added into data frame we can used `AddRows`
-method by passing DataFrame object containing new rows. The data frame object must have the same number of columns as existing. More than one row can be added by calling `AddRow` from the loop.
+method by passing data frame object containing new rows. The data frame object must have the same number of columns as existing. More than one row can be added by calling `AddRow` from the loop.
 
 Add calculated column
 ---------------------
