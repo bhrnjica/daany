@@ -625,7 +625,7 @@ Assert.Equal(val, row);
 ```
 
 As can be seen from the code above. The aggregation process included performing
-different operation on four columns ({`"ID"`,`"City"`,`"Date"`,`"Values"`). In case
+different operation on four columns (`"ID"`,`"City"`,`"Date"`,`"Values"`). In case
 default argument `allColumns:true` then all columns from data frame will be shown
 in the aggregate result.
 
@@ -802,7 +802,7 @@ Assert.Equal(new object[] { 3, "Berlin", 10115, "GER", false, 4.55, date, 45,
 
 Filter and Conditional Remove
 ----------------------------------------------------
-Filter operation returns data frame with specific filter condition. Also, RemoveRows acts very similarly by using delegate implementation. The following code shows filter data frame between dates:
+`Filter` operation returns data frame with specific filter condition. Also, `RemoveRows` method acts opposite  and removes all rows with specified condition by using delegate implementation. The following code shows filter data frame between dates:
 
 ```csharp
 var date1 = DateTime.Now.AddDays(-20);
@@ -836,7 +836,7 @@ Assert.Equal(1, filteredDF.RowCount());
 Assert.Equal(new List<object>() { 1, "Sarajevo", 71000, "BiH", true, 3.14, date3, 31, "male" }, filteredDF[0]);
 
 ```
-The following code shows how to remove rows containing `Miami` as column value.
+The following code shows how to remove all rows in the data frame containing `Miami` value in the `City` column:
 
 ```csharp
 var date = DateTime.Now.AddDays(-20);
@@ -1026,9 +1026,9 @@ The output of the code above is shown on the following image:
 
 ![grouop and rolling operation](../img/daany_groupby_and_rolling.png)
 
-Merge and Join two data frame s
+Merge and Join two data frames
 -----------------------------------
-Merge two data frames is similar like SQL LIKE. In order to call it, you have to provide two data frames, left and right key columns and type of joining. The following code shows joining two data frames with two keys columns with inner join type.
+`Merge` method merges two data frames on a ways similar like SQL LIKE statement. In order to call it, you have to provide two data frames, left and right key columns and type of joining. The condition for merging is based on keys columns where the values from the first left key column must be equal to the first right key column. In case of more than one key column the values from the corresponded columns must be  equal. The following code shows mergings two data frames with two keys columns with inner join type.
 
 ```csharp
 var dict = new Dictionary<string, List<object>>
@@ -1055,9 +1055,9 @@ var mergedDf = df1.Join(df2,
 The following output is shown as the result:
 ![daany join ](../img/daany_join.png)
 
-The limit for key columns is 3. That means you cannot merge two data frames with more than 3 key columns.
+The limitation for the number of key columns is 3. That means you cannot merge two data frames with more than 3 key columns.
 
-Unlike `Merge` which is working on ordinary columns, a `Join` method works only on data frame index. The following code joins two data frame base on their indexes:
+Unlike `Merge` which is working on ordinary columns, a `Join` method works only on data frame index, but the way of joining the data frames is the same. The following code joins two data frame base on their indexes:
 ```csharp
 var dict = new Dictionary<string, List<object>>
 {
