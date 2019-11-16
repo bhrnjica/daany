@@ -310,6 +310,11 @@ namespace Daany
 
             this._index = ind;
         }
+
+        internal void RecreateIndex()
+        {
+
+        }
         #endregion
 
         #region Constructors
@@ -450,7 +455,7 @@ namespace Daany
             if (data == null || data.Count == 0)
                 throw new Exception($"'{data}' dictionary cannot be empty!");
 
-            //each list in directory musbe with the same count
+            //each list in directory must be with the same count
             var counts = data.Select(x => x.Value.Count);
             var count = counts.First();
             if (!counts.All(x => x == count))
@@ -534,10 +539,13 @@ namespace Daany
             if (Columns.Count != df.Columns.Count)
                 throw new Exception("Data frames are not consisted!");
 
-            // 
+            // add values
             foreach (var v in df._values)
                 _values.Add(v);
-            this._index = Enumerable.Range(0, Index.Count + df.Index.Count).Select(x => (object)x).ToList();
+            //add index
+            for(int i=0; i < df.Index.Count; i++)
+                this._index.Add(df.Index[i]);
+          //  this._index = Enumerable.Range(0, Index.Count + df.Index.Count).Select(x => (object)x).ToList();
         }
 
         /// <summary>
@@ -1750,31 +1758,76 @@ namespace Daany
                 }
             }
 
-            ////add index column to rolledValues
-            //var newColList = new List<string>();
-            //DataFrame dff=null;
-            //foreach (var colName in this._columns)
-            //{
-            //    if (agg.Keys.Contains(colName))
-            //    {
-            //        if (dff == null)
-            //            dff = new DataFrame(aggrValues[colName], new List<string> { colName });
-            //        else
-            //            dff.InsertColumn(colName, aggrValues[colName], -1);
-            //    }
-            //    else
-            //    {
-            //        if (dff == null)
-            //            dff = new DataFrame(this[colName].ToList(), new List<string> { colName });
-            //        else
-            //            dff.InsertColumn(colName, this[colName].ToList(), -1);
-            //    }
-
-            //}
-            //
             return new DataFrame(aggrValues);
         }
 
+        /// <summary>
+        /// Shifts the values of the column by the number of 'steps' rows. 
+        /// </summary>
+        /// <param name="columnName">existing column to be shifted</param>
+        /// <param name="newColName">new shifted column</param>
+        /// <param name="step"></param>
+        /// <returns></returns>
+        public Dictionary<string, List<object>> Shift(int steps, string columnName, string newColName)
+        {
+
+            if (steps == 0 )
+                throw new Exception("'steps' must be nonzero and between ± row count number");
+
+            if (!this.Columns.Contains(columnName))
+                throw new Exception("'columnName' doesn't exist in the data frame.");
+
+            if (this.Columns.Contains(newColName))
+                throw new Exception("'newColName' cannot be the same of the existing column namess.");
+
+            var newValues = new List<object>();
+            var shitedCol = this[columnName].ToList();
+            var NANList = Enumerable.Range(0, (int)Math.Abs(steps)).Select(x=>DataFrame.NAN);
+            if (steps > 0)
+            {
+                shitedCol.InsertRange(0, NANList);
+                newValues = shitedCol.Take(this.RowCount()).ToList();
+            }
+            else
+            {
+                shitedCol.AddRange(NANList);
+                newValues = shitedCol.Skip((int)Math.Abs(steps)).ToList();
+            }
+
+            //create column and add to the df
+            var dir = new Dictionary<string, List<object>>() { { newColName, newValues } };
+            return dir;
+            //var df = this.AddColumns(dir);
+            //return df;
+
+        }
+
+        /// <summary>
+        /// Shift specified columns and create new columns in data frame
+        /// </summary>
+        /// <param name="arg">tuple list of steps, columnName and newColName.</param>
+        /// <returns></returns>
+        public DataFrame Shift(params (string columnName, string newColName,int steps)[] arg)
+        {
+
+            if(arg==null || arg.Length==0)
+                throw new Exception("Method argument cannot be null.");
+
+            if (arg.GroupBy(x => x.newColName).Any(g => g.Count() > 1))
+                throw new Exception("newColumnName must be all with different name.");
+
+            var dir = new Dictionary<string, List<object>>();
+
+            foreach (var c in arg)
+            {
+                var d = Shift(c.steps, c.columnName, c.newColName);
+                dir.Add(c.newColName , d[c.newColName]);
+            }
+
+            //
+            var df = this.AddColumns(dir);
+            return df;
+        }
         /// <summary>
         /// Returns data frame consisted of every nth row
         /// </summary>

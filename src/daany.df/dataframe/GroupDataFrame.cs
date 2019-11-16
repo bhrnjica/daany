@@ -190,7 +190,7 @@ namespace Daany
                 return lst;
             }
         }
-
+        [Obsolete("The method is obsolete. Please use overloaded method.")]
         public DataFrame Rolling(int rollingWindow, int window, Dictionary<string, Aggregation> agg)
         {
             //create columns and aggregation
@@ -240,13 +240,116 @@ namespace Daany
 
             return df;
         }
-        
+
         /// <summary>
-        /// Aggregate columns within groups
+        /// Each group data frame performed rolling operation, with aggregate operation on each column
+        /// </summary>
+        /// <param name="rollingWindow">size of rolling</param>
+        /// <param name="agg"></param>
+        /// <returns></returns>
+        public DataFrame Rolling(int rollingWindow, Dictionary<string, Aggregation> agg)
+        {
+            //create columns and aggregation
+            var ag = new Dictionary<string, Aggregation>();
+            ag.Add(this.GroupedColumn, Daany.Aggregation.Last);
+            if (Group2 != null && Group2.Count > 0)
+                ag.Add(this.SecondGroupedColumn, Daany.Aggregation.Last);
+            if (Group3 != null && Group3.Count > 0)
+                ag.Add(this.ThirdGroupedColumn, Daany.Aggregation.Last);
+            foreach (var d in agg)
+                ag.Add(d.Key, d.Value);
+            //
+            DataFrame df = null;
+            if (Group != null && Group.Count > 0)
+            {
+                foreach (var gr in Group)
+                {
+                    var df1 = gr.Value.Rolling(rollingWindow, ag);
+                    if (df == null)
+                        df = new DataFrame(df1);
+                    else
+                        df.AddRows(df1);
+                }
+            }
+            else if (Group2 != null && Group2.Count > 0)
+            {
+                foreach (var gr in Keys2)
+                {
+                    var df1 = this.Group2[gr.key1][gr.key2].Rolling(rollingWindow, ag);
+                    if (df == null)
+                        df = new DataFrame(df1);
+                    else
+                        df.AddRows(df1);
+                }
+            }
+            else if (Group3 != null && Group3.Count > 0)
+            {
+                foreach (var gr in Keys3)
+                {
+                    var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Rolling(rollingWindow, ag);
+                    if (df == null)
+                        df = new DataFrame(df1);
+                    else
+                        df.AddRows(df1);
+                }
+            }
+
+            return df;
+        }
+        /// <summary>
+        /// Shifts the values of the columns by the number of 'steps' rows in every grouped data frame. 
+        /// </summary>
+        /// <param name="columnName">existing column to be shifted</param>
+        /// <param name="newColName">new shifted column</param>
+        /// <param name="step"></param>
+        /// <returns></returns>
+        public DataFrame Shift(params (string columnName, string newColName, int steps)[] arg)
+        {
+            //
+            DataFrame df = null;
+            if (Group != null && Group.Count > 0)
+            {
+                foreach (var gr in Group)
+                {
+                    var df1 = gr.Value.Shift(arg);
+                    if (df == null)
+                        df = new DataFrame(df1);
+                    else
+                        df.AddRows(df1);
+                }
+            }
+            else if (Group2 != null && Group2.Count > 0)
+            {
+                foreach (var gr in Keys2)
+                {
+                    var df1 = this.Group2[gr.key1][gr.key2].Shift(arg);
+                    if (df == null)
+                        df = new DataFrame(df1);
+                    else
+                        df.AddRows(df1);
+                }
+            }
+            else if (Group3 != null && Group3.Count > 0)
+            {
+                foreach (var gr in Keys3)
+                {
+                    var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Shift(arg);
+                    if (df == null)
+                        df = new DataFrame(df1);
+                    else
+                        df.AddRows(df1);
+                }
+            }
+
+            return df;
+        }
+
+        /// <summary>
+        /// Aggregate columns of each data fame in grups
         /// </summary>
         /// <param name="agg">List of columns to aggregate. Grouped columns are excluded from aggregation.</param>
         /// <returns></returns>
-        public DataFrame Aggregation(IDictionary<string, Aggregation> agg)
+        public DataFrame Aggregate(IDictionary<string, Aggregation> agg)
         {
             DataFrame df = null;
             if (Group == null && Group2 == null && Group3 == null)
