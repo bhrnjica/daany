@@ -102,12 +102,76 @@ namespace Daany
             return lst;
         }
 
+        public static List<object> GenerateMonthlySeries(DateTime fromDate, int months, int count)
+        {
+            var lst = new List<object>();
+            var dt = fromDate;
+            for (int i = 0; i < count; i ++)
+            {
+                lst.Add(dt);
+                dt = dt.AddMonths(months);
+            }
+
+            return lst;
+        }
+        public static List<object> GenerateYearlySeries(DateTime fromDate, int years, int count)
+        {
+            var lst = new List<object>();
+            var dt = fromDate;
+            for (int i = 0; i < count; i++)
+            {
+                lst.Add(dt);
+                dt = dt.AddYears(years);
+            }
+
+            return lst;
+        }
+
         public static List<object> GenerateIntSeries(int fromNumber, int toNumber, int step)
         {
             var lst = new List<object>();
             for (int i = fromNumber; i < toNumber; i += step)
             {
                 lst.Add(i);
+            }
+
+            return lst;
+        }
+
+        public static List<object> GenerateIntNSeries(int fromNumber, int step, int size)
+        {
+            var lst = new List<object>();
+            int value = fromNumber;
+            for (int i = 0; i < size; i++)
+            {
+                lst.Add(i);
+                value = fromNumber + step;
+            }
+
+            return lst;
+        }
+
+        public static List<object> GenerateDoubleNSeries(double fromNumber, double step, int size)
+        {
+            var lst = new List<object>();
+            double value = fromNumber;
+            for (int i = 0; i < size; i++)
+            {
+                lst.Add(i);
+                value = fromNumber + step;
+            }
+
+            return lst;
+        }
+
+        public static List<object> GenerateFloatNSeries(float fromNumber, float step, int size)
+        {
+            var lst = new List<object>();
+            float value = fromNumber;
+            for (int i = 0; i < size; i++)
+            {
+                lst.Add(i);
+                value = fromNumber + step;
             }
 
             return lst;

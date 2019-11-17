@@ -300,7 +300,7 @@ namespace Daany
 
         #region Index Related Members
 
-        internal void SetIndex(List<object> ind)
+        public void SetIndex(List<object> ind)
         {
             if (ind == null)
                 throw new Exception("Index cannot be null.");
@@ -311,9 +311,9 @@ namespace Daany
             this._index = ind;
         }
 
-        internal void RecreateIndex()
+        public void ResetIndex()
         {
-
+            this._index = Enumerable.Range(0, RowCount()).Select(x => (object)x).ToList();
         }
         #endregion
 
@@ -556,77 +556,72 @@ namespace Daany
         {
             if (row == null || row.Count != Columns.Count)
                 throw new Exception("Inconsistent row, and cannot be inserted in the DataFrame");
-
-            //add data to df
-            foreach (var v in row)
-                _values.Add(v);
-            //add row index
-            _index.Add(_index.Count);
+            InsertRow(-1, row);
         }
 
-        /// <summary>
-        /// Apply set of operations on existing column in the DataFrame. The values of the column are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colName">Existing column in the data frame.</param>
-        /// <param name="callBack">Func delegate for wor value calculation.</param>
-        /// <returns>True if calculated column is created/updated successfully</returns>
-        public bool Apply(string colName, Func<IDictionary<string, object>, int, object> callBack)
-        {
-            if (!Columns.Contains(colName))
-                throw new Exception($"'{colName}' does not exist in the data frame.");
+        ///// <summary>
+        ///// Apply set of operations on existing column in the DataFrame. The values of the column are 
+        ///// calculated by calling Func delegate for each row.
+        ///// </summary>
+        ///// <param name="colName">Existing column in the data frame.</param>
+        ///// <param name="callBack">Func delegate for wor value calculation.</param>
+        ///// <returns>True if calculated column is created/updated successfully</returns>
+        //public bool Apply(string colName, Func<IDictionary<string, object>, int, object> callBack)
+        //{
+        //    if (!Columns.Contains(colName))
+        //        throw new Exception($"'{colName}' does not exist in the data frame.");
 
-            //define processing row before adding column
-            var processingRow = new Dictionary<string, object>();
-            for (int j = 0; j < this.Columns.Count; j++)
-                processingRow.Add(this.Columns[j], null);
-            //
-            var colIndex = getColumnIndex(colName);
+        //    //define processing row before adding column
+        //    var processingRow = new Dictionary<string, object>();
+        //    for (int j = 0; j < this.Columns.Count; j++)
+        //        processingRow.Add(this.Columns[j], null);
+        //    //
+        //    var colIndex = getColumnIndex(colName);
 
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
-                rowToDictionary(processingRow, i);
-                //once the processing row is initialized perform apply 
-                var v = callBack(processingRow, i);
-                var applyIndex = calculateIndex(i, colIndex);// i * Columns.Count + colIndex;
-                _values[applyIndex] = v;
+        //    //
+        //    for (int i = 0; i < _index.Count; i++)
+        //    {
+        //        rowToDictionary(processingRow, i);
+        //        //once the processing row is initialized perform apply 
+        //        var v = callBack(processingRow, i);
+        //        var applyIndex = calculateIndex(i, colIndex);// i * Columns.Count + colIndex;
+        //        _values[applyIndex] = v;
 
-            }
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        /// <summary>
-        /// Apply set of operations on existing column in the DataFrame. The values of the column are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colName">Existing column in the data frame.</param>
-        /// <param name="callBack">Func delegate for row value calculation.</param>
-        /// <returns>True if calculated column is updated successfully</returns>
-        public bool Apply(string colName, Func<object[], int, object> callBack)
-        {
-            //if column doesnt existi add new calculated column
-            if (!Columns.Contains(colName))
-                throw new Exception($"'{colName}' does not exist in the data frame.");
+        ///// <summary>
+        ///// Apply set of operations on existing column in the DataFrame. The values of the column are 
+        ///// calculated by calling Func delegate for each row.
+        ///// </summary>
+        ///// <param name="colName">Existing column in the data frame.</param>
+        ///// <param name="callBack">Func delegate for row value calculation.</param>
+        ///// <returns>True if calculated column is updated successfully</returns>
+        //public bool Apply(string colName, Func<object[], int, object> callBack)
+        //{
+        //    //if column doesnt existi add new calculated column
+        //    if (!Columns.Contains(colName))
+        //        throw new Exception($"'{colName}' does not exist in the data frame.");
 
-            //define processing row before adding column
-            var processingRow = new object[ColCount()];
-            //
-            var colIndex = getColumnIndex(colName);
+        //    //define processing row before adding column
+        //    var processingRow = new object[ColCount()];
+        //    //
+        //    var colIndex = getColumnIndex(colName);
 
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
-                rowToArray(processingRow, i);
-                //once the processing row is initialized perform apply 
-                var v = callBack(processingRow, i);
-                var applyIndex = calculateIndex(i, colIndex);
-                _values[applyIndex] = v;
+        //    //
+        //    for (int i = 0; i < _index.Count; i++)
+        //    {
+        //        rowToArray(processingRow, i);
+        //        //once the processing row is initialized perform apply 
+        //        var v = callBack(processingRow, i);
+        //        var applyIndex = calculateIndex(i, colIndex);
+        //        _values[applyIndex] = v;
 
-            }
-            return true;
-        }
+        //    }
+        //    return true;
+        //}
 
         /// <summary>
         /// Add additional column into DataFrame. The values of the columns are 
@@ -1239,6 +1234,21 @@ namespace Daany
             return newDf;
         }
 
+        public void InsertRow(int nPos, List<object> row)
+        {
+            if(nPos== -1 )
+            {
+                _values.AddRange(row);
+                //add row index
+                _index.Add(_index.Count);
+            }
+            else
+            {
+                int ind = nPos * this.ColCount(); 
+                _values.InsertRange(ind, row);
+                _index.Insert(nPos, this.RowCount());
+            }            
+        }
         /// <summary>
         /// Join two df with Inner or Left join type.
         /// </summary>

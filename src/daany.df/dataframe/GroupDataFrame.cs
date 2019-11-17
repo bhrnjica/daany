@@ -361,8 +361,6 @@ namespace Daany
                 var df1 = DataFrame.CreateEmpty(Group.ElementAt(0).Value.Columns);
                 foreach (var gr in Group)
                 {
-                    var lst = new List<string>();
-                    lst.Add(GroupedColumn);
                     var row = gr.Value.Aggragate(agg, true);
                     df1.AddRow(row);
                 }
@@ -375,9 +373,6 @@ namespace Daany
                 var df1 = DataFrame.CreateEmpty(Group2.ElementAt(0).Value.ElementAt(0).Value.Columns);
                 foreach (var gr in Group2)
                 {
-                    var lst = new List<string>();
-                    lst.Add(GroupedColumn);
-                    lst.Add(SecondGroupedColumn);
                     foreach(var g2 in gr.Value)
                     {
                         var row = g2.Value.Aggragate(agg, true);
@@ -393,10 +388,6 @@ namespace Daany
                 var df1 = DataFrame.CreateEmpty(Group3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
                 foreach (var gr in Group3)
                 {
-                    var lst = new List<string>();
-                    lst.Add(GroupedColumn);
-                    lst.Add(SecondGroupedColumn);
-                    lst.Add(ThirdGroupedColumn);
                     foreach (var g2 in gr.Value)
                     {
                         foreach (var g3 in g2.Value)
@@ -431,6 +422,64 @@ namespace Daany
             return new DataFrame(lst, cols);
         }
 
+        /// <summary>
+        /// Perform trannsformation on each grouped data frame.
+        /// </summary>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public DataFrame Transform(Func<DataFrame, DataFrame> callBack)
+        {
+            DataFrame df = null;
+            if (Group == null && Group2 == null && Group3 == null)
+                throw new Exception("Group is  empty.");
+
+            //grouping with one column
+            if (Group != null && Group.Count > 0)
+            {
+                var df1 = DataFrame.CreateEmpty(Group.ElementAt(0).Value.Columns);
+                foreach (var gr in Group)
+                {
+                    var row = callBack(gr.Value);
+                    df1.AddRows(row);
+                }
+
+                return df1;
+            }
+            //grouping with two columns
+            else if (Group2 != null && Group2.Count > 0)
+            {
+                var df1 = DataFrame.CreateEmpty(Group2.ElementAt(0).Value.ElementAt(0).Value.Columns);
+                foreach (var gr in Group2)
+                {
+                    foreach (var g2 in gr.Value)
+                    {
+                        var row = callBack(g2.Value);
+                        df1.AddRows(row);
+                    }
+
+                }
+                return df1;
+            }
+            //grouping with three columns
+            else if (Group3 != null && Group3.Count > 0)
+            {
+                var df1 = DataFrame.CreateEmpty(Group3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
+                foreach (var gr in Group3)
+                {
+                    foreach (var g2 in gr.Value)
+                    {
+                        foreach (var g3 in g2.Value)
+                        {
+                            var row = callBack(g3.Value);
+                            df1.AddRows(row);
+                        }
+                    }
+
+                }
+                return df1;
+            }
+            return df;
+        }
         public string ToStringBuilder(int rowCount = 15)
         {
             StringBuilder sb = new StringBuilder();

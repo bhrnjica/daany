@@ -92,7 +92,7 @@ namespace Unit.Test.DF
             aggs.Add("col3", Aggregation.Sum);
             aggs.Add("col4", Aggregation.Sum);
             aggs.Add("col5", Aggregation.Sum);
-            var result = sampleDf.GroupBy("col1", "col2" ).Aggregation(aggs);
+            var result = sampleDf.GroupBy("col1", "col2" ).Aggregate(aggs);
 
             Assert.Equal(result.RowCount(), resultDf.RowCount());
 
