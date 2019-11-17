@@ -1008,7 +1008,20 @@ female              Sarajevo
             Assert.Equal(29d, gDf["Age", 1]);
 
         }
-
+        [Fact]
+        public void ClipValues()
+        {
+            var dic = new Dictionary<string, List<object>>
+            {
+                { "col1", new List<object> {0.335232,-1.367855,0.027753,0.230930,1.261967} },
+                { "col2", new List<object> { -1.256177,0.746646,-1.176076,-0.679613,0.570967} }
+            };
+            ///
+            var df = new DataFrame(dic);
+            var clipedDf = df.Clip(-1.0f,0.5f);
+            var expected = new List<object>() { 0.335232, -1.000000, -1.000000, 0.500000, 0.027753, -1.000000, 0.230930, -0.679613, 0.500000, 0.500000 };
+            Assert.Equal(expected, clipedDf.Values);
+        }
         #endregion
 
         #region Insert and rename
