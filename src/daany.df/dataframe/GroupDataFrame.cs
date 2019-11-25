@@ -212,7 +212,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
             else if(Group2 !=null && Group2.Count > 0)
@@ -223,7 +223,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
             else if (Group3 != null && Group3.Count > 0)
@@ -234,7 +234,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
 
@@ -268,7 +268,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
             else if (Group2 != null && Group2.Count > 0)
@@ -279,7 +279,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
             else if (Group3 != null && Group3.Count > 0)
@@ -290,7 +290,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
 
@@ -315,7 +315,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
             else if (Group2 != null && Group2.Count > 0)
@@ -326,7 +326,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
             else if (Group3 != null && Group3.Count > 0)
@@ -337,7 +337,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.AddRows(df1);
+                        df.Append(df1);
                 }
             }
 
@@ -419,7 +419,7 @@ namespace Daany
                 lst.Add(cnt);
             }
 
-            return new DataFrame(lst, cols);
+            return new DataFrame(lst, cols.ToList());
         }
 
         /// <summary>
@@ -439,8 +439,8 @@ namespace Daany
                 var df1 = DataFrame.CreateEmpty(Group.ElementAt(0).Value.Columns);
                 foreach (var gr in Group)
                 {
-                    var row = callBack(gr.Value);
-                    df1.AddRows(row);
+                    var rows = callBack(gr.Value);
+                    df1.Append(rows);
                 }
 
                 return df1;
@@ -453,8 +453,8 @@ namespace Daany
                 {
                     foreach (var g2 in gr.Value)
                     {
-                        var row = callBack(g2.Value);
-                        df1.AddRows(row);
+                        var rows = callBack(g2.Value);
+                        df1.Append(rows);
                     }
 
                 }
@@ -470,8 +470,8 @@ namespace Daany
                     {
                         foreach (var g3 in g2.Value)
                         {
-                            var row = callBack(g3.Value);
-                            df1.AddRows(row);
+                            var rows = callBack(g3.Value);
+                            df1.Append(rows);
                         }
                     }
 
