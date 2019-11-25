@@ -188,7 +188,7 @@ namespace Unit.Test.DF
         {
             var cols = new string[] { "Place", "Country", "Zip Code", "Values" };
             //create empty data frame with 4 columns
-            var df = DataFrame.CreateEmpty(cols);
+            var df = DataFrame.CreateEmpty(cols.ToList());
 
             //check the size of the data frame
             Assert.Equal(0, df.RowCount());

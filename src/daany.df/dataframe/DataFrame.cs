@@ -139,21 +139,6 @@ namespace Daany
             }
 
         }
-
-        /// <summary>
-        /// Create empty data frame with specified column list.
-        /// </summary>
-        /// <param name="columns">Column name list.</param>
-        /// <returns></returns>
-        public static DataFrame CreateEmpty(List<string> columns)
-        {
-            var val = Array.Empty<object>();
-            var df = new DataFrame();
-            df._values = new List<object>();
-            df._index= new List<object>();
-            df._columns = columns;
-            return df;
-        }
         #endregion
 
         #region Index Related Members
@@ -363,7 +348,7 @@ namespace Daany
         /// </summary>
         /// <param name="columns">Column name list.</param>
         /// <returns></returns>
-        public static DataFrame CreateEmpty(IList<string> columns)
+        public static DataFrame CreateEmpty(List<string> columns)
         {
             var val = Array.Empty<object>();
             var df = new DataFrame();
