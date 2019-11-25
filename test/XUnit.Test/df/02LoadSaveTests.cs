@@ -13,7 +13,7 @@ namespace Unit.Test.DF
         public void LoadromCSV_Test()
         {
             string path = "../../../testdata/titanic_full_1310.csv";
-            var df = DataFrame.FromCsv(path, '\t', names: null); //
+            var df = DataFrame.FromCsv(path, '\t', names: null, parseDate:true); //
             //row test
             var r1 = df[393].ToList();
 
@@ -55,7 +55,7 @@ namespace Unit.Test.DF
         public void LoadromCSV_Test2()
         {
             string path = "../../../testdata/titanic_train.csv";
-            var df = DataFrame.FromCsv(path, ',', names: null); //
+            var df = DataFrame.FromCsv(path, ',', names: null, parseDate: true); //
 
             //
             //row test
