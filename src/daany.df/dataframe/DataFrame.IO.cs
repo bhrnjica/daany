@@ -45,6 +45,108 @@ namespace Daany
 
         #region Static members
         /// <summary>
+        /// Saves data frame .NET object in a csv file.
+        /// </summary>
+        /// <param name="filePath">Full or relative file path.</param>
+        /// <param name="dataFrame">Data frame to persist into file.</param>
+        /// <returns>True if save successfully passed</returns>
+        //public static bool ToCsv(string filePath, DataFrame dataFrame)
+        //{
+        //    if (dataFrame == null)
+        //        throw new ArgumentNullException(nameof(dataFrame));
+
+        //    var lst = new List<string>();
+        //    var header = string.Join(",", dataFrame.Columns);
+        //    lst.Add(header);
+
+        //    for (int i = 0; i < dataFrame.Index.Count; i++)
+        //    {
+        //        var row = dataFrame[i];
+        //        var strRow = string.Join(",", row.ToList());
+        //        lst.Add(strRow);
+
+        //    }
+
+        //    File.WriteAllLines(filePath, lst);
+        //    return true;
+        //}
+        /// <summary>
+        /// Saves data frame .NET object in a csv file.
+        /// </summary>
+        /// <param name="filePath">Full or relative file path.</param>
+        /// <param name="dataFrame">Data frame to persist into file.</param>
+        /// <returns>True if save successfully passed</returns>
+        public static bool ToCsv(string filePath, DataFrame dataFrame, string dFormat= null)
+        {
+            if (dataFrame == null)
+                throw new ArgumentNullException(nameof(dataFrame));
+
+            using (var strWr = File.CreateText(filePath))
+            {
+                var csvWriter = new CsvWriter(strWr);
+                //write header
+                writeHeader(csvWriter, dataFrame.Columns);
+                csvWriter.NextRecord();
+
+                //write values
+                int lstIndex = 0;
+                for (int i = 0; i < dataFrame.RowCount(); i++)
+                {
+                    for (int j = 0; j < dataFrame.ColCount(); j++)
+                    {
+                        switch (dataFrame.ColTypes[j])
+                        {
+                            case ColType.I2:
+                                var bv = Convert.ToBoolean(dataFrame._values[lstIndex]);
+                                csvWriter.WriteField(bv.ToString(CultureInfo.InvariantCulture));
+                                break;
+                            case ColType.IN:
+                                csvWriter.WriteField(dataFrame._values[lstIndex].ToString());
+                                break;
+                            case ColType.I32:
+                                var iv = Convert.ToInt32(dataFrame._values[lstIndex]);
+                                csvWriter.WriteField(iv.ToString(CultureInfo.InvariantCulture));
+                                break;
+                            case ColType.I64:
+                                var lv = Convert.ToInt64(dataFrame._values[lstIndex]);
+                                csvWriter.WriteField(lv.ToString(CultureInfo.InvariantCulture));
+                                break;
+                            case ColType.F32:
+                                var df = Convert.ToSingle(dataFrame._values[lstIndex]);
+                                csvWriter.WriteField(df.ToString(CultureInfo.InvariantCulture));
+                                break;
+                            case ColType.DD:
+                                var dv = Convert.ToDouble(dataFrame._values[lstIndex]);
+                                csvWriter.WriteField(dv.ToString(CultureInfo.InvariantCulture));
+                                break;
+                            case ColType.STR:
+                                csvWriter.WriteField(dataFrame._values[lstIndex].ToString());
+                                break;
+                            case ColType.DT:
+                                var dt = Convert.ToDateTime(dataFrame._values[lstIndex]);
+                                if (dFormat != null)
+                                    csvWriter.WriteField(dt.ToString(dFormat));
+                                else
+                                    csvWriter.WriteField(dt.ToString());
+                                break;
+                        }
+
+                        //
+                        lstIndex++;
+                    }
+                    csvWriter.NextRecord();
+                }
+            }
+
+            return true;
+        }
+
+        private static void writeHeader(CsvWriter csvWriter, IList<string> columns)
+        {
+            for (int i = 0; i < columns.Count; i++)
+                csvWriter.WriteField(columns[i]);
+        }
+        /// <summary>
         /// Load data from the remote server.
         /// </summary>
         /// </summary>
@@ -54,7 +156,7 @@ namespace Daany
         /// <param name="dformat">Date time format.</param>
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
         /// <returns>Data Frame object.</returns>
-        public static DataFrame FromWeb(string urlPath, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = null, int nRows = -1)
+        public static DataFrame FromWeb(string urlPath, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, int nRows = -1)
         {
             if (string.IsNullOrEmpty(urlPath))
                 throw new ArgumentNullException(nameof(urlPath), "Argument should not be null.");
@@ -64,9 +166,58 @@ namespace Daany
                 fileDownloader.DownloadFile(urlPath, strPath);
             }
              
-            var df =  FromCsv(strPath, sep, names, textQaualifier, dformat);
+            var df =  FromCsv(strPath, sep, names, dformat, colTypes:colTypes);
             File.Delete(strPath);
             return df;
+        }
+
+        public static DataFrame FromText(string strText, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, char[] missingValues=null, int nRows = -1)
+        {
+            if (string.IsNullOrEmpty(strText))
+                throw new ArgumentNullException(nameof(strText), "Argument should not be null.");
+
+            
+            using (var csvStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(strText)))
+            {
+                using (var srdr = new StreamReader(csvStream))
+                {
+                    var csvReader = new CsvReader(srdr, sep.ToString());
+
+                    var columns = names == null ? new List<string>() : names.ToList();
+
+                    var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue:missingValues);
+
+                    var df = new DataFrame(retVal, columns);
+                    if (colTypes != null)
+                        df._colsType = colTypes;
+                    return df;
+                }
+            }
+        }
+
+        public static DataFrame FromStrings(string[] strArray, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, char[] missingValues = null, int nRows = -1)
+        {
+            if (strArray==null || strArray.Length ==0)
+                throw new ArgumentNullException(nameof(strArray), "Argument should not be null or empty.");
+            //prepare for stream
+            var strText = string.Join(Environment.NewLine, strArray);
+
+            using (var csvStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(strText)))
+            {
+                using (var srdr = new StreamReader(csvStream))
+                {
+                    var csvReader = new CsvReader(srdr, sep.ToString());
+
+                    var columns = names == null ? new List<string>() : names.ToList();
+
+                    var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue: missingValues);
+
+                    var df = new DataFrame(retVal, columns);
+                    if (colTypes != null)
+                        df._colsType = colTypes;
+                    return df;
+                }
+            }
         }
 
         /// <summary>
@@ -78,72 +229,29 @@ namespace Daany
         /// <param name="dformat">Date time format.</param>
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
         /// <returns>Data Frame object.</returns>
-        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, char textQaualifier='"', string dformat = null, ColType[] colTypes=null, int nRows = -1)
+        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, string dformat = null,  bool parseDate = true, ColType[] colTypes = null, char[] missingValues=null, int nRows = -1)
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
 
             if (!File.Exists(filePath))
                 throw new ArgumentException(nameof(filePath), "File name does not exist.");
-            using(var srdr = new StreamReader(filePath))
+
+            using (var srdr = new StreamReader(filePath))
             {
                 var csvReader = new CsvReader(srdr, sep.ToString());
 
                 var columns = names == null ? new List<string>() : names.ToList();
 
-                var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: dformat, nRows: nRows, parseDate: true, missingValue: null);
+                var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: parseDate, missingValue: missingValues);
 
                 var df = new DataFrame(retVal, columns);
+                if (colTypes != null)
+                    df._colsType = colTypes;
                 return df;
             }
-        }
+                
 
-        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, bool parseDate = false, ColType[] colTypes = null, char[] missingValues=null, int nRows = -1)
-        {
-            if (string.IsNullOrEmpty(filePath))
-                throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
-
-            if (!File.Exists(filePath))
-                throw new ArgumentException(nameof(filePath), "File name does not exist.");
-
-            var csvReader = new CsvReader(new StreamReader(filePath), sep.ToString());
-
-            var columns = names == null ? new List<string>() : names.ToList();
-
-            var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: parseDate, missingValue: missingValues);
-
-            var df = new DataFrame(retVal, columns);
-            if (colTypes != null)
-                df._colsType = colTypes;
-            return df;
-
-        }
-
-        /// <summary>
-        /// Saves data frame .NET object in a csv file.
-        /// </summary>
-        /// <param name="filePath">Full or relative file path.</param>
-        /// <param name="dataFrame">Data frame to persist into file.</param>
-        /// <returns>True if save successfully passed</returns>
-        public static bool ToCsv(string filePath, DataFrame dataFrame)
-        {
-            if (dataFrame == null)
-                throw new ArgumentNullException(nameof(dataFrame));
-
-            var lst = new List<string>();
-            var header = string.Join(",", dataFrame.Columns);
-            lst.Add(header);
-
-            for (int i = 0; i < dataFrame.Index.Count; i++)
-            {
-                var row = dataFrame[i];
-                var strRow = string.Join(",", row.ToList());
-                lst.Add(strRow);
-
-            }
-
-            File.WriteAllLines(filePath, lst);
-            return true;
         }
 
         #endregion
