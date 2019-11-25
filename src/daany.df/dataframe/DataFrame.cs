@@ -724,12 +724,12 @@ namespace Daany
                     if (_values[index] == DataFrame.NAN)
                     {
                         lst.Add(_values[index]);
-                        continue;
+                       
                     }  
                     else if (this._colsType[i] == ColType.STR || this._colsType[i] == ColType.IN || this._colsType[i] == ColType.F32 || this._colsType[i] == ColType.DT)
                     {
                         lst.Add(_values[index]);
-                        continue;
+                       
                     }
 
                     else if(this._colsType[i] == ColType.I32)
@@ -784,6 +784,86 @@ namespace Daany
             return df;
         }
 
+        public DataFrame Clip(float minValue, float maxValue, params string[] columns)
+        {
+            //initialize column types
+            if (this._colsType == null)
+                this._colsType = columnsTypes();
+            var colInd = getColumnIndex(columns);
+            var lst = new List<object>();
+            int index = 0;
+            for (int j = 0; j < _index.Count; j++)
+            {
+                for (int i = 0; i < _columns.Count; i++)
+                {
+                    if (!colInd.Contains(i))
+                    {
+                        lst.Add(_values[index]);
+                       
+                    }
+
+                    else if (_values[index] == DataFrame.NAN)
+                    {
+                        lst.Add(_values[index]);
+                       
+                    }
+                    else if (this._colsType[i] == ColType.STR || this._colsType[i] == ColType.IN || this._colsType[i] == ColType.F32 || this._colsType[i] == ColType.DT)
+                    {
+                        lst.Add(_values[index]);
+                        
+                    }
+
+                    else if (this._colsType[i] == ColType.I32)
+                    {
+                        var v = Convert.ToInt32(_values[index]);
+
+                        if (v < minValue)
+                            v = Convert.ToInt32(minValue);
+                        else if (v > maxValue)
+                            v = Convert.ToInt32(maxValue);
+
+                        lst.Add(v);
+                    }
+                    else if (this._colsType[i] == ColType.I64)
+                    {
+                        var v = Convert.ToInt64(_values[index]);
+
+                        if (v < minValue)
+                            v = Convert.ToInt64(minValue);
+                        else if (v > maxValue)
+                            v = Convert.ToInt64(maxValue);
+
+                        lst.Add(v);
+                    }
+                    else if (this._colsType[i] == ColType.F32)
+                    {
+                        var v = Convert.ToSingle(_values[index]);
+
+                        if (v < minValue)
+                            v = Convert.ToSingle(minValue);
+                        else if (v > maxValue)
+                            v = Convert.ToSingle(maxValue);
+
+                        lst.Add(v);
+                    }
+                    else if (this._colsType[i] == ColType.DD)
+                    {
+                        var v = Convert.ToDouble(_values[index]);
+
+                        if (v < minValue)
+                            v = Convert.ToDouble(minValue);
+                        else if (v > maxValue)
+                            v = Convert.ToDouble(maxValue);
+
+                        lst.Add(v);
+                    }
+                    index++;
+                }
+            }
+            //return new data frame
+            var df = new DataFrame(lst, this.Columns.ToList());
+            return df;
+        }
         /// <summary>
         /// Creates new data frame of basic descriptive statistics values of the data frame
         /// </summary>
