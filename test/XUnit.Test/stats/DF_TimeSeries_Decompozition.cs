@@ -15,7 +15,7 @@ namespace Unit.Test.DF
         private double[] getAirPassengersData()
         {
             var strPath = $"{root}/AirPassengers.csv";
-            var mlDF = DataFrame.FromCsv(strPath, sep: ',');
+            var mlDF = DataFrame.FromCsv(strPath, sep: ',', dformat:null);
             //
             return mlDF["#Passengers"].Select(x => Convert.ToDouble(x)).ToArray();
 
@@ -76,7 +76,7 @@ namespace Unit.Test.DF
             double[] remainder = stl.Residual;
 
             //Load result calculated by using R STL package
-            var dfReslt = DataFrame.FromCsv($"{root}/airpassengers_stl_result.txt");
+            var dfReslt = DataFrame.FromCsv($"{root}/airpassengers_stl_result.txt", parseDate: true);
             //TODO: only two decimal places. Should be more than two.?! 
             int factor = 100;
             //check rowcounts

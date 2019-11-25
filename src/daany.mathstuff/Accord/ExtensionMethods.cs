@@ -289,7 +289,7 @@ namespace Accord
         {
             // http://stackoverflow.com/a/17457085/262032
 
-#if NETSTANDARD1_4 || NETSTANDARD2_0
+#if NETSTANDARD1_4 || NETSTANDARD2_0 || NETSTANDARD2_1
             var type = typeof(StreamReader).GetTypeInfo();
             char[] charBuffer = (char[])type.GetDeclaredField("_charBuffer").GetValue(reader);
             int charPos = (int)type.GetDeclaredField("_charPos").GetValue(reader);
@@ -615,7 +615,7 @@ namespace Accord
         /// 
         public static object GetDefaultValue(this Type type)
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NETSTANDARD2_1
             if (type.GetTypeInfo().IsValueType)
 #else
             if (type.IsValueType)
@@ -633,7 +633,7 @@ namespace Accord
         /// <typeparam name="T">The type of the object whose address needs to be retrieved.</typeparam>
         /// <param name="t">The object those address needs to be retrieved.</param>
         /// 
-#if NET45 || NET46 || NET462 || NETSTANDARD2_0
+#if NET45 || NET46 || NET462 || NETSTANDARD2_0 || NETSTANDARD2_1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static System.IntPtr AddressOf<T>(this T t)
@@ -652,7 +652,7 @@ namespace Accord
         /// <typeparam name="T">The type of the object whose address needs to be retrieved.</typeparam>
         /// <param name="t">The object those address needs to be retrieved.</param>
         /// 
-#if NET45 || NET46 || NET462 || NETSTANDARD2_0
+#if NET45 || NET46 || NET462 || NETSTANDARD2_0 || NETSTANDARD2_1
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         static System.IntPtr AddressOfRef<T>(ref T t)

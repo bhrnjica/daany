@@ -82,8 +82,6 @@ namespace Daany
         private List<object> _values;
         private IList<object> _index;
         private List<string> _columns;
-        static readonly Regex _numFloatRegex = new Regex(@"^(((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?)$");
-        static readonly Regex _numRegex = new Regex(@"^[0-9]+$");
         //Quick Sort algorithm. In case of false, the Merge Sort will be used.
         internal static bool qsAlgo = false;
         #endregion
@@ -140,146 +138,6 @@ namespace Daany
                 yield return this[i].ToArray();
             }
 
-        }
-        #endregion
-
-        #region Static members
-        /// <summary>
-        /// Load data from the remote server.
-        /// </summary>
-        /// </summary>
-        /// <param name="urlPath">Url of the file on remote server.</param>
-        /// <param name="sep"> Separator string.</param>
-        /// <param name="names">Column names in case the columns are provided separately from the file.</param>
-        /// <param name="dformat">Date time format.</param>
-        /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
-        /// <returns>Data Frame object.</returns>
-        public static DataFrame FromWeb(string urlPath, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = "dd/mm/yyyy", int nRows = -1)
-        {
-            if (string.IsNullOrEmpty(urlPath))
-                throw new ArgumentNullException(nameof(urlPath), "Argument should not be null.");
-            var strPath = $"web_csv_{DateTime.Now.Ticks}";
-            using (System.Net.WebClient fileDownloader = new System.Net.WebClient())
-            {
-                fileDownloader.DownloadFile(urlPath, strPath);
-            }
-                       
-            var df =  FromCsv(strPath, sep, names, textQaualifier, dformat);
-            File.Delete(strPath);
-            return df;
-        }
-        /// <summary>
-        /// Method for loading data from the file into data frame object.
-        /// </summary>
-        /// <param name="filePath">Full or relative path of the file.</param>
-        /// <param name="sep"> Separator string.</param>
-        /// <param name="names">Column names in case the columns are provided separately from the file.</param>
-        /// <param name="dformat">Date time format.</param>
-        /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
-        /// <returns>Data Frame object.</returns>
-        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, char textQaualifier='"', string dformat = null, ColType[] colTypes=null, int nRows = -1)
-        {
-            if (string.IsNullOrEmpty(filePath))
-                throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
-
-            if (!File.Exists(filePath))
-                throw new ArgumentException(nameof(filePath), "File name does not exist.");
-
-
-            var  rows = new List<string>();
-            var line = ""; long lCounter = 0;
-            //
-            using (var sr = new StreamReader(filePath))
-            {
-                //
-                while ((line = sr.ReadLine()) != null)
-                {
-                    rows.Add(line);
-                    lCounter++;
-                    if (nRows > -1 && lCounter >= nRows)
-                        break;
-
-                }
-            }
-
-
-            return FromStrArray(rows.ToArray(), sep, names, textQaualifier, dformat, colTypes);
-        }
-
-        public static DataFrame FromStrArray(string[] rows, char sep = ',', string[] names = null, char textQaualifier = '"', string dformat = null, ColType[] colTypes = null)
-        {
-            if (rows==null)
-                throw new ArgumentNullException(nameof(rows));
-
-            //Define header
-            var header = names;
-            if (header == null)
-                header = ParseText(rows[0], sep, textQaualifier).ToArray();
-
-            if (colTypes != null && colTypes.Length != header.Length)
-                throw new Exception("'colTypes' should be defined for all columns in the header.");
-
-            //Initialize df
-            var llst = new List<object>();
-            int rowCount = 0;
-            for (int i = 0; i < rows.Length; i++)
-            {
-                //
-                if (i == 0 && names == null)
-                    continue;
-                var row = ParseText(rows[i], sep, textQaualifier).ToArray();
-
-                if (row.Length == 1 && string.IsNullOrEmpty(row[0]))//skip empty line
-                    continue;
-
-                if (row.Length != header.Length)
-                    throw new Exception($"The number of parsed elements at the line '{i+1}' is not equal to column count.");
-                //
-                for (int j = 0; j < header.Length; j++)
-                {
-                    var v = "";
-                    if (row.Length > j)
-                        v = row[j];
-
-                    var value = colTypes==null ? parseValue(v, dformat) : parseValue(v, dformat, colTypes[j]);
-                    llst.Add(value);
-                }
-                rowCount++;
-            }
-
-            //in case predefined column types
-            var df = new DataFrame(llst.ToArray(), header.ToList());
-            if (colTypes != null)
-                df._colsType = colTypes;
-
-            return df;
-        }
-
-        /// <summary>
-        /// Saves data frame .NET object in a csv file.
-        /// </summary>
-        /// <param name="filePath">Full or relative file path.</param>
-        /// <param name="dataFrame">Data frame to persist into file.</param>
-        /// <returns>True if save successfully passed</returns>
-        public static bool ToCsv(string filePath, DataFrame dataFrame)
-        {
-            if (dataFrame == null)
-                throw new ArgumentNullException(nameof(dataFrame));
-
-            var lst = new List<string>();
-            var header = string.Join(",", dataFrame.Columns);
-            lst.Add(header);
-
-            for (int i = 0; i < dataFrame.Index.Count; i++)
-            {
-                var row = dataFrame[i];
-                var strRow = string.Join(",", row.ToList());
-                lst.Add(strRow);
-
-            }
-
-            File.WriteAllLines(filePath, lst);
-            return true;
         }
 
         /// <summary>
@@ -498,6 +356,21 @@ namespace Daany
             }
             //
             return newDf;
+        }
+
+        /// <summary>
+        /// Create empty data frame with specified column list.
+        /// </summary>
+        /// <param name="columns">Column name list.</param>
+        /// <returns></returns>
+        public static DataFrame CreateEmpty(IList<string> columns)
+        {
+            var val = Array.Empty<object>();
+            var df = new DataFrame();
+            df._values = new List<object>();
+            df._index = new List<object>();
+            df._columns = columns;
+            return df;
         }
         #endregion
 
@@ -2514,64 +2387,6 @@ namespace Daany
             return df;
         }
 
-        //https://stackoverflow.com/questions/14655023/split-a-string-that-has-white-spaces-unless-they-are-enclosed-within-quotes
-        private static IEnumerable<string> ParseText(string line, char delimiter, char textQualifier)
-        {
-
-            if (line == null)
-                yield break;
-
-            else
-            {
-                char prevChar;
-                char nextChar;
-                char currentChar;
-
-                bool inString = false;
-
-                StringBuilder token = new StringBuilder();
-
-                for (int i = 0; i < line.Length; i++)
-                {
-                    currentChar = line[i];
-
-                    if (i > 0)
-                        prevChar = line[i - 1];
-                    else
-                        prevChar = '\0';
-
-                    if (i + 1 < line.Length)
-                        nextChar = line[i + 1];
-                    else
-                        nextChar = '\0';
-
-                    if (currentChar == textQualifier && (prevChar == '\0' || prevChar == delimiter) && !inString)
-                    {
-                        inString = true;
-                        continue;
-                    }
-
-                    if (currentChar == textQualifier && (nextChar == '\0' || nextChar == delimiter) && inString)
-                    {
-                        inString = false;
-                        continue;
-                    }
-
-                    if (currentChar == delimiter && !inString)
-                    {
-                        yield return token.ToString();
-                        token = token.Remove(0, token.Length);
-                        continue;
-                    }
-
-                    token = token.Append(currentChar);
-
-                }
-
-                yield return token.ToString();
-
-            }
-        }
 
         private Dictionary<object, DataFrame> groupDFBy(string groupCol)
         {
@@ -2608,92 +2423,6 @@ namespace Daany
             return Group;
         }
 
-        private static object parseValue(object value, string dformat)
-        {
-            if (value is string)
-                return parseValue(value.ToString(), dformat);
-            else
-                return value;
-        }
-
-        private static object parseValue(string value, string dformat)
-        {
-            if (IsNumeric(value))
-                return int.Parse(value, CultureInfo.InvariantCulture);
-            else if (IsFloatNumeric(value))
-                return float.Parse(value, CultureInfo.InvariantCulture);
-            else if (IsMissingValue(value))
-                return NAN;
-            else //if (IsDateTime(value))
-            {
-                //
-                if (!string.IsNullOrEmpty(dformat) && DateTime.TryParseExact(value, dformat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTimee)) 
-                {
-                    return dateTimee;
-                }
-                else if (string.IsNullOrEmpty(dformat) && DateTime.TryParse(value, out DateTime dateTime))
-                {
-                    return dateTime;
-                }
-                if (bool.TryParse(value, out bool v))
-                {
-                    return v;
-                }
-                else
-                {
-                    return value;
-                }
-
-            }
-        }
-
-        private static object parseValue(string value, string dformat, ColType colType)
-        {
-            if (IsNumeric(value))
-                return int.Parse(value, CultureInfo.InvariantCulture);
-            else
-            {
-                switch (colType)
-                {
-                    case ColType.I2:
-                        return bool.Parse(value);
-                    case ColType.IN:
-                        return value;
-                    case ColType.I32:
-                        return int.Parse(value);
-                    case ColType.I64:
-                        return long.Parse(value);
-                    case ColType.F32:
-                        return float.Parse(value);
-                    case ColType.DD:
-                        return double.Parse(value);
-                    case ColType.STR:
-                        return value;
-                    case ColType.DT:
-                        {
-                            if (string.IsNullOrEmpty(dformat))
-                                return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
-                            else
-                                return DateTime.ParseExact(value, dformat, CultureInfo.InvariantCulture, DateTimeStyles.None);
-
-                        }
-                    default:
-                        throw new Exception("column type is not known.");
-                }
-            }
-        }
-
-        private static readonly string[] _missingCharacters = new string[] { "n/a", "?", "*", };
-
-        private static bool IsNumeric(string value)
-        {
-            return _numRegex.IsMatch(value);
-        }
-
-        private static bool IsFloatNumeric(string value)
-        {
-            return _numFloatRegex.IsMatch(value);
-        }
 
         private bool applyOperator(int[] indCols, object[] rowValues, object[] filteValues, FilterOperator[] fOpers)
         {
@@ -2818,17 +2547,7 @@ namespace Daany
             }
         }
 
-        private static bool IsMissingValue(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return true;
-            else if (string.IsNullOrWhiteSpace(value))
-                return true;
-            else if (_missingCharacters.Contains(value))
-                return true;
-            else
-                return false;
-        }
+        
 
         private static List<object> deepCopyObject(IEnumerable<object> list)
         {

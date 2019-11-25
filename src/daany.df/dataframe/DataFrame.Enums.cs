@@ -70,4 +70,11 @@ namespace Daany
         [Description("Freq")]
         Frequency
     }
+    public enum ValueType
+    {
+        None,
+        Int,
+        Float,
+
+    }
 }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
+using System.IO;
 
 namespace Unit.Test.DF
 {
@@ -55,7 +56,7 @@ namespace Unit.Test.DF
         public void LoadromCSV_Test2()
         {
             string path = "../../../testdata/titanic_train.csv";
-            var df = DataFrame.FromCsv(path, ',', names: null); //
+            var df = DataFrame.FromCsv(path, ',', names: null, parseDate: true); //
 
             //
             //row test
@@ -87,7 +88,43 @@ namespace Unit.Test.DF
         [Fact]
         public void SaveToCSV_Test()
         {
-            
+            string saveDfPath = $"../../../testdata/savedcsv_{DateTime.Now.Ticks}.csv";
+
+            string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+            var nms = new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" };
+            var colTy = new ColType[] { ColType.F32, ColType.F32, ColType.F32, ColType.F32, ColType.STR};
+            var df = DataFrame.FromWeb(url, sep: ',', names:nms, colTypes:colTy); //
+            //row test
+            var retVal = DataFrame.ToCsv(saveDfPath, df);
+            var dfsaved = DataFrame.FromCsv(saveDfPath, colTypes:colTy);
+            File.Delete(saveDfPath);
+            for (int i = 0; i < df.Values.Count; i++)
+                Assert.Equal(dfsaved.Values[i],df.Values[i]);
+            Assert.True(retVal);
+        }
+
+        [Fact]
+        public void SaveToCSV_TestWithMissingValues()
+        {
+            string saveDfPath = $"../../../testdata/savedcsv_{DateTime.Now.Ticks}.csv";
+
+            string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+            var nms = new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" };
+            var colTy = new ColType[] { ColType.F32, ColType.F32, ColType.F32, ColType.F32, ColType.STR };
+            var df = DataFrame.FromWeb(url, sep: ',', names: nms, colTypes: colTy); //
+
+            df["sepal_length", 10] = DataFrame.NAN;
+            df["sepal_width", 11] = DataFrame.NAN;
+            df["petal_length", 12] = DataFrame.NAN;
+            df["petal_width", 13] = DataFrame.NAN;
+            df["flower_type", 14] = DataFrame.NAN;
+            //row test
+            var retVal = DataFrame.ToCsv(saveDfPath, df);
+            var dfsaved = DataFrame.FromCsv(saveDfPath, colTypes: colTy);
+            File.Delete(saveDfPath);
+            for (int i = 0; i < df.Values.Count; i++)
+                Assert.Equal(dfsaved.Values[i], df.Values[i]);
+            Assert.True(retVal);
         }
 
     }

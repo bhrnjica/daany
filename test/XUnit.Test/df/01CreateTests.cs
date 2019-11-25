@@ -103,7 +103,7 @@ namespace Unit.Test.DF
             var exception = Assert.ThrowsAny<System.ArgumentException>(() => DataFrame.FromCsv(filePath: filePath,
                                                                                         sep: '\t',
                                                                                         names: null, dformat: null));
-            Assert.Equal("filePath\r\nParameter name: File name does not exist.", exception.Message);
+            Assert.Equal("filePath (Parameter 'File name does not exist.')", exception.Message);
         }
 
 

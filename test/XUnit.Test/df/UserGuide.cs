@@ -78,7 +78,7 @@ namespace Unit.Test.DF
             DataFrame.ToCsv(filename, df);
 
             //create data frame with 3 rows and 7 columns
-            var dfFromFile = DataFrame.FromCsv(filename, sep:',');
+            var dfFromFile = DataFrame.FromCsv(filename, sep:',',dformat:null);
 
             //check the size of the data frame
             Assert.Equal(3, dfFromFile.RowCount());
@@ -111,7 +111,7 @@ namespace Unit.Test.DF
             //defined types of the column 
             var colTypes1 = new ColType[] { ColType.I32, ColType.IN, ColType.I32, ColType.STR, ColType.I2, ColType.F32, ColType.DT };
             //create data frame with 3 rows and 7 columns
-            var dfFromFile = DataFrame.FromCsv(filename, sep: ',', colTypes: colTypes1);
+            var dfFromFile = DataFrame.FromCsv(filename, sep: ',', colTypes: colTypes1, parseDate: true);
 
             //check the size of the data frame
             Assert.Equal(3, dfFromFile.RowCount());
@@ -202,7 +202,7 @@ namespace Unit.Test.DF
         public void EnumerationByDictionary()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //get second data frame row
             //row2 is a dictionary with column names as keys
@@ -218,7 +218,7 @@ namespace Unit.Test.DF
         public void EnumerationByRow()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //get second data frame row
             //row2 is a dictionary with column names as keys
@@ -234,7 +234,7 @@ namespace Unit.Test.DF
         public void StronglyTypedEnumeration()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //convert data frame into strongly typed list
             List<Person> list = df.GetEnumerator<Person>((oRow) =>
@@ -276,7 +276,7 @@ namespace Unit.Test.DF
         public void SelectByColumnIndex()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //select one column from the data frame
             var cities = df["City"].ToArray();
@@ -299,7 +299,7 @@ namespace Unit.Test.DF
         public void SelectColumns()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //select one column from the data frame
             var citiesDf = df["City", "Zip Code"];
@@ -314,7 +314,7 @@ namespace Unit.Test.DF
         public void SelectDataFrameRow()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //select third row from data frame
             //3, "Berlin",    10115, "GER", false,    4.55, DateTime.Now.AddDays(-5)
@@ -330,7 +330,7 @@ namespace Unit.Test.DF
         public void SelectDataUsingPosition()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //select city from the third row
             var city = df[2,1];
@@ -349,7 +349,7 @@ namespace Unit.Test.DF
         public void AddColumnsToDataFrame()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //add Age column
             var newCols =  new Dictionary<string, List<object>>(){ { "Age", new List<object>() { 31, 25, 45 } },
@@ -437,7 +437,7 @@ namespace Unit.Test.DF
         public void AddRowToDataFrame()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //new row
             var newRow = new List<object>() { 4, "London", 11000, "GB", false, 5.55, DateTime.Now.AddDays(-5) };
@@ -1043,7 +1043,7 @@ female              Sarajevo
         public void InserColumn()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //add Age column
             var newCol = new List<object>(){ 31, 25, 45 };
@@ -1075,7 +1075,7 @@ female              Sarajevo
         public void RenameColumn()
         {
             //create data frame with 3 rows and 7 columns
-            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt");
+            var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
             //add Age column
             var newCol = new List<object>() { 31, 25, 45 };
