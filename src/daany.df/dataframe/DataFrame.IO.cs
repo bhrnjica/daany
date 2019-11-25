@@ -94,6 +94,13 @@ namespace Daany
                 {
                     for (int j = 0; j < dataFrame.ColCount(); j++)
                     {
+                        if(dataFrame._values[lstIndex]== DataFrame.NAN)
+                        {
+                            csvWriter.WriteField("");
+                            lstIndex++;
+                            continue;
+                        }
+
                         switch (dataFrame.ColTypes[j])
                         {
                             case ColType.I2:
