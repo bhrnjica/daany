@@ -566,6 +566,10 @@ namespace Daany
                     if (j >= Columns.Count)
                     {
                         var vs = callBack(processingRow, i);
+
+                        if (vs.Length != colNames.Length)
+                            throw new Exception("Defined and calculated columns are not consistent.");
+
                         foreach (var v in vs)
                             vals.Add(v);
                     }
