@@ -50,33 +50,33 @@ namespace Daany
         /// <param name="filePath">Full or relative file path.</param>
         /// <param name="dataFrame">Data frame to persist into file.</param>
         /// <returns>True if save successfully passed</returns>
-        //public static bool ToCsv(string filePath, DataFrame dataFrame)
-        //{
-        //    if (dataFrame == null)
-        //        throw new ArgumentNullException(nameof(dataFrame));
+        public static bool ToCsv(string filePath, DataFrame dataFrame)
+        {
+            if (dataFrame == null)
+                throw new ArgumentNullException(nameof(dataFrame));
 
-        //    var lst = new List<string>();
-        //    var header = string.Join(",", dataFrame.Columns);
-        //    lst.Add(header);
+            var lst = new List<string>();
+            var header = string.Join(",", dataFrame.Columns);
+            lst.Add(header);
 
-        //    for (int i = 0; i < dataFrame.Index.Count; i++)
-        //    {
-        //        var row = dataFrame[i];
-        //        var strRow = string.Join(",", row.ToList());
-        //        lst.Add(strRow);
+            for (int i = 0; i < dataFrame.Index.Count; i++)
+            {
+                var row = dataFrame[i];
+                var strRow = string.Join(",", row.ToList());
+                lst.Add(strRow);
 
-        //    }
+            }
 
-        //    File.WriteAllLines(filePath, lst);
-        //    return true;
-        //}
+            File.WriteAllLines(filePath, lst);
+            return true;
+        }
         /// <summary>
         /// Saves data frame .NET object in a csv file.
         /// </summary>
         /// <param name="filePath">Full or relative file path.</param>
         /// <param name="dataFrame">Data frame to persist into file.</param>
         /// <returns>True if save successfully passed</returns>
-        public static bool ToCsv(string filePath, DataFrame dataFrame, string dFormat= null)
+        public static bool ToCsv(string filePath, DataFrame dataFrame, string dFormat)
         {
             if (dataFrame == null)
                 throw new ArgumentNullException(nameof(dataFrame));
@@ -250,7 +250,7 @@ namespace Daany
 
                 var columns = names == null ? new List<string>() : names.ToList();
 
-                var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: parseDate, missingValue: missingValues);
+                var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: dformat, nRows: nRows, parseDate: parseDate, missingValue: missingValues);
 
                 var df = new DataFrame(retVal, columns);
                 if (colTypes != null)
