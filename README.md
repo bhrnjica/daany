@@ -9,6 +9,9 @@ Daany - .NET **DA**ta **AN**al**Y**tics C# library with the implementation of Da
 
 *[Daany Developer Guide](/docs/DevGuide/developer_guide.md)* - complete guide for developers.
 
+# Software Requiremens
+The lates version of the library is built on Standard2.1 and supports .NET Core 3.0. The library is not available for .NET Framework 4.8 and below. In case you want to use this library on .NET Framework and Standard 2.0, use older version v0.3.*.
+
 # Data Frame
 
 Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require for any class type implementation prior to data loading and transformation.     
