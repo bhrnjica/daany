@@ -10,7 +10,9 @@ Daany - .NET **DA**ta **AN**al**Y**tics C# library with the implementation of Da
 *[Daany Developer Guide](/docs/DevGuide/developer_guide.md)* - complete guide for developers.
 
 # Software Requiremens
-The lates version of the library is built on `Standard2.1` and supports `.NET Core 3.0` and above. However the library is not available for .NET Framework `4.8` and below. In case you want to use this library on `.NET Framework` and `Standard 2.0`, use older version `v0.3.*`.
+The latest version of the library is built on `Standard2.1` and supports `.NET Core 3.0` and above.
+
+However the library is not available for .NET Framework `4.8` and below. In case you want to use this library on `.NET Framework` and `Standard 2.0`, use older version `v0.3.*`, or try to build the version from the source code. 
 
 # Data Frame
 
