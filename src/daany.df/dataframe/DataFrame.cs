@@ -255,11 +255,10 @@ namespace Daany
         /// <param name="data">list of df values </param>
         /// <param name="index">row index</param>
         /// <param name="columns">column index</param>
-        [Obsolete("The constructor is obsolete and will be replaced in the future.")]
-        public DataFrame(List<object> data, IList<int> index, IList<string> columns)
+        public DataFrame(List<object> data, List<object> index, List<string> columns)
         {
-            this._index = index.Select(x => (object)x).ToList();
-            this._columns = columns.ToList();
+            this._index = index;
+            this._columns = columns;
             this._values = data;
         }
 
@@ -1399,7 +1398,7 @@ namespace Daany
 
 
             var lst = new List<object>();
-            var leftRCount = _index.Count;
+            var leftRCount = RowCount();
             var leftCCount = ColCount();
             var rightRCount = df2.RowCount();
             var rightCCount = df2.ColCount();
@@ -1408,8 +1407,8 @@ namespace Daany
             var ind = Enumerable.Range(0, df2.RowCount()).ToList();
             var rightIndex = df2.Index.Zip(ind, (key, value) => (key, value)).ToLookup(x => x.key, x => x.value);
 
-
             //left df enumeration
+            var finIndex = new List<object>();
             for (int i = 0; i < leftRCount; i++)
             {
                 var leftKey = this._index[i];
@@ -1420,6 +1419,8 @@ namespace Daany
                     {
                         int j = rPos[k];
 
+                        //fill the index
+                        finIndex.Add(leftKey);
                         //fill left table
                         int startL = i * leftCCount;
                         for (int r = startL; r < startL + leftCCount; r++)
@@ -1437,6 +1438,9 @@ namespace Daany
                     // fill with NAN numbers
                     if (jType == JoinType.Left)
                     {
+                        //fill the index
+                        finIndex.Add(leftKey);
+
                         int startL = i * leftCCount;
                         for (int r = startL; r < startL + leftCCount; r++)
                             lst.Add(_values[r]);
@@ -1446,8 +1450,8 @@ namespace Daany
                     }
                 }
             }
-            //Now construct the Data frame
-            var newDf = new DataFrame(lst, totalColumns);
+            //Now construct the Data frame with index
+            var newDf = new DataFrame(lst, finIndex, totalColumns);
             return newDf;
         }
 
@@ -1523,11 +1527,13 @@ namespace Daany
             }
 
             var lst = new List<object>();
-            var leftRCount = _index.Count;
+            var leftRCount = RowCount();
             var leftCCount = ColCount();
             var rightRCount = df2.RowCount();
             var rightCCount = df2.ColCount();
+
             //left df enumeration
+            var finIndex = new List<object>();
             for (int i = 0; i < leftRCount; i++)
             {
                 var leftKey = this[i, leftInd[0]];
@@ -1537,6 +1543,9 @@ namespace Daany
                     for (int k = 0; k < rPos.Length; k++)
                     {
                         int j = rPos[k];
+
+                        //fill the index
+                        finIndex.Add(leftKey);
 
                         //fill left table
                         int startL = i * leftCCount;
@@ -1556,6 +1565,9 @@ namespace Daany
                     // fill with NAN numbers
                     if (jType == JoinType.Left)
                     {
+                        //fill the index
+                        finIndex.Add(leftKey);
+
                         int startL = i * leftCCount;
                         for (int r = startL; r < startL + leftCCount; r++)
                             lst.Add(_values[r]);
@@ -1566,7 +1578,7 @@ namespace Daany
                 }
             }
             //Now construct the Data frame
-            var newDf = new DataFrame(lst, totalColumns);
+            var newDf = new DataFrame(lst,finIndex, totalColumns);
             return newDf;
 
         }
@@ -1585,6 +1597,7 @@ namespace Daany
                     throw new Exception($"The column name '{oldName}' does not exist!");
                 Columns[index] = newName;
             }
+            
             //
             return true;
         }

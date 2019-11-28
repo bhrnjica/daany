@@ -16,13 +16,13 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace NReco.Csv {
+namespace Daany {
 
 	/// <summary>
 	/// Fast and efficient implementation of CSV writer.
 	/// </summary>
 	/// <remarks>API is similar to CSVHelper CsvWriter class</remarks>
-	public class CsvWriter {
+	internal class CsvWriter {
 
 		public string Delimiter { get; private set; }
 

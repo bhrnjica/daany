@@ -16,13 +16,13 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace NReco.Csv {
+namespace Daany {
 
 	/// <summary>
 	/// Fast and memory efficient implementation of CSV reader (3x times faster than CsvHelper).
 	/// </summary>
 	/// <remarks>API is similar to CSVHelper CsvReader.</remarks>
-	public class CsvReader {
+	internal class CsvReader {
 
 		public string Delimiter { get; private set; }
 		int delimLength;
