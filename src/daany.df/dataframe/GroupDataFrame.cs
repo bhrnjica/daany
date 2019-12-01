@@ -444,7 +444,6 @@ namespace Daany
         /// <returns></returns>
         public DataFrame GCount()
         {
-            DataFrame df = null;
             var cols = new string[] { GroupedColumn, "count" };
             var lst = new List<object>();
             foreach (var gr in Group.OrderByDescending(x => x.Value.RowCount()))

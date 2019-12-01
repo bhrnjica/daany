@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Daany.Optimizers
 {
-    public class Optimization
+    public static class Optimization
     {
         public static double[] GradientDescent(List<double[]> X, List<double> Y, double lr, int it)
         {

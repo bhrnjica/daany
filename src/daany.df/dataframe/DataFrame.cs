@@ -1653,7 +1653,7 @@ namespace Daany
 
                         //fill right table
                         int startR = j * rightCCount;
-                        int cc = 0;
+                        //
                         for (int r = startR; r < startR + rightCCount; r++)
                             lst.Add(df2._values[r]);
                     }
