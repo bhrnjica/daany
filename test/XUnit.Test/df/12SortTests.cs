@@ -35,6 +35,13 @@ namespace Unit.Test.DF
             var df1 = new DataFrame(dict1);
 
             var result = df.SortBy(new string[] { "col1", "col2", "col3", "col4" });
+            var STR = result.ToStringBuilder();
+
+
+            var resultIndex = new object[] { 0, 5, 6, 1, 2, 3, 4, 7, 8, 9 };
+
+            Assert.Equal(result.Index, result.Index);
+
 
             for (int i = 0; i < result.Values.Count; i++)
             {
@@ -68,7 +75,7 @@ namespace Unit.Test.DF
             var dfExpected = new DataFrame(dictExp);
             //reverse sorting
             var result = df.SortByDescending(new string[] { "col1", "col2", "col3", "col4" });
-
+            var expectedIndex = new object[] { 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 };
             for (int i = 0; i < result.Values.Count; i++)
             {
                 var expected = Convert.ToInt32(dfExpected.Values[i]);
@@ -103,7 +110,7 @@ namespace Unit.Test.DF
             var df1 = new DataFrame(dict1);
 
             var result = df.SortBy(new string[] { "col1", "col2", "col3", "col4" });
-
+           
             for (int i = 0; i < result.Values.Count; i++)
             {
                 var expected = Convert.ToInt32(df1.Values[i]);

@@ -28,24 +28,25 @@ namespace Daany
             m_ColCount = dfTypes.Length;
         }
 
-        public List<object> QuickSort(List<object> array, int[] indCols)
+        internal (List<object> lst, List<object> ind) QuickSort(IList<object> array, List<object> dfIndex, int[] indCols)
         {
             if (array == null)
                 throw new Exception("data array cannot be null.");
 
             int end = array.Count / m_ColCount - 1;
             var sortedList = array.ToList();
-            quickSort(sortedList, 0, end, indCols);
-            return sortedList;
+            var sortedIndex = dfIndex.ToList();
+            quickSort(sortedList, sortedIndex, 0, end, indCols);
+            return (sortedList, sortedIndex);
         }
 
-        public List<object> MergeSort(List<object> array, int[] indCols)
+        internal (List<object> val, List<object> ind) MergeSort(object[] array, object[] index, int[] indCols)
         {
-            var sortedList = mergeSort(array.ToArray(), indCols);
-            return sortedList.ToList();
+            (object[] val, object[] ind)= mergeSort(array, index, indCols);
+
+            return (val.ToList(), ind.ToList());
         }
-
-
+        
         #region QuickSort
         /// <summary>
         /// Classic QuickSort algorithm for sorting 
@@ -53,18 +54,18 @@ namespace Daany
         /// <param name="init"></param>
         /// <param name="end"></param>
         /// <param name="cols"></param>
-        private void quickSort(List<object> sortedList, int init, int end, int[] indCols)
+        private void quickSort(List<object> sortedList, List<object> sortedIndex, int init, int end, int[] indCols)
         {
             if (init < end)
             {
-                int pivot = partition(sortedList, init, end, indCols);
-                quickSort(sortedList, init, pivot - 1, indCols);
-                quickSort(sortedList, pivot + 1, end, indCols);
+                int pivot = partition(sortedList, sortedIndex, init, end, indCols);
+                quickSort(sortedList, sortedIndex, init, pivot - 1, indCols);
+                quickSort(sortedList, sortedIndex, pivot + 1, end, indCols);
             }
         }
 
         //O(n)
-        private int partition(List<object> sortedList, int init, int end, int[] indCols)
+        private int partition(List<object> sortedList, List<object> sortedIndex, int init, int end, int[] indCols)
         {
             var last = getRowFromList(sortedList, end);
             int i = init - 1;
@@ -74,10 +75,10 @@ namespace Daany
                 if (lessThanOrEqual(row, last, indCols))
                 {
                     i++;
-                    swap(sortedList, i, j);
+                    swap(sortedList, sortedIndex, i, j);
                 }
             }
-            swap(sortedList, i + 1, end);
+            swap(sortedList,sortedIndex, i + 1, end);
             return i + 1;
         }
 
@@ -88,7 +89,7 @@ namespace Daany
                 yield return list[i];
         }
 
-        private void swap(List<object> sortedList, int i1, int i2)
+        private void swap(List<object> sortedList, List<object> sortedIndex, int i1, int i2)
         {
             if (i1 == i2)
                 return;
@@ -101,6 +102,10 @@ namespace Daany
                 sortedList[lstIndex1] = sortedList[lstIndex2];
                 sortedList[lstIndex2] = temVal;
             }
+
+            var temp = sortedIndex[i1];
+            sortedIndex[i1] = sortedIndex[i2];
+            sortedIndex[i2] = temp;
         }
 
         private bool lessThanOrEqual(IEnumerable<object> left, IEnumerable<object> right, int[] indCols, int leftIndex = 0, int rightIndex = 0)
@@ -118,29 +123,29 @@ namespace Daany
                 //
                 if (m_dfTypes[colInd] == ColType.STR)
                 {
-                    
+                   
                     var retVal = string.Compare(l.ToString(), r.ToString());
-                    if (retVal != -1)
-                        return false;
 
-                    if (retVal == 0)
+                    if (retVal < 0)
+                        return false;
+                    else if (retVal > 0)
+                        return true;
+                    else 
                         prevEqual = true;
-                    else
-                        prevEqual = false;
                 }
                 //
-                else if (m_dfTypes[colInd] == ColType.I32)
+                else if (m_dfTypes[colInd] == ColType.I32 || m_dfTypes[colInd] == ColType.IN)
                 {
                     var ll = Convert.ToInt32(l);
                     var rr = Convert.ToInt32(r);
 
                     if (ll > rr)
                         return false;
-
-                    if (ll == rr)
+                    else if (ll < rr)
+                        return true;
+                    else 
                         prevEqual = true;
-                    else
-                        prevEqual = false;
+
                 }
                 else if (m_dfTypes[colInd] == ColType.I64)
                 {
@@ -149,11 +154,10 @@ namespace Daany
 
                     if (ll > rr)
                         return false;
-
-                    if (ll == rr)
-                        prevEqual = true;
+                    else if (ll < rr)
+                        return true;
                     else
-                        prevEqual = false;
+                        prevEqual = true;
                 }
                 else if (m_dfTypes[colInd] == ColType.DD)
                 {
@@ -162,11 +166,10 @@ namespace Daany
 
                     if (ll > rr)
                         return false;
-
-                    if (ll == rr)
-                        prevEqual = true;
+                    else if (ll < rr)
+                        return true;
                     else
-                        prevEqual = false;
+                        prevEqual = true;
                 }
                 else if (m_dfTypes[colInd] == ColType.F32)
                 {
@@ -175,11 +178,10 @@ namespace Daany
 
                     if (ll > rr)
                         return false;
-
-                    if (ll == rr)
-                        prevEqual = true;
+                    else if (ll < rr)
+                        return true;
                     else
-                        prevEqual = false;
+                        prevEqual = true;
                 }
                 else if (m_dfTypes[colInd] == ColType.DT)
                 {
@@ -188,11 +190,10 @@ namespace Daany
 
                     if (ll > rr)
                         return false;
-
-                    if (ll == rr)
-                        prevEqual = true;
+                    else if (ll < rr)
+                        return true;
                     else
-                        prevEqual = false;
+                        prevEqual = true;
                 }
                 else
                     throw new Exception("Sorting is not supported");
@@ -204,16 +205,18 @@ namespace Daany
         #endregion
 
         #region MergeSort
-        private object[] mergeSort(object[] array, int[] indCols)
+        private (object[] val, object[] ind) mergeSort(object[] array, object [] index,  int[] indCols)
         {
-            object[] left;
-            object[] right;
+            object[] left, leftInd;
+            object[] right, rightInd;
+
             object[] result = new object[array.Length];
+            object[] resultInd = new object[index.Length];
 
             //As this is a recursive algorithm, we need to have a base case to 
             //avoid an infinite recursion and therefore a stack overflow
             if (array.Length <= m_ColCount)
-                return array;
+                return (array, index);
 
             // The exact midpoint of our array 
             int rowCount = array.Length / m_ColCount;
@@ -221,6 +224,7 @@ namespace Daany
 
             //Will represent our 'left' array
             left = new object[midPoint * m_ColCount];
+            leftInd = index.Take(midPoint).ToArray();
 
             //if array has an even number of elements, the left and right array will have the same number of 
             //elements
@@ -230,9 +234,13 @@ namespace Daany
             else
                 right = new object[(midPoint +1) * m_ColCount];
             
+
             //populate left array
             for (int i = 0; i < midPoint * m_ColCount; i++)
                 left[i] = array[i];
+
+            //populate right index
+            rightInd = index.Skip(midPoint).ToArray();
 
             //We start our index from the midpoint, as we have already populated the left array from 0 to midpont
             int k = 0;
@@ -243,26 +251,27 @@ namespace Daany
             }
 
             //Recursively sort the left array
-            left = mergeSort(left, indCols);
+            (left, leftInd) = mergeSort(left, leftInd, indCols);
 
             //Recursively sort the right array
-            right = mergeSort(right, indCols);
+            (right, rightInd) = mergeSort(right,rightInd, indCols);
 
             //Merge our two sorted arrays
-            result = merge(left, right, indCols);
+            (result, resultInd) = merge(left, right, leftInd, rightInd, indCols);
 
-            return result;
+            return (result, resultInd);
         }
 
         //This method will be responsible for combining our two sorted arrays into one giant array
-        private object[] merge(object[] left, object[] right, int[] indCols)
+        private (object[] val, object[] ind) merge(object[] left, object[] right, object[] leftInd, object[] rightInd, int[] indCols)
         {
             int resultLength = right.Length + left.Length;
             object[] result = new object[resultLength];
-
+            object[] resultInd = new object[leftInd.Length + rightInd.Length];
             //
             int indexLeft = 0, indexRight = 0, indexResult = 0;
-            int leftCount = left.Length ; int rightCount = right.Length;
+            int leftCount = left.Length; int rightCount = right.Length;
+            
             //while either array still has an element
             while (indexLeft < leftCount  || indexRight < rightCount)
             {
@@ -272,8 +281,12 @@ namespace Daany
                     //If item on left array is less than item on right array, add that item to the result array 
                     if(lessThanOrEqual(left, right, indCols, indexLeft, indexRight))
                     {
+                        //populate values
                         for (int i = 0; i < m_ColCount; i++)
                             result[indexResult + i] = left[indexLeft + i];
+
+                        //populate index
+                        resultInd[indexResult / m_ColCount] = leftInd[indexLeft / m_ColCount];
 
                         indexLeft += m_ColCount;
                         indexResult += m_ColCount;
@@ -281,8 +294,12 @@ namespace Daany
                     // else the item in the right array will be added to the results array
                     else
                     {
+                        //populate values
                         for (int i = 0; i < m_ColCount; i++)
                             result[indexResult + i] = right[indexRight + i];
+
+                        //populate index
+                        resultInd[indexResult / m_ColCount] = rightInd[indexRight / m_ColCount];
 
                         indexRight += m_ColCount;
                         indexResult += m_ColCount;
@@ -294,6 +311,9 @@ namespace Daany
                     for (int i = 0; i < m_ColCount; i++)
                         result[indexResult + i] = left[indexLeft + i];
 
+                    //populate index
+                    resultInd[indexResult / m_ColCount] = leftInd[indexLeft / m_ColCount];
+
                     indexLeft += m_ColCount;
                     indexResult += m_ColCount;
                 }
@@ -303,12 +323,16 @@ namespace Daany
                     for(int i=0; i< m_ColCount; i++)
                         result[indexResult + i] = right[indexRight + i];
 
+                    //populate index
+                    resultInd[indexResult/m_ColCount] = rightInd[indexRight/m_ColCount];
+
                     indexRight += m_ColCount;
                     indexResult += m_ColCount;
                 }
                 //increase 
+
             }
-            return result;
+            return (result, resultInd);
         }
 
         #endregion
