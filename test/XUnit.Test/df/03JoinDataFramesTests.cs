@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
+using System.Diagnostics;
 
 namespace Unit.Test.DF
 {
@@ -61,7 +62,7 @@ namespace Unit.Test.DF
             var df2 = new DataFrame(dict);
             //
             var mergedDf = df1.Join(df2, JoinType.Inner);
-            var e1 = new object[] { "foo", 5, "foo", 1, "bar", 6, "bar", 2, "baz", 7, "baz", 3};
+            var e1 = new object[] { "foo", 5, "foo", 1, "bar", 6, "bar", 2, "baz", 7, "baz", 3 };
             var dd = mergedDf.ToStringBuilder();
             //row test
             for (int i = 0; i < mergedDf.Values.Count; i++)
@@ -139,8 +140,8 @@ namespace Unit.Test.DF
             var df2 = new DataFrame(dict1);
             //
             var mergedDf = df1.Merge(df2, new string[] { "item2ID" }, new string[] { "itemID" }, JoinType.Inner);
-            var e1 = new object[] { "foo", 5, "foo", 1, "foo", 5, "foo",4, "bar", 6, "bar", 2, "baz", 7, "baz", 3,  };
-      
+            var e1 = new object[] { "foo", 5, "foo", 1, "foo", 5, "foo", 4, "bar", 6, "bar", 2, "baz", 7, "baz", 3, };
+
             //row test
             for (int i = 0; i < mergedDf.Values.Count; i++)
                 Assert.Equal(mergedDf.Values[i], e1[i]);
@@ -148,7 +149,7 @@ namespace Unit.Test.DF
             //
             mergedDf = df1.Merge(df2, new string[] { "item2ID" }, new string[] { "itemID" }, JoinType.Left);
             e1 = new object[] { "foo", 5, "foo", 1, "foo", 5, "foo", 4, "bar", 6, "bar", 2, "baz", 7, "baz", 3, };
-      
+
             //row test
             for (int i = 0; i < mergedDf.Values.Count; i++)
                 Assert.Equal(mergedDf.Values[i], e1[i]);
@@ -156,7 +157,7 @@ namespace Unit.Test.DF
             //
             mergedDf = df1.Merge(df2, new string[] { "value2" }, new string[] { "value1" }, JoinType.Left);
             e1 = new object[] { "foo", 5, DataFrame.NAN, DataFrame.NAN, "bar", 6, DataFrame.NAN, DataFrame.NAN, "baz", 7, DataFrame.NAN, DataFrame.NAN, };
-         
+
             //row test
             for (int i = 0; i < mergedDf.Values.Count; i++)
                 Assert.Equal(mergedDf.Values[i], e1[i]);
@@ -166,7 +167,7 @@ namespace Unit.Test.DF
 
 
         [Fact]
-        public void JoinBySingleColumn_Test01()
+        public void MergeBySingleColumn_Test01()
         {
             var dict = new Dictionary<string, List<object>>
             {
@@ -188,11 +189,11 @@ namespace Unit.Test.DF
             //row test
             for (int i = 0; i < mergedDf.Values.Count; i++)
                 Assert.Equal(mergedDf.Values[i], e1[i]);
-          
+
         }
 
         [Fact]
-        public void JoinByTwoColumns_Test()
+        public void MergeByTwoColumns_Test()
         {
             var dict = new Dictionary<string, List<object>>
             {
@@ -214,19 +215,19 @@ namespace Unit.Test.DF
             //row test
             var r1 = mergedDf[0].ToList();
             var r2 = mergedDf[1].ToList();
-            
-            var e1 = new object[] { "foo","A", 1, "foo","A", 5 };
-            var e2 = new object[] { "foo","B", 4, "foo","B", 8 };
-           
+
+            var e1 = new object[] { "foo", "A", 1, "foo", "A", 5 };
+            var e2 = new object[] { "foo", "B", 4, "foo", "B", 8 };
+
             for (int i = 0; i < r1.Count; i++)
                 Assert.Equal(r1[i].ToString(), e1[i].ToString());
             for (int i = 0; i < r2.Count; i++)
                 Assert.Equal(r2[i].ToString(), e2[i].ToString());
-           
+
             //column test
             var c1 = new string[] { "foo", "foo" };
-            var c2 = new string[] {"A","B"};
-            var c3 = new int[] { 1,4 };
+            var c2 = new string[] { "A", "B" };
+            var c3 = new int[] { 1, 4 };
             var cc1 = mergedDf["itemID"].ToList();
             var cc2 = mergedDf["catId"].ToList();
             var cc3 = mergedDf["value1"].ToList();
@@ -240,7 +241,7 @@ namespace Unit.Test.DF
         }
 
         [Fact]
-        public void JoinByThreeColumns_Test()
+        public void MergeByThreeColumns_Test()
         {
             var dict = new Dictionary<string, List<object>>
             {
@@ -259,12 +260,61 @@ namespace Unit.Test.DF
             //
             var df1 = new DataFrame(dict);
             var df2 = new DataFrame(dict1);
-            var mergedDf = df1.Merge(df2, new string[] { "itemID", "catId","class1" }, new string[] { "item2ID", "cat2ID", "class2" }, JoinType.Inner);
-            var e1 = new object[] { "foo","A",1 ,1, "foo", "A",5, 1, "foo","B",4, 5, "foo", "B",8,5 };
+            var mergedDf = df1.Merge(df2, new string[] { "itemID", "catId", "class1" }, new string[] { "item2ID", "cat2ID", "class2" }, JoinType.Inner);
+            var e1 = new object[] { "foo", "A", 1, 1, "foo", "A", 5, 1, "foo", "B", 4, 5, "foo", "B", 8, 5 };
 
             //row test
             for (int i = 0; i < mergedDf.Values.Count; i++)
                 Assert.Equal(mergedDf.Values[i], e1[i]);
+        }
+
+
+        [Fact]
+        
+        public void MergeByTwoColumns_Test01()
+        {
+            //datetime,machineID,volt,rotate,pressure,vibration
+            var telemetryPath = @"C:\sc\vs\Academic\PrM\Data\telemetry.csv";
+            //machineID,model,age
+            var errorMachinePath = @"C:\sc\vs\Academic\PrM\Data\errorfeat.csv";
+
+            
+            var telemetry = DataFrame.FromCsv(telemetryPath, sep: ',', parseDate: true);
+            var errorMachine = DataFrame.FromCsv(errorMachinePath, sep: ',', parseDate: true);
+           
+            var mCols = new string[] { "datetime", "machineID" };
+            
+            var newDf = telemetry.Merge_old(errorMachine, mCols, mCols, JoinType.Left);
+            var newDf1 = telemetry.Merge(errorMachine, mCols, mCols, JoinType.Left,"rDf");
+
+            for (int i = 0; i < newDf1.Values.Count(); i++)
+            {
+                Assert.Equal(newDf.Values[i], newDf1.Values[i]);
+            }
+        }
+
+        [Fact]
+        public void MergeByOneColumns_Test02()
+        {
+            //datetime,machineID,volt,rotate,pressure,vibration
+            var salesPath = @"C:\sc\vs\PredictFutureSales\Data\sales_train_v2.csv";
+            //machineID,model,age
+            var productIdsPath = @"C:\sc\vs\PredictFutureSales\Data\items.csv"; 
+
+
+            var sales = DataFrame.FromCsv(salesPath, sep: ',', dformat:"dd.mm.yyyy");
+            var products = DataFrame.FromCsv(productIdsPath, sep: ',', parseDate: true);
+
+            var mCols = new string[] { "item_id" };
+
+            var newDf = sales.Merge_old(products, mCols, mCols, JoinType.Left);
+            var newDf1 = sales.Merge(products, mCols, mCols, JoinType.Left);
+
+            //
+            for (int i = 0; i < newDf1.Values.Count(); i++)
+            {
+                Assert.Equal(newDf.Values[i], newDf1.Values[i]);
+            }
         }
     }
 }

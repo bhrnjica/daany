@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.MathStuff", "src\daan
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daany.DataFrame.Ext", "src\daany.ext\Daany.DataFrame.Ext.csproj", "{0F9F0BC5-3AD4-46F6-90F8-03BA1056046F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataFrame.Test.App", "test\DataFrame.Test.App\DataFrame.Test.App.csproj", "{E9781E31-5B4C-4A42-8194-1D82CEF960AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,14 @@ Global
 		{0F9F0BC5-3AD4-46F6-90F8-03BA1056046F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0F9F0BC5-3AD4-46F6-90F8-03BA1056046F}.Release|x64.ActiveCfg = Release|x64
 		{0F9F0BC5-3AD4-46F6-90F8-03BA1056046F}.Release|x64.Build.0 = Release|x64
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF}.Debug|x64.Build.0 = Debug|Any CPU
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF}.Release|x64.ActiveCfg = Release|Any CPU
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +92,7 @@ Global
 		{55490194-3CD8-4DB2-93CC-3CCF971335F1} = {68B2BA8B-2360-401E-BA8A-5B5E937DD816}
 		{83D43E60-B337-404B-955E-61A973BCE7C7} = {F5844D1E-B64A-4EA3-9D66-AAA711048D6D}
 		{0F9F0BC5-3AD4-46F6-90F8-03BA1056046F} = {F5844D1E-B64A-4EA3-9D66-AAA711048D6D}
+		{E9781E31-5B4C-4A42-8194-1D82CEF960AF} = {68B2BA8B-2360-401E-BA8A-5B5E937DD816}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1667E7B5-785D-4943-B8A0-7E34EE2E788E}

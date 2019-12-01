@@ -9,15 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OxyPlot.Core" Version="1.0.0" />
-    <PackageReference Include="OxyPlot.WindowsForms" Version="1.0.0" />
+    <PackageReference Include="OxyPlot.Core" Version="2.0.0" />
+    <PackageReference Include="OxyPlot.WindowsForms" Version="2.0.0" />
+    <PackageReference Include="XPlot.Plotly" Version="3.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\daany.df\daany.df.csproj" />
-    <ProjectReference Include="..\..\src\daany.ext\daany.df.ext.csproj" />
-    <ProjectReference Include="..\..\src\daany.math\daany.math.csproj" />
-    <ProjectReference Include="..\..\src\daany.stat\daany.stat.csproj" />
+    <ProjectReference Include="..\..\src\daany.df\Daany.DataFrame.csproj" />
+    <ProjectReference Include="..\..\src\daany.ext\Daany.DataFrame.Ext.csproj" />
+    <ProjectReference Include="..\..\src\daany.mathstuff\Daany.MathStuff.csproj" />
+    <ProjectReference Include="..\..\src\daany.stat\Daany.Stat.csproj" />
   </ItemGroup>
 
   <ItemGroup>

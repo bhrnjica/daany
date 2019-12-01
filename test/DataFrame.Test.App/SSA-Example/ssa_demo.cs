@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using OxyPlot;
 using System.Windows.Forms;
 using Daany;
-using Daany.MathExt;
+using Daany.MathStuff;
 using Daany.Stat;
 using Daany.Plot;
 
@@ -28,7 +28,7 @@ namespace ML.Net.App.TimeSeries
         {
             //
             var strPath = $"AirPassengers.csv";
-            var mlDF = DataFrame.FromCsv(strPath, sep: ",");
+            var mlDF = DataFrame.FromCsv(strPath, sep: ',');
             var ts = mlDF["#Passengers"].Select(f => Convert.ToDouble(f));//create time series
 
             //create Singular Spectrum Analysis object

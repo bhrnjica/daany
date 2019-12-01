@@ -374,6 +374,10 @@ namespace Daany
         {
             if (RowCount() != cols.ElementAt(0).Value.Count)
                 throw new Exception("Row counts must be equal.");
+
+            //
+            checkColumnNames(this._columns, cols.Keys.ToArray());
+
             //
             int index = 0;
             var vals = new List<object>();
@@ -494,11 +498,7 @@ namespace Daany
         public bool AddCalculatedColumn(string colName, Func<IDictionary<string, object>, int, object> callBack)
         {
             //
-            if (this._columns.Contains(colName))
-                throw new Exception($"Column '{colName}' already exists in the Data Frame.");
-
-            //add new column
-            addNewColumnName(this.Columns, colName);
+            checkColumnName(this._columns, colName);
             //
             var vals = new List<object>();
             int oldInd = 0;
@@ -539,13 +539,10 @@ namespace Daany
             if (colNames == null || colNames.Length == 0)
                 throw new Exception("column names are not defined properly.");
 
-            //check if column exists
-            foreach (var col in colNames)
-            {
-                if (this._columns.Contains(col))
-                    throw new Exception($"Column '{col}' already exists in the Data Frame.");
+            //chekc for duplicate column names
+            checkColumnNames(this._columns, colNames);
 
-            }
+            
             //
             var vals = new List<object>();
 
@@ -582,12 +579,16 @@ namespace Daany
 
             }
             //add new columns
-            foreach (var colName in colNames)
-                addNewColumnName(this._columns, colName);
+            this._columns.AddRange(colNames);
+            //foreach (var colName in colNames)
+            //    addNewColumnName(this._columns, colName);
+
             //apply new data frame values
             this._values = vals;
             return true;
         }
+
+        
 
         /// <summary>
         /// Add additional columns into DataFrame. The values of the columns are 
@@ -602,12 +603,7 @@ namespace Daany
                 throw new Exception("column names are not defined properly.");
 
             //check if column exists
-            foreach (var col in colNames)
-            {
-                if (this._columns.Contains(col))
-                    throw new Exception($"Column '{col}' already exists in the Data Frame.");
-
-            }
+            checkColumnNames(this._columns, colNames);
             //
             var vals = new List<object>();
 
@@ -637,8 +633,9 @@ namespace Daany
 
             }
             //add new column
-            foreach (var colName in colNames)
-                addNewColumnName(this.Columns, colName);
+            this._columns.AddRange(colNames);
+            //foreach (var colName in colNames)
+            //    addNewColumnName(this.Columns, colName);
 
             this._values = vals;
             return true;
@@ -1210,8 +1207,8 @@ namespace Daany
             if (nPos == -1)
                 nPos = this._columns.Count;
 
-            if (this._columns.Contains(cName))
-                throw new Exception($"{cName} already exists.");
+            //
+            checkColumnName(this._columns, cName);
 
             if (nPos < -1 && nPos >= ColCount())
                 throw new Exception("Index position must be between 0 and ColCount.");
@@ -1387,15 +1384,8 @@ namespace Daany
             var tot = Columns.ToList();
             tot.AddRange(df2.Columns);
 
-            var totalColumns = new List<string>();
-            var totCount = tot.Count();
-            for (int i = 0; i < totCount; i++)
-            {
-                var strVal = tot.ElementAt(i).ToString(CultureInfo.InvariantCulture);
-                //
-                addNewColumnName(totalColumns, strVal);
-            }
-
+            //
+            var totalColumns = mergeColumnNames(this._columns, df2._columns, "rightDf");
 
             var lst = new List<object>();
             var leftRCount = RowCount();
@@ -1467,7 +1457,7 @@ namespace Daany
         [Obsolete("This method will be deprecated. Please use 'Merge' with the same argument list.")]
         public DataFrame Join(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
         {
-            return Merge(df2, leftOn, rightOn, jType);
+            return Merge(df2, leftOn, rightOn, jType, "rightDf");
         }
 
         /// <summary>
@@ -1478,7 +1468,7 @@ namespace Daany
         /// <param name="rightOn">Join columns from the right df.</param>
         /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
         /// <returns>New joined df.</returns>
-        public DataFrame Merge(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
+        internal DataFrame Merge_old(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
         {
             if (df2 == null)
                 throw new ArgumentException(nameof(df2));
@@ -1508,15 +1498,9 @@ namespace Daany
             var tot = Columns.ToList();
             tot.AddRange(df2.Columns);
 
-            var totalColumns = new List<string>();
-            var totCount = tot.Count();
-            for (int i = 0; i < totCount; i++)
-            {
-                var strVal = tot.ElementAt(i).ToString(CultureInfo.InvariantCulture);
-                //
-                addNewColumnName(totalColumns, strVal);
-            }
-
+            //
+            var totalColumns = mergeColumnNames(this._columns, df2._columns, "rightDf");
+            
             //create right lookup 
             var right = new List<ILookup<object, int>>();
             var ind = Enumerable.Range(0, df2.RowCount()).ToList();
@@ -1536,7 +1520,7 @@ namespace Daany
             var finIndex = new List<object>();
             for (int i = 0; i < leftRCount; i++)
             {
-                var leftKey = this[i, leftInd[0]];
+                var leftKey = this._index[i];
                 var rPos = containsKey(i, leftInd, right);
                 if (rPos != null)
                 {
@@ -1583,6 +1567,108 @@ namespace Daany
 
         }
 
+
+        /// <summary>
+        /// Merge two (left and right) data frames on specified leftOn and RightOn columns.
+        /// </summary>
+        /// <param name="df2">Second data frame.</param>
+        /// <param name="leftOn">The list of column names for left data frames.</param>
+        /// <param name="rightOn">The list of column names for right data frames.</param>
+        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
+        /// <param name="suffix">For same column names, use suffix to make different names during merging.</param>
+        /// <returns></returns>
+        public DataFrame Merge(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType, string suffix="right")
+        {
+            if (df2 == null)
+                throw new ArgumentException(nameof(df2));
+
+            if (leftOn == null)
+                throw new ArgumentException(nameof(leftOn));
+
+
+            if (rightOn == null)
+                throw new ArgumentException(nameof(rightOn));
+
+            if (leftOn.Length != rightOn.Length)
+                throw new Exception("Join column numbers are different!");
+
+            //we allow three column maximum to be criterion for join
+            if (leftOn.Length > 3)
+                throw new Exception("Three columns for merge is exceeded.");
+
+            //merge column names
+            List<string> totCols = mergeColumnNames(this._columns, df2._columns, suffix);
+
+            //create lookup table
+            (ILookup<object, int> lookup1, 
+             TwoKeyLookup<object, object, int> lookup2, 
+             ThreeKeyLookup<object, object, object, int> lookup3) = createLookup(df2, rightOn);
+
+
+            //mrging process
+            var leftInd = getColumnIndex(leftOn);
+            var lst = new List<object>();//values
+            var finIndex = new List<object>();//left df enumeration
+            var leftRCount = this.RowCount();
+            var leftCCount = this.ColCount();
+            var rightRCount = df2.RowCount();
+            var rightCCount = df2.ColCount();
+
+            //
+            for (int i = 0; i <leftRCount ; i++)
+            {
+                var leftKey = this._index[i];
+
+                //search for match
+                int[] rPos = findIndex(lookup1, lookup2, lookup3, leftInd, i); 
+
+                if (rPos.Length > 0)
+                {
+                    for (int k = 0; k < rPos.Length; k++)
+                    {
+                        int j = rPos[k];
+
+                        //fill the index
+                        finIndex.Add(leftKey);
+
+                        //fill left table
+                        int startL = i * leftCCount;
+                        for (int r = startL; r < startL + leftCCount; r++)
+                            lst.Add(this._values[r]);
+
+                        //fill right table
+                        int startR = j * rightCCount;
+                        int cc = 0;
+                        for (int r = startR; r < startR + rightCCount; r++)
+                            lst.Add(df2._values[r]);
+                    }
+
+                }
+                else
+                {
+                    //in case of Left join and no right data found
+                    // fill with NAN numbers
+                    if (jType == JoinType.Left)
+                    {
+                        //fill the index
+                        finIndex.Add(leftKey);
+
+                        int startL = i * leftCCount;
+                        for (int r = startL; r < startL + leftCCount; r++)
+                            lst.Add(_values[r]);
+
+                        for (int r = 0; r < rightCCount; r++)
+                            lst.Add(DataFrame.NAN);
+                    }
+                }
+            }
+            //Now construct the Data frame
+            var newDf = new DataFrame(lst, finIndex, totCols);
+            return newDf;
+
+        }
+
+       
         /// <summary>
         /// Rename column name within the data frame.
         /// </summary>
@@ -2211,10 +2297,72 @@ namespace Daany
                 sb.Append("_");
             return sb.ToString();
         }
-       
+
         #endregion
 
         #region Private
+        private List<string> mergeColumnNames(IList<string> cols1, IList<string> cols2, string sufix = null)
+        {
+            //merge columns
+            var totColumns = cols1.ToList();
+            //
+            for (int i = 0; i < cols2.Count; i++)
+            {
+                var colName = cols2[i];
+                //if the first list already contains the columnName
+                if (totColumns.Contains(colName) && !string.IsNullOrEmpty(sufix))
+                {
+                    var newColName = $"{colName}_{sufix}";
+                    //if the new column Names already occupied throw exception
+                    if (totColumns.Contains(newColName))
+                        throw new Exception($"Column suffix {sufix} produces duplicated column. Please change the column suffix for columns merge.");
+
+                    totColumns.Add(newColName);
+                }
+                else if (totColumns.Contains(colName) && string.IsNullOrEmpty(sufix))
+                    continue;
+                else
+                    totColumns.Add(colName);
+            }
+
+            return totColumns;
+        }
+
+        private (ILookup<object, int> lookup1, TwoKeyLookup<object, object, int> lookup2, ThreeKeyLookup<object, object, object, int> lookup3) createLookup(DataFrame df, string[] cols)
+        {
+            var rightInd = df.getColumnIndex(cols);
+            var rIndex = Enumerable.Range(0, df.RowCount()).ToArray();
+
+            //create right lookup 
+            ILookup<object, int> lookup1 = null;
+            TwoKeyLookup<object, object, int> lookup2 = null;
+            ThreeKeyLookup<object, object, object, int> lookup3 = null;
+
+            //construct lookup table
+            if (rightInd.Length == 1)
+                lookup1 = df[cols[0]].Zip(rIndex, (key, value) => (key, value)).ToLookup(x => x.key, x => x.value);
+            else if (rightInd.Length == 2)
+                lookup2 = new TwoKeyLookup<object, object, int>(rIndex, item => (df[item, rightInd[0]], df[item, rightInd[1]]));
+            else if (rightInd.Length == 3)
+                lookup3 = new ThreeKeyLookup<object, object, object, int>(rIndex, item => (df[item, rightInd[0]], df[item, rightInd[1]], df[item, rightInd[2]]));
+            else
+                throw new Exception("Unknown number of Key columns");
+
+            return (lookup1, lookup2, lookup3);
+        }
+
+        private int[] findIndex(ILookup<object, int> lookup1, TwoKeyLookup<object, object, int> lookup2, ThreeKeyLookup<object, object, object, int> lookup3, int[] colInd, int i)
+        {
+            if (lookup1 != null)
+                return lookup1[this[i, colInd[0]]].ToArray();
+            else if (lookup2 != null)
+                return lookup2[this[i, colInd[0]], this[i, colInd[1]]].ToArray();
+            else if (lookup3 != null)
+                return lookup3[this[i, colInd[0]], this[i, colInd[1]], this[i, colInd[2]]].ToArray();
+            else
+                throw new Exception("Unknown number of key columns.");
+        }
+
         private int[] containsKey(int i, int[] leftInd, List<ILookup<object, int>> right)
         {
             if (leftInd.Length != right.Count)
@@ -2257,6 +2405,7 @@ namespace Daany
 
             return finalIndexes;
         }
+
         private bool isOperationSupported(ColType colType, Aggregation aggOperation)
         {
             switch (colType)
@@ -2549,7 +2698,25 @@ namespace Daany
             }
         }
 
-        
+        private void checkColumnNames(List<string> columns, string[] colNames)
+        {
+            var sameCols = this._columns.Intersect(colNames).ToArray();
+            //check if column exists
+            if (sameCols.Length > 0)
+            {
+                var str = string.Join(", ", sameCols);
+                throw new Exception($"Column(s) '{str}' already exist(s) in the data frame.");
+            }
+        }
+
+        private void checkColumnName(List<string> columns, string colName)
+        {
+            //check if column exists
+            if (columns.Contains(colName))
+            {
+                throw new Exception($"Column '{colName}' already exists in the data frame.");
+            }
+        }
 
         private static List<object> deepCopyObject(IEnumerable<object> list)
         {
@@ -2563,94 +2730,6 @@ namespace Daany
             return lstObj;
         }
 
-        private static bool addNewColumnName(IList<string> columns, string colName)
-        {
-            while (columns.Contains(colName))
-                colName += "0";
-            //
-            columns.Add(colName);
-
-            return true;
-        }
-
-        //private bool isEqual(DataFrame df2, int[] leftInd, int[] rightInd, int i, int j)
-        //{
-        //    bool isEqual = true;
-        //    int lInd = calculateIndex(i, 0);
-        //    var numCols = df2.ColCount();
-        //    var rInd = j * numCols;
-
-        //    for (int k = 0; k < leftInd.Length; k++)
-        //    {
-        //        var li = lInd + leftInd[k];
-        //        var ri = rInd + rightInd[k];
-
-        //        if (df2._values[ri] == NAN || _values[li] == NAN)
-        //            return false;
-        //        else if (this._dfTypes[leftInd[k]] == ColType.I2)
-        //        {
-        //            //
-        //            if (Convert.ToBoolean(_values[li], CultureInfo.InvariantCulture) != Convert.ToBoolean(df2._values[ri], CultureInfo.InvariantCulture))
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //        else if (this._dfTypes[leftInd[k]] == ColType.I32)
-        //        {
-        //            //
-        //            if (Convert.ToInt32(_values[li], CultureInfo.InvariantCulture) != Convert.ToInt32(df2._values[ri], CultureInfo.InvariantCulture))
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //        else if (this._dfTypes[leftInd[k]] == ColType.I64)
-        //        {
-        //            //
-        //            if (Convert.ToInt64(_values[li], CultureInfo.InvariantCulture) != Convert.ToInt64(df2._values[ri], CultureInfo.InvariantCulture))
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //        else if (this._dfTypes[leftInd[k]] == ColType.F32)
-        //        {
-        //            //
-        //            if (Convert.ToSingle(_values[li], CultureInfo.InvariantCulture) != Convert.ToSingle(df2._values[ri], CultureInfo.InvariantCulture))
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //        else if (this._dfTypes[leftInd[k]] == ColType.DD)
-        //        {
-        //            //
-        //            if (Convert.ToDouble(_values[li], CultureInfo.InvariantCulture) != Convert.ToDouble(df2._values[ri], CultureInfo.InvariantCulture))
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //        else if (this._dfTypes[leftInd[k]] == ColType.STR)
-        //        {
-        //            //
-        //            if (Convert.ToString(_values[li], CultureInfo.InvariantCulture) != Convert.ToString(df2._values[ri], CultureInfo.InvariantCulture))
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //        else if (this._dfTypes[leftInd[k]] == ColType.DT)
-        //        {
-        //            //
-        //            if (Convert.ToDateTime(_values[li], CultureInfo.InvariantCulture) != Convert.ToDateTime(df2._values[ri], CultureInfo.InvariantCulture))
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //        else
-        //            throw new Exception("Unknown column type");
-
-        //    }
-
-        //    return isEqual;
-        //}
-
         private ColType[] columnsTypes()
         {
             int cc = ColCount();
@@ -2662,7 +2741,7 @@ namespace Daany
                 while (_values[(i + k * Columns.Count)] == NAN)
                 {
                     k++;
-
+                    //if the type is not found put default type to the column
                     if (_values.Count < i + k * Columns.Count)
                     {
                         types[i] = ColType.STR;

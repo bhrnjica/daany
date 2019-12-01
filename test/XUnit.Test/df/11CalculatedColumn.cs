@@ -42,6 +42,38 @@ namespace Unit.Test.DF
 
         }
 
+        [Fact]
+        public void AddSameCalculatedColumn_Test01()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1,11,21,31,41,51,61,71,81,91} },
+                { "col2",new List<object>() { 2,12,22,32,42,52,62,72,82,92 } },
+                { "col3",new List<object>() { 3,13,23,33,43,53,63,73,83,93 } },
+                { "col4",new List<object>() { 4,14,24,34,44,54,64,74,84,94} },
+                { "col5",new List<object>() { 5,15,25,35,45,55,65,75,85,95 } },
+                { "col6",new List<object>() { 6,16,26,36,46,56,66,76,86,96} },
+                { "col7",new List<object>() { 7,17,27,37,47,57,67,77,87,97 } },
+                { "col8",new List<object>() { 8,18,28,38,48,58,68,78,88,98} },
+                { "col9",new List<object>() { 9,19,29,39,49,59,69,79,89,99} },
+                { "col10",new List<object>() { 10,20,30,40,50,60,70,80,90,100} },
+            };
+            //
+            var df = new DataFrame(dict);
+            var sCols = new string[] { "col10" };
+
+            //
+
+            //exception the number of list object is not divisible with column counts
+            var exception = Assert.ThrowsAny<System.Exception>(() => df.AddCalculatedColumns(sCols, (row, i) => calculate(row, i)));
+            Assert.Equal("Column(s) 'col10' already exist(s) in the data frame.", exception.Message);
+
+            //local function declaration
+            object[] calculate(object[] row, int i)
+            { return new object[1] { i + 11 }; }
+
+        }
+
 
 
         [Fact]
@@ -78,6 +110,39 @@ namespace Unit.Test.DF
 
             for (int i = 0; i < newDf.Values.Count; i++)
                 Assert.Equal(i+1, newDf.Values[i]);
+
+        }
+
+        [Fact]
+        public void AddSameColumns_Test01()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1,11,21,31,41,51,61,71,81,91} },
+                { "col2",new List<object>() { 2,12,22,32,42,52,62,72,82,92 } },
+                { "col3",new List<object>() { 3,13,23,33,43,53,63,73,83,93 } },
+                { "col4",new List<object>() { 4,14,24,34,44,54,64,74,84,94} },
+                { "col5",new List<object>() { 5,15,25,35,45,55,65,75,85,95 } },
+                { "col6",new List<object>() { 6,16,26,36,46,56,66,76,86,96} },
+                { "col7",new List<object>() { 7,17,27,37,47,57,67,77,87,97 } },
+
+            };
+            //
+            var df = new DataFrame(dict);
+
+            //define three new columns
+            var d = new Dictionary<string, List<object>>
+            {
+                { "col5",new List<object>() { 8,18,28,38,48,58,68,78,88,98} },
+                { "col2",new List<object>() { 9,19,29,39,49,59,69,79,89,99} },
+                { "col10",new List<object>() { 10,20,30,40,50,60,70,80,90,100} },
+
+            };
+
+            //exception the number of list object is not divisible with column counts
+            var exception = Assert.ThrowsAny<System.Exception>(() => df.AddColumns(d));
+            Assert.Equal("Column(s) 'col2, col5' already exist(s) in the data frame.", exception.Message);
+
 
         }
 
