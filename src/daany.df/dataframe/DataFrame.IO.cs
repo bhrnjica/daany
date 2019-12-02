@@ -271,7 +271,7 @@ namespace Daany
             var listValues = new List<object>();
             while (csvReader.Read())
             {
-                if (nRows >= line)
+                if (nRows !=-1 && nRows < line)
                     break;
                 line++;
 

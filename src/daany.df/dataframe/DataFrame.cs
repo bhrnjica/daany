@@ -1985,20 +1985,33 @@ namespace Daany
         /// Returns data frame consisted of every nth row
         /// </summary>
         /// <param name="nthRow"></param>
+        /// <param name="includeLast">For incomplete nthRow, select the last one</param>
         /// <returns></returns>
-        public DataFrame TakeEvery(int nthRow)
+        public DataFrame TakeEvery(int nthRow, bool includeLast = false)
         {
             var val = new List<object>();
             var ind = new List<object>();
 
             //go through all rows
+            int counter = 0;
             for (int i = 0; i < _index.Count; i++)
             {
                 if ((i + 1) % nthRow == 0)
                 {
                     val.AddRange(this[i]);
                     ind.Add(this._index[i]);
+                    counter = 0;
                 }
+                if(i+1 == _index.Count && includeLast)
+                {
+                    if(counter > 0)
+                    {
+                        val.AddRange(this[i]);
+                        ind.Add(this._index[i]);
+                    }
+                }
+                //
+                counter++;
             }
             //
             var df = new DataFrame(val, ind, this._columns.ToList());

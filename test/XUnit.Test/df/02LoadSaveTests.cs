@@ -41,6 +41,37 @@ namespace Unit.Test.DF
         }
 
         [Fact]
+        public void Loadrom10RowsFromCSV_Test()
+        {
+            string path = "../../../testdata/titanic_full_1310.csv";
+            var df = DataFrame.FromCsv(path, '\t', names: null, nRows:400); //
+            //row test
+            var r1 = df[393].ToList();
+
+            //2	0	Denbury Mr. Herbert	male	25	0	0	C.A. 31029	31.5000		S		
+            var e1 = new object[] { 2, 0, "Denbury Mr. Herbert", "male", 25, 0, 0, "C.A. 31029", "31.5", DataFrame.NAN, "S", DataFrame.NAN, DataFrame.NAN, "Guernsey / Elizabeth NJ" };
+
+
+            for (int i = 0; i < e1.Length; i++)
+            {
+                if (r1[i] == null)
+                {
+                    Assert.Null(r1[i]);
+                    Assert.Null(e1[i]);
+                }
+
+                else
+                {
+                    object v1 = r1[i].ToString();
+                    object v2 = e1[i].ToString();
+                    Assert.True(v1.Equals(v2));
+                }
+
+            }
+        }
+
+
+        [Fact]
         public void LoadFromWeb_Test()
         {
             string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
