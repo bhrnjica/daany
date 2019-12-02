@@ -243,7 +243,7 @@ namespace Daany
             {
                 foreach (var gr in Group)
                 {
-                    var df1 = gr.Value.Rolling(rollingWindow, ag).TakeEvery(window, true);
+                    var df1 = gr.Value.Rolling(rollingWindow, ag).TakeEvery(window);
                     if (df == null)
                         df = new DataFrame(df1);
                     else
@@ -254,7 +254,7 @@ namespace Daany
             {
                 foreach (var gr in Keys2)
                 {
-                    var df1 = this.Group2[gr.key1][gr.key2].Rolling(rollingWindow, ag).TakeEvery(window, true);
+                    var df1 = this.Group2[gr.key1][gr.key2].Rolling(rollingWindow, ag).TakeEvery(window);
                     if (df == null)
                         df = new DataFrame(df1);
                     else
@@ -265,7 +265,7 @@ namespace Daany
             {
                 foreach (var gr in Keys3)
                 {
-                    var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Rolling(rollingWindow, ag).TakeEvery(window, true);
+                    var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Rolling(rollingWindow, ag).TakeEvery(window);
                     if (df == null)
                         df = new DataFrame(df1);
                     else

@@ -1855,7 +1855,7 @@ namespace Daany
         /// <returns></returns>
         public DataFrame Rolling(int window, Dictionary<string, Aggregation> agg)
         {
-            string[] indexColumn = this._columns.Where(x => !agg.Keys.Contains(x)).Select(x => x).ToArray();
+            //
             if (agg == null || agg.Count == 0)
                 throw new Exception($"Aggregation is empty.");
 
