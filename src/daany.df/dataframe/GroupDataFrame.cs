@@ -457,7 +457,7 @@ namespace Daany
         }
 
         /// <summary>
-        /// Perform trannsformation on each grouped data frame.
+        /// Perform transformation on each grouped data frame.
         /// </summary>
         /// <param name="callBack"></param>
         /// <returns></returns>
@@ -474,7 +474,8 @@ namespace Daany
                 foreach (var gr in Group)
                 {
                     var rows = callBack(gr.Value);
-                    df1.Append(rows);
+                    if(rows!=null && rows.RowCount() > 0)
+                        df1.Append(rows);
                 }
 
                 return df1;
@@ -488,7 +489,8 @@ namespace Daany
                     foreach (var g2 in gr.Value)
                     {
                         var rows = callBack(g2.Value);
-                        df1.Append(rows);
+                        if (rows != null && rows.RowCount() > 0)
+                            df1.Append(rows);
                     }
 
                 }
@@ -505,7 +507,8 @@ namespace Daany
                         foreach (var g3 in g2.Value)
                         {
                             var rows = callBack(g3.Value);
-                            df1.Append(rows);
+                            if (rows != null && rows.RowCount() > 0)
+                                df1.Append(rows);
                         }
                     }
 

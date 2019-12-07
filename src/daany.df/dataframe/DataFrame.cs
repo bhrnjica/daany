@@ -429,108 +429,30 @@ namespace Daany
             InsertRow(-1, row);
         }
 
-        ///// <summary>
-        ///// Apply set of operations on existing column in the DataFrame. The values of the column are 
-        ///// calculated by calling Func delegate for each row.
-        ///// </summary>
-        ///// <param name="colName">Existing column in the data frame.</param>
-        ///// <param name="callBack">Func delegate for wor value calculation.</param>
-        ///// <returns>True if calculated column is created/updated successfully</returns>
-        //public bool Apply(string colName, Func<IDictionary<string, object>, int, object> callBack)
-        //{
-        //    if (!Columns.Contains(colName))
-        //        throw new Exception($"'{colName}' does not exist in the data frame.");
 
-        //    //define processing row before adding column
-        //    var processingRow = new Dictionary<string, object>();
-        //    for (int j = 0; j < this.Columns.Count; j++)
-        //        processingRow.Add(this.Columns[j], null);
-        //    //
-        //    var colIndex = getColumnIndex(colName);
-
-        //    //
-        //    for (int i = 0; i < _index.Count; i++)
-        //    {
-        //        rowToDictionary(processingRow, i);
-        //        //once the processing row is initialized perform apply 
-        //        var v = callBack(processingRow, i);
-        //        var applyIndex = calculateIndex(i, colIndex);// i * Columns.Count + colIndex;
-        //        _values[applyIndex] = v;
-
-        //    }
-
-        //    return true;
-        //}
-
-        ///// <summary>
-        ///// Apply set of operations on existing column in the DataFrame. The values of the column are 
-        ///// calculated by calling Func delegate for each row.
-        ///// </summary>
-        ///// <param name="colName">Existing column in the data frame.</param>
-        ///// <param name="callBack">Func delegate for row value calculation.</param>
-        ///// <returns>True if calculated column is updated successfully</returns>
-        //public bool Apply(string colName, Func<object[], int, object> callBack)
-        //{
-        //    //if column doesnt existi add new calculated column
-        //    if (!Columns.Contains(colName))
-        //        throw new Exception($"'{colName}' does not exist in the data frame.");
-
-        //    //define processing row before adding column
-        //    var processingRow = new object[ColCount()];
-        //    //
-        //    var colIndex = getColumnIndex(colName);
-
-        //    //
-        //    for (int i = 0; i < _index.Count; i++)
-        //    {
-        //        rowToArray(processingRow, i);
-        //        //once the processing row is initialized perform apply 
-        //        var v = callBack(processingRow, i);
-        //        var applyIndex = calculateIndex(i, colIndex);
-        //        _values[applyIndex] = v;
-
-        //    }
-        //    return true;
-        //}
-
-        /// <summary>
-        /// Add additional column into DataFrame. The values of the columns are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colName">New calculated column name.</param>
-        /// <param name="callBack">Func delegate for row value calculation.</param>
-        /// <returns>True if calculated column is created successfully</returns>
-        [Obsolete("This method is obsolute and will be replaced in the future. Use 'AddCalculatedColumnc' instead.")]
         public bool AddCalculatedColumn(string colName, Func<IDictionary<string, object>, int, object> callBack)
         {
-            //
-            checkColumnName(this._columns, colName);
-            //
-            var vals = new List<object>();
-            int oldInd = 0;
-            //
-            for (int i = 0; i < _index.Count; i++)
+            var cols = new string[] { colName };
+            var retVal = new object[1];
+            object[] callBack2(IDictionary<string, object> row, int i)
             {
-                //define processing row before adding column
-                var processingRow = new Dictionary<string, object>();
-                for (int j = 0; j < this.Columns.Count; j++)
-                {
-
-                    if (j + 1 >= Columns.Count)
-                    {
-                        var v = callBack(processingRow, i);
-                        vals.Add(v);
-                    }
-                    else
-                    {
-                        var value = _values[oldInd++];
-                        processingRow.Add(this.Columns[j], value);
-                        vals.Add(value);
-                    }
-                }
+                var v = callBack(row,i);
+                retVal[0] = v;
+                return retVal;
             }
-            this._values = vals;
-            return true;
+            return AddCalculatedColumns(cols,callBack2);
+        }
+        public bool AddCalculatedColumn(string colName, Func<object[], int, object> callBack)
+        {
+            var cols = new string[] { colName };
+            var retVal = new object[1];
+            object[] callBack2(object[] row, int i)
+            {
+                var v = callBack(row, i);
+                retVal[0] = v;
+                return retVal;
+            }
+            return AddCalculatedColumns(cols, callBack2);
         }
 
         /// <summary>
