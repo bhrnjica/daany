@@ -55,9 +55,13 @@ namespace Daany
         /// Index for rows in the data frame.
         /// </summary>
         /// 
-        public IList<object> Index => _index;
+        public Daany.Index Index => _index;
+
+
+        public (int rows, int cols) Shape => (RowCount(), ColCount());
 
         internal IList<object> Values => _values;
+
 
 
         /// <summary>
@@ -80,8 +84,9 @@ namespace Daany
         /// </summary>
         /// 
         private List<object> _values;
-        private IList<object> _index;
+        private Daany.Index _index;
         private List<string> _columns;
+
         //Quick Sort algorithm. In case of false, the Merge Sort will be used.
         internal static bool qsAlgo = true;
         #endregion
@@ -143,7 +148,7 @@ namespace Daany
 
         #region Index Related Members
 
-        public void SetIndex(List<object> ind)
+        public void SetIndex(List<object> ind, string name)
         {
             if (ind == null)
                 throw new Exception("Index cannot be null.");
@@ -151,12 +156,36 @@ namespace Daany
             if (ind.Count != _index.Count)
                 throw new Exception("Wrong count of index list.");
 
-            this._index = ind;
+            this._index = new Index(ind, name);
         }
 
-        public void ResetIndex()
+        public DataFrame SetIndex(string colName)
         {
-            this._index = Enumerable.Range(0, RowCount()).Select(x => (object)x).ToList();
+            if (!this._columns.Contains(colName))
+                throw new Exception($"{colName} does not exist.");
+
+            //all cols except colName
+            var cols = this._columns.Where(x=>x!= colName).ToArray();
+           
+            //create new data frame
+            var ind= this[colName].ToList();
+            var df = this[cols];
+            df._index = new Index(ind, colName);
+            //
+            return df;
+            
+        }
+
+        public DataFrame ResetIndex(bool drop = false)
+        {
+            var colName = this.Index.Name;
+            var colVal = this.Index.ToList();
+            var newDf = this[this._columns.ToArray()];
+            newDf.Index.Reset();
+            //drop index if required
+            if(!drop)
+                newDf = newDf.InsertColumn(colName, colVal, 0);
+            return newDf;
         }
         #endregion
 
@@ -194,7 +223,8 @@ namespace Daany
                 }
             }
             //define index
-            this._index = index.Select(x=>(object)x).ToList();
+            var ind = index.Select(x=>(object)x).ToList();
+            this._index = new Index(ind);
         }
 
         /// <summary>
@@ -220,7 +250,8 @@ namespace Daany
         [Obsolete("The constructor is obsolete and will be replaced in the future.")]
         public DataFrame(object[] data, IList<int> index, IList<string> columns)
         {
-            this._index = index.Select(x=>(object)x).ToList();
+            var ind = index.Select(x=>(object)x).ToList();
+            this._index = new Index(ind);
             this._columns = columns.ToList();
             this._values = data.ToList();
         }
@@ -244,7 +275,8 @@ namespace Daany
             //calculate row count
             int rows = data.Length / columns.Count;
 
-            this._index = Enumerable.Range(0, rows).Select(x=>(object)x).ToList();
+            var ind = Enumerable.Range(0, rows).Select(x=>(object)x).ToList();
+            this._index = new Index(ind);
             this._columns = columns.ToList();
             this._values = data.ToList();
         }
@@ -257,7 +289,7 @@ namespace Daany
         /// <param name="columns">column index</param>
         public DataFrame(List<object> data, List<object> index, List<string> columns)
         {
-            this._index = index;
+            this._index = new Index(index);
             this._columns = columns;
             this._values = data;
         }
@@ -280,7 +312,8 @@ namespace Daany
             //calculate row count
             int rows = data.Count / columns.Count;
 
-            this._index = Enumerable.Range(0, rows).Select(x => (object)x).ToList();
+            var ind= Enumerable.Range(0, rows).Select(x => (object)x).ToList();
+            this._index = new Index(ind);
             this._columns = columns.ToList();
             this._values = data;
         }
@@ -305,9 +338,14 @@ namespace Daany
 
             //row column indexes preparation
             if (index == null)
-                this._index = Enumerable.Range(0, data.Values.First().Count()).Select(x => (object)x).ToList();
+            {
+                var ind = Enumerable.Range(0, data.Values.First().Count()).Select(x => (object)x).ToList();
+                this._index = new Index(ind);
+            }
             else
-                this._index = index;
+            {
+                this._index = new Index(index.ToList());
+            }
 
             this._columns = data.Keys.ToList();
 
@@ -356,7 +394,7 @@ namespace Daany
             var val = Array.Empty<object>();
             var df = new DataFrame();
             df._values = new List<object>();
-            df._index = new List<object>();
+            df._index = new Index(new List<object>());
             df._columns = columns;
             return df;
         }
@@ -1120,9 +1158,35 @@ namespace Daany
         {
             return Filter(new string[] { col }, new object[] { value }, new FilterOperator[] { fOper });
         }
+
+        /// <summary>
+        /// Return DataFrame where each row satisfied the condition delegate 
+        /// </summary>
+        /// <param name="condition">The condition delegate</param>
+        /// <returns></returns>
+        public DataFrame Filter(Func<IDictionary<string, object>, bool> condition)
+        {
+            bool cnd(IDictionary<string, object> row, int i)
+            {
+                return !condition(row);
+            }
+
+            return RemoveRows(cnd);
+        }
+
+        //public DataFrame Filter(Func<object[], bool> condition)
+        //{
+        //    bool cnd(object[] row, int i)
+        //    {
+        //        return !condition(row);
+        //    }
+
+        //    return RemoveRows(cnd);
+        //}
+
         #endregion
 
-        
+
         #region Insert
         /// <summary>
         /// Insert new columns at specific position
@@ -1794,7 +1858,7 @@ namespace Daany
                 }
             }
 
-            return new DataFrame(aggrValues, this._index);
+            return new DataFrame(aggrValues, this._index.ToList());
         }
 
         #endregion
