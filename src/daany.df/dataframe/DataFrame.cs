@@ -364,11 +364,7 @@ namespace Daany
 
         #region Data Frame Operations
 
-        public int ColIndex(string colName)
-        {
-            return getColumnIndex(colName);
-        }
-
+       
         /// <summary>
         /// Add one or more column into current data frame and returns new data frame with added columns.
         /// </summary>
@@ -429,7 +425,13 @@ namespace Daany
             InsertRow(-1, row);
         }
 
-
+        #region Calculated Column
+        /// <summary>
+        /// Add additional column into DataFrame. The values of the additional column is calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colName">New column names.</param>
+        /// <param name="callBack">delegate for the calculation</param>
+        /// <returns>True if column added successfully </returns>
         public bool AddCalculatedColumn(string colName, Func<IDictionary<string, object>, int, object> callBack)
         {
             var cols = new string[] { colName };
@@ -442,6 +444,13 @@ namespace Daany
             }
             return AddCalculatedColumns(cols,callBack2);
         }
+
+        /// <summary>
+        /// Add additional column into DataFrame. The values of the additional column is calculated by calling Func delegate for each row.
+        /// </summary>
+        /// <param name="colName">New column names.</param>
+        /// <param name="callBack">delegate for the calculation</param>
+        /// <returns>True if column added successfully </returns>
         public bool AddCalculatedColumn(string colName, Func<object[], int, object> callBack)
         {
             var cols = new string[] { colName };
@@ -515,7 +524,6 @@ namespace Daany
             this._values = vals;
             return true;
         }
-
         
 
         /// <summary>
@@ -568,7 +576,9 @@ namespace Daany
             this._values = vals;
             return true;
         }
+        #endregion
 
+        #region Aggregation
         /// <summary>
         /// Perform aggregate operation on the list of columns. For incomplete list, the rest of the column will be ommited
         /// </summary>
@@ -634,7 +644,15 @@ namespace Daany
             var df = new DataFrame(aggValues);
             return df;
         }
+        #endregion
 
+        #region Clip
+        /// <summary>
+        /// Clip all data frame values between the bounds
+        /// </summary>
+        /// <param name="minValue">min value</param>
+        /// <param name="maxValue">max value</param>
+        /// <returns></returns>
         public DataFrame Clip(float minValue, float maxValue)
         {
             //initialize column types
@@ -712,6 +730,13 @@ namespace Daany
             return df;
         }
 
+        /// <summary>
+        /// Clip all values for specified columns between the bounds in the DataFrame
+        /// </summary>
+        /// <param name="minValue">min values</param>
+        /// <param name="maxValue">max values</param>
+        /// <param name="columns">list of columns</param>
+        /// <returns></returns>
         public DataFrame Clip(float minValue, float maxValue, params string[] columns)
         {
             //initialize column types
@@ -794,6 +819,8 @@ namespace Daany
             var df = new DataFrame(lst, ind, cols);
             return df;
         }
+        #endregion
+
         /// <summary>
         /// Creates new data frame of basic descriptive statistics values of the data frame
         /// </summary>
@@ -849,6 +876,26 @@ namespace Daany
             //
             return dfDescr;
         }
+
+
+        #region Missing Values 
+
+        /// <summary>
+        /// Returns the dictionary containing missing values
+        /// </summary>
+        /// <returns>Dictionary with specified column and number of missing value in it.</returns>
+        public IDictionary<string, int> MissingValues()
+        {
+            var dc = new Dictionary<string, int>();
+            foreach (var col in Columns)
+            {
+                var mCount = this[col].Where(x => x == NAN).Count();
+                dc.Add(col, mCount);
+            }
+
+            return dc.Where(x => x.Value > 0).ToDictionary(x => x.Key, y => y.Value);
+        }
+
 
 
         /// <summary>
@@ -981,8 +1028,11 @@ namespace Daany
                     index++;
                 }
             }
-        }   
+        }
 
+        #endregion
+
+        #region Filter
         /// <summary>
         /// Filter data frame based on selected columns and coresponded values and operators.
         /// </summary>
@@ -1070,65 +1120,10 @@ namespace Daany
         {
             return Filter(new string[] { col }, new object[] { value }, new FilterOperator[] { fOper });
         }
+        #endregion
 
-        /// <summary>
-        /// Create GroupedDataFrame
-        /// </summary>
-        /// <param name="groupCol"></param>
-        /// <returns></returns>
-        public GroupDataFrame GroupBy(string groupCol)
-        {
-            var Group = groupDFBy(groupCol);
-
-            return new GroupDataFrame(groupCol, Group);
-        }
-
-        /// <summary>
-        /// Grouping with two columns
-        /// </summary>
-        /// <param name="groupCols"></param>
-        /// <returns></returns>
-        public GroupDataFrame GroupBy(params string[] groupCols)
-        {
-            if (groupCols == null || groupCols.Length == 0)
-                throw new Exception("Group columns cannot be null or empty.");
-            if (groupCols.Length > 3)
-                throw new Exception("Grouping with more than three group columns is not supported.");
-            //grouping
-            if (groupCols.Length == 1)
-                return GroupBy(groupCols[0]);
-            else if (groupCols.Length == 2)
-            {
-                var grp = new TwoKeysDictionary<object, object, DataFrame>();
-                //first group
-                var group1 = groupDFBy(groupCols[0]);
-                foreach (var g in group1)
-                {
-                    var group2 = group1[g.Key].groupDFBy(groupCols[1]);
-                    foreach (var g1 in group2)
-                        grp.Add(g.Key, g1.Key, g1.Value);
-                }
-
-                return new GroupDataFrame(groupCols[0], groupCols[1], grp);
-            }
-            else //if (groupCols.Length == 3)
-            {
-                var grp = new ThreeKeysDictionary<object, object, object, DataFrame>();
-                //two columns grouping 
-                var gp2 = GroupBy(groupCols[0], groupCols[1]);
-                foreach (var g in gp2.Keys2)
-                {
-                    var df2 = gp2.Group2[g.key1][g.key2];
-                    var group3 = df2.groupDFBy(groupCols[2]);
-                    foreach (var g1 in group3)
-                        grp.Add(g.key1, g.key2, g1.Key, g1.Value);
-                }
-
-                return new GroupDataFrame(groupCols[0], groupCols[1], groupCols[2], grp);
-            }
-
-        }
-
+        
+        #region Insert
         /// <summary>
         /// Insert new columns at specific position
         /// </summary>
@@ -1187,6 +1182,11 @@ namespace Daany
             return newDf;
         }
 
+        /// <summary>
+        /// Inserts the row at specified position in the DataFrame
+        /// </summary>
+        /// <param name="nPos"></param>
+        /// <param name="row"></param>
         public void InsertRow(int nPos, List<object> row)
         {
             if(nPos== -1 )
@@ -1202,106 +1202,10 @@ namespace Daany
                 _index.Insert(nPos, this.RowCount());
             }            
         }
-        /// <summary>
-        /// Join two df with Inner or Left join type.
-        /// </summary>
-        /// <param name="df2">Right data frame</param>
-        /// <param name="leftOn">Join columns from the left df</param>
-        /// <param name="rightOn">Join columns from the right df.</param>
-        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
-        /// <param name="sortedDataFrames">Optimization provides the right df starts from the last index of the previously joined row </param>
-        /// <returns>New joined df.</returns>
-        //public DataFrame Join(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType, bool sortedDataFrames = false)
-        //{
-        //    if (df2 == null)
-        //        throw new ArgumentException(nameof(df2));
-
-        //    if (leftOn == null)
-        //        throw new ArgumentException(nameof(leftOn));
+        #endregion
 
 
-        //    if (rightOn == null)
-        //        throw new ArgumentException(nameof(rightOn));
-
-        //    if (leftOn.Length != rightOn.Length)
-        //        throw new Exception("Join column numbers are different!");
-
-        //    _dfTypes = columnsTypes();
-        //    //get column indexes
-        //    var leftInd = getColumnIndex(leftOn);
-        //    var rightInd = df2.getColumnIndex(rightOn);
-
-        //    //merge columns
-        //    var tot = Columns.ToList();
-        //    tot.AddRange(df2.Columns);
-
-        //    var totalColumns = new List<string>();
-        //    var totCount = tot.Count();
-        //    for (int i = 0; i < totCount; i++)
-        //    {
-        //        var strVal = tot.ElementAt(i).ToString(CultureInfo.InvariantCulture);
-        //        //
-        //        addNewColumnName(totalColumns, strVal);
-        //    }
-
-        //    var lst = new List<object>();
-        //    var leftRCount = _index.Count;
-        //    var leftCCount =  ColCount();
-        //    var rightRCount = df2.RowCount();
-        //    var rightCCount = df2.ColCount();
-        //    var lastIndex = 0;
-
-        //    //left df enumeration
-        //    for (int i = 0; i < leftRCount; i++)
-        //    {
-        //        if (jType == JoinType.Left)
-        //        {
-        //            int startL = i * leftCCount;
-        //            for (int r = startL; r < startL + leftCCount; r++)
-        //                lst.Add(_values[r]);
-        //        }
-
-        //        //right df enumeration
-        //        var notFound = true;
-        //        for (int j = lastIndex; j < rightRCount; j++)
-        //        {
-        //            //
-        //            if (isEqual(df2, leftInd, rightInd, i, j))
-        //            {
-        //                if (jType == JoinType.Inner)
-        //                {
-        //                    int startL = i * leftCCount;
-        //                    for (int r = startL; r < startL + leftCCount; r++)
-        //                        lst.Add(_values[r]);
-        //                }
-        //                //
-        //                int startR = j * rightCCount;
-        //                for (int r = startR; r < startR + rightCCount; r++)
-        //                    lst.Add(df2._values[r]);
-
-        //                //when dfs are sorted, next row of the right df should not start from zero
-        //                if (sortedDataFrames)
-        //                    lastIndex = j + 1;
-        //                //
-        //                notFound = false;
-        //                break;
-        //            }
-        //        }
-        //        //in case of Left join and no right data found
-        //        // fill with NAN numbers
-        //        if (jType == JoinType.Left && notFound)
-        //        {
-        //            for (int r = 0; r < rightCCount; r++)
-        //                lst.Add(DataFrame.NAN);
-        //        }
-        //    }
-        //    //Now construct the Data frame
-        //    var newDf = new DataFrame(lst, totalColumns);
-        //    return newDf;
-
-        //}
-
-
+        #region Join and Merge
         /// <summary>
         /// Join two data frames with Inner or Left join type,based on their index.
         /// </summary>
@@ -1605,7 +1509,8 @@ namespace Daany
 
         }
 
-       
+        #endregion
+
         /// <summary>
         /// Rename column name within the data frame.
         /// </summary>
@@ -1624,6 +1529,8 @@ namespace Daany
             //
             return true;
         }
+
+        #region Sorting
 
         /// <summary>
         /// Sorts data-frame by specified column in ascending order
@@ -1664,24 +1571,9 @@ namespace Daany
             DataFrame newDf = df.reverse();
             return newDf;
         }
+        #endregion
 
-        
-        /// <summary>
-        /// Returns the dictionary containing missing values
-        /// </summary>
-        /// <returns>Dictionary with specified column and number of missing value in it.</returns>
-        public IDictionary<string, int> MissingValues()
-        {
-            var dc = new Dictionary<string, int>();
-            foreach (var col in Columns)
-            {
-                var mCount = this[col].Where(x => x == NAN).Count();
-                dc.Add(col, mCount);
-            }
-
-            return dc.Where(x => x.Value > 0).ToDictionary(x => x.Key, y => y.Value);
-        }
-
+        #region RemoveRows      
         /// <summary>
         /// Removes rows satisfying the callback condition.
         /// </summary>
@@ -1751,6 +1643,72 @@ namespace Daany
             var df = new DataFrame(vals, indValues, this._columns.ToList());
             return df;
         }
+
+        #endregion 
+
+        #region Rolling
+
+        ///// <summary>
+        ///// Create GroupedDataFrame
+        ///// </summary>
+        ///// <param name="groupCol"></param>
+        ///// <returns></returns>
+        //public GroupDataFrame GroupBy(string groupCol)
+        //{
+        //    var Group = groupDFBy(groupCol);
+
+        //    return new GroupDataFrame(groupCol, Group);
+        //}
+
+        /// <summary>
+        /// Grouping with one, two or three columns
+        /// </summary>
+        /// <param name="groupCols">List of grouped column names. If the list is bigger than three the exception will throw</param>
+        /// <returns>GroupedDataFrame</returns>
+        public GroupDataFrame GroupBy(params string[] groupCols)
+        {
+            if (groupCols == null || groupCols.Length == 0)
+                throw new Exception("Group columns cannot be null or empty.");
+            if (groupCols.Length > 3)
+                throw new Exception("Grouping with more than three group columns is not supported.");
+            //grouping
+            if (groupCols.Length == 1)
+            {
+                var Group = groupDFBy(groupCols[0]);
+                return new GroupDataFrame(groupCols[0], Group);
+            }
+            else if (groupCols.Length == 2)
+            {
+                var grp = new TwoKeysDictionary<object, object, DataFrame>();
+                //first group
+                var group1 = groupDFBy(groupCols[0]);
+                foreach (var g in group1)
+                {
+                    var group2 = group1[g.Key].groupDFBy(groupCols[1]);
+                    foreach (var g1 in group2)
+                        grp.Add(g.Key, g1.Key, g1.Value);
+                }
+
+                return new GroupDataFrame(groupCols[0], groupCols[1], grp);
+            }
+            else //if (groupCols.Length == 3)
+            {
+                var grp = new ThreeKeysDictionary<object, object, object, DataFrame>();
+                //two columns grouping 
+                var gp2 = GroupBy(groupCols[0], groupCols[1]);
+                foreach (var g in gp2.Keys2)
+                {
+                    var df2 = gp2.Group2[g.key1][g.key2];
+                    var group3 = df2.groupDFBy(groupCols[2]);
+                    foreach (var g1 in group3)
+                        grp.Add(g.key1, g.key2, g1.Key, g1.Value);
+                }
+
+                return new GroupDataFrame(groupCols[0], groupCols[1], groupCols[2], grp);
+            }
+
+        }
+
 
         /// <summary>
         /// Create new DataFrame containing rolling values of all column supported the aggregate operation. 
@@ -1839,6 +1797,9 @@ namespace Daany
             return new DataFrame(aggrValues, this._index);
         }
 
+        #endregion
+
+        #region Shift
         /// <summary>
         /// Shifts the values of the column by the number of 'steps' rows. 
         /// </summary>
@@ -1882,7 +1843,7 @@ namespace Daany
         /// </summary>
         /// <param name="arg">tuple list of steps, columnName and newColName.</param>
         /// <returns></returns>
-        public DataFrame Shift(params (string columnName, string newColName,int steps)[] arg)
+        public DataFrame Shift(params (string columnName, string newColName, int steps)[] arg)
         {
 
             if(arg==null || arg.Length==0)
@@ -1903,6 +1864,10 @@ namespace Daany
             var df = this.AddColumns(dir);
             return df;
         }
+
+        #endregion
+
+        #region Selection
         /// <summary>
         /// Returns data frame consisted of every nth row
         /// </summary>
@@ -1967,6 +1932,7 @@ namespace Daany
             //
             return df;
         }
+
 
         /// <summary>
         /// Returns the formated string of the first  'count' rows of the data frame
@@ -2038,10 +2004,24 @@ namespace Daany
             var df = new DataFrame(val, ind, this._columns.ToList());
             return df;
         }
+        #endregion
 
         #endregion
 
         #region Indexers
+
+        /// <summary>
+        /// Returns zero based column index from the column name
+        /// </summary>
+        /// <param name="colName"></param>
+        /// <returns></returns>
+        public int ColIndex(string colName)
+        {
+            return getColumnIndex(colName);
+        }
+
+
+
         /// <summary>
         /// Returns specific value from Data Frame positioned at (rowIndex,colIndex )
         /// </summary>
