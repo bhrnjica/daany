@@ -10,7 +10,7 @@ Introduction
 for data preparation, feature engineering and other kinds of data
 transformations prior to creating ml-ready data set. It is .NET Core based
 library with ability to run on Windows Linux based distribution and Mac. It is
-based on .NET Standard 2.0.
+based on .NET Standard 2.1.
 
 Besides data analysis, the library implements a set of statistics or data
 science features e.g. time series decompositions, optimization performance
