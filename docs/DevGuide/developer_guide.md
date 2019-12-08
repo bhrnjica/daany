@@ -21,7 +21,7 @@ components:
 
 -   ```Daany.DataFrame```,
 -   ```Daany.Stats```,
--   ```Daany.Math``` and
+-   ```Daany.MathStuff``` and
 -   ```Daany.DataFrame.Ext```
 
 The main ```Daany``` component is ```Daany.DataFrame``` - a data frame implementation for
