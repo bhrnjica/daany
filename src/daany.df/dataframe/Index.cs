@@ -54,5 +54,10 @@ namespace Daany
         {
             _index = nc.GenerateIntNSeries(0, 1, _index.Count);
         }
+
+        internal void AddRange(Index index)
+        {
+            _index.AddRange(index._index);
+        }
     }
 }

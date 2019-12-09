@@ -345,6 +345,93 @@ namespace Unit.Test.DF
         #endregion
 
         #region Add Columns and Rows
+
+        [Fact]
+        public void AppendHorizontaly_Test()
+        {
+            var date = DateTime.Now.AddDays(-5);
+            //define a dictionary of data
+            var dict1 = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", "Berlin" } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+
+            };
+            var dict2 = new Dictionary<string, List<object>>
+            {
+                { "Date",new List<object>() { DateTime.Now.AddDays(-20) , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", "female", "male" } }
+            };
+
+
+            //create df
+            var df1 = new DataFrame(dict1);
+            var df12 = new DataFrame(dict2);
+            //
+            var dfFinal = df1.Append(df12, verticaly: false);
+
+            
+            var val = new List<object>() { 3, "Berlin",10115,"GER", false,4.55,  date, 45, "male" };
+            var cols = new List<object>() { "ID", "City", "Zip Code", "State", "IsHome", "Values", "Date", "Age", "Gender" };
+
+            Assert.Equal(cols, dfFinal.Columns);
+
+            Assert.Equal(val, dfFinal[2].ToList());
+        }
+
+        [Fact]
+        public void AppendVerticaly_Test()
+        {
+            var date = DateTime.Now.AddDays(-5);
+            //define a dictionary of data
+            var dict1 = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() {3, 4} },
+                { "City",new List<object>() {  "Berlin", "New York" } },
+                { "Zip Code",new List<object>() {10115, 11000 } },
+                { "State",new List<object>() {"GER", "USA" } },
+                { "IsHome",new List<object>() { false, true} },
+                { "Values",new List<object>() { 4.55, 3.43 } },
+                { "Date",new List<object>() { date, DateTime.Now.AddDays(-110) } },
+                { "Age", new List<object>() {  45, 21 } },
+                { "Gender", new List<object>() {"male", "female" } }
+
+            };
+            var dict2 = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2} },
+                { "City",new List<object>() { "Sarajevo", "Seattle" } },
+                { "Zip Code",new List<object>() { 71000,98101 } },
+                { "State",new List<object>() {"BiH","USA" } },
+                { "IsHome",new List<object>() { true, false} },
+                { "Values",new List<object>() { 3.14, 3.21 } },
+                { "Date",new List<object>() { DateTime.Now.AddDays(-20) , DateTime.Now.AddDays(-10)  } },
+                { "Age", new List<object>() { 31, 25 } },
+                { "Gender", new List<object>() { "male", "female"} }
+
+            };
+
+
+            //create df
+            var df1 = new DataFrame(dict2);
+            var df12 = new DataFrame(dict1);
+            //
+            var dfFinal = df1.Append(df12, verticaly: true);
+
+
+            var val = new List<object>() { 3, "Berlin", 10115, "GER", false, 4.55, date, 45, "male" };
+            var cols = new List<object>() { "ID", "City", "Zip Code", "State", "IsHome", "Values", "Date", "Age", "Gender" };
+
+            Assert.Equal(cols, dfFinal.Columns);
+
+            Assert.Equal(val, dfFinal[2].ToList());
+        }
+
         [Fact]
         public void AddColumnsToDataFrame()
         {

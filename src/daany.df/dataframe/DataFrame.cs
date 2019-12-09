@@ -439,17 +439,42 @@ namespace Daany
         /// <summary>
         /// Append new data frame at the end of the data frame
         /// </summary>
-        /// <param name="df">Add df at the end. It must be the same shape and types as the first df.</param>
-        public void Append(DataFrame df)
+        /// <param name="df">DataFrame to be appended. </param>
+        /// <param name="verticaly"> if true DataFrame will be added row by row, otherwise DataFrame will be added column by column </param>
+        public DataFrame Append(DataFrame df, bool verticaly = true)
         {
-            if (Columns.Count != df.Columns.Count)
-                throw new Exception("Data frames are not consisted!");
+            if(verticaly)//add row by row including index
+            {
+                //for vertical append column count bust be the same
+                if (this._columns.Count != df.Columns.Count)
+                    throw new Exception("Data frames are not consisted to be appended. Column count are not the same!");
 
-            // add values
-            _values.AddRange(df._values);
-            //add index
-            for (int i=0; i < df.Index.Count; i++)
-                this._index.Add(df.Index[i]);
+                var lst = new List<object>();
+                var ind = new List<object>();
+                var cols = this._columns.ToList();
+                // add values
+                lst.AddRange(this._values);
+                lst.AddRange(df._values);
+                ind.AddRange(this._index);
+                ind.AddRange(df._index);
+                //create new df
+                var newDf = new DataFrame(lst, ind, cols );
+                return newDf;
+            }
+            else //add columns
+            {
+                if(this._index.Count != df._index.Count)
+                    throw new Exception("Data frames are not consisted to be appended. Row count are not the same!");
+                var dic = new Dictionary<string, List<object>>();
+                for(int i=0; i< df._columns.Count; i++)
+                {
+                    dic.Add(df._columns[i], df[df._columns[i]].ToList()) ;
+                }
+                //create new df
+                var newDf = this.AddColumns(dic);
+                return newDf;
+            }
+            
         }
 
         /// <summary>
@@ -1174,16 +1199,6 @@ namespace Daany
             return RemoveRows(cnd);
         }
 
-        //public DataFrame Filter(Func<object[], bool> condition)
-        //{
-        //    bool cnd(object[] row, int i)
-        //    {
-        //        return !condition(row);
-        //    }
-
-        //    return RemoveRows(cnd);
-        //}
-
         #endregion
 
 
@@ -1712,18 +1727,7 @@ namespace Daany
 
         #region Rolling
 
-        ///// <summary>
-        ///// Create GroupedDataFrame
-        ///// </summary>
-        ///// <param name="groupCol"></param>
-        ///// <returns></returns>
-        //public GroupDataFrame GroupBy(string groupCol)
-        //{
-        //    var Group = groupDFBy(groupCol);
-
-        //    return new GroupDataFrame(groupCol, Group);
-        //}
-
+        
         /// <summary>
         /// Grouping with one, two or three columns
         /// </summary>
@@ -2824,6 +2828,11 @@ namespace Daany
             throw new Exception($"Column '{col}' does not exist in the Data Frame. Column names are case sensitive.");
         }
 
+        internal void addRows(DataFrame df)
+        {
+            this._values.AddRange(df._values);
+            this._index.AddRange(df._index);
+        }
         #endregion
     }
 }

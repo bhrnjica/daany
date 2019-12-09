@@ -247,7 +247,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
             else if(Group2 !=null && Group2.Count > 0)
@@ -258,7 +258,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
             else if (Group3 != null && Group3.Count > 0)
@@ -269,7 +269,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
 
@@ -303,7 +303,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
             else if (Group2 != null && Group2.Count > 0)
@@ -314,7 +314,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
             else if (Group3 != null && Group3.Count > 0)
@@ -325,7 +325,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
 
@@ -350,7 +350,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
             else if (Group2 != null && Group2.Count > 0)
@@ -361,7 +361,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
             else if (Group3 != null && Group3.Count > 0)
@@ -372,7 +372,7 @@ namespace Daany
                     if (df == null)
                         df = new DataFrame(df1);
                     else
-                        df.Append(df1);
+                        df.addRows(df1);
                 }
             }
 
@@ -475,7 +475,7 @@ namespace Daany
                 {
                     var rows = callBack(gr.Value);
                     if(rows!=null && rows.RowCount() > 0)
-                        df1.Append(rows);
+                        df1.addRows(rows);
                 }
 
                 return df1;
@@ -490,7 +490,7 @@ namespace Daany
                     {
                         var rows = callBack(g2.Value);
                         if (rows != null && rows.RowCount() > 0)
-                            df1.Append(rows);
+                            df1.addRows(rows);
                     }
 
                 }
@@ -508,7 +508,7 @@ namespace Daany
                         {
                             var rows = callBack(g3.Value);
                             if (rows != null && rows.RowCount() > 0)
-                                df1.Append(rows);
+                                df1.addRows(rows);
                         }
                     }
 
