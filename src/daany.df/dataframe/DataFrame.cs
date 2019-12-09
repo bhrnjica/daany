@@ -437,6 +437,55 @@ namespace Daany
         }
 
         /// <summary>
+        /// Add series as DataFrame column 
+        /// </summary>
+        /// <param name="ser">series </param>
+        /// <returns></returns>
+        public DataFrame AddColumn(Series ser)
+        {
+            //
+            checkColumnName(this._columns, ser.Name);
+            //
+            var vals = new List<object>();
+            for (int i = 0; i < this._index.Count; i++)
+            {
+                vals.AddRange(this[i]);
+                vals.Add(ser[i]);
+            }
+            //
+            var newCols = Columns.ToList();
+            newCols.Add(ser.Name);
+            //
+            var index = this._index.ToList();
+            return new DataFrame(vals, index, newCols);
+        }
+
+        /// <summary>
+        /// Add series as DataFrame columns 
+        /// </summary>
+        /// <param name="ser">series </param>
+        /// <returns></returns>
+        public DataFrame AddColumns(params Series[] sers)
+        {
+            //
+            checkColumnNames(this._columns, sers.Select(x=>x.Name).ToArray());
+            //
+            var vals = new List<object>();
+            for (int i = 0; i < this._index.Count; i++)
+            {
+                vals.AddRange(this[i]);
+                vals.AddRange(sers.Select(x=>x[i]));
+            }
+            //
+            var newCols = Columns.Union(sers.Select(x=>x.Name)).ToList();
+ 
+            //
+            var index = this._index.ToList();
+            return new DataFrame(vals, index, newCols);
+        }
+
+
+        /// <summary>
         /// Append new data frame at the end of the data frame
         /// </summary>
         /// <param name="df">DataFrame to be appended. </param>

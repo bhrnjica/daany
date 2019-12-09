@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-
+using System.Linq;
 namespace Daany
 {
     public class Series : IEnumerable<object>
@@ -20,6 +20,11 @@ namespace Daany
                 throw new Exception("Series index is not consistent with the series");
         }
 
+        public Series (Series ser)
+        {
+            this._data = ser._data.Select(x=>x).ToList();
+            this._index = new Index(ser._index.Select(x=>x).ToList());
+        }
         public string Name { get; set; }
         private List<object> _data;
         private Index _index;
@@ -73,16 +78,35 @@ namespace Daany
         }
 
         #region Operations
+
+
+        public Series AppendVerticaly(Series ser)
+        {
+            var s = new Series(this);
+            s._data.AddRange(ser._data);
+            s._index.AddRange(ser._index);
+
+            return s;
+        }
+
+        public Series AppendHorizontaly(Series ser)
+        {
+            var df = new DataFrame(this._data, this._index.ToList(), new List<string>{this.Name });
+            df.AddColumn(ser);
+            var s = new Series(this);
+            s._data.AddRange(ser._data);
+            s._index.AddRange(ser._index);
+
+            return s;
+        }
+
+        #endregion
+        #region Internal and Private Methods
         internal void Reset()
         {
             _data = nc.GenerateIntNSeries(0, 1, _data.Count);
         }
-
-       // Series Append()
-
-
         #endregion
-
 
     }
 }
