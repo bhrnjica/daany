@@ -51,7 +51,7 @@ Now we are going to create a new Data Frame containing only three columns: ```Se
 //create new data-frame by selecting only three columns
 var derivedDF = df["SepalArea","PetalArea","species"];
 ```
-For this purpose, we use ```Create``` method by passing tuples of the old and new column name. In our case, we pass ```null``` for the new column name, which means keep old column name.
+For this purpose, we may use ```Create``` method by passing tuples of the old and new column name. In our case, we simply use indexer with column names to get a new data frame.
 
 ### Building model using ML.NET
 Now we transformed the data and created final data frame, which will be passed to ML.NET. Since the data is already in the memory, we should use ```mlContext.Data.LoadFromEnumerable``` ML.NET method. Here we need to provide the type for the loaded data. 
