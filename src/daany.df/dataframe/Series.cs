@@ -5,7 +5,7 @@ using System.Text;
 using System.Linq;
 namespace Daany
 {
-    public class Series : IEnumerable<object>
+    internal class Series : IEnumerable<object>
     {
         public Series(List<object> data, List<object> ind = null, string name = "series")
         {

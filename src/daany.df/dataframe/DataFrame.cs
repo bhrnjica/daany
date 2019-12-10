@@ -2313,7 +2313,7 @@ namespace Daany
         /// </summary>
         /// <param name="ser">series </param>
         /// <returns></returns>
-        public DataFrame AddColumn(Series ser)
+        internal DataFrame AddColumn(Series ser)
         {
             //
             checkColumnName(this._columns, ser.Name);
@@ -2337,7 +2337,7 @@ namespace Daany
         /// </summary>
         /// <param name="ser">series </param>
         /// <returns></returns>
-        public DataFrame AddColumns(params Series[] sers)
+        internal DataFrame AddColumns(params Series[] sers)
         {
             //
             checkColumnNames(this._columns, sers.Select(x => x.Name).ToArray());
@@ -2361,7 +2361,7 @@ namespace Daany
         /// </summary>
         /// <param name="colName"></param>
         /// <returns></returns>
-        public Series ToSeries(string colName)
+        internal Series ToSeries(string colName)
         {
             checkColumnName(this._columns, colName);
             var data = this[colName].ToList();
