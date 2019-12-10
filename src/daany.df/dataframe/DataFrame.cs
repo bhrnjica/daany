@@ -436,54 +436,6 @@ namespace Daany
             return new DataFrame(vals,index, newCols);
         }
 
-        /// <summary>
-        /// Add series as DataFrame column 
-        /// </summary>
-        /// <param name="ser">series </param>
-        /// <returns></returns>
-        public DataFrame AddColumn(Series ser)
-        {
-            //
-            checkColumnName(this._columns, ser.Name);
-            //
-            var vals = new List<object>();
-            for (int i = 0; i < this._index.Count; i++)
-            {
-                vals.AddRange(this[i]);
-                vals.Add(ser[i]);
-            }
-            //
-            var newCols = Columns.ToList();
-            newCols.Add(ser.Name);
-            //
-            var index = this._index.ToList();
-            return new DataFrame(vals, index, newCols);
-        }
-
-        /// <summary>
-        /// Add series as DataFrame columns 
-        /// </summary>
-        /// <param name="ser">series </param>
-        /// <returns></returns>
-        public DataFrame AddColumns(params Series[] sers)
-        {
-            //
-            checkColumnNames(this._columns, sers.Select(x=>x.Name).ToArray());
-            //
-            var vals = new List<object>();
-            for (int i = 0; i < this._index.Count; i++)
-            {
-                vals.AddRange(this[i]);
-                vals.AddRange(sers.Select(x=>x[i]));
-            }
-            //
-            var newCols = Columns.Union(sers.Select(x=>x.Name)).ToList();
- 
-            //
-            var index = this._index.ToList();
-            return new DataFrame(vals, index, newCols);
-        }
-
 
         /// <summary>
         /// Append new data frame at the end of the data frame
@@ -1985,6 +1937,8 @@ namespace Daany
         #endregion
 
         #region Selection
+
+       
         /// <summary>
         /// Returns data frame consisted of every nth row
         /// </summary>
@@ -2350,6 +2304,71 @@ namespace Daany
             return sb.ToString();
         }
 
+        #endregion
+
+        #region Series Related Operations
+
+        /// <summary>
+        /// Add series as DataFrame column 
+        /// </summary>
+        /// <param name="ser">series </param>
+        /// <returns></returns>
+        public DataFrame AddColumn(Series ser)
+        {
+            //
+            checkColumnName(this._columns, ser.Name);
+            //
+            var vals = new List<object>();
+            for (int i = 0; i < this._index.Count; i++)
+            {
+                vals.AddRange(this[i]);
+                vals.Add(ser[i]);
+            }
+            //
+            var newCols = Columns.ToList();
+            newCols.Add(ser.Name);
+            //
+            var index = this._index.ToList();
+            return new DataFrame(vals, index, newCols);
+        }
+
+        /// <summary>
+        /// Add series as DataFrame columns 
+        /// </summary>
+        /// <param name="ser">series </param>
+        /// <returns></returns>
+        public DataFrame AddColumns(params Series[] sers)
+        {
+            //
+            checkColumnNames(this._columns, sers.Select(x => x.Name).ToArray());
+            //
+            var vals = new List<object>();
+            for (int i = 0; i < this._index.Count; i++)
+            {
+                vals.AddRange(this[i]);
+                vals.AddRange(sers.Select(x => x[i]));
+            }
+            //
+            var newCols = Columns.Union(sers.Select(x => x.Name)).ToList();
+
+            //
+            var index = this._index.ToList();
+            return new DataFrame(vals, index, newCols);
+        }
+
+        /// <summary>
+        /// Extract a column as series object including index
+        /// </summary>
+        /// <param name="colName"></param>
+        /// <returns></returns>
+        public Series ToSeries(string colName)
+        {
+            checkColumnName(this._columns, colName);
+            var data = this[colName].ToList();
+            var ind = this._index.ToList();
+            var s = new Series(data, ind, colName);
+            return s;
+        }
         #endregion
 
         #region Private

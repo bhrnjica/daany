@@ -41,20 +41,8 @@ namespace Daany
             return this.GetEnumerator();
         }
 
-        public void Add(object itm)
-        {
-            _data.Add(itm);
-        }
 
-        public List<object> ToList()
-        {
-            return _data;
-        }
-        public void Insert(int ind, object itm)
-        {
-            _data.Insert(ind, itm);
-        }
-
+        #region Indexers
         public Series this[params int[] indexes]
         {
             get
@@ -76,6 +64,8 @@ namespace Daany
             get { return _data[i]; }
             // set { _index.Insert(i, value); }
         }
+        
+        #endregion
 
         #region Operations
 
@@ -89,6 +79,7 @@ namespace Daany
             return s;
         }
 
+
         public Series AppendHorizontaly(Series ser)
         {
             var df = new DataFrame(this._data, this._index.ToList(), new List<string>{this.Name });
@@ -100,6 +91,19 @@ namespace Daany
             return s;
         }
 
+        public void Add(object itm)
+        {
+            _data.Add(itm);
+        }
+
+        public List<object> ToList()
+        {
+            return _data;
+        }
+        public void Insert(int ind, object itm)
+        {
+            _data.Insert(ind, itm);
+        }
         #endregion
         #region Internal and Private Methods
         internal void Reset()
