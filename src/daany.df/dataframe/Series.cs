@@ -18,15 +18,25 @@ namespace Daany
                 this._index = new Index(ind);
             else if (ind != null && ind.Count != data.Count)
                 throw new Exception("Series index is not consistent with the series");
+            else if (ind==null)
+               _index = new Index(Enumerable.Range(0, _data.Count).Select(x=>(object)x).ToList());
+            
         }
 
         public Series (Series ser)
         {
             this._data = ser._data.Select(x=>x).ToList();
+            this.Name = ser.Name;
             this._index = new Index(ser._index.Select(x=>x).ToList());
         }
+
+       
+
+
+
         public string Name { get; set; }
         private List<object> _data;
+        private ColType _type= ColType.STR;
         private Index _index;
 
         public int Count => _data.Count;
@@ -62,7 +72,7 @@ namespace Daany
         public object this[int i]
         {
             get { return _data[i]; }
-            // set { _index.Insert(i, value); }
+            set { _data[i] =  value;}
         }
         
         #endregion
@@ -74,21 +84,18 @@ namespace Daany
         {
             var s = new Series(this);
             s._data.AddRange(ser._data);
-            s._index.AddRange(ser._index);
+             s._index.AddRange(ser._index);
 
             return s;
         }
 
 
-        public Series AppendHorizontaly(Series ser)
+        public DataFrame AppendHorizontaly(Series ser)
         {
             var df = new DataFrame(this._data, this._index.ToList(), new List<string>{this.Name });
-            df.AddColumn(ser);
-            var s = new Series(this);
-            s._data.AddRange(ser._data);
-            s._index.AddRange(ser._index);
-
-            return s;
+            df = df.AddColumn(ser);
+           
+            return df;
         }
 
         public void Add(object itm)
@@ -100,15 +107,334 @@ namespace Daany
         {
             return _data;
         }
+
         public void Insert(int ind, object itm)
         {
             _data.Insert(ind, itm);
         }
         #endregion
+
+        #region Operators
+        public static Series operator -(Series ser1, Series ser2)
+        {
+            var t = ser1.detectType();
+            var ser3 = new Series(ser1);
+            switch (t)
+            {
+                case ColType.I2:
+                    throw new Exception("Series is of boolean type. Substraction cannot be applied.");
+                case ColType.IN:
+                    throw new Exception("Series is of categorical type. Substraction cannot be applied.");
+                case ColType.STR:
+                    throw new Exception("Series is of string type. Substraction cannot be applied.");
+
+                case ColType.I32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt32(ser1[i]) - Convert.ToInt32(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.I64:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt64(ser1[i]) - Convert.ToInt64(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.F32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToSingle(ser1[i]) - Convert.ToSingle(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.DD:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToDouble(ser1[i]) - Convert.ToDouble(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.DT:
+                    throw new Exception("Series is of datetime type. Substraction cannot be applied.");
+                default:
+                    throw new Exception("Series is of unknown type. Substraction cannot be applied.");
+            }
+            return ser3;
+        }
+        public static Series operator +(Series ser1, Series ser2)
+        {
+            var t = ser1.detectType();
+            var ser3 = new Series(ser1);
+            switch (t)
+            {
+                case ColType.I2:
+                    throw new Exception("Series is of boolean type. Addition cannot be applied.");
+                case ColType.IN:
+                    throw new Exception("Series is of categorical type. Addition cannot be applied.");
+                case ColType.STR:
+                    throw new Exception("Series is of string type. Addition cannot be applied.");
+
+                case ColType.I32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt32(ser1[i]) + Convert.ToInt32(ser2[i]);
+                        }
+                    }    
+                    break;
+                case ColType.I64:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt64(ser1[i]) + Convert.ToInt64(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.F32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToSingle(ser1[i]) + Convert.ToSingle(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.DD:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToDouble(ser1[i]) + Convert.ToDouble(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.DT:
+                    throw new Exception("Series is of datetime type. Addition cannot be applied.");
+                default:
+                    throw new Exception("Series is of unknown type. Addition cannot be applied.");
+            }
+            return ser3;
+        }
+
+        public static Series operator +(Series ser1, float scalar)
+        {
+            var t = ser1.detectType();
+            var ser3 = new Series(ser1);
+            switch (t)
+            {
+                case ColType.I2:
+                    throw new Exception("Series is of boolean type. Addition cannot be applied.");
+                case ColType.IN:
+                    throw new Exception("Series is of categorical type. Addition cannot be applied.");
+                case ColType.STR:
+                    throw new Exception("Series is of string type. Addition cannot be applied.");
+
+                case ColType.I32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt32(ser1[i]) + scalar;
+                        }
+                    }
+                    break;
+                case ColType.I64:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt64(ser1[i]) + scalar;
+                        }
+                    }
+                    break;
+                case ColType.F32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToSingle(ser1[i]) + scalar;
+                        }
+                    }
+                    break;
+                case ColType.DD:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToDouble(ser1[i]) + scalar;
+                        }
+                    }
+                    break;
+                case ColType.DT:
+                    throw new Exception("Series is of datetime type. Addition cannot be applied.");
+                default:
+                    throw new Exception("Series is of unknown type. Addition cannot be applied.");
+            }
+            return ser3;
+        }
+
+        /// <summary>
+        /// Elementvize multiplication
+        /// </summary>
+        /// <param name="ser1"></param>
+        /// <param name="ser2"></param>
+        /// <returns></returns>
+        public static Series operator *(Series ser1, Series ser2)
+        {
+            var t = ser1.detectType();
+            var ser3 = new Series(ser1);
+            switch (t)
+            {
+                case ColType.I2:
+                    throw new Exception("Series is of boolean type. Multiplication cannot be applied.");
+                case ColType.IN:
+                    throw new Exception("Series is of categorical type. Multiplication cannot be applied.");
+                case ColType.STR:
+                    throw new Exception("Series is of string type. Multiplication cannot be applied.");
+
+                case ColType.I32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt32(ser1[i]) * Convert.ToInt32(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.I64:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt64(ser1[i]) * Convert.ToInt64(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.F32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToSingle(ser1[i]) * Convert.ToSingle(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.DD:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToDouble(ser1[i]) * Convert.ToDouble(ser2[i]);
+                        }
+                    }
+                    break;
+                case ColType.DT:
+                    throw new Exception("Series is of datetime type. Multiplication cannot be applied.");
+                default:
+                    throw new Exception("Series is of unknown type. Multiplication cannot be applied.");
+            }
+            return ser3;
+        }
+
+        public static Series operator *(Series ser1, float scalar)
+        {
+            var t = ser1.detectType();
+            var ser3 = new Series(ser1);
+            switch (t)
+            {
+                case ColType.I2:
+                    throw new Exception("Series is of boolean type. Multiplication cannot be applied.");
+                case ColType.IN:
+                    throw new Exception("Series is of categorical type. Multiplication cannot be applied.");
+                case ColType.STR:
+                    throw new Exception("Series is of string type. Multiplication cannot be applied.");
+
+                case ColType.I32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt32(ser1[i]) * scalar;
+                        }
+                    }
+                    break;
+                case ColType.I64:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToInt64(ser1[i]) * scalar;
+                        }
+                    }
+                    break;
+                case ColType.F32:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToSingle(ser1[i]) + scalar;
+                        }
+                    }
+                    break;
+                case ColType.DD:
+                    {
+                        for (int i = 0; i < ser1._data.Count; i++)
+                        {
+                            ser3[i] = Convert.ToDouble(ser1[i]) * scalar;
+                        }
+                    }
+                    break;
+                case ColType.DT:
+                    throw new Exception("Series is of datetime type. Multiplication cannot be applied.");
+                default:
+                    throw new Exception("Series is of unknown type. Multiplication cannot be applied.");
+            }
+            return ser3;
+        }
+        #endregion
+
+
         #region Internal and Private Methods
         internal void Reset()
         {
-            _data = nc.GenerateIntNSeries(0, 1, _data.Count);
+            _data = nc.GenerateIntSeries(0, _data.Count, 1);
+        }
+
+        private ColType detectType()
+        {
+            int cc = SCount();
+            int k = 0;
+            while (_data[k] == DataFrame.NAN)
+            {
+                k++;
+                //if the type is not found put default type to the column
+                if (_data.Count < k)
+                {
+                    _data[k] = ColType.STR;
+                    k = 0;
+                    break;
+                }
+                continue;
+            }
+            //
+            if (_data[k].GetType() == typeof(bool))
+                _type = ColType.I2;
+            else if (_data[k].GetType() == typeof(int))
+                _type = ColType.I32;
+            else if (_data[k].GetType() == typeof(long))
+                _type = ColType.I64;
+            else if (_data[k].GetType() == typeof(float))
+                _type = ColType.F32;
+            else if (_data[k].GetType() == typeof(double))
+                _type = ColType.DD;
+            else if (_data[k].GetType() == typeof(string))
+                _type = ColType.STR;
+            else if (_data[k].GetType() == typeof(DateTime))
+                _type = ColType.DT;
+            else
+                throw new Exception("Unknown column type");
+            return _type;
+        }
+
+        private int SCount()
+        {
+            if (_data == null)
+                return 0;
+            else
+                return _data.Count;
         }
         #endregion
 

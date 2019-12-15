@@ -138,45 +138,7 @@ namespace Daany
             return lst;
         }
 
-        public static List<object> GenerateIntNSeries(int fromNumber, int step, int size)
-        {
-            var lst = new List<object>();
-            int value = fromNumber;
-            for (int i = 0; i < size; i++)
-            {
-                lst.Add(i);
-                value = fromNumber + step;
-            }
-
-            return lst;
-        }
-
-        public static List<object> GenerateDoubleNSeries(double fromNumber, double step, int size)
-        {
-            var lst = new List<object>();
-            double value = fromNumber;
-            for (int i = 0; i < size; i++)
-            {
-                lst.Add(i);
-                value = fromNumber + step;
-            }
-
-            return lst;
-        }
-
-        public static List<object> GenerateFloatNSeries(float fromNumber, float step, int size)
-        {
-            var lst = new List<object>();
-            float value = fromNumber;
-            for (int i = 0; i < size; i++)
-            {
-                lst.Add(i);
-                value = fromNumber + step;
-            }
-
-            return lst;
-        }
-
+       
         public static List<object> GenerateDoubleSeries(double fromNumber, double toNumber, double step)
         {
             var lst = new List<object>();

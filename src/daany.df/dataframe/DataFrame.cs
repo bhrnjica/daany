@@ -2826,7 +2826,6 @@ namespace Daany
                         i++;
                         break;
                     }
-
                     continue;
                 }
                 var ind = i + k * Columns.Count;

@@ -52,7 +52,7 @@ namespace Daany
 
         internal void Reset()
         {
-            _index = nc.GenerateIntNSeries(0, 1, _index.Count);
+            _index = nc.GenerateIntSeries(0, _index.Count, 1);
         }
 
         internal void AddRange(Index index)
