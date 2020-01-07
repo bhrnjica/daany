@@ -65,7 +65,7 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="clasic\" />
+    <Folder Include="arima\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,18 +74,6 @@ SOFTWARE.</PackageReleaseNotes>
       <PackagePath></PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
- 
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
  
 
