@@ -23,6 +23,14 @@ namespace Daany
             
         }
 
+        internal Series(List<object> data, Index index, string name = "series")
+        {
+            this._data = data.Select(x => x).ToList();
+            this.Name = name;
+            this._index = new Index(index.Select(x => x).ToList());
+        }
+
+
         public Series (Series ser)
         {
             this._data = ser._data.Select(x=>x).ToList();
@@ -31,16 +39,13 @@ namespace Daany
         }
 
        
-
-
-
         public string Name { get; set; }
         private List<object> _data;
         private ColType _type= ColType.STR;
         private Index _index;
 
         public int Count => _data.Count;
-
+        public Index Index => _index;
         public IEnumerator<object> GetEnumerator()
         {
             return _data.GetEnumerator();
@@ -98,6 +103,21 @@ namespace Daany
             return df;
         }
 
+        public Series Rolling(int window, Aggregation agg)
+        {
+            DataFrame df = this.ToDataFrame();
+            var dff = df.Rolling(window, agg);
+            Series ser = dff.ToSeries(); 
+            return ser;
+        }
+
+        private DataFrame ToDataFrame()
+        {
+            var cols = new List<string>() { this.Name };
+            var df = new DataFrame(this._data, this._index, cols);
+            return df;
+        }
+
         public void Add(object itm)
         {
             _data.Add(itm);
@@ -112,9 +132,89 @@ namespace Daany
         {
             _data.Insert(ind, itm);
         }
+
+
+        /// <summary>
+        /// Return number of missing values in the Series.
+        /// </summary>
+        /// <returns></returns>
+        public int MissingValues()
+        {
+            return this.Where(x => x == DataFrame.NAN).Count();
+        }
+        public Series DropNA()
+        {
+            var dat = new List<object>();
+            var indLst = new List<object>();
+
+            for(int i=0; i< this._data.Count; i++)
+            {
+                if(this[i] != DataFrame.NAN)
+                {
+                    dat.Add(this[i]);
+                    indLst.Add(this._index[i]);
+                }
+            }
+
+            //
+            return new Series(dat, indLst, this.Name);
+        }
+
+        public Series FillNA(object replacedValue)
+        {
+            var dat = new List<object>();
+            var indLst = new List<object>();
+
+            for (int i = 0; i < this._data.Count; i++)
+            {
+                if (this[i] != DataFrame.NAN)
+                {
+                    dat.Add(this[i]);
+                    indLst.Add(this._index[i]);
+                }
+                else
+                {
+                    dat.Add(replacedValue);
+                    indLst.Add(this._index[i]);
+                }
+            }
+
+            //
+            return new Series(dat, indLst, this.Name);
+        }
+
+        public Series FillNA(object replacedValue, Func<int, object> replDelg)
+        {
+            var dat = new List<object>();
+            var indLst = new List<object>();
+
+            for (int i = 0; i < this._data.Count; i++)
+            {
+                if (this[i] != DataFrame.NAN)
+                {
+                    dat.Add(this[i]);
+                    indLst.Add(this._index[i]);
+                }
+                else
+                {
+                    var rplVal = replDelg(i);
+                    dat.Add(rplVal);
+                    indLst.Add(this._index[i]);
+                }
+            }
+
+            //
+            return new Series(dat, indLst, this.Name);
+        }
         #endregion
 
         #region Operators
+        /// <summary>
+        /// Element-wise subtraction of two series
+        /// </summary>
+        /// <param name="ser1"></param>
+        /// <param name="ser2"></param>
+        /// <returns></returns>
         public static Series operator -(Series ser1, Series ser2)
         {
             var t = ser1.detectType();
@@ -167,6 +267,13 @@ namespace Daany
             }
             return ser3;
         }
+
+        /// <summary>
+        /// Element-wise addition of two series
+        /// </summary>
+        /// <param name="ser1"></param>
+        /// <param name="ser2"></param>
+        /// <returns></returns>
         public static Series operator +(Series ser1, Series ser2)
         {
             var t = ser1.detectType();
@@ -220,6 +327,12 @@ namespace Daany
             return ser3;
         }
 
+        /// <summary>
+        /// Addition series element with floating scalar value
+        /// </summary>
+        /// <param name="ser1"></param>
+        /// <param name="scalar"></param>
+        /// <returns></returns>
         public static Series operator +(Series ser1, float scalar)
         {
             var t = ser1.detectType();
@@ -274,7 +387,7 @@ namespace Daany
         }
 
         /// <summary>
-        /// Elementvize multiplication
+        /// Element-wise multiplication of two series
         /// </summary>
         /// <param name="ser1"></param>
         /// <param name="ser2"></param>
@@ -332,6 +445,12 @@ namespace Daany
             return ser3;
         }
 
+        /// <summary>
+        /// Multiplication series element with floating scalar value
+        /// </summary>
+        /// <param name="ser1"></param>
+        /// <param name="scalar"></param>
+        /// <returns></returns>
         public static Series operator *(Series ser1, float scalar)
         {
             var t = ser1.detectType();

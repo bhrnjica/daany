@@ -111,6 +111,27 @@ namespace Daany.MathStuff
             }
         }
 
+        public static T[,] ToMatrix<T>(this T[] array, int nRows)
+        {
+            int rows = nRows;
+            int cols = array.Length / rows;
+            int k = 0;
+            T[,] retVal = new T[rows,cols];
+                
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    retVal[i, j] = array[k];
+                    k++;
+                    
+                }
+            }
+
+            return retVal;
+        }
+
+
         public static T[,] Transpose<T>(this T[,] m1)
         {
             var retVal = new T[m1.GetLength(1), m1.GetLength(0)];

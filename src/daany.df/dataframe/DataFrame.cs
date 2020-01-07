@@ -227,6 +227,13 @@ namespace Daany
             this._index = new Index(ind);
         }
 
+        internal DataFrame(List<object> data, Index index, List<string> cols)
+        {
+            this._columns = cols;
+            this._index = new Index (index.ToList());
+            this._values = data.Select(x=>x).ToList();
+        }
+
         /// <summary>
         /// Create data frame from another data frame.
         /// </summary>
@@ -1072,7 +1079,7 @@ namespace Daany
         /// </summary>
         /// <param name="col">Column to replace the missing value</param>
         /// <param name="replacedValue">Delegate for replaced value</param>
-        public void FillNA(string col, Func<object> replDelg)
+        public void FillNA(string col, Func<int, object> replDelg)
         {
             if (string.IsNullOrEmpty(col))
                 throw new ArgumentException(nameof(col));
@@ -1086,7 +1093,7 @@ namespace Daany
                     if (j == colIndex)
                     {
                         if (_values[index] == DataFrame.NAN)
-                            _values[index] = replDelg();
+                            _values[index] = replDelg(i);
 
                     }
                     index++;
@@ -2308,6 +2315,8 @@ namespace Daany
 
         #region Series Related Operations
 
+        
+
         /// <summary>
         /// Add series as DataFrame column 
         /// </summary>
@@ -2368,6 +2377,15 @@ namespace Daany
             var ind = this._index.ToList();
             var s = new Series(data, ind, colName);
             return s;
+        }
+
+        internal Series ToSeries()
+        {
+            if (this.Columns.Count != 1)
+                throw new Exception("DataFrame must have one column to be converted into Sereis.");
+            var ser = new Series(this._values, this._index, this._columns.First());
+
+            return ser;
         }
         #endregion
 

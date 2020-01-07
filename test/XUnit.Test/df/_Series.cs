@@ -8,7 +8,19 @@ namespace Unit.Test.DF
 {
     public class DataFrame_Series_Tests
     {
-      
+        [Fact]
+        public void CreateCopy_Test01()
+        {
+            var lst = nc.GenerateIntSeries(0, 100, 1);
+            //create series from the list
+            var ser = new Series(lst);
+            var ser2 = new Series(ser);
+
+            Assert.Equal(ser.Index.ToList(), ser2.Index.ToList());
+            Assert.Equal(ser.Index.Name, ser2.Index.Name);
+            Assert.Equal(ser.Name, ser2.Name);
+            Assert.Equal(ser.ToList(), ser2.ToList());
+        }
 
         [Fact]
         public void Create_Test01()
@@ -17,15 +29,8 @@ namespace Unit.Test.DF
             //create series from the list
             var ser = new Series(lst);
 
-            //Assert.Equal(result.Index, result.Index);
-
-
-            //for (int i = 0; i < result.Values.Count; i++)
-            //{
-            //    var expected = Convert.ToInt32(df1.Values[i]);
-            //    var actual = Convert.ToInt32(result.Values[i]);
-            //    Assert.Equal<int>(expected, actual);
-            //}
+            Assert.Equal(ser.ToList(), lst.ToList());
+            Assert.Equal("series", ser.Name);
         }
 
         [Fact]
@@ -100,6 +105,7 @@ namespace Unit.Test.DF
 
 
         }
+
         [Fact]
         public void Operation_AppendH_Test01()
         {
@@ -115,6 +121,62 @@ namespace Unit.Test.DF
             var df = ser1.AppendHorizontaly(ser2);
 
             Assert.Equal(df.Values, lst3);
+
+
+        }
+
+        [Fact]
+        public void Operation_Rolling_Test01()
+        {
+            var lst1 = nc.GenerateIntSeries(0, 5, 1);
+            var lst3 = new List<object> { DataFrame.NAN, DataFrame.NAN, 3,6,9 };
+
+            //create series from the list
+            var ser1 = new Series(lst1);
+            var ser2 = ser1.Rolling(3, Aggregation.Sum);
+
+            //addition
+           
+
+            Assert.Equal(ser2.ToList(), lst3);
+
+
+        }
+
+        [Fact]
+        public void Operation_MissingValues_Test01()
+        {
+           
+            var lst1 = new List<object> { DataFrame.NAN, DataFrame.NAN, 3, DataFrame.NAN, 9 };
+            var lst3 = new List<object> { 3, 9 };
+
+            //create series from the list
+            var ser1 = new Series(lst1);
+            var ser2 = ser1.DropNA();
+
+            //addition
+
+
+            Assert.Equal(ser2.ToList(), lst3);
+
+
+        }
+
+        [Fact]
+        public void Operation_MissingValues_Test02()
+        {
+
+            var lst1 = new List<object> { DataFrame.NAN, DataFrame.NAN, 3, DataFrame.NAN, 9 };
+            var lst3 = new List<object> {1,1, 3,1, 9 };
+
+            //create series from the list
+            var ser1 = new Series(lst1);
+            var ser2 = ser1.FillNA(1);
+
+            //addition
+
+
+            Assert.Equal(ser2.ToList(), lst3);
 
 
         }

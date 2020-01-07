@@ -70,7 +70,7 @@ namespace Daany
             return true;
         }
 
-        
+      
 
         /// <summary>
         /// Saves data frame .NET object in a csv file.
