@@ -12,6 +12,7 @@
 // Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
+using Daany.MathStuff;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,7 +25,7 @@ namespace Daany
     /// </summary>
     public class nc
     {
-        private static readonly Random _rnd = new Random(1);
+        private static readonly ThreadSafeRandom _rnd = Constant.rand;
 
         /// <summary>
         /// Create vector of randomly generated double values stored in 1D array. 
