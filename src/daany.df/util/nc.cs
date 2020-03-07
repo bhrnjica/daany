@@ -25,8 +25,6 @@ namespace Daany
     /// </summary>
     public class nc
     {
-        private static readonly ThreadSafeRandom _rnd = Constant.rand;
-
         /// <summary>
         /// Create vector of randomly generated double values stored in 1D array. 
         /// Vector.Length = row * col
@@ -39,7 +37,7 @@ namespace Daany
             var size = row * col;
             var obj = new object[size];
             for (int i = 0; i < size; i++)
-                obj[i] = _rnd.NextDouble();
+                obj[i] = Constant.rand.NextDouble();
             return obj;
         }
 

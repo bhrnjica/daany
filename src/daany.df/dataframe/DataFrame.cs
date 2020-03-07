@@ -8,7 +8,7 @@
 // See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
 //                                                                                      //
 // Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
+// bhrnjica at hotmail.com                                                              //random
 // Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +73,6 @@ namespace Daany
         #endregion
 
         #region Private fields
-        private ThreadSafeRandom _rand = Constant.rand;
         //private fields
         /// <summary>
         /// Data type for each data frame column.
@@ -1984,13 +1983,16 @@ namespace Daany
         /// <returns></returns>
         public DataFrame TakeRandom(int rows)
         {
+            if (rows >= this.RowCount())
+                return this;
+
             var selected = new List<int>();
             double needed = rows;
             double available = _index.Count;
 
             while (selected.Count < rows)
             {
-                if (_rand.NextDouble() < needed / available)
+                if (Constant.rand.NextDouble() < needed / available)
                 {
                     selected.Add((int)available - 1);
                    needed--;
@@ -2675,6 +2677,9 @@ namespace Daany
         {
             for (int colIndex = 0; colIndex < rowValues.Length; colIndex++)
             {
+                if (this._colsType == null)
+                    this._colsType = this.columnsTypes();
+
                 var fOper = fOpers[colIndex];
                 if (this._colsType[indCols[colIndex]] == ColType.I2)
                 {
