@@ -1048,6 +1048,19 @@ namespace Daany
         }
 
         /// <summary>
+        /// Replaces the missing values from specified column with 'replacedValue'. 
+        /// </summary>
+        /// <param name="col">Column to replace the missing value</param>
+        /// <param name="aggValue">Aggregated Value of the column</param>
+        public void FillNA(string col, Aggregation aggValue)
+        {
+            var colIndex = getColumnIndex(col);
+            var vals = this[col].Where(x=>x!=DataFrame.NAN);
+            var value = calculateAggregation(vals, aggValue, this.ColTypes[colIndex]);
+            FillNA(col, value);
+        }
+
+        /// <summary>
         /// Replaces the missing values from specified columns with 'replacedValue'. 
         /// </summary>
         /// <param name="col">Column to replace the missing value</param>

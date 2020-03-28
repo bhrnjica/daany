@@ -132,6 +132,43 @@ namespace Unit.Test.DF
 
         }
 
+        [Fact]
+        public void ReplaceMissingValue_Test02()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() {  1, 11, "", 31, 41, 51, "", 71, 81, "?"} },
+                { "col2",new List<object>() {  2, 12, 22,"?", 42, 52, 62, 72, 82, 92 } },
+                { "col3",new List<object>() {  3, "", 23, 33, 43, 53, 63, 73, 83, 94 } },
+                { "col4",new List<object>() {  4, 14, 24, 34, 44, 54, 64, 74, 84, 94} },
+                { "col5",new List<object>() {"?", 15, 25, 35, 45, "", 65, "", 85, 95 } },
+
+            };
+
+            //
+            var df = new DataFrame(dict);
+            df.FillNA("col1", Aggregation.Max);
+            df.FillNA("col2", Aggregation.Min);
+            df.FillNA("col3", Aggregation.Avg);
+
+            //
+            var c1 = new object[] { 1, 11, 81, 31, 41, 51, 81, 71, 81, 81 };
+            var c2 = new object[] { 2, 12, 22, 2, 42, 52, 62, 72, 82, 92 };
+            var c3 = new object[] { 3, 52d, 23, 33, 43, 53, 63, 73, 83, 94 };
+
+
+            for (int i = 0; i < c1.Length; i++)
+                Assert.Equal(c1[i], df["col1", i]);
+
+            for (int i = 0; i < c2.Length; i++)
+                Assert.Equal(c2[i], df["col2", i]);
+
+            for (int i = 0; i < c3.Length; i++)
+                Assert.Equal(c3[i], df["col3", i]);
+
+
+        }
+
     }
 
 }
