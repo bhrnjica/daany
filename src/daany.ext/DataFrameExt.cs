@@ -77,7 +77,7 @@ namespace Daany.Ext
             var colValues = new List<object>();
             foreach (var r in convertedData)
             {
-                colValues.Add(r.Classes);
+                colValues.Add((int)r.Classes);
             }
             dict.Add(colName+"_cvalues",colValues);
             var newDf = df.AddColumns(dict);

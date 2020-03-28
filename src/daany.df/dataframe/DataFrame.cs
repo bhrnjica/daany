@@ -8,7 +8,7 @@
 // See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
 //                                                                                      //
 // Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
+// bhrnjica at hotmail.com                                                              //random
 // Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -996,11 +996,12 @@ namespace Daany
         /// <returns>New df with fixed NAN</returns>
         public DataFrame DropNA(params string[] cols)
         {
+            var colIndex = getColumnIndex(cols);
             return RemoveRows((r, i) =>
             {
                 for (int j = 0; j < r.Length; j++)
                 {
-                    if (r[j] == NAN)
+                    if (r[j] == NAN && colIndex.Contains(j) )
                         return true;
                 }
                 return false;
@@ -1990,13 +1991,16 @@ namespace Daany
         /// <returns></returns>
         public DataFrame TakeRandom(int rows)
         {
+            if (rows >= this.RowCount())
+                return this;
+
             var selected = new List<int>();
             double needed = rows;
             double available = _index.Count;
-            var rand = new Random();
+
             while (selected.Count < rows)
             {
-                if (rand.NextDouble() < needed / available)
+                if (Constant.rand.NextDouble() < needed / available)
                 {
                     selected.Add((int)available - 1);
                    needed--;
@@ -2011,6 +2015,24 @@ namespace Daany
             return df;
         }
 
+        /// <summary>
+        /// Returns data frame with index element not containing in the index of the second data frame.
+        /// Reset Index before call this method is recommended. 
+        /// Index of the second data frame must be less of equal than the main data frame
+        /// </summary>
+        /// <param name="data2">Second data frame</param>
+        /// <returns></returns>
+        public DataFrame Except(DataFrame data2)
+        {
+            //rest of data should be define training dataset
+            var resIndex = this._index.Select(x => Convert.ToInt32(x)).Except(data2.Index.Select(x => Convert.ToInt32(x))).ToList();
+            var finalDf = DataFrame.CreateEmpty(this._columns);
+            foreach (var i in resIndex)
+                finalDf.AddRow(this[i].ToList());
+
+            //reset index
+            return finalDf;
+        }
 
         /// <summary>
         /// Returns the formated string of the first  'count' rows of the data frame
@@ -2674,6 +2696,9 @@ namespace Daany
         {
             for (int colIndex = 0; colIndex < rowValues.Length; colIndex++)
             {
+                if (this._colsType == null)
+                    this._colsType = this.columnsTypes();
+
                 var fOper = fOpers[colIndex];
                 if (this._colsType[indCols[colIndex]] == ColType.I2)
                 {

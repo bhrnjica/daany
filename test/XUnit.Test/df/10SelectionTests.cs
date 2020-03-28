@@ -198,6 +198,7 @@ namespace Unit.Test.DF
         [Fact]
         public void TakeRandomNthRow_Test01()
         {
+            Daany.MathStuff.Constant.FixedRandomSeed = true;
             var dict = new Dictionary<string, List<object>>
             {
                 { "col1",new List<object>() { 1,11,21,31,41,51,61,71,81,91} },
@@ -214,6 +215,9 @@ namespace Unit.Test.DF
             //
             var df = new DataFrame(dict);
             var df1 = df.TakeRandom(3);
+            Assert.Equal(df1[0], df[9]);
+            Assert.Equal(df1[1], df[5]);
+            Assert.Equal(df1[2], df[3]);
             //row count test
             Assert.True(df1.RowCount()==3);
         }
