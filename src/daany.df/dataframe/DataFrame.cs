@@ -1001,7 +1001,10 @@ namespace Daany
             {
                 for (int j = 0; j < r.Length; j++)
                 {
-                    if (r[j] == NAN && colIndex.Contains(j) )
+                    if (colIndex == null && r[j] == NAN)
+                        return true;
+
+                    else if(colIndex != null && r[j] == NAN && colIndex.Contains(j))
                         return true;
                 }
                 return false;
