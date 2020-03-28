@@ -989,11 +989,12 @@ namespace Daany
         /// <returns>New df with fixed NAN</returns>
         public DataFrame DropNA(params string[] cols)
         {
+            var colIndex = getColumnIndex(cols);
             return RemoveRows((r, i) =>
             {
                 for (int j = 0; j < r.Length; j++)
                 {
-                    if (r[j] == NAN)
+                    if (r[j] == NAN && colIndex.Contains(j) )
                         return true;
                 }
                 return false;

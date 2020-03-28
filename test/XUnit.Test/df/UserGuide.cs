@@ -839,6 +839,39 @@ namespace Unit.Test.DF
         }
 
         [Fact]
+        public void DropNAColumns()
+        {
+            var date = DateTime.Now.AddDays(-20);
+            //define a dictionary of data
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "ID",new List<object>() { 1,2,3} },
+                { "City",new List<object>() { "Sarajevo", "Seattle", DataFrame.NAN } },
+                { "Zip Code",new List<object>() { 71000,98101,10115 } },
+                { "State",new List<object>() {"BiH","USA","GER" } },
+                { "IsHome",new List<object>() { true, false, false} },
+                { "Values",new List<object>() { 3.14, 3.21, 4.55 } },
+                { "Date",new List<object>() { date , DateTime.Now.AddDays(-10) , date } },
+                { "Age", new List<object>() { 31, 25, 45 } },
+                { "Gender", new List<object>() { "male", DataFrame.NAN, "male" } }
+            };
+
+            //create df
+            var df = new DataFrame(dict);
+            
+            //drop rows with missing values
+            var newDf = df.DropNA("Gender");
+
+            //check for values
+            Assert.Equal(9, newDf.ColCount());
+            Assert.Equal(2, newDf.RowCount());
+            Assert.Equal(new object[] { 1, "Sarajevo", 71000, "BiH", true, 3.14, date, 31, "male" }, newDf[0]);
+            Assert.Equal(new object[] { 3, DataFrame.NAN, 10115, "GER", false, 4.55, date, 45, "male" }, newDf[1]);
+
+        }
+
+
+        [Fact]
         public void FillNA1()
         {
             var date = DateTime.Now.AddDays(-20);
