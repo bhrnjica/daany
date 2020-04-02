@@ -4,12 +4,24 @@ using System.Collections.Generic;
 using Xunit;
 using Daany;
 using System.IO;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 namespace Unit.Test.DF
 {
     public class LoadSaveTests
     {
 
+        public LoadSaveTests()
+        {
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) =>
+            {
+                // local dev, just approve all certs
+                return true;
+            };
+        }
+      
         [Fact]
         public void LoadromCSV_Test()
         {
@@ -74,13 +86,15 @@ namespace Unit.Test.DF
         [Fact]
         public void LoadFromWeb_Test()
         {
+
+
             string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
             var df = DataFrame.FromWeb(url, sep: ',', names: new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" }); //
             //row test
             var r100 = df[100].ToList();
             //
-            Assert.Equal(new List<object> {6.3f, 3.3f,6f,2.5f, "Iris-virginica" },r100);
-            
+            Assert.Equal(new List<object> { 6.3f, 3.3f, 6f, 2.5f, "Iris-virginica" }, r100);
+
         }
 
         [Fact]
@@ -134,9 +148,11 @@ namespace Unit.Test.DF
             Assert.True(retVal);
         }
 
+        //[Fact(Skip = "SSL certificcate")]
         [Fact]
         public void SaveToCSV_TestWithMissingValues()
         {
+
             string saveDfPath = $"../../../testdata/savedcsv_{DateTime.Now.Ticks}.csv";
 
             string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
