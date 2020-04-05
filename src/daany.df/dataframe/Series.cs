@@ -5,7 +5,7 @@ using System.Text;
 using System.Linq;
 namespace Daany
 {
-    internal class Series : IEnumerable<object>
+    public class Series : IEnumerable<object>
     {
         public Series(List<object> data, List<object> ind = null, string name = "series")
         {
@@ -179,6 +179,28 @@ namespace Daany
                 }
             }
 
+            //
+            return new Series(dat, indLst, this.Name);
+        }
+
+        public Series FillNA(Aggregation aggValue)
+        {
+            var dat = new List<object>();
+            var indLst = new List<object>();
+            var replacedValue = DataFrame._calculateAggregation(this._data.Where(x=>x != DataFrame.NAN), aggValue, this._type);
+            for (int i = 0; i < this._data.Count; i++)
+            {
+                if (this[i] != DataFrame.NAN)
+                {
+                    dat.Add(this[i]);
+                    indLst.Add(this._index[i]);
+                }
+                else
+                {
+                    dat.Add(replacedValue);
+                    indLst.Add(this._index[i]);
+                }
+            }
             //
             return new Series(dat, indLst, this.Name);
         }
