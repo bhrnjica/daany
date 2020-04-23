@@ -32,7 +32,7 @@ namespace Daany.Ext
     /// </summary>
     public static class DataFrameExt
     {
-        public static DataFrame EncodeColumn(this DataFrame df, MLContext mlContext, string colName)
+        public static DataFrame EncodeColumn(this DataFrame df, MLContext mlContext, string colName, bool encodedOnly = false)
         {
             var colVector = df[colName];
             IDataView data = mlContext.Data.LoadFromEnumerable<CategoryColumn>(colVector.Select(x => new CategoryColumn() { Classes = x.ToString() }));
@@ -61,8 +61,17 @@ namespace Daany.Ext
                 }
                 
             }
-            var newDf = df.AddColumns(dict);
-            return newDf;
+            if(encodedOnly)
+            {
+                var newDf = new DataFrame(dict);
+                return newDf;
+            }
+            else
+            {
+                var newDf = df.AddColumns(dict);
+                return newDf;
+            }
+            
         }
 
         public static DataFrame CategoryToKey(this DataFrame df, MLContext mlContext, string colName)
@@ -104,7 +113,7 @@ namespace Daany.Ext
                 }
             }
 
-            //this should not heppend
+            //this should not happened
             throw new Exception("No category labels are defined.");
         }
 

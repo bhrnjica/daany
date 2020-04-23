@@ -2306,6 +2306,11 @@ namespace Daany
             return sb.ToString();
         }
 
+        public Array To1DArray()
+        {
+            return this._values.ToArray();
+        }
+
         public string ToConsole(int rowCount = 15)
         {
             StringBuilder sb = new StringBuilder();

@@ -77,7 +77,6 @@ SOFTWARE.</PackageReleaseNotes>
 
   <ItemGroup>
     <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
-    <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
