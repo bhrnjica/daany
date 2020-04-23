@@ -44,6 +44,24 @@ namespace Unit.Test.DF
             Assert.Equal(12.5, serie[7]);
         }
 
-        
+
+        [Fact]
+        public void To1DArray_Test01()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1,4,7,10} },
+                { "col2",new List<object>() { 2,5,8,11} },
+                { "col3",new List<object>() { 3,6,9,12} },
+
+            };
+            //
+            DataFrame.qsAlgo = true;
+            var df = new DataFrame(dict);
+            var lst = new object[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+            //
+            Assert.Equal(lst, df.To1DArray());
+            
+        }
     }
 }
