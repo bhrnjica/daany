@@ -2365,7 +2365,7 @@ namespace Daany
         /// </summary>
         /// <param name="ser">series </param>
         /// <returns></returns>
-        internal DataFrame AddColumn(Series ser)
+        public DataFrame AddColumn(Series ser)
         {
             //
             checkColumnName(this._columns, ser.Name);
@@ -2389,7 +2389,7 @@ namespace Daany
         /// </summary>
         /// <param name="ser">series </param>
         /// <returns></returns>
-        internal DataFrame AddColumns(params Series[] sers)
+        public DataFrame AddColumns(params Series[] sers)
         {
             //
             checkColumnNames(this._columns, sers.Select(x => x.Name).ToArray());
@@ -2413,16 +2413,18 @@ namespace Daany
         /// </summary>
         /// <param name="colName"></param>
         /// <returns></returns>
-        internal Series ToSeries(string colName)
+        public Series ToSeries(string colName)
         {
-            checkColumnName(this._columns, colName);
+            if(!this._columns.Contains(colName))
+                throw new Exception($"Column {colName} do not exist in the dataframe.");
+
             var data = this[colName].ToList();
             var ind = this._index.ToList();
             var s = new Series(data, ind, colName);
             return s;
         }
 
-        internal Series ToSeries()
+        public Series ToSeries()
         {
             if (this.Columns.Count != 1)
                 throw new Exception("DataFrame must have one column to be converted into Sereis.");

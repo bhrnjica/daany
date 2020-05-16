@@ -181,7 +181,7 @@ namespace Daany
             return df;
         }
 
-        public static DataFrame FromText(string strText, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, char[] missingValues=null, int nRows = -1)
+        public static DataFrame FromText(string strText, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, char[] missingValues=null, int nRows = -1, int skipLines = 0)
         {
             if (string.IsNullOrEmpty(strText))
                 throw new ArgumentNullException(nameof(strText), "Argument should not be null.");
@@ -195,7 +195,7 @@ namespace Daany
 
                     var columns = names == null ? new List<string>() : names.ToList();
 
-                    var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue:missingValues);
+                    var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue:missingValues, skipLines: skipLines);
 
                     var df = new DataFrame(retVal, columns);
                     if (colTypes != null)
@@ -205,7 +205,7 @@ namespace Daany
             }
         }
 
-        public static DataFrame FromStrings(string[] strArray, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, char[] missingValues = null, int nRows = -1)
+        public static DataFrame FromStrings(string[] strArray, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, char[] missingValues = null, int nRows = -1, int skipLines = 0)
         {
             if (strArray==null || strArray.Length ==0)
                 throw new ArgumentNullException(nameof(strArray), "Argument should not be null or empty.");
@@ -220,7 +220,7 @@ namespace Daany
 
                     var columns = names == null ? new List<string>() : names.ToList();
 
-                    var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue: missingValues);
+                    var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue: missingValues, skipLines: skipLines);
 
                     var df = new DataFrame(retVal, columns);
                     if (colTypes != null)
@@ -238,8 +238,9 @@ namespace Daany
         /// <param name="names">Column names in case the columns are provided separately from the file.</param>
         /// <param name="dformat">Date time format.</param>
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
+        /// <param name="skipLines">Number of first lines to skip with parsing. This is handy in case we need to put description to data before actual data.</param>
         /// <returns>Data Frame object.</returns>
-        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, string dformat = null,  bool parseDate = true, ColType[] colTypes = null, char[] missingValues=null, int nRows = -1)
+        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, string dformat = null, bool parseDate = true, ColType[] colTypes = null, char[] missingValues = null, int nRows = -1, int skipLines = 0)
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
@@ -253,7 +254,7 @@ namespace Daany
 
                 var columns = names == null ? new List<string>() : names.ToList();
 
-                var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: dformat, nRows: nRows, parseDate: parseDate, missingValue: missingValues);
+                var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: dformat, nRows: nRows, parseDate: parseDate, missingValue: missingValues, skipLines: skipLines);
 
                 var df = new DataFrame(retVal, columns);
                 if (colTypes != null)
@@ -265,17 +266,26 @@ namespace Daany
         }
 
         #endregion
-        private static List<object> parseReader(CsvReader csvReader, ref List<string> columns, ColType[] colTypes, string dateFormats, int nRows, bool parseDate, char[] missingValue)
+        private static List<object> parseReader(CsvReader csvReader, ref List<string> columns, ColType[] colTypes, string dateFormats, int nRows, bool parseDate, char[] missingValue, int skipLines)
         {
             //Define header
             int line = 0;
+            int skipIndex = 0;
 
             //Initialize df
             var listValues = new List<object>();
             while (csvReader.Read())
             {
+                //skip lines from parsing
+                if (skipLines > skipIndex)
+                {
+                    skipIndex++;
+                    continue;
+                }
+
                 if (nRows !=-1 && nRows < line)
                     break;
+
                 line++;
 
                 //add columns from file header if exists
