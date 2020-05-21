@@ -2424,6 +2424,28 @@ namespace Daany
             return s;
         }
 
+        /// <summary>
+        /// Extract a columns as array series object including index
+        /// </summary>
+        /// <param name="colNames"></param>
+        /// <returns></returns>
+        public Series[] ToSeries(params string[] colNames)
+        {
+            var retVal = new List<Series>();
+            foreach(var colName in colNames)
+            {
+                if (!this._columns.Contains(colName))
+                    throw new Exception($"Column {colName} do not exist in the dataframe.");
+
+                var data = this[colName].ToList();
+                var ind = this._index.ToList();
+                var s = new Series(data, ind, colName);
+                retVal.Add(s);
+            }
+
+            return retVal.ToArray();
+        }
+
         public Series ToSeries()
         {
             if (this.Columns.Count != 1)

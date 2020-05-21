@@ -30,7 +30,7 @@ namespace Daany.Ext
     /// <summary>
     /// Set of extension methods for the Daany.DataFrame related to Machine Learning and Data Transformation.
     /// </summary>
-    public static class DataFrameExt
+    public static partial class DataFrameExt
     {
         public static DataFrame EncodeColumn(this DataFrame df, MLContext mlContext, string colName, bool encodedOnly = false)
         {
@@ -118,6 +118,5 @@ namespace Daany.Ext
         }
 
     }
-
    
 }

@@ -1,0 +1,33 @@
+// Temporal DataFrame formatter for this early preview
+using Microsoft.AspNetCore.Html;
+Formatter<DataFrame>.Register((df, writer) =>
+{
+    var headers = new List<IHtmlContent>();
+    headers.Add(th(i("index")));
+    headers.AddRange(df.Columns.Select(c => (IHtmlContent) th(c)));
+    
+    //renders the rows
+    var rows = new List<List<IHtmlContent>>();
+    var take = 20;
+    
+    //
+    for (var i = 0; i < Math.Min(take, df.RowCount()); i++)
+    {
+        var cells = new List<IHtmlContent>();
+        cells.Add(td(df.Index[i]));
+        foreach (var obj in df[i])
+        {
+            cells.Add(td(obj));
+        }
+        rows.Add(cells);
+    }
+    
+    var t = table(
+        thead(
+            headers),
+        tbody(
+            rows.Select(
+                r => tr(r))));
+    
+    writer.Write(t);
+}, "text/html");

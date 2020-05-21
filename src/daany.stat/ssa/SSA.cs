@@ -18,15 +18,10 @@ using System.Collections.Generic;
 using System.Text;
 using Accord.Math.Decompositions;
 using Daany.MathStuff;
+using XPlot.Plotly;
 
 namespace Daany.Stat
 {
-    public class TSComponents
-    {
-        public double[] Seasonal { get; set; }
-        public double[] Trend { get; set; }
-        public double[] Residual { get; set; }
-    }
     /// <summary>
     /// This class is modification of the python code found at: https://github.com/aj-cloete/pySSA
     /// Class implementation for singular spectrum analysis, based on the Python version found at: 
@@ -67,7 +62,11 @@ namespace Daany.Stat
 
         Dictionary<int, double[,]> _Xs;
 
+        //main time series collection
         double[] _ts;
+        //time series for analysis. Sometime it can be different than main times series when we perform training
+        double[] _ts1;
+
         private double[] _sContributions;
         private double[] _R;
         private double[][] _orthonormalBase;
@@ -98,11 +97,14 @@ namespace Daany.Stat
         public double[,] Embedding(uint embeddingDim = 0, uint suspectedFreq = 0)
         {
             int L = (int)embeddingDim;
+
             //setting the embedding dimension
             if (embeddingDim == 0)
                 L = _ts.Length / 2;
+
             if (suspectedFreq > 0)
                 L = (int)Math.Floor((double)embeddingDim/(double)suspectedFreq)*(int)suspectedFreq;
+
             //calculation of K
             int K = _ts.Count() - L + 1;
 
@@ -144,10 +146,12 @@ namespace Daany.Stat
              * The singular values, sigma[k] = S[k,k], are ordered so that sigma[0] >= sigma[1] >= ... >= sigma[n-1].
              */
             var svd = new SingularValueDecomposition(S);
+
             //summary of the SVD calculation
             //left eigenvector
             double[,] U = svd.LeftSingularVectors;
             double[] s = svd.Diagonal.Sqrt();
+
             //right eigenvector
             double[,] V = svd.RightSingularVectors;
             int d = svd.Rank;
@@ -174,6 +178,7 @@ namespace Daany.Stat
 
                 //vector of Ys[i] to matrix d x 1
                 var y = Ys[i].ToMatrix(asColumnVector: true);
+
                 //vector of Vs[i] to matrix 1 x n
                 var v = Vs[i].ToMatrix(asColumnVector: false);
 
@@ -193,6 +198,8 @@ namespace Daany.Stat
             var orthonormalBase = new double[r][];
             foreach (var ind in Enumerable.Range(0, r))
                orthonormalBase[ind] = U.GetColumn(ind);
+
+
             //set final value of the orthonormal matrix
             _orthonormalBase = orthonormalBase;
         }
@@ -207,12 +214,14 @@ namespace Daany.Stat
         {
             //square of the eigenvector values
             double[] lambdas = s.Pow(2);
-            //norm of ghe embedding matrix
+
+            //norm of the embedding matrix
             double frob_norm = X.Euclidean();
             //
             var contr = lambdas.Divide(frob_norm * frob_norm);
+
             //return only positive contributions
-            return contr.Select(x => Math.Round(x, 4)).Where(x => x > 0).ToArray();
+            return contr.Select(x => Math.Round(x, 5)).Where(x => x > 0).ToArray();
         }
 
         /// <summary>
@@ -240,11 +249,12 @@ namespace Daany.Stat
 
         
         /// <summary>
-        /// transform each matrix XIj of the grouped decomposition into a new series of length N
+        /// transform each matrix Xij of the grouped decomposition into a new series of length N
         /// </summary>
         /// <returns>elementary reconstructed series</returns>
         private double[] diagonalAveraging(double[,] signalMatrix)
         {
+            //calculate number of cols, rows and 
             var L = signalMatrix.GetLength(0);
             var K = signalMatrix.GetLength(1);
             var Y = signalMatrix;
@@ -269,7 +279,7 @@ namespace Daany.Stat
                     {
                         int i = m;
                         int j = k - m + 1;
-                        yk += Y[i - 1, j - 1];//zero based index
+                        yk += Y[i - 1, j - 1];
                     }
                     //
                     y[k - 1] = yk / k;
@@ -280,7 +290,7 @@ namespace Daany.Stat
                     {
                         int i = m;
                         int j = k - m + 1;
-                        yk += Y[i - 1, j - 1];//zero based index
+                        yk += Y[i - 1, j - 1];
                     }
                     //
                     y[k - 1] = yk / lStar;
@@ -291,13 +301,13 @@ namespace Daany.Stat
                     {
                         int i = m;
                         int j = k - m + 1;
-                        yk += Y[i - 1, j - 1];//zero based index
+                        yk += Y[i - 1, j - 1];
                     }
                     //
                     y[k - 1] = yk / (N - k + 1);
                 }
                 else
-                    throw new Exception("This should not be happen!");
+                    throw new Exception("This should not be happened!");
             }
             return y;
         }
@@ -323,8 +333,10 @@ namespace Daany.Stat
             IEnumerable<KeyValuePair<int, double[,]>> sM = _Xs;
             if (signalCounts > 0)
                 sM = _Xs.Take(signalCounts);
-            //initi ts
+
+            //initial ts
             tsCumulative = MatrixEx.Zeros(_ts.Count());
+
             foreach (var sMat in sM)
             {
                 var retVal = diagonalAveraging(sMat.Value);
@@ -333,18 +345,20 @@ namespace Daany.Stat
 
             return tsCumulative;
         }
+
         /// <summary>
         /// Forecast from last point of original time series up to steps_ahead using recurrent methodology
-        ///Forecasting by SSA can be applied to time series that approximately satisfy
-        /// linear recurrent formulae(LRF). The series Y_T satisfies an LRF of order d if there are numbers a1, . . . , ad such that
+        /// Forecasting by SSA can be applied to time series that approximately satisfy
+        /// linear recurrent formulae(LRF). 
+        /// The series Y_T satisfies an LRF of order d if there are numbers a1, . . . , ad such that
         /// 
-        /// y_(i+d)=SUM_(k=1)^d(a_k y_(i+d-1) ); (1 <= i <= T-d)
+        ///  y_(i+d)=SUM_(k=1)^d(a_k y_(i+d-1) ); (1 <= i <= T-d)
         /// 
         /// </summary>
-        /// <param name="stepsAhead"></param>
+        /// <param name="horizont"></param>
         /// <param name="singularValues"></param>
         /// <returns></returns>
-        public double[] Forecast(int stepsAhead=12, int singularValues=-1)
+        public double[] Forecast(int horizont = 12, int singularValues = -1)
         {
             //prepare for forecasting by calculation necessary values
             prepareForecast(singularValues);
@@ -354,7 +368,7 @@ namespace Daany.Stat
 
             //fill the first element of time series
             forecast.Add(this._ts[0]);
-            for (int i=1; i < this._ts.Length+stepsAhead; i++)
+            for (int i=1; i < this._ts.Length + horizont; i++)
             {
                 if(i < this._ts.Length)
                 {
@@ -373,12 +387,10 @@ namespace Daany.Stat
                 }
                 else
                 {
-                    // x = self.R.T * m(self.ts_forecast[max(0, i - self.R.shape[0]): i]).T
-                    
+                    // 
                     var tss = forecast.Skip(i-_R.Length).Take(_R.Length).ToArray();
                     var x = _R.ToMatrix().Dot(tss.ToMatrix(true));
                     forecast.Add(x[0,0]);
-
                 }
             }
 
@@ -397,7 +409,9 @@ namespace Daany.Stat
 
             if (singularsValuesCount >= 0)
             {
+                //check if the count greater of orthonormal matrix length
                 var len = Math.Min(singularsValuesCount, _orthonormalBase.Length);
+
                 forecastOrthonormalVal = new double[len][];
                 for (int i = 0; i < len; i++)
                   forecastOrthonormalVal[i] = _orthonormalBase[i];
@@ -408,6 +422,8 @@ namespace Daany.Stat
             var valR = MatrixEx.Zeros(forecastOrthonormalVal[0].Length, 1);
             var tmp = valR.GetColumn(valR.GetLength(1) - 1);
             _R = tmp.Take(tmp.Count() - 1).ToArray();
+
+            //
             for (int i = 0; i < forecastOrthonormalVal.Length; i++)
             {
                 //
@@ -421,14 +437,140 @@ namespace Daany.Stat
                 var rr = PI.Take(PI.Length - 1).ToArray().Multiply(pi);
                 _R = _R.Add(rr);
             }
+
+            //
             _R = _R.Divide((1.0 - vertCoeff));
             X_com_tilde = diagonalAveraging(X_com_hat);
         }
 
+        /// <summary>
+        /// Perform SSA for N lagged steps
+        /// </summary>
+        /// <param name="embeddingDim"></param>
         public void Fit(uint embeddingDim)
         {
             Embedding(embeddingDim);
             Decompose();
+        }
+
+        /// <summary>
+        /// Perform SSA on time series by searching for the best 10 signal decomposition
+        /// </summary>
+        /// <param name="validCount">The number of last time series element used for validation</param>
+        /// <param name="maxSignalCount">Maximum number of signals used in analysis</param>
+        /// <param name="reconstructionCount"> Maximum number of signals for time series reconstruction</param>
+        /// <returns>Return list of top 10 results based on RMSE of the validation set</returns>
+        public List<(int signals, int recoveryCount, double rmse)> Train(int validCount, int maxSignalCount)
+        {
+            //when training we define validation set in order to measure how Forecast is good for certain signal count
+            _ts1 = _ts;
+
+            //main time series become training series 
+            _ts = _ts1.Take(_ts.Count() - validCount).ToArray();
+            var validTS = _ts1.Skip(_ts.Count()).ToArray();
+            var stepAhead = validTS.Count();
+
+            //create training loop
+            var eval = new List<(int i, int rc, double rmse)>();
+            
+            foreach(var i in Enumerable.Range(3,maxSignalCount))
+            {
+                //perform analysis with i signals
+                Fit((uint)i);
+                var r1 = double.PositiveInfinity;
+                var rec = 3;
+                foreach (var rc in Enumerable.Range(3, maxSignalCount-3))
+                {
+                    //call forecast method and pass the number of time steps of steps ahead for forecasting
+                    var predicted = Forecast(stepAhead, rc);
+                    var validPredict = predicted.Skip(_ts.Count()).ToArray();
+
+                    //evaluate model with validation set
+                    var rmse = validPredict.RMSE(validTS);
+                    //
+                    if (rmse < r1)
+                    {
+                        Console.WriteLine($"Number of signals = {i}, recoveryCount={rc}, \t RMSE={rmse}");
+                        r1 = rmse;
+                        rec = rc;
+                    }
+                }
+                
+                
+                eval.Add((i, rec,r1));
+            }
+
+            //return top ten results
+            return eval.OrderBy(x=>x.rmse).Take(10).ToList();
+        }
+
+        /// <summary>
+        /// Plot Time series forecast for specific number of decomposed signals
+        /// </summary>
+        /// <param name="series"></param>
+        /// <param name="signals"></param>
+        /// <param name="horizont"></param>
+        public static PlotlyChart Plot(Series series, int signals, int recoveryCount, int horizont)
+        {
+            //get time series
+            var ts1 = series.Select(f => Convert.ToDouble(f));//create time series
+            var xValues = series.Index.ToArray();
+            return Plot(ts1, xValues, signals, recoveryCount, horizont);
+        }
+        public static PlotlyChart Plot(IEnumerable<double> ts1, object[] xValues, int signals, int recoveryCount, int horizont)
+        {
+
+            //create two ts sets training and forecasting
+            var count = ts1.Count();
+            var ts_Train = ts1.Take(count - horizont);
+            var ts_Test = ts1.Skip(count - horizont - 1).ToArray();
+            uint nmIndex = (uint)signals;
+
+
+            //create Singular Spectrum Analysis object by passing ts object
+            var ssa = new SSA(ts_Train);
+
+            //perform analysis
+            ssa.Fit(nmIndex);
+
+
+            //x axes for plot sum of the components
+            var x0 = xValues.Take(ts_Train.Count()).ToArray();
+            var x1 = xValues.Skip(ts_Train.Count() - 1).ToArray();
+
+            //Once we calculates signals by using SSA, we have to reconstruct the signals into time series
+            var modelValue = ssa.Reconstruct(recoveryCount);
+            //call forecast method and pass the number of time steps of steps ahead for forecasting and signals for reconstruction
+            var values = ssa.Forecast(horizont, recoveryCount);
+            //
+           // var modelValue = values.Take(ts_Train.Count()).ToArray();
+            var modelPredict = values.Skip(ts_Train.Count()).ToList();
+            modelPredict.Insert(0, modelValue.Last());
+            return Plot((x0, ts_Train.ToArray(), modelValue), (x1, ts_Test, modelPredict.ToArray()));
+        }
+
+        /// <summary>
+        /// Plot train and test sets
+        /// </summary>
+        /// <param name="train"></param>
+        /// <param name="test"></param>
+        /// <returns></returns>
+        private static PlotlyChart Plot((object[] x, double[] actual, double[] predicted) train, (object[] x, double[] actual, double[] predicted) test)
+        {
+            var layout = new Layout.Layout();
+            layout.title = "Singular Spectrum Analysis Forecast";
+            layout.showlegend = true;
+            layout.plot_bgcolor = "rgb(223,223,223)";
+
+
+            var scatters1 = new Graph.Scatter() { name = "Actual", x = train.x, y = train.actual, mode = "line", };
+            var scatters2 = new Graph.Scatter() { name = "Predicted", x = train.x, y = train.predicted, mode = "line", };
+            var scatters3 = new Graph.Scatter() { name = "Test Actual", x = test.x, y = test.actual, mode = "line", };
+            var scatters4 = new Graph.Scatter() { name = "Forecast", x = test.x, y = test.predicted, mode = "line", };
+            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { scatters1, scatters2, scatters3, scatters4 });
+            chart.WithLayout(layout);
+            return chart;
+            //chart.Show();
         }
     }
 }

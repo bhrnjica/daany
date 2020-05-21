@@ -20,6 +20,13 @@ using Daany.stl;
 
 namespace Daany.Stat
 {
+    public class TSComponents
+    {
+        public double[] Seasonal { get; set; }
+        public double[] Trend { get; set; }
+        public double[] Residual { get; set; }
+    }
+
     /// <summary>
     /// Class implementation for common time series operations
     /// </summary>
