@@ -236,7 +236,7 @@ namespace Daany.MathStuff
         public static double[,] Dot(this double[,] m1, double[,] m2)
         {
 
-            if (m1.GetLength(1) != m2.GetLength(0)) throw new Exception("Wrong dimensions of matrix!");
+            if (m1.GetLength(1) != m2.GetLength(0)) throw new Exception("Wrong dimensions of matrices!");
 
             double[,] result = new double[m1.GetLength(0), m2.GetLength(1)];
             for (int i = 0; i < result.GetLength(0); i++)

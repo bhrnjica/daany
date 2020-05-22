@@ -2,7 +2,7 @@
 // Daany - DAta ANalYtics Library                                                        //
 // https://github.com/bhrnjica/daany                                                    //
 //                                                                                      //
-// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
+// Copyright 2019-2020 Bahrudin Hrnjica                                                 //
 //                                                                                      //
 // This code is free software under the MIT License                                     //
 // See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
