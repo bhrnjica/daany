@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Daany.Stat;
+using Daany.MathStuff;
 //The code is converted from the java version found at https://github.com/ServiceNow/stl-decomp-4j
 
 namespace Daany.stl
@@ -144,11 +145,11 @@ namespace Daany.stl
         private void removeSeasonality()
         {
             //
-            double[] pass1 = TimeSeriesGen.SimpleMA(this.fExtendedSeasonal, this.fPeriodLength);
+            double[] pass1 = this.fExtendedSeasonal.MA(this.fPeriodLength);
             //  data.length + periodLength + 1
-            double[] pass2 = TimeSeriesGen.SimpleMA(pass1, this.fPeriodLength);
+            double[] pass2 = pass1.MA(this.fPeriodLength);
             //  data.length + 2
-            double[] pass3 = TimeSeriesGen.SimpleMA(pass2, 3);
+            double[] pass3 = pass2.MA(3);
             //
             this.fLowpassLoessFactory.Data = pass3;
             LoessSmoother lowPassLoess = this.fLowpassLoessFactory.build();

@@ -51,6 +51,20 @@ namespace Daany.MathStuff
             return result;
         }
 
+        public static T[] GetRow<T>(this T[,] m, int index)
+        {
+            T[] result = new T[m.Columns()];
+            //in case we have negative index
+            if (index < 0)
+                index = m.GetLength(0) + index;
+
+            for (int i = 0; i < result.Length; i++)
+                result[i] = m[index, i];
+
+            return result;
+        }
+
+
         public static T[,] Diagonal<T>(int rows, int cols, T[] values)
         {
             var result =  new T[rows, cols];

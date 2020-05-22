@@ -89,17 +89,17 @@ namespace Unit.Test.DF
         public void MovingAverage_Test03()
         {
             double[] values = new double[] { 1,2,3,4,5,6,7,8,9,10};
-            var ma3 = TimeSeriesGen.SimpleMA(values, 3);
+            var ma3 = values.MA(3);
             Assert.Equal(2, ma3[0]); Assert.Equal(7, ma3[5]); Assert.Equal(9, ma3[7]);
-            var ma4 = TimeSeriesGen.SimpleMA(values, 4);
+            var ma4 = values.MA(4);
             Assert.Equal(2.5, ma4[0]); Assert.Equal(5.5, ma4[3]); Assert.Equal(8.5, ma4[6]);
-            var ma5 = TimeSeriesGen.SimpleMA(values, 5);
+            var ma5 = values.MA(5);
             Assert.Equal(3, ma5[0]); Assert.Equal(6, ma5[3]); Assert.Equal(8, ma5[5]);
-            var ma6 = TimeSeriesGen.SimpleMA(values, 6);
-            var ma7 = TimeSeriesGen.SimpleMA(values, 7);
-            var ma8 = TimeSeriesGen.SimpleMA(values, 8);
-            var ma9 = TimeSeriesGen.SimpleMA(values, 9);
-            var ma10 = TimeSeriesGen.SimpleMA(values, 10);
+            var ma6 = values.MA(6);
+            var ma7 = values.MA(7);
+            var ma8 = values.MA(8);
+            var ma9 = values.MA(9);
+            var ma10 = values.MA( 10);
             Assert.Equal(5.5, ma10[0]);
         }
 

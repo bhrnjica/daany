@@ -72,6 +72,7 @@ namespace Daany.Stat
         private double[][] _orthonormalBase;
         private double[,] _xCom;
         double[] X_com_tilde;
+        double[] wi;//weights
 
         /// <summary>
         /// Singular Spectral Analysis Constructor. 
@@ -204,13 +205,34 @@ namespace Daany.Stat
             _orthonormalBase = orthonormalBase;
         }
 
+        //Calculates the correlation between conponents
+        public double[,] wCorrelation()
+        {
+            var k = _xCom.GetLength(0);
+            var retVal = new double[k,k];
+            for(int i=0; i < k; i++)
+            {
+                var X1 = _xCom.GetRow(i);
+                for (int j = 0; j < k; j++)
+                {
+                    var X2 = _xCom.GetRow(j);
+
+                    var result = X1.Multiply(X2);
+                    //
+                    //for(int ii=0; ii<)
+                    //int dd = 0; 
+                }
+            }
+            return null;
+            
+        }
         /// <summary>
         /// Calculate the relative contribution of each of the singular values
         /// </summary>
         /// <param name="X">Embedded matrix</param>
         /// <param name="s">Eigenvector s</param>
         /// <returns></returns>
-        public static double[] getControbutions(double[,] X, double[] s)
+        public double[] getControbutions(double[,] X, double[] s)
         {
             //square of the eigenvector values
             double[] lambdas = s.Pow(2);
@@ -221,7 +243,7 @@ namespace Daany.Stat
             var contr = lambdas.Divide(frob_norm * frob_norm);
 
             //return only positive contributions
-            return contr.Select(x => Math.Round(x, 5)).Where(x => x > 0).ToArray();
+            return contr.Select(x => Math.Round(x, 4)).Where(x => x > 0).ToArray();
         }
 
         /// <summary>
@@ -270,6 +292,7 @@ namespace Daany.Stat
 
             //reconstructed series
             var y = new double[N];
+             wi = new double[N];//initialize weights
             for (int k = 1; k <= N; k++)
             {
                 double yk = 0;
@@ -283,6 +306,7 @@ namespace Daany.Stat
                     }
                     //
                     y[k - 1] = yk / k;
+                    wi[k] = k;//terms(2.16)
                 }
                 else if (k >= lStar && k <= kStar)
                 {
@@ -294,6 +318,7 @@ namespace Daany.Stat
                     }
                     //
                     y[k - 1] = yk / lStar;
+                    wi[k] = lStar;//terms(2.16)
                 }
                 else if (k > kStar && k <= N)
                 {
@@ -305,6 +330,7 @@ namespace Daany.Stat
                     }
                     //
                     y[k - 1] = yk / (N - k + 1);
+                    wi[k] = N - k + 1;//terms(2.16)
                 }
                 else
                     throw new Exception("This should not be happened!");
@@ -549,6 +575,18 @@ namespace Daany.Stat
             return Plot((x0, ts_Train.ToArray(), modelValue), (x1, ts_Test, modelPredict.ToArray()));
         }
 
+        public PlotlyChart PlotContributions(bool isScaled, bool isCumulative)
+        {
+            var contrib = SContributions(isScaled, isCumulative);
+            var layout = new Layout.Layout();
+            layout.barmode = "group";
+            layout.title = "SSA signal contributions (lambda_i)";
+            var x = Enumerable.Range(1, contrib.Length).Select(x => $"Lambda{x}"); 
+            var bar1 = new Graph.Bar() { name = "Contributions", x = x , y = contrib };
+            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { bar1 });
+            chart.WithLayout(layout);
+            return chart;
+        }
         /// <summary>
         /// Plot train and test sets
         /// </summary>
