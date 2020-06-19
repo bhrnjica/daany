@@ -225,6 +225,31 @@ namespace Daany.Plot
             return model;
         }
 
+        public static PlotModel LinePlot(string titlePlot, string xLab, string yLab, params LineSeries[] series)
+        {
+            var model = new PlotModel { Title = titlePlot };
+
+            foreach (var s in series)
+                model.Series.Add(s);
+            //add category axis
+            var xAxes = new LinearAxis
+            {
+                Title = xLab,
+                Position = AxisPosition.Bottom,
+            };
+            model.Axes.Add(xAxes);
+
+
+            //add category axis
+            var yAxes = new LinearAxis()
+            {
+                Title = yLab,
+                Position = AxisPosition.Left,
+            };
+            model.Axes.Add(yAxes);
+            //
+            return model;
+        }
         public static void Show(string wndTitlle, PlotModel model)
         {
             // export using the instance methods

@@ -463,7 +463,7 @@ namespace Unit.Test.DF
 
 
             ///test correlations
-            var w = ssa.wCorrelation();
+            var w = ssa.WCorrelation();
             var df = getwCorrelationMatrix();
             for(int i=0; i < w.GetLength(0); i++)
             {
@@ -518,7 +518,7 @@ namespace Unit.Test.DF
             var charts=ssa.PlotEigenPairs();
             XPlot.Plotly.Chart.ShowAll(charts);
 
-            var w = ssa.wCorrelation(new int[] { 1, 2, 3, 4, 5, 6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 });
+            var w = ssa.WCorrelation(new int[] { 1, 2, 3, 4, 5, 6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 });
             ssa.PlotwCorrelation(w).Show();
 
         }
@@ -537,7 +537,7 @@ namespace Unit.Test.DF
             ssa.Decompose();
 
 
-            var w = ssa.wCorrelation(new int[] {1,2,3,4,5,6,7,8,9,10,11,12 });
+            var w = ssa.WCorrelation(new int[] {1,2,3,4,5,6,7,8,9,10,11,12 });
            // ssa.PlotwCorrelation(w).Show();
             for (int i = 0; i < w.GetLength(0); i++)
                 Assert.True(Math.Round(w[i, i], 5) == 1.0000);

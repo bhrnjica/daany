@@ -270,7 +270,7 @@ namespace Daany.Stat
         /// Calculates the correlation between components
         /// </summary>
         /// <returns>Matrix of Correlation values</returns>
-        public double[,] wCorrelation(int[] group =null)
+        public double[,] WCorrelation(int[] group =null)
         {
             int[] grp = group;
             if (group != null && group.Length < 2)
