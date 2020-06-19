@@ -64,7 +64,6 @@ namespace Daany.MathStuff
             return result;
         }
 
-
         public static T[,] Diagonal<T>(int rows, int cols, T[] values)
         {
             var result =  new T[rows, cols];
@@ -77,6 +76,30 @@ namespace Daany.MathStuff
         public static T[,] Copy<T>(this T[,] a)
         {
             return (T[,])a.Clone();
+        }
+
+        public static T[,] Reverse<T>(this T[,] array, bool row)
+        {
+            int r = array.GetLength(0);
+            int c = array.GetLength(1);
+            
+            T[,] m = new T[r,c];
+            for (int i = 0; i < r; i++)
+            {
+                int ii = i;
+                for (int j = 0; j < c; j++)
+                {
+                    int jj = j;
+
+                    if (row)
+                        ii = r - i - 1;
+                    else
+                        jj = c - j - 1;
+
+                    m[i,j] = array[ii,jj];
+                }
+            }
+            return m;
         }
 
         public static T[,] ToMatrix<T>(this T[][] array, bool transpose = false)
@@ -145,6 +168,29 @@ namespace Daany.MathStuff
             return retVal;
         }
 
+        public static T[][] ToMatrix<T>(this T[,] array)
+        {
+            int rowsFirstIndex = array.GetLowerBound(0);
+            int rowsLastIndex = array.GetUpperBound(0);
+            int numberOfRows = rowsLastIndex - rowsFirstIndex + 1;
+
+            int columnsFirstIndex = array.GetLowerBound(1);
+            int columnsLastIndex = array.GetUpperBound(1);
+            int numberOfColumns = columnsLastIndex - columnsFirstIndex + 1;
+
+            T[][] m = new T[numberOfRows][];
+            for (int i = 0; i < numberOfRows; i++)
+            {
+                m[i] = new T[numberOfColumns];
+
+                for (int j = 0; j < numberOfColumns; j++)
+                {
+                    m[i][j] = array[i + rowsFirstIndex, j + columnsFirstIndex];
+                }
+            }
+            return m;
+        }
+
 
         public static T[,] Transpose<T>(this T[,] m1)
         {
@@ -191,7 +237,7 @@ namespace Daany.MathStuff
                     if(i!=j)
                         retVal[i, j] = 0;
                     else
-                        retVal[i, j] = 0;
+                        retVal[i, j] = 1;
 
                 }               
             }
@@ -250,13 +296,21 @@ namespace Daany.MathStuff
         public static double[,] Dot(this double[,] m1, double[,] m2)
         {
 
-            if (m1.GetLength(1) != m2.GetLength(0)) throw new Exception("Wrong dimensions of matrices!");
+            if (m1.GetLength(1) != m2.GetLength(0)) 
+                throw new Exception("Wrong dimensions of matrices!");
 
             double[,] result = new double[m1.GetLength(0), m2.GetLength(1)];
+
             for (int i = 0; i < result.GetLength(0); i++)
+            {
                 for (int j = 0; j < result.GetLength(1); j++)
+                {
                     for (int k = 0; k < m1.GetLength(1); k++)
                         result[i, j] += m1[i, k] * m2[k, j];
+                }
+                   
+            }
+                
             return result;
         }
 
@@ -271,6 +325,24 @@ namespace Daany.MathStuff
                     s += (double)((double)v[k] * (double)m1[k, j]);
                 result[j] = (double)s;
             }
+            return result;
+        }
+
+        public static double [,] Hankel(this double[] v, int colCount=-1)
+        {
+            int N = v.Length;
+            int L = colCount == -1 ? N : colCount;
+            int K = colCount == -1 ? N : N - L + 1;
+            var result = new double[L, K];
+
+            for(int i = 0; i < L; i++)
+            {
+                for (int j = 0; j < K; j++)
+                {
+                    result[i, j] = (i + j) > N-1 ? 0: v[i + j];
+                }
+            }
+
             return result;
         }
 
@@ -558,6 +630,7 @@ namespace Daany.MathStuff
             //
             return retVal;
         }
+
         public static double[] Add(this double[] v1, double[] v2)
         {
             var result = new double[v1.Length];
@@ -565,6 +638,7 @@ namespace Daany.MathStuff
                 result[i] = v1[i] + v2[i];
             return result;
         }
+
         public static double[] Add(this double[] m, double s)
         {
             var result = new double[m.Length];
@@ -604,12 +678,11 @@ namespace Daany.MathStuff
         public static double[] Substract(this double[] m, double s)
         {
             var result = new double[m.Length];
-            for (int i = 0; i < result.GetLength(0); i++)
+            for (int i = 0; i < result.Length; i++)
                result[i] = m[i] - s;
             return result;
         }
-
-       
+      
         public static double[,] Multiply(this double[,] m, double s)
         {
             var result = new double[m.GetLength(0),m.GetLength(1)];
@@ -618,6 +691,7 @@ namespace Daany.MathStuff
                     result[i, j] = m[i, j]*s;
             return result;
         }
+
         public static double[] Multiply(this double[] v, double s)
         {
             var result = new double[v.Length];
@@ -633,6 +707,7 @@ namespace Daany.MathStuff
                 result[i] = v1[i] * v2[i];
             return result;
         }
+
         public static double[,] Divide(this double[,] m, double s)
         {
             var result = new double[m.GetLength(0), m.GetLength(1)];
@@ -641,6 +716,7 @@ namespace Daany.MathStuff
                     result[i, j] = m[i, j] / s;
             return result;
         }
+
         public static double[] Divide(this double[] m, double s)
         {
             var result = new double[m.Length];
@@ -656,6 +732,7 @@ namespace Daany.MathStuff
                 result[i] = v1[i] / v2[i];
             return result;
         }
+
         public static double[,] Sqrt(this double[,] m1)
         {
 
@@ -693,6 +770,7 @@ namespace Daany.MathStuff
                 result[i] = Math.Pow(v[i], y);
             return result;
         }
+
         public static double[] CVector(this double[,] m1, int colIndex)
         {
 

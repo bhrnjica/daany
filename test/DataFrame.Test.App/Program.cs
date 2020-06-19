@@ -1,3 +1,5 @@
+using Daany.Plot;
+using DataFrame.Test.App;
 using ML.Net.App.TimeSeries;
 using System;
 using System.Collections.Generic;
@@ -38,8 +40,12 @@ namespace Daany.Test.App
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
 
+            //OxyPlot
+            ExampleOXYPlot.Run();
+
+
             //SSA test
-            //SSADemo.Forecasting();
+            SSADemo.Forecasting();
 
             //IList<int> index = new int[] {0,1,2,3,4,5,6,7,8,9 };
             //IList<object> key1 = new object[] { new DateTime(2019,1,1), new DateTime(2019, 1, 2), new DateTime(2019, 1, 3), new DateTime(2019, 1, 4)
@@ -61,7 +67,13 @@ namespace Daany.Test.App
 
 
 
-           DataFrameTest.RunMergeTest();
+            // DataFrameTest.RunMergeTest();
+
+            //SSADemo.Forecasting();
+
+            //ARIMA Test
+
+          // ARIMATest.ARIMA_Test00();
         }
     }
 }

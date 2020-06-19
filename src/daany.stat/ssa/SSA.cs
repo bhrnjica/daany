@@ -13,26 +13,37 @@
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using Accord.Math.Decompositions;
 using Daany.MathStuff;
 using XPlot.Plotly;
 
 namespace Daany.Stat
 {
+    public enum Forecasting
+    {
+        Rforecasing,
+        Vforecasting
+    }
+    public class EigenTriple
+    {
+        public double Li { get; set; }
+        public double[] Ui { get; set; }
+        public double[] Vi { get; set; }
+        public float LiContrb { get; set; }//contribution 
+
+    }
     /// <summary>
-    /// This class is modification of the python code found at: https://github.com/aj-cloete/pySSA
-    /// Class implementation for singular spectrum analysis, based on the Python version found at: 
+    /// Class implementation for Singular Spectrum Analysis based on the Algorithm defined at: 
+    /// (N. Golyandina and A. Zhigljavsky, Singular Spectrum Analysis for Time Series, SpringerBriefs in Statistics, DOI: 10.1007/978-3-642-34913-3_2)
     /// SSA procedure in three steps:
-    /// 1. Embed  - the time series by forming a Hankel matrix of lagged window(length K) vectors.
-    /// 
+    /// 1. Embedding  - the time series by forming a Hankel matrix of lagged window(length K) vectors.
     /// 2. Decompose - the embedded time series via Singular Value Decomposition
-    /// 3. Eigentripple Grouping - is the process of identifying eigenvalue-eigenvector pairs as trend, 
-    ///                         seasonal and noise
+    /// 3. Eigen-tripple Grouping - is the process of identifying eigenvalue-eigenvector pairs as trend, seasonal and noise                         
     ///4. Reconstruct the time series -  from the eigenvalue-eigenvector pairs identified as trend and seasonal.
     ///                              This is done through a process called diagonal averaging.
+    ///5. Forecasting - originally defined there are two methods of forecasting: rForecast and VForecast.                              
     ///Description of SSA (from Wikipedia)
     ///
     ///SSA can be used as a model-free technique so that it can be applied to arbitrary time series including 
@@ -42,37 +53,46 @@ namespace Daany.Stat
     /// </summary>
     public class SSA
     {
-        //The additive signal elements from the time series
-        public Dictionary<int, double[,]> Xs
+        //original time series
+        private double[] _ts;
+        private double[] _ts1;
+
+        //L-trajectory matrix
+        private double[,] _XX;
+
+        //SSA parameters
+        private int L, K;
+
+        /// <summary>
+        /// Elementary Matrices
+        /// </summary>
+        public Dictionary<int, double[,]> EM
         {
             get
             {
                 return _Xs;
             }
         }
+        private Dictionary<int, double[,]> _Xs;
 
-        //The additive signal elements from the time series
-        public double[] Contributions
+        /// <summary>
+        /// Trajectory matrix can be expressed as X= X1+X2+...X3, where Xi= si Ui Vi. 
+        ///  The matrices Xi have rank 1; therefore they are elementary matrices, 
+        ///     - si - singular values of the matrix X
+        ///     - Ui(in SSA literature they are called ‘factor empirical orthogonal functions’ or simply EOFs) and 
+        ///     - Vi(often called ‘principal components’) stand for the left and right eigenvectors of the trajectory matrix.
+        /// The collection(si, Ui, Vi) is called the i-th eigentriple of the matrix X, si (i = 1, . . . , d) are
+        /// the singular values of the matrix X and the set {si} is called the spectrum of the matrix X.
+        /// If all the eigenvalues have multiplicity one, then the expansion(2.1) is uniquely defined.
+        /// </summary>
+        public Dictionary<int, EigenTriple> EigenTriple
         {
             get
             {
-                return _sContributions;
+                return _eigentriple;
             }
         }
-
-        Dictionary<int, double[,]> _Xs;
-
-        //main time series collection
-        double[] _ts;
-        //time series for analysis. Sometime it can be different than main times series when we perform training
-        double[] _ts1;
-
-        private double[] _sContributions;
-        private double[] _R;
-        private double[][] _orthonormalBase;
-        private double[,] _xCom;
-        double[] X_com_tilde;
-        double[] wi;//weights
+        private Dictionary<int, EigenTriple> _eigentriple = new Dictionary<int, EigenTriple>();
 
         /// <summary>
         /// Singular Spectral Analysis Constructor. 
@@ -83,216 +103,106 @@ namespace Daany.Stat
             _ts = ts.ToArray();
         }
 
+        #region Decompose 
         /// <summary>
-        /// (PDF) Singular Spectrum Analysis for Time Series.Available from:
-        /// https://www.researchgate.net/publication/260124592_Singular_Spectrum_Analysis_for_Time_Series [accessed Sep 10 2019].
-        /// 1st step: Embedding
-        /// To perform the embedding such that it map the original time series into a sequence of lagged vectors of size L
-        /// by forming K = N−L+1 lagged vectors (columns)
-        /// L -rows
-        /// The matrix X is a Hankel matrix which means that matrix X has equal elements xij on the anti-diagonals. 
-        /// </summary>
-        /// <param name="embeddingDim">embedding dimension</param>
-        /// <param name="suspectedFreq">changes embedding_dimension such that it is divisible by suspected frequency</param>
+        /// Embedding
         /// <returns></returns>
-        public double[,] Embedding(uint embeddingDim = 0, uint suspectedFreq = 0)
+        public double[,] Embedding(uint embeddingDim = 0)
         {
-            int L = (int)embeddingDim;
+            if (embeddingDim > _ts.Length / 2)
+                throw new Exception($"Embedding cannot be greater than  half time series length.");
 
-            //setting the embedding dimension
+            L = (int)embeddingDim;
+
+            //setting default embedding dimension
             if (embeddingDim == 0)
                 L = _ts.Length / 2;
 
-            if (suspectedFreq > 0)
-                L = (int)Math.Floor((double)embeddingDim/(double)suspectedFreq)*(int)suspectedFreq;
-
             //calculation of K
-            int K = _ts.Count() - L + 1;
-
-            //prepare the embedding matrix
-            var retVal = new double[L, K];
-            for (int i = 0; i < L; i++)
-            {   
-                var k = i;
-                for (int j = 0; j < K; j++)
-                   retVal[i, j] = _ts[k++];
-            }
-            //store embedding matrix to class field
-            _xCom = retVal;
-
+            K = _ts.Count() - L + 1;
+            //
+            var retVal = _ts.Hankel(L);
+            _XX = retVal;
             return retVal;
         }
+
         /// <summary>
         /// Perform the Singular Value Decomposition and identify the rank of the embedding subspace
-        /// Characteristic of projection: the proportion of variance captured in the subspace
         /// </summary>
         public void Decompose()
         {
             //transformation of the embedded matrix
-            var XT = _xCom.Transpose();
+            var XXT = _XX.Transpose();
+
             //embedding (trajectory) matrix helper var
-            var X = _xCom; 
+            var X = _XX;
 
             //S matrix calculation
-            double[,] S = _xCom.Dot(XT);
+            double[,] S = _XX.Dot(XXT);
 
-            /*Single Value Decomposition
-             * For an m-by-n matrix A with m >= n, the singular value decomposition is 
-             * 
-             *                      an m-by-n orthogonal matrix U,
-             *                      an n-by-n diagonal matrix S, 
-             *                  and an n-by-n orthogonal matrix V 
-             *                 so that A = U * S * V'. 
-             *          
-             * The singular values, sigma[k] = S[k,k], are ordered so that sigma[0] >= sigma[1] >= ... >= sigma[n-1].
-             */
+            //SVD
             var svd = new SingularValueDecomposition(S);
 
-            //summary of the SVD calculation
-            //left eigenvector
-            double[,] U = svd.LeftSingularVectors;
-            double[] s = svd.Diagonal.Sqrt();
+            //***summary of the SVD calculation***
+            double[,] U = svd.LeftSingularVectors; //left singular eigen vector of XX
+            double[,] V = svd.RightSingularVectors; //right singular eigen vector of XX
+            double[] s = svd.Diagonal.Sqrt();//sqrt of lambda_i, eigenvalues of S,
+            double frob_norm = X.Euclidean();//norm of the embedding matrix
+            double normSquared = frob_norm * frob_norm;
+            int d = svd.Rank; //rank of the 
 
-            //right eigenvector
-            double[,] V = svd.RightSingularVectors;
-            int d = svd.Rank;
-
-            //helper variable to calculate characteristics of projection
-            double[][] Ys = new double[d][];
-            double[][] Zs = new double[d][];
-            var Vs = new double[d][];
-
-            //SVD trajectory matrix written as Xs = X1 + X2 + X3 + ... + Xd
+            //****summary of the SVD calculation****
+            //SVD trajectory matrix written as XX = XX_1 + XX_2 + XX_3 + ... + XX_d
             _Xs = new Dictionary<int, double[,]>();
 
             //calculation of the eigen-triple of the SVD
             for (int i = 0; i < d; i++)
             {
-                // 
-                Zs[i] = V.GetColumn(i).Multiply(s[i]);
-
+                //Vi=(X^T).(Ui)/s  - matrix 1 x d
+                var Vi = XXT.Dot(U.GetColumn(i).Divide(s[i]));
+                //sUi = (si)*Ui - matrix d x 1
+                var sUi = U.GetColumn(i).Multiply(s[i]);
                 //
-                Vs[i] = XT.Dot(U.GetColumn(i).Divide(s[i]));
+                //matrix multiplication sUI dot Vi
+                var Xi = sUi.ToMatrix(asColumnVector: true).Dot(Vi.ToMatrix(asColumnVector: false));
+                _Xs.Add(i + 1, Xi);
 
-                //
-                Ys[i] = U.GetColumn(i).Multiply(s[i]);
-
-                //vector of Ys[i] to matrix d x 1
-                var y = Ys[i].ToMatrix(asColumnVector: true);
-
-                //vector of Vs[i] to matrix 1 x n
-                var v = Vs[i].ToMatrix(asColumnVector: false);
-
-                //matrix multiplication
-                var x = y.Dot(v);
-                _Xs.Add(i, x);
-            }
-
-            //calculate contributions
-            _sContributions = getControbutions(X, s);
-
-            int r = _sContributions.Length;
-            var firstRValues = s.Take(r).ToArray();
-            var _rCharacteristic = Math.Round(firstRValues.Multiply(firstRValues).Sum() / s.Multiply(s).Sum(), 4);
-
-            //
-            var orthonormalBase = new double[r][];
-            foreach (var ind in Enumerable.Range(0, r))
-               orthonormalBase[ind] = U.GetColumn(ind);
-
-
-            //set final value of the orthonormal matrix
-            _orthonormalBase = orthonormalBase;
-        }
-
-        //Calculates the correlation between conponents
-        public double[,] wCorrelation()
-        {
-            var k = _xCom.GetLength(0);
-            var retVal = new double[k,k];
-            for(int i=0; i < k; i++)
-            {
-                var X1 = _xCom.GetRow(i);
-                for (int j = 0; j < k; j++)
+                //calculate contribution of the eigen-triple
+                var contrb = (float)Math.Round(svd.Diagonal[i] * 100 / normSquared, 2);
+                //add eigen-triple to collection in case it is greather than zero
+                if (contrb > 0)
                 {
-                    var X2 = _xCom.GetRow(j);
-
-                    var result = X1.Multiply(X2);
-                    //
-                    //for(int ii=0; ii<)
-                    //int dd = 0; 
+                    var eti = new EigenTriple() { Li = s[i], LiContrb = contrb, Ui = U.GetColumn(i), Vi = Vi };
+                    _eigentriple.Add(i + 1, eti);
                 }
             }
-            return null;
-            
+
         }
-        /// <summary>
-        /// Calculate the relative contribution of each of the singular values
-        /// </summary>
-        /// <param name="X">Embedded matrix</param>
-        /// <param name="s">Eigenvector s</param>
-        /// <returns></returns>
-        public double[] getControbutions(double[,] X, double[] s)
-        {
-            //square of the eigenvector values
-            double[] lambdas = s.Pow(2);
+        #endregion
 
-            //norm of the embedding matrix
-            double frob_norm = X.Euclidean();
-            //
-            var contr = lambdas.Divide(frob_norm * frob_norm);
-
-            //return only positive contributions
-            return contr.Select(x => Math.Round(x, 4)).Where(x => x > 0).ToArray();
-        }
-
-        /// <summary>
-        /// the contribution of each of the signals (corresponding to each singular value) 
-        /// </summary>
-        /// <param name="adjustScale"></param>
-        /// <returns></returns>
-        public double[] SContributions(bool adjustScale = true, bool cumulative = false)
-        {
-            //
-            var contr = _sContributions;
-            var posContr = contr.Where(x => x != 0).ToArray();
-            
-            //in case cumulative flag is enabled
-            if (cumulative)
-                posContr = posContr.CumulativeSum();
-            
-            //in case adjusted flag is enabled
-            if (adjustScale)
-                posContr = posContr.Pow(-1).Substract(posContr.Pow(-1).Max() * 1.1).Multiply(-1);
-            
-            //
-            return posContr;
-        }
-
-        
+        #region Reconstruct
         /// <summary>
         /// transform each matrix Xij of the grouped decomposition into a new series of length N
         /// </summary>
         /// <returns>elementary reconstructed series</returns>
-        private double[] diagonalAveraging(double[,] signalMatrix)
+        private double[] diagonalAveraging(double[,] eMatrix)
         {
             //calculate number of cols, rows and 
-            var L = signalMatrix.GetLength(0);
-            var K = signalMatrix.GetLength(1);
-            var Y = signalMatrix;
+            var LL = eMatrix.GetLength(0);
+            var KK = eMatrix.GetLength(1);
+            var Y = eMatrix;
 
-            int lStar = Math.Min(L, K);
-            int kStar = Math.Max(L, K);
-            int N = L + K - 1;
+            int lStar = Math.Min(LL, KK);
+            int kStar = Math.Max(LL, KK);
+            int N = LL + KK - 1;
             //
             var newM = MatrixEx.Zeros(L, K);
             //
-            if (L >= K)
+            if (LL >= KK)
                 Y = Y.Transpose();
 
             //reconstructed series
             var y = new double[N];
-             wi = new double[N];//initialize weights
             for (int k = 1; k <= N; k++)
             {
                 double yk = 0;
@@ -306,7 +216,6 @@ namespace Daany.Stat
                     }
                     //
                     y[k - 1] = yk / k;
-                    wi[k] = k;//terms(2.16)
                 }
                 else if (k >= lStar && k <= kStar)
                 {
@@ -318,7 +227,6 @@ namespace Daany.Stat
                     }
                     //
                     y[k - 1] = yk / lStar;
-                    wi[k] = lStar;//terms(2.16)
                 }
                 else if (k > kStar && k <= N)
                 {
@@ -330,143 +238,308 @@ namespace Daany.Stat
                     }
                     //
                     y[k - 1] = yk / (N - k + 1);
-                    wi[k] = N - k + 1;//terms(2.16)
                 }
                 else
                     throw new Exception("This should not be happened!");
             }
             return y;
         }
-
         /// <summary>
-        /// Reconstruct time series component from the signal matrix
+        /// Reconstruct series by providing indices of list of elementary matrices
         /// </summary>
-        /// <param name="xs">signal matrix</param>
+        /// <param name="signalIndex">list of indices of elementary matrices</param>
         /// <returns></returns>
-        public double[] Reconstruct(double[,] xs)
+        public double[] Reconstruct(params int[] group)
         {
-            return diagonalAveraging(xs);
-        }
+            //reconstructed ts
+            var rts = MatrixEx.Zeros(_ts.Count());
 
-        /// <summary>
-        /// Reconstruct time series component from the signal matrix
-        /// </summary>
-        /// <param name="xs">number of signal matrix</param>
-        /// <returns></returns>
-        public double[] Reconstruct(int signalCounts = -1)
-        {
-            double[] tsCumulative=null;
-            IEnumerable<KeyValuePair<int, double[,]>> sM = _Xs;
-            if (signalCounts > 0)
-                sM = _Xs.Take(signalCounts);
-
-            //initial ts
-            tsCumulative = MatrixEx.Zeros(_ts.Count());
-
-            foreach (var sMat in sM)
+            for (int i = 0; i < group.Length; i++)
             {
-                var retVal = diagonalAveraging(sMat.Value);
-                tsCumulative= tsCumulative.Add(retVal);
+                var sm = EM[group[i]];
+                var retVal = diagonalAveraging(sm);
+                rts = rts.Add(retVal);
             }
 
-            return tsCumulative;
+            return rts;
+        }
+        #endregion
+
+        #region w-Correlation
+        /// <summary>
+        /// Calculates the correlation between components
+        /// </summary>
+        /// <returns>Matrix of Correlation values</returns>
+        public double[,] wCorrelation(int[] group =null)
+        {
+            int[] grp = group;
+            if (group != null && group.Length < 2)
+                throw new Exception("Group must contain at least two elements.");
+
+            if (grp == null)
+                grp = Enumerable.Range(1,EM.Count).ToArray();
+                
+
+            //prepare for forecasting by calculation necessary values
+            var wi = calculateWeights();
+            var count = grp.Length;
+            var contrib = new List<double[]>();
+            //
+            foreach (var g in grp)
+            {
+                var c = diagonalAveraging(EM[g]);
+                contrib.Add(c);
+            }
+
+            //
+            var Fnorms = new double[count];
+            for (int i = 0; i < count; i++)
+                Fnorms[i] = wi.Multiply(contrib[i].Multiply(contrib[i])).Sum();
+
+            Fnorms = Fnorms.Pow(-0.5);
+            //
+            var wCorr = MatrixEx.Identity(count, count);
+            for (int i = 0; i < count; i++)
+            {
+                for (int j = i+1; j < count; j++)
+                {
+                    wCorr[i, j] =Math.Round(Math.Abs(wi.Multiply(contrib[i].Multiply(contrib[j])).Sum()) * Fnorms[i] * Fnorms[j],4);
+                    wCorr[j, i] = wCorr[i, j];
+                }
+            }
+            return wCorr;
         }
 
         /// <summary>
-        /// Forecast from last point of original time series up to steps_ahead using recurrent methodology
-        /// Forecasting by SSA can be applied to time series that approximately satisfy
-        /// linear recurrent formulae(LRF). 
-        /// The series Y_T satisfies an LRF of order d if there are numbers a1, . . . , ad such that
-        /// 
-        ///  y_(i+d)=SUM_(k=1)^d(a_k y_(i+d-1) ); (1 <= i <= T-d)
-        /// 
+        /// Calculation of weights
         /// </summary>
-        /// <param name="horizont"></param>
+        /// <returns></returns>
+        private double[] calculateWeights()
+        {
+            int lStar = Math.Min(L, K);
+            int kStar = Math.Max(L, K);
+            int N = L + K - 1;
+            //
+            var wi = new double[N];//initialize weights
+            //
+            for (int i = 0; i < N; i++)
+            {
+                if (i >= 0 && i <= lStar-1)
+                    wi[i] = i + 1;
+                else if (i >= lStar && i <= kStar-1)
+                    wi[i] = lStar;
+                else if (i >= kStar && i < N)
+                    wi[i] = N - i;
+                else
+                    throw new Exception("This should not be happened!");
+            }
+            return wi;
+        }
+
+        #endregion
+
+        #region Forecasting and Fitting
+
+        /// <summary>
+        /// Forecast from last point of original time series up to steps_ahead.
+        /// </summary>
+        /// <param name="stepsAhead"></param>
         /// <param name="singularValues"></param>
         /// <returns></returns>
-        public double[] Forecast(int horizont = 12, int singularValues = -1)
+        public double[] Forecast(int[] group, int stepsAhead, bool wholeSeries = true, Forecasting method= Forecasting.Rforecasing)
         {
-            //prepare for forecasting by calculation necessary values
-            prepareForecast(singularValues);
-
             //
-            var forecast = new List<double>();
-
-            //fill the first element of time series
-            forecast.Add(this._ts[0]);
-            for (int i=1; i < this._ts.Length + horizont; i++)
+            
+            if (method== Forecasting.Rforecasing)
             {
-                if(i < this._ts.Length)
+                return Rforecasting(group, stepsAhead, wholeSeries);
+            }
+            else
+            {
+                return Vforecasting(group, stepsAhead, wholeSeries);
+            }
+
+
+        }
+
+        /// <summary>
+        /// VForecasting SSA method
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="stepsAhead"></param>
+        /// <param name="wholeSeries"></param>
+        /// <returns></returns>
+        private double[] Vforecasting(int[] group, int stepsAhead, bool wholeSeries)
+        {
+            double[] forecast;
+            //prepare for forecasting by calculation necessary values
+            (double[,] X, double[,] Pe) = prepareVectorFormula(group);
+
+            //define extended trajectory matrix
+            double[,] Xext = new double[L, K + stepsAhead];
+            
+            //fill the first element of time series
+            for (int i = 0; i < K + stepsAhead; i++)
+            {
+                if (i < K)
                 {
-                    if (double.IsNaN(_ts[i]) && i < _R.Length)
-                        throw new Exception($"Missing values must be at greater position than {_R.Length}.");
-
-                    else if (double.IsNaN(_ts[i]))
-                    {
-                        var tss = forecast.Skip(Math.Max(0, i - _R.Length)).Take(_R.Length).ToArray();
-                        var x = _R.ToMatrix().Dot(tss.ToMatrix(true));
-                        forecast.Add(x[0, 0]);
-                    }
-                    else
-                        forecast.Add(this._ts[i]);
-
+                    for (int j = 0; j < L; j++)
+                        Xext[j, i] = X[j, i];
                 }
                 else
                 {
-                    // 
-                    var tss = forecast.Skip(i-_R.Length).Take(_R.Length).ToArray();
-                    var x = _R.ToMatrix().Dot(tss.ToMatrix(true));
-                    forecast.Add(x[0,0]);
-                }
-            }
+                    var Ydelta = Xext.GetColumn(i - 1).ToArray().ToMatrix(true);
+                    var Zi = Pe.Dot(Ydelta);
 
-            return forecast.ToArray();
+                    for (int j = 0; j < L; j++)
+                        Xext[j, i] = Zi[j, 0];
+                }
+
+            }
+            //perform diagonal averaginig
+            forecast = diagonalAveraging(Xext);
+            //
+            if (wholeSeries)
+                return forecast.ToArray();
+            else
+                return forecast.TakeLast(stepsAhead).ToArray();
         }
 
+        /// <summary>
+        /// RForecasting mthod
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="stepsAhead"></param>
+        /// <param name="wholeSeries"></param>
+        /// <returns></returns>
+        private double[] Rforecasting(int[] group, int stepsAhead, bool wholeSeries)
+        {
+            if (group.Length > EigenTriple.Count)
+                throw new Exception("The group is greater than number o eigen triple.");
 
+            var forecast = new List<double>();
+            //prepare for forecasting by calculation necessary values
+            (double[] cts, double[] R) = prepareRecurrentFormula(group);
+            //fill the first element of time series
+            forecast.AddRange(cts);
+            for (int i = this._ts.Length; i < this._ts.Length + stepsAhead; i++)
+            {
+                // 
+                var tss = forecast.TakeLast(R.Length).ToArray();
+                var x = R.ToMatrix().Dot(tss.ToMatrix(true));
+                forecast.Add(x[0, 0]);
+            }
+            //
+            if (wholeSeries)
+                return forecast.ToArray();
+            else
+                return forecast.TakeLast(stepsAhead).ToArray();
+        }
 
-        void prepareForecast(int singularsValuesCount)
+        (double[] ts, double[] r) prepareRecurrentFormula(int[] iC)
         {
             double vertCoeff = 0;
-            double[][] forecastOrthonormalVal;
-            var L = _xCom.GetLength(0);
-            var K = _xCom.GetLength(1);
-            var X_com_hat = MatrixEx.Zeros(L, K);
+            double[][] PP = new double[iC.Length][];//orthonormal basis in Lspace
 
-            if (singularsValuesCount >= 0)
-            {
-                //check if the count greater of orthonormal matrix length
-                var len = Math.Min(singularsValuesCount, _orthonormalBase.Length);
+            //trajectory matrix of iC group
+            var Xhat = MatrixEx.Zeros(L, K);
+            //
+            for (int i = 0; i < iC.Length; i++)
+                PP[i] = EigenTriple[iC[i]].Ui;
 
-                forecastOrthonormalVal = new double[len][];
-                for (int i = 0; i < len; i++)
-                  forecastOrthonormalVal[i] = _orthonormalBase[i];
-            }
-            else
-                forecastOrthonormalVal = _orthonormalBase;
-
-            var valR = MatrixEx.Zeros(forecastOrthonormalVal[0].Length, 1);
-            var tmp = valR.GetColumn(valR.GetLength(1) - 1);
-            _R = tmp.Take(tmp.Count() - 1).ToArray();
+            //create zero matrix
+            var R = new double[L - 1];
 
             //
-            for (int i = 0; i < forecastOrthonormalVal.Length; i++)
+            for (int i = 0; i < PP.Length; i++)
             {
-                //
-                var PI = forecastOrthonormalVal[i];
-                var prod = PI.ToMatrix(true).Dot(PI.ToMatrix(false));
-                var temp = prod.Dot(_xCom);
-                X_com_hat = X_com_hat.Add(temp);
-                //
-                var pi = PI.Last();
+
+                var Pi = PP[i];
+
+                var PiPiT = Pi.ToMatrix(true).Dot(Pi.ToMatrix(false));
+                var ti = PiPiT.Dot(_XX);
+                Xhat = Xhat.Add(ti);
+
+                //pi is the last component of the vector Pi
+                var pi = Pi.Last();
                 vertCoeff += pi * pi;
-                var rr = PI.Take(PI.Length - 1).ToArray().Multiply(pi);
-                _R = _R.Add(rr);
+
+                //first L-1 components
+                var PI = Pi.Take(L - 1).ToArray();
+                var rr = PI.Multiply(pi);
+                R = R.Add(rr);
+
             }
 
+            //the last r calculation step
+            R = R.Divide((1.0 - vertCoeff));
+
+            //reconstructed time series
+            var cts = diagonalAveraging(Xhat);
+            return (cts, R);
+        }
+
+        (double[,] X, double[,] Pe) prepareVectorFormula(int[] iC)
+        {
+            int r = iC.Length;
+            double vertCoeff = 0;
+            double[][] PP = new double[iC.Length][];//orthonormal basis in Lspace
+
+            //trajectory matrix of iC group
+            var Xhat = MatrixEx.Zeros(L, K);
             //
-            _R = _R.Divide((1.0 - vertCoeff));
-            X_com_tilde = diagonalAveraging(X_com_hat);
+            for (int i = 0; i < r; i++)
+                PP[i] = EigenTriple[iC[i]].Ui;
+
+            var Vdelta = new double[L - 1, L - 1];
+
+            //create zero matrix
+            var R = new double[L - 1];
+
+            //
+            for (int i = 0; i < r; i++)
+            {
+                var Pi = PP[i];
+                var PiPiT = Pi.ToMatrix(true).Dot(Pi.ToMatrix(false));
+                var ti = PiPiT.Dot(_XX);
+                Xhat = Xhat.Add(ti);
+
+                //pi is the last component of the vector Pi
+                var pi = Pi.Last();
+                vertCoeff += pi * pi;
+
+                //first L-1 components
+                var PI = Pi.Take(L - 1).ToArray();
+                var rr = PI.Multiply(pi);
+                R = R.Add(rr);
+
+                //
+                for (int ii = 0; ii < L - 1; ii++)
+                    Vdelta[ii, i] = PI[ii];
+            }
+
+            //the last R calculation step
+            R = R.Divide((1.0 - vertCoeff));
+            //
+            var p1 = R.ToMatrix(true).Dot(R.ToMatrix(false)).Multiply((1.0 - vertCoeff));
+            var p2 = Vdelta.Dot(Vdelta.Transpose());
+            var P = p1.Add(p2);
+
+            //Define Pe operator
+            double[,] Pe = new double[L, L];
+            for (int i = 0; i < L; i++)
+            {
+                for (int j = 0; j < L; j++)
+                {
+                    if (j == 0)
+                        Pe[i, j] = 0;
+                    else if (i < L - 1)
+                        Pe[i, j] = P[i, j - 1];
+                    else
+                        Pe[i, j] = R[j - 1];
+                }
+            }
+            return (Xhat, Pe);
         }
 
         /// <summary>
@@ -478,7 +551,9 @@ namespace Daany.Stat
             Embedding(embeddingDim);
             Decompose();
         }
+        #endregion
 
+        #region Plotting SSA
         /// <summary>
         /// Perform SSA on time series by searching for the best 10 signal decomposition
         /// </summary>
@@ -494,21 +569,21 @@ namespace Daany.Stat
             //main time series become training series 
             _ts = _ts1.Take(_ts.Count() - validCount).ToArray();
             var validTS = _ts1.Skip(_ts.Count()).ToArray();
-            var stepAhead = validTS.Count();
+            var stepsAhead = validTS.Count();
 
             //create training loop
             var eval = new List<(int i, int rc, double rmse)>();
-            
-            foreach(var i in Enumerable.Range(3,maxSignalCount))
+
+            foreach (var i in Enumerable.Range(3, maxSignalCount))
             {
                 //perform analysis with i signals
                 Fit((uint)i);
                 var r1 = double.PositiveInfinity;
                 var rec = 3;
-                foreach (var rc in Enumerable.Range(3, maxSignalCount-3))
+                foreach (var rc in Enumerable.Range(3, maxSignalCount - 3))
                 {
                     //call forecast method and pass the number of time steps of steps ahead for forecasting
-                    var predicted = Forecast(stepAhead, rc);
+                    var predicted = Forecast(Enumerable.Range(1, rc).ToArray(), stepsAhead, method:Forecasting.Rforecasing);
                     var validPredict = predicted.Skip(_ts.Count()).ToArray();
 
                     //evaluate model with validation set
@@ -521,13 +596,13 @@ namespace Daany.Stat
                         rec = rc;
                     }
                 }
-                
-                
-                eval.Add((i, rec,r1));
+
+
+                eval.Add((i, rec, r1));
             }
 
             //return top ten results
-            return eval.OrderBy(x=>x.rmse).Take(10).ToList();
+            return eval.OrderBy(x => x.rmse).Take(10).ToList();
         }
 
         /// <summary>
@@ -543,6 +618,8 @@ namespace Daany.Stat
             var xValues = series.Index.ToArray();
             return Plot(ts1, xValues, signals, recoveryCount, horizont);
         }
+
+
         public static PlotlyChart Plot(IEnumerable<double> ts1, object[] xValues, int signals, int recoveryCount, int horizont)
         {
 
@@ -567,26 +644,30 @@ namespace Daany.Stat
             //Once we calculates signals by using SSA, we have to reconstruct the signals into time series
             var modelValue = ssa.Reconstruct(recoveryCount);
             //call forecast method and pass the number of time steps of steps ahead for forecasting and signals for reconstruction
-            var values = ssa.Forecast(horizont, recoveryCount);
+            var values = ssa.Forecast(Enumerable.Range(1, recoveryCount).ToArray(), horizont, true, method: Forecasting.Vforecasting);
             //
-           // var modelValue = values.Take(ts_Train.Count()).ToArray();
+            // var modelValue = values.Take(ts_Train.Count()).ToArray();
             var modelPredict = values.Skip(ts_Train.Count()).ToList();
             modelPredict.Insert(0, modelValue.Last());
             return Plot((x0, ts_Train.ToArray(), modelValue), (x1, ts_Test, modelPredict.ToArray()));
         }
 
-        public PlotlyChart PlotContributions(bool isScaled, bool isCumulative)
+    
+
+        public PlotlyChart PlotwCorrelation(double[,] wValues)
         {
-            var contrib = SContributions(isScaled, isCumulative);
-            var layout = new Layout.Layout();
-            layout.barmode = "group";
-            layout.title = "SSA signal contributions (lambda_i)";
-            var x = Enumerable.Range(1, contrib.Length).Select(x => $"Lambda{x}"); 
-            var bar1 = new Graph.Bar() { name = "Contributions", x = x , y = contrib };
-            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { bar1 });
-            chart.WithLayout(layout);
+            var s1 = new Graph.Heatmap()
+            {
+
+                name = "W-correlation matrix",
+               // colorscale = @"Viridis",
+                z = wValues
+            };
+
+            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { s1 });
             return chart;
         }
+
         /// <summary>
         /// Plot train and test sets
         /// </summary>
@@ -610,5 +691,84 @@ namespace Daany.Stat
             return chart;
             //chart.Show();
         }
+
+        public XPlot.Plotly.PlotlyChart PlotSingularValues()
+        {
+
+            var layout = new Layout.Layout();
+            layout.barmode = "group";
+            layout.title = "Logarithms of eigenvalues";
+            var x = Enumerable.Range(1, EigenTriple.Count).Select(x => x);
+            var bar1 = new Graph.Scatter() { name = "Eigenvalues", x = x, y = EigenTriple.Select(x => Math.Log(x.Value.Li)), mode = "lines+markers" };
+            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { bar1 });
+            chart.WithLayout(layout);
+            return chart;
+        }
+
+        public List<XPlot.Plotly.PlotlyChart> PlotEigenPairs()
+        {
+            var layout = new Layout.Layout();
+            
+            layout.showlegend = false;
+            layout.width = 100;
+            layout.height = 100;
+            var lst = new List<XPlot.Plotly.PlotlyChart>();
+            foreach (var i in Enumerable.Range(0, EigenTriple.Count()-1))
+            {
+                var p1 = EigenTriple[i + 1];
+                var p2 = EigenTriple[i + 2];
+                var s = new Graph.Scatter()
+                {
+                    showlegend = true,
+                    name = $"ET{i + 1}({EigenTriple[i + 1].LiContrb}%)-{i + 2}({EigenTriple[i + 2].LiContrb}%)",
+                    x = EigenTriple[i + 1].Ui,
+                    y = EigenTriple[i + 2].Ui,
+                    mode = "line",
+                };
+                lst.Add(XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { s }));
+            }
+            //
+            return lst;
+            //chart.Show();
+        }
+
+        public PlotlyChart PlotContributions(bool isScaled, bool isCumulative)
+        {
+            var contrib = EM.Select(x => diagonalAveraging(x.Value));
+            var layout = new Layout.Layout();
+            layout.barmode = "group";
+            layout.title = "SSA signal contributions (lambda_i)";
+            var x = Enumerable.Range(1, contrib.Count()).Select(x => $"Lambda{x}");
+            var bar1 = new Graph.Bar() { name = "Contributions", x = x, y = contrib };
+            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { bar1 });
+            chart.WithLayout(layout);
+            return chart;
+        }
+
+        public PlotlyChart PlotComponents(int signalCount)
+        {
+            var lst = new List<XPlot.Plotly.PlotlyChart>();
+            for (int i = 0; i < signalCount; i++)
+            {
+                var ts = EigenTriple[i + 1].Ui;//diagonalAveraging(EM[i]);
+                var s = new Graph.Scatter()
+                {
+
+                    showlegend = true,
+                    name = $"X{i + 1}({EigenTriple[i + 1].LiContrb}%)",
+                    y = ts,
+                    x = Enumerable.Range(1, ts.Length),
+                    mode = "line",
+                };
+                lst.Add(XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { s }));
+            }
+            //
+            Chart.ShowAll(lst.ToArray());
+            return null;
+            //chart.Show();
+
+        }
+
+        #endregion
     }
 }

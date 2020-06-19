@@ -41,6 +41,14 @@ namespace Daany
             return obj;
         }
 
+        public static object[] Rand(int length, double min, double max)
+        {
+            var obj = new object[length];
+            for (int i = 0; i < length; i++)
+                obj[i] = Constant.rand.NextDouble(min,max);
+            return obj;
+        }
+
         public static object[] ConsecutiveNum(int row, int col)
         {
             var size = row * col;
