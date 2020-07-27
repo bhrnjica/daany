@@ -340,6 +340,11 @@ namespace Daany.Stat
 
         #region Forecasting and Fitting
 
+        public double[] Forecast(int compCount, int stepsAhead, bool wholeSeries = true, Forecasting method = Forecasting.Rforecasing)
+        {
+            var group = Enumerable.Range(1,compCount).ToArray();
+            return Forecast(group,stepsAhead,wholeSeries, method);
+        }
         /// <summary>
         /// Forecast from last point of original time series up to steps_ahead.
         /// </summary>
@@ -674,7 +679,7 @@ namespace Daany.Stat
         /// <param name="train"></param>
         /// <param name="test"></param>
         /// <returns></returns>
-        private static PlotlyChart Plot((object[] x, double[] actual, double[] predicted) train, (object[] x, double[] actual, double[] predicted) test)
+        public static PlotlyChart Plot((object[] x, double[] actual, double[] predicted) train, (object[] x, double[] actual, double[] predicted) test)
         {
             var layout = new Layout.Layout();
             layout.title = "Singular Spectrum Analysis Forecast";
@@ -732,7 +737,7 @@ namespace Daany.Stat
             //chart.Show();
         }
 
-        public PlotlyChart PlotContributions(bool isScaled, bool isCumulative)
+        public PlotlyChart PlotContributions(bool isScaled= false, bool isCumulative= false)
         {
             var contrib = EM.Select(x => diagonalAveraging(x.Value));
             var layout = new Layout.Layout();
@@ -747,8 +752,9 @@ namespace Daany.Stat
 
         public PlotlyChart PlotComponents(int signalCount)
         {
+            var sCount = EigenTriple.Count() < signalCount? EigenTriple.Count(): signalCount;
             var lst = new List<XPlot.Plotly.PlotlyChart>();
-            for (int i = 0; i < signalCount; i++)
+            for (int i = 0; i < sCount; i++)
             {
                 var ts = EigenTriple[i + 1].Ui;//diagonalAveraging(EM[i]);
                 var s = new Graph.Scatter()

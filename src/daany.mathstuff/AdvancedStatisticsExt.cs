@@ -559,6 +559,56 @@ namespace Daany.MathStuff
         }
 
         /// <summary>
+        /// Normalizes the data using minmax normalizer
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static double[] MinMaxNormalization(this double[] data)
+        {
+            var min = data.Min();
+            var max = data.Max();
+            var retVal = data.Substract(min).Divide(max-min);
+            return retVal;
+        }
+
+        /// <summary>
+        /// Denormalizes the data using min and max values
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static double[] MinMaxInverseNormalization(this double[] data, double max, double min)
+        {
+            var retVal = data.Multiply(max-min).Add(min);
+            return retVal;
+        }
+
+        /// <summary>
+        /// Normalizes the data using minmax normalizer
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static double[] ZScoreStandardization(this double[] data)
+        {
+            var mean = data.MeanOf();
+            var std = data.Stdev();
+            var retVal = data.Substract(mean).Divide(std);
+            return retVal;
+        }
+
+        /// <summary>
+        /// Perform inverse operation for Z-Score standardization
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="mean"></param>
+        /// <param name="std"></param>
+        /// <returns></returns>
+        public static double[] ZScoreInverseStandardization(this double[] data,double mean, double std)
+        {
+            var retVal = data.Multiply(std).Add(mean);
+            return retVal;
+        }
+
+        /// <summary>
         /// transforms the 2D row based array into 2D column based array
         /// </summary>
         /// <param name="input"></param>

@@ -327,7 +327,7 @@ namespace Daany.MathStuff
             }
             return result;
         }
-
+        //https://mathworld.wolfram.com/HankelMatrix.html
         public static double [,] Hankel(this double[] v, int colCount=-1)
         {
             int N = v.Length;
@@ -345,6 +345,24 @@ namespace Daany.MathStuff
 
             return result;
         }
+        //https://mathworld.wolfram.com/ToeplitzMatrix.html
+        public static double[,] Toeplitz(this double[] v)
+        {
+            int N = v.Length;
+            var result = new double[N, N];
+
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = i; j < N; j++)
+                {
+                    result[i, j] = v[j - i];
+                    result[j, i] = result[i, j];
+                }
+            }
+
+            return result;
+        }
+
 
         #region Accord Matrix Implementation
 
@@ -749,6 +767,24 @@ namespace Daany.MathStuff
             double[] result = new double[v.Length];
             for (int i = 0; i < result.Length; i++)
                 result[i] = Math.Sqrt(v[i]);
+            return result;
+        }
+        public static double[,] Log(this double[,] m1)
+        {
+
+            double[,] result = new double[m1.GetLength(0), m1.GetLength(1)];
+            for (int i = 0; i < result.GetLength(0); i++)
+                for (int j = 0; j < result.GetLength(1); j++)
+                    result[i, j] = Math.Log(m1[i, j]);
+            return result;
+        }
+
+        public static double[] Log(this double[] v)
+        {
+
+            double[] result = new double[v.Length];
+            for (int i = 0; i < result.Length; i++)
+                result[i] = Math.Log(v[i]);
             return result;
         }
 
