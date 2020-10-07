@@ -104,6 +104,16 @@ namespace Daany.Stat
         }
 
         #region Decompose 
+        private void resetParameters()
+        {
+            _XX = null;
+            L = 0; K = 0;
+            if(_Xs!=null)
+                _Xs.Clear();
+            if (_eigentriple != null)
+                _eigentriple.Clear();
+
+    }
         /// <summary>
         /// Embedding
         /// <returns></returns>
@@ -129,7 +139,7 @@ namespace Daany.Stat
         /// <summary>
         /// Perform the Singular Value Decomposition and identify the rank of the embedding subspace
         /// </summary>
-        public void Decompose()
+        public void Decompose(bool useAccord= false)
         {
             //transformation of the embedded matrix
             var XXT = _XX.Transpose();
@@ -140,16 +150,40 @@ namespace Daany.Stat
             //S matrix calculation
             double[,] S = _XX.Dot(XXT);
 
-            //SVD
-            var svd = new SingularValueDecomposition(S);
+            double[,] U=null ; //left singular eigen vector of XX
+           // double[,] V=null ; //right singular eigen vector of XX
+            double[] s=null;//sqrt of lambda_i, eigenvalues of S,
+            double[] ss= null ;
+            double frob_norm ;//norm of the embedding matrix
+            double normSquared=0 ;
+            int d = 0; //rank of the 
 
-            //***summary of the SVD calculation***
-            double[,] U = svd.LeftSingularVectors; //left singular eigen vector of XX
-            double[,] V = svd.RightSingularVectors; //right singular eigen vector of XX
-            double[] s = svd.Diagonal.Sqrt();//sqrt of lambda_i, eigenvalues of S,
-            double frob_norm = X.Euclidean();//norm of the embedding matrix
-            double normSquared = frob_norm * frob_norm;
-            int d = svd.Rank; //rank of the 
+            if (useAccord)
+            {
+                //SVD
+                var svd = new SingularValueDecomposition(S);
+
+                //***summary of the SVD calculation***
+                U = svd.LeftSingularVectors; //left singular eigen vector of XX
+               // V = svd.RightSingularVectors; //right singular eigen vector of XX
+                s = svd.Diagonal.Sqrt();//sqrt of lambda_i, eigenvalues of S,
+                ss = svd.Diagonal;
+                frob_norm = X.Euclidean();//norm of the embedding matrix
+                normSquared = frob_norm * frob_norm;
+                d = svd.Rank; //rank of the 
+            }
+            else
+            {
+                (double[] _s, double[,] _U, double[,] _V) =  MagmaSharp.LinAlg.Svd(S, true, false);
+                U = _U; 
+                s = _s.Sqrt(); 
+                ss = _s;
+                frob_norm = X.Euclidean(); 
+                normSquared = frob_norm * frob_norm;
+                d = s.Where(x=>x>0).Count();  
+            }
+
+           
 
             //****summary of the SVD calculation****
             //SVD trajectory matrix written as XX = XX_1 + XX_2 + XX_3 + ... + XX_d
@@ -168,7 +202,7 @@ namespace Daany.Stat
                 _Xs.Add(i + 1, Xi);
 
                 //calculate contribution of the eigen-triple
-                var contrb = (float)Math.Round(svd.Diagonal[i] * 100 / normSquared, 2);
+                var contrb = (float)Math.Round(ss[i] * 100 / normSquared, 2);
                 //add eigen-triple to collection in case it is greather than zero
                 if (contrb > 0)
                 {
@@ -411,7 +445,7 @@ namespace Daany.Stat
         }
 
         /// <summary>
-        /// RForecasting mthod
+        /// RForecasting method
         /// </summary>
         /// <param name="group"></param>
         /// <param name="stepsAhead"></param>
@@ -553,9 +587,13 @@ namespace Daany.Stat
         /// <param name="embeddingDim"></param>
         public void Fit(uint embeddingDim)
         {
+            resetParameters();
+
             Embedding(embeddingDim);
             Decompose();
         }
+
+        
         #endregion
 
         #region Plotting SSA
