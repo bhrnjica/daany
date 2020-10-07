@@ -59,6 +59,10 @@ namespace Daany
                 case Aggregation.Top:
                     return vals.ToArray().FrequencyOf().First().Item1;
 
+                case Aggregation.Random:
+                    var ind = Constant.rand.Next(vals.Count());
+                    return vals.ToArray().ElementAt(ind);
+
                 case Aggregation.Frequency:
                     return vals.ToArray().FrequencyOf().First().Item2;
 

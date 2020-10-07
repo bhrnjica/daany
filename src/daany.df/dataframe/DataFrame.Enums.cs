@@ -61,6 +61,7 @@ namespace Daany
         Std,
         Unique,
         Top,
+        Random,
         Mode,
         Median,
         [Description("25%")]
