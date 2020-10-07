@@ -158,32 +158,19 @@ namespace Daany.Stat
             double normSquared=0 ;
             int d = 0; //rank of the 
 
-            if (useAccord)
-            {
-                //SVD
-                var svd = new SingularValueDecomposition(S);
+            //SVD
+            var svd = new SingularValueDecomposition(S);
 
-                //***summary of the SVD calculation***
-                U = svd.LeftSingularVectors; //left singular eigen vector of XX
-               // V = svd.RightSingularVectors; //right singular eigen vector of XX
-                s = svd.Diagonal.Sqrt();//sqrt of lambda_i, eigenvalues of S,
-                ss = svd.Diagonal;
-                frob_norm = X.Euclidean();//norm of the embedding matrix
-                normSquared = frob_norm * frob_norm;
-                d = svd.Rank; //rank of the 
-            }
-            else
-            {
-                (double[] _s, double[,] _U, double[,] _V) =  MagmaSharp.LinAlg.Svd(S, true, false);
-                U = _U; 
-                s = _s.Sqrt(); 
-                ss = _s;
-                frob_norm = X.Euclidean(); 
-                normSquared = frob_norm * frob_norm;
-                d = s.Where(x=>x>0).Count();  
-            }
+            //***summary of the SVD calculation***
+            U = svd.LeftSingularVectors; //left singular eigen vector of XX
+                                         // V = svd.RightSingularVectors; //right singular eigen vector of XX
+            s = svd.Diagonal.Sqrt();//sqrt of lambda_i, eigenvalues of S,
+            ss = svd.Diagonal;
+            frob_norm = X.Euclidean();//norm of the embedding matrix
+            normSquared = frob_norm * frob_norm;
+            d = svd.Rank; //rank of the matrix
 
-           
+
 
             //****summary of the SVD calculation****
             //SVD trajectory matrix written as XX = XX_1 + XX_2 + XX_3 + ... + XX_d

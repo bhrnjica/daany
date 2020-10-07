@@ -77,7 +77,6 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MagmaSharp" Version="0.2.1" />
     <PackageReference Include="OxyPlot.Core" Version="2.0.0" />
     <PackageReference Include="XPlot.Plotly" Version="3.0.1" />
   </ItemGroup>
