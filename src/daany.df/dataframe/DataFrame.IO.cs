@@ -38,7 +38,7 @@ namespace Daany
 
         #region Private fields
         private static readonly char[] _missingChars = new char[] { ' ', '?', '*', };
-        private static readonly string[] _missingCharacters = new string[] { "n/a", "?", "*", };
+        private static readonly string[] _missingCharacters = new string[] { "n/a", "?", "*"," " };
         #endregion
 
 

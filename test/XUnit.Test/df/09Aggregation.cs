@@ -91,7 +91,13 @@ namespace Unit.Test.DF
             //
             for (int i = 0; i < rollingdf.Values.Count; i++)
             {
-                Assert.Equal(rollingdf.Values[i], val[i]);
+                if(i==9)
+                {
+                    var vall = rollingdf.Values[i];
+                    Assert.True(df["B"].Contains(vall));
+                }    
+                else
+                    Assert.Equal(rollingdf.Values[i], val[i]);
             }
         }
 

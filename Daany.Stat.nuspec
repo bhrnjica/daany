@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Daany.Stat</id>
-        <version>0.6.4</version>
+        <version>0.6.5</version>
         <authors>Bahrudin Hrnjica, bhrnjica</authors>
         <owners>bhrnjica</owners>
 		<icon>daanyIcon.png</icon>
@@ -10,7 +10,7 @@
 		<repository type="git" url="https://github.com/bhrnjica/daany.git" />
 		<license type="expression">MIT</license>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
-        <releaseNotes>Bug fixes and performance improvements</releaseNotes>
+        <releaseNotes> </releaseNotes>
 		<title>Daany.Stat</title>
         <description>Daany.Stat - A set of components for handling with time series.</description>
 		<summary>Daany.Stat - A set of components for handling with time series.</summary>

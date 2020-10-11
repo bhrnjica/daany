@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
-using System.IO;
 namespace Daany.Plot
 {
     public class ExampleOXYPlot

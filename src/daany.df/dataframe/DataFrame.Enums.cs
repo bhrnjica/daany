@@ -50,6 +50,7 @@ namespace Daany
     }
     public enum Aggregation
     {
+        None,
         First,
         Last,
         Count,
