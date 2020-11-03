@@ -153,55 +153,55 @@ namespace Daany.Ext
             Console.WriteLine($"*************************************************");
         }
 
-        public static void ShowDataViewInConsole(MLContext mlContext, IDataView dataView, int numberOfRows = 4)
-        {
-            string msg = string.Format("Show data in DataView: Showing {0} rows with the columns", numberOfRows.ToString());
-            ConsoleWriteHeader(msg);
+        //public static void ShowDataViewInConsole(MLContext mlContext, IDataView dataView, int numberOfRows = 4)
+        //{
+        //    string msg = string.Format("Show data in DataView: Showing {0} rows with the columns", numberOfRows.ToString());
+        //    ConsoleWriteHeader(msg);
 
-            var preViewTransformedData = dataView.Preview(maxRows: numberOfRows);
-            var lst = new List<string>();
-            foreach (var row in preViewTransformedData.RowView)
-            {
-                var ColumnCollection = row.Values;
-                string lineToPrint = "Row--> ";
-                foreach (KeyValuePair<string, object> column in ColumnCollection)
-                {
-                    lineToPrint += $"| {column.Key}:{column.Value}";
-                }
-                lst.Add(lineToPrint);
-                Console.WriteLine(lineToPrint + "\n");
+        //    var preViewTransformedData = dataView.Preview(maxRows: numberOfRows);
+        //    var lst = new List<string>();
+        //    foreach (var row in preViewTransformedData.RowView)
+        //    {
+        //        var ColumnCollection = row.Values;
+        //        string lineToPrint = "Row--> ";
+        //        foreach (KeyValuePair<string, object> column in ColumnCollection)
+        //        {
+        //            lineToPrint += $"| {column.Key}:{column.Value}";
+        //        }
+        //        lst.Add(lineToPrint);
+        //        Console.WriteLine(lineToPrint + "\n");
                 
-            }
-            System.IO.File.WriteAllLines("../../../../../../dataset/titanic/train_balanced.csv", lst);
-        }
+        //    }
+        //    System.IO.File.WriteAllLines("../../../../../../dataset/titanic/train_balanced.csv", lst);
+        //}
 
-        [Conditional("DEBUG")]
-        // This method using 'DebuggerExtensions.Preview()' should only be used when debugging/developing, not for release/production trainings
-        public static void PeekDataViewInConsole(MLContext mlContext, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
-        {
-            string msg = string.Format("Peek data in DataView: Showing {0} rows with the columns", numberOfRows.ToString());
-            ConsoleWriteHeader(msg);
+        //[Conditional("DEBUG")]
+        //// This method using 'DebuggerExtensions.Preview()' should only be used when debugging/developing, not for release/production trainings
+        //public static void PeekDataViewInConsole(MLContext mlContext, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
+        //{
+        //    string msg = string.Format("Peek data in DataView: Showing {0} rows with the columns", numberOfRows.ToString());
+        //    ConsoleWriteHeader(msg);
 
-            //https://github.com/dotnet/machinelearning/blob/master/docs/code/MlNetCookBook.md#how-do-i-look-at-the-intermediate-data
-            var transformer = pipeline.Fit(dataView);
-            var transformedData = transformer.Transform(dataView);
+        //    //https://github.com/dotnet/machinelearning/blob/master/docs/code/MlNetCookBook.md#how-do-i-look-at-the-intermediate-data
+        //    var transformer = pipeline.Fit(dataView);
+        //    var transformedData = transformer.Transform(dataView);
 
-            // 'transformedData' is a 'promise' of data, lazy-loading. call Preview  
-            //and iterate through the returned collection from preview.
+        //    // 'transformedData' is a 'promise' of data, lazy-loading. call Preview  
+        //    //and iterate through the returned collection from preview.
 
-            var preViewTransformedData = transformedData.Preview(maxRows: numberOfRows);
+        //    var preViewTransformedData = transformedData.Preview(maxRows: numberOfRows);
 
-            foreach (var row in preViewTransformedData.RowView)
-            {
-                var ColumnCollection = row.Values;
-                string lineToPrint = "Row--> ";
-                foreach (KeyValuePair<string, object> column in ColumnCollection)
-                {
-                    lineToPrint += $"| {column.Key}:{column.Value}";
-                }
-                Console.WriteLine(lineToPrint + "\n");
-            }
-        }
+        //    foreach (var row in preViewTransformedData.RowView)
+        //    {
+        //        var ColumnCollection = row.Values;
+        //        string lineToPrint = "Row--> ";
+        //        foreach (KeyValuePair<string, object> column in ColumnCollection)
+        //        {
+        //            lineToPrint += $"| {column.Key}:{column.Value}";
+        //        }
+        //        Console.WriteLine(lineToPrint + "\n");
+        //    }
+        //}
 
         [Conditional("DEBUG")]
         // This method using 'DebuggerExtensions.Preview()' should only be used when debugging/developing, not for release/production trainings
