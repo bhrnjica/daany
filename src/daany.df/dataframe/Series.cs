@@ -7,7 +7,7 @@ namespace Daany
 {
     public class Series : IEnumerable<object>
     {
-        public Series(List<object> data, List<object> ind = null, string name = "series")
+        public Series(List<object> data, List<object> ind = null, string name = "series", ColType type= ColType.STR)
         {
             if (data == null)
                 throw new Exception("the list object cannot be null");
@@ -20,14 +20,15 @@ namespace Daany
                 throw new Exception("Series index is not consistent with the series");
             else if (ind==null)
                _index = new Index(Enumerable.Range(0, _data.Count).Select(x=>(object)x).ToList());
-            
+            this._type = type;
         }
 
-        internal Series(List<object> data, Index index, string name = "series")
+        internal Series(List<object> data, Index index, string name = "series", ColType type = ColType.STR)
         {
             this._data = data.Select(x => x).ToList();
             this.Name = name;
             this._index = new Index(index.Select(x => x).ToList());
+            this._type = type;
         }
 
 
@@ -36,6 +37,7 @@ namespace Daany
             this._data = ser._data.Select(x=>x).ToList();
             this.Name = ser.Name;
             this._index = new Index(ser._index.Select(x=>x).ToList());
+            this._type = ser._type;
         }
 
        
@@ -46,6 +48,7 @@ namespace Daany
 
         public int Count => _data.Count;
         public Index Index => _index;
+        public ColType ColType => _type;
         public IEnumerator<object> GetEnumerator()
         {
             return _data.GetEnumerator();
@@ -97,7 +100,7 @@ namespace Daany
 
         public DataFrame AppendHorizontaly(Series ser)
         {
-            var df = new DataFrame(this._data, this._index.ToList(), new List<string>{this.Name });
+            var df = new DataFrame(this._data, this._index.ToList(), new List<string>{this.Name }, new ColType[] { ser.ColType});
             df = df.AddColumn(ser);
            
             return df;
@@ -114,7 +117,8 @@ namespace Daany
         private DataFrame ToDataFrame()
         {
             var cols = new List<string>() { this.Name };
-            var df = new DataFrame(this._data, this._index, cols);
+            var colType = new ColType[] { this.ColType};
+            var df = new DataFrame(this._data, this._index, cols, colType);
             return df;
         }
 

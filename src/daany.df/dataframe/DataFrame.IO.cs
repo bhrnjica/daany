@@ -197,7 +197,7 @@ namespace Daany
 
                     var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue:missingValues, skipLines: skipLines);
 
-                    var df = new DataFrame(retVal, columns);
+                    var df = new DataFrame(retVal, columns, colTypes);
                     if (colTypes != null)
                         df._colsType = colTypes;
                     return df;
@@ -222,13 +222,15 @@ namespace Daany
 
                     var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue: missingValues, skipLines: skipLines);
 
-                    var df = new DataFrame(retVal, columns);
+                    var df = new DataFrame(retVal, columns, colTypes);
                     if (colTypes != null)
                         df._colsType = colTypes;
                     return df;
                 }
             }
         }
+
+       
 
         /// <summary>
         /// Method for loading data from the file into data frame object.
@@ -256,7 +258,7 @@ namespace Daany
 
                 var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: dformat, nRows: nRows, parseDate: parseDate, missingValue: missingValues, skipLines: skipLines);
 
-                var df = new DataFrame(retVal, columns);
+                var df = new DataFrame(retVal, columns, colTypes);
                 if (colTypes != null)
                     df._colsType = colTypes;
                 return df;

@@ -38,7 +38,7 @@ namespace Unit.Test.DF
             var mlDF = DataFrame.FromCsv(strPath, sep: '\t', skipLines: 1);
 
             var monthlySeries = nc.GenerateMonthlySeries(new DateTime(1973, 1, 1), 1, (1979 - 1973) * 12);
-            var mainDF = new DataFrame(monthlySeries, new List<string> { "Date" });
+            var mainDF = new DataFrame(monthlySeries, new List<string> { "Date" }, null);
             mainDF.AddCalculatedColumn("D", (object[] r, int i) =>
             {
                 var date = Convert.ToDateTime(r[0]);

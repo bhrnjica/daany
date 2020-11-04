@@ -23,7 +23,7 @@ namespace Unit.Test.DF
             var columns = new List<string>() { "ID", "City", "Zip Code", "State","IsHome", "Values", "Date" };
 
             //create data frame with 3 rows and 7 columns
-            var df = new DataFrame(lst, columns);
+            var df = new DataFrame(lst, columns, null);
 
             //check the size of the data frame
             Assert.Equal(3, df.RowCount());

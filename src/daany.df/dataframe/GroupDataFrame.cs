@@ -453,7 +453,7 @@ namespace Daany
                 lst.Add(cnt);
             }
 
-            return new DataFrame(lst, cols.ToList());
+            return new DataFrame(lst, cols.ToList(), null);
         }
 
         /// <summary>

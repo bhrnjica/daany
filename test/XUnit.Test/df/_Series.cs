@@ -132,12 +132,12 @@ namespace Unit.Test.DF
             var lst3 = new List<object> { DataFrame.NAN, DataFrame.NAN, 3,6,9 };
 
             //create series from the list
-            var ser1 = new Series(lst1);
+            var ser1 = new Series(lst1, type: ColType.I32) ;
+            
             var ser2 = ser1.Rolling(3, Aggregation.Sum);
 
             //addition
-           
-
+          
             Assert.Equal(ser2.ToList(), lst3);
 
 

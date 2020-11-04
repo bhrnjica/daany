@@ -251,6 +251,29 @@ namespace Unit.Test.DF
 
         }
 
+        [Fact]
+        public void CreateDataFrameFromExisted_ByChecking_ColTypes_Test()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "catId",new List<object>() { "A", "A", "B", "B" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+                { "value2",new List<object>() { true,false,true,true } },
+            };
+
+            //
+            var df1 = new DataFrame(dict);
+            var cT = new ColType[] { ColType.STR, ColType.IN, ColType.I32, ColType.I2 };
+            df1.SetColumnType("catId",ColType.IN);
+
+            Assert.Equal(ColType.IN, df1.ColTypes[1]);
+
+            //create new dataframe
+            var newdf = df1["itemID", "catId", "value1", "value2"];
+            Assert.Equal(newdf.ColTypes, cT);
+        }
+
 
 
     }

@@ -28,7 +28,7 @@ namespace Daany
             }
 
             //
-            return new DataFrame(values, ind, cols);
+            return new DataFrame(values, ind, cols, null);
         }
 
         private static List<string> generateCols(List<string> columns, int pastSteps, int futureSteps)
