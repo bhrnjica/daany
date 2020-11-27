@@ -8,6 +8,8 @@ namespace Unit.Test.DF
 {
     public class DataFrame_Series_Tests
     {
+       
+
         [Fact]
         public void CreateCopy_Test01()
         {
@@ -22,6 +24,51 @@ namespace Unit.Test.DF
             Assert.Equal(ser.ToList(), ser2.ToList());
         }
 
+        [Fact]
+        public void ToRegressors_Test01()
+        {
+            var lst = nc.GenerateIntSeries(1, 11, 1);
+            //create series from the list
+            var ser = new Series(lst);
+            (var X, var Y) = ser.ToRegressors(2);
+            Assert.Equal(new float[8,1]{{3f }, {4f }, { 5f }, { 6f }, { 7f }, { 8f }, { 9f }, { 10f } }, Y);
+
+            var xx = new float[8, 3] {
+                        {1f,   1f,   2f} ,
+                        {1f,   2f,   3f},
+                        {1f,   3f,   4f},
+                        {1f,   4f,   5f},
+                        {1f,   5f,   6f},
+                        {1f,   6f,   7f},
+                        {1f,   7f,   8f},
+                        {1f,   8f,   9f}};
+
+
+            Assert.Equal(xx, X);
+            
+        }
+
+        [Fact]
+        public void TSToDataFrame_Test()
+        {
+            var lst = nc.GenerateIntSeries(0, 10, 1);
+            //create series from the list
+            var ser = new Series(lst);
+
+            var df1 = ser.TSToDataFrame(3);
+            //
+            Assert.Equal(7, df1.RowCount());
+            Assert.Equal(4, df1.ColCount());
+
+            Assert.Equal(new string[] { "series-L3", "series-L2", "series-L1", "series"}, df1.Columns);
+
+            Assert.Equal(8, df1[5,3]);
+            Assert.Equal(5, df1[5,0]);
+
+            Assert.Equal(9, df1[6, 3]);
+            Assert.Equal(6, df1[6, 0]);
+
+        }
         [Fact]
         public void Create_Test01()
         {
@@ -168,6 +215,26 @@ namespace Unit.Test.DF
 
             var lst1 = new List<object> { DataFrame.NAN, DataFrame.NAN, 3, DataFrame.NAN, 9 };
             var lst3 = new List<object> {1,1, 3,1, 9 };
+
+            //create series from the list
+            var ser1 = new Series(lst1);
+            var ser2 = ser1.FillNA(1);
+
+            //addition
+
+
+            Assert.Equal(ser2.ToList(), lst3);
+
+
+        }
+
+
+        [Fact]
+        public void TimeSerie_Test02()
+        {
+
+            var lst1 = new List<object> { DataFrame.NAN, DataFrame.NAN, 3, DataFrame.NAN, 9 };
+            var lst3 = new List<object> { 1, 1, 3, 1, 9 };
 
             //create series from the list
             var ser1 = new Series(lst1);

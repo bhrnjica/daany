@@ -43,6 +43,34 @@ namespace Daany
        
         public string Name { get; set; }
         private List<object> _data;
+
+        /// <summary>
+        /// Create X and Y matrices for regression analysis.
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        public (float[,] X, float[,] Y) ToRegressors(int order)
+        {
+            //X matrix is extended with free column of ones
+            float[,] X = new float[this.Count - order, order + 1];
+            float[,] Y = new float[this.Count - order, 1];
+            //
+            for (int i = 0; i < this.Count - order; i++)
+            {
+                for (int j = 0; j < order + 1 + 1; j++)
+                {
+                    if (j == 0)
+                        X[i, j] = 1;
+                    else if (j == order + 1)//last col is Y
+                        Y[i, 0] = Convert.ToSingle(this[i + j - 1]);
+                    else
+                        X[i, j] = Convert.ToSingle(this[i + j - 1]);
+                }
+            }
+
+            return (X, Y);
+        }
+
         private ColType _type= ColType.STR;
         private Index _index;
 
@@ -114,7 +142,39 @@ namespace Daany
             return ser;
         }
 
-        private DataFrame ToDataFrame()
+        /// <summary>
+        /// Transform time series into data frame set.
+        /// Columns are constructed of previous Y values called lags.
+        /// </summary>
+        /// <param name="lags"></param>
+        /// <param name="addConstantTerm"></param>
+        /// <returns></returns>
+        internal DataFrame TSToDataFrame(int lags)
+        {
+            var columns = new List<string>();
+            //add lags
+            for(int i=0; i < lags; i++)
+              columns.Add($"{Name}-L{lags - i}");
+            
+            //at the end add Y column
+            columns.Add(Name);
+            
+            //
+            var val = new List<object>();
+            for(int i=0; i < this._data.Count-columns.Count+1; i++)
+            {
+                for(int j=0; j< columns.Count; j++)
+                {
+                    val.Add(this._data[i+j]);
+                }
+            }
+
+            var df = new DataFrame(val.ToArray(), columns);
+
+            return df;
+        }
+
+        public DataFrame ToDataFrame()
         {
             var cols = new List<string>() { this.Name };
             var colType = new ColType[] { this.ColType};
@@ -122,6 +182,15 @@ namespace Daany
             return df;
         }
 
+       
+        public static Series FromDataFrame(DataFrame df, string colName)
+        {
+            var ind = df.Columns.IndexOf(colName);
+            var data = df[colName].ToList();
+            var type = df.ColTypes[ind];
+            var index = df.Index;
+            return new Series(data, index, colName, type);
+        }
         public void Add(object itm)
         {
             _data.Add(itm);
@@ -531,6 +600,17 @@ namespace Daany
         }
         #endregion
 
+        #region Aggregation
+         
+        public object Aggregate<T>(Aggregation agg)
+        {
+            var obj = DataFrame._calculateAggregation(this._data, agg, _type);
+            if (obj == DataFrame.NAN)
+                throw new NotSupportedException("Column is not supported for specified aggregation.");
+
+            return obj;
+        }
+        #endregion
 
         #region Internal and Private Methods
         internal void Reset()

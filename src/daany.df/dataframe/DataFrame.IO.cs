@@ -428,7 +428,7 @@ namespace Daany
                 return DataFrame.NAN;
 
             var val = IsNumeric(value);
-            #if NETSTANDARD2_1
+ #if NETSTANDARD2_1
             if (val == ValueType.Int)
             {
                 int v = int.Parse(value, provider: CultureInfo.InvariantCulture);

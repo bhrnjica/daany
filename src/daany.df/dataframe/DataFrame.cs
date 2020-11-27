@@ -571,7 +571,8 @@ namespace Daany
 
             //chekc for duplicate column names
             checkColumnNames(this._columns, colNames);
-
+            if (_colsType == null)
+                this._colsType = columnsTypes();
             
             //
             var vals = new List<object>();
@@ -610,8 +611,19 @@ namespace Daany
             }
             //add new columns
             this._columns.AddRange(colNames);
-            //foreach (var colName in colNames)
-            //    addNewColumnName(this._columns, colName);
+            var newTypes = new List<ColType>();
+            foreach(var c in colNames)
+            {
+                var val = this[c].Where(x=>x!=DataFrame.NAN).FirstOrDefault();
+                if (val != null)
+                    newTypes.Add(GetValueType(val));
+                else
+                    newTypes.Add(ColType.STR);
+            }
+
+            var colss = this._colsType.ToList();
+            colss.AddRange(newTypes);
+            this._colsType = colss.ToArray();
 
             //apply new data frame values
             this._values = vals;
@@ -1976,6 +1988,8 @@ namespace Daany
             return dir;
         }
 
+
+
         /// <summary>
         /// Shift specified columns and create new columns in data frame
         /// </summary>
@@ -2003,11 +2017,25 @@ namespace Daany
             return df;
         }
 
+
+        /// <summary>
+        /// Calculates the difference of a Dataframe row compared with previous row.
+        /// </summary>
+        /// <param name="period"></param>
+        /// <returns></returns>
+        public DataFrame Diff(int step, DiffType type = DiffType.Seasonal)
+        {
+            if (type == DiffType.Seasonal)
+                return seasonalDiff(step);
+            else
+                return recursiveDiff(step);
+        }
+
         #endregion
 
         #region Selection
 
-       
+
         /// <summary>
         /// Returns data frame consisted of every nth row
         /// </summary>
@@ -2511,7 +2539,7 @@ namespace Daany
         public Series ToSeries()
         {
             if (this.Columns.Count != 1)
-                throw new Exception("DataFrame must have one column to be converted into Sereis.");
+                throw new Exception("DataFrame must have one column to be converted into Series.");
             var ser = new Series(this._values, this._index, this._columns.First());
 
             return ser;
@@ -2519,6 +2547,50 @@ namespace Daany
         #endregion
 
         #region Private
+        private DataFrame recursiveDiff(int order)
+        {
+            
+            var oldDf = this;
+            for (int i = 0; i < order; i++)
+            {
+                DataFrame newDf = DataFrame.CreateEmpty(Columns);
+                for(int d=0; d <= i; d++)
+                    newDf.AddRow(new object[ColCount()].ToList());
+                //calculate differencing
+                for (int j = i+1; j < oldDf.RowCount(); j++)
+                {
+                    var prevrow = new Series(oldDf[j - 1].ToList());
+                    var row = new Series(oldDf[j].ToList());
+                    var diffs = row - prevrow;
+                    newDf.AddRow(diffs.ToList());
+                }
+
+                oldDf = newDf;
+            }
+            return oldDf;
+        }
+
+        private DataFrame seasonalDiff(int period)
+        {
+            var newDf = DataFrame.CreateEmpty(Columns);
+            //
+            for (int i = 0; i < period; i++)
+            {
+                var nanrow = new object[ColCount()].ToList();
+                newDf.InsertRow(0, nanrow);
+            }
+            //calculate differencing
+            for (int i = period; i < RowCount(); i++ )
+            {
+                var prevrow = new Series(this[i - period].ToList());
+                var row = new Series(this[i].ToList());
+                var diffs = row - prevrow;
+                newDf.InsertRow(i, diffs.ToList());
+            }
+
+            return newDf;
+        }
+
         private List<string> mergeColumnNames(IList<string> cols1, IList<string> cols2, string sufix = null)
         {
             //merge columns

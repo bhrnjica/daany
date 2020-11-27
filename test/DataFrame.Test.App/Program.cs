@@ -11,6 +11,7 @@ namespace Daany.Test.App
 {
     static class Program
     {
+      
         
         public class TwoKeyLookup<T1, T2, TOut>
         {
@@ -35,6 +36,12 @@ namespace Daany.Test.App
         //[STAThread]
         static void Main()
         {
+
+
+            ARIMATest.ARIMA_Test01();
+
+
+
             //Application.SetHighDpiMode(HighDpiMode.SystemAware);
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);

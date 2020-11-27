@@ -21,27 +21,87 @@ using Daany.Ext;
 
 namespace Daany.Ext
 {
-    public static class CategoryEncoder
+    public static class DataFrameColumnTransformer
     {
-        public static (DataFrame, string[]) EncodeColumn(this DataFrame df, string colName, CategoryEncoding encoder, bool encodedOnly = false)
+        public static (DataFrame, float[] , string[]) TransformColumn(this DataFrame df, string colName, ColumnTransformer transformer, bool transformedColumnsOnly = false)
         {
-            switch (encoder)
+            switch (transformer)
             {
-                case CategoryEncoding.None:
-                    return (df, null);
-                case CategoryEncoding.Binary1:
-                    return BinaryEncoding(df, colName, encodedOnly);
-                case CategoryEncoding.Binary2:
-                    return BinaryEncoding2(df, colName, encodedOnly);
-                case CategoryEncoding.Ordinal:
-                    return OrdinalEncoding(df, colName, encodedOnly);
-                case CategoryEncoding.OneHot:
-                    return OneHotEncodeColumn(df, colName, encodedOnly);
-                case CategoryEncoding.Dummy :
-                    return DummyEncodeColumn(df, colName, encodedOnly);
+                case ColumnTransformer.None:
+                    return (df, null, null);
+                case ColumnTransformer.Binary1:
+                    (var edf, var cValues) = BinaryEncoding(df, colName, transformedColumnsOnly);
+                    return (edf, null, cValues);
+                case ColumnTransformer.Binary2:
+                    (edf, cValues) = BinaryEncoding2(df, colName, transformedColumnsOnly);
+                    return (edf, null, cValues);
+                case ColumnTransformer.Ordinal:
+                    (edf, cValues) = OrdinalEncoding(df, colName, transformedColumnsOnly);
+                    return (edf, null, cValues);
+                case ColumnTransformer.OneHot:
+                    (edf, cValues) = OneHotEncodeColumn(df, colName, transformedColumnsOnly);
+                    return (edf, null, cValues);
+                case ColumnTransformer.Dummy:
+                    (edf, cValues) = DummyEncodeColumn(df, colName, transformedColumnsOnly);
+                    return (edf, null, cValues);
+                case ColumnTransformer.MinMax:
+                case ColumnTransformer.Standardizer:
+                    (var tdf, float[] fValues) = ScaleColumn(df, colName, transformer, transformedColumnsOnly);
+                    return (tdf, fValues, null);                 
+                default:
+                    throw new NotSupportedException("Data normalization is not supported.");
             }
 
             throw new NotImplementedException();
+        }
+
+        private static (DataFrame edf, float[] fValues) ScaleColumn(DataFrame dff, string colName, ColumnTransformer transformer, bool transformedColumnsOnly)
+        {
+            
+            var newColName = colName + "_scaled";
+            var df = dff[dff.Columns.ToArray()];
+            var s = Series.FromDataFrame(df, colName);
+            float param1;
+            float param2;
+            if (transformer == ColumnTransformer.MinMax)
+            {
+               
+                var minObj = s.Aggregate<float>(Aggregation.Min);
+                param1 = Convert.ToSingle(minObj);
+                var maxObj = s.Aggregate<float>(Aggregation.Max);
+                param2 = Convert.ToSingle(maxObj);
+
+                df.AddCalculatedColumn(newColName, (IDictionary<string, object> row, int i) =>
+                {
+                    var val = Convert.ToDouble(row[colName]);
+                    return (val - param1) / (param2 - param1);
+                });
+
+            }
+            else if (transformer == ColumnTransformer.MinMax || 
+                    transformer == ColumnTransformer.Standardizer)
+            {
+                var avgObj = s.Aggregate<float>(Aggregation.Avg);
+                param1 = Convert.ToSingle(avgObj);
+                var stdObj = s.Aggregate<float>(Aggregation.Std);
+                param2 = Convert.ToSingle(stdObj);
+
+                df.AddCalculatedColumn(colName + "_scaled", (IDictionary<string, object> row, int i) =>
+                {
+                    var val = Convert.ToDouble(row[colName]);
+                    return (val - param1) / (param2);
+                });
+            }
+            else
+                throw new NotSupportedException("Column transformation is not supported.");
+
+            if (transformedColumnsOnly)
+            {
+                var ddf = df.Create((newColName, null));
+                return (ddf, new float[] { param1, param2 });
+            }
+            else
+                return (df, new float[] { param1, param2 });
         }
 
         private static (DataFrame, string[]) OneHotEncodeColumn(this DataFrame df, string colName, bool encodedOnly = false)

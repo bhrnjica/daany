@@ -53,6 +53,8 @@ namespace Daany
         {
             switch (aggregation)
             {
+                case Aggregation.None:
+                    return null;
                 case Aggregation.Unique:
                     return vals.Distinct().Count();
 

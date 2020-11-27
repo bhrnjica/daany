@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Daany.DataFrame.Ext</id>
-        <version>0.6.6</version>
+        <version>0.6.7</version>
         <authors>Bahrudin Hrnjica, bhrnjica</authors>
         <owners>bhrnjica</owners>
 		<icon>daanyIcon.png</icon>
