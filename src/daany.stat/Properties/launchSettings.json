@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Daany.Stat": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

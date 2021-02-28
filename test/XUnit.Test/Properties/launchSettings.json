@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "XUnit.Test": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

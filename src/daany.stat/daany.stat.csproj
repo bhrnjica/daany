@@ -51,6 +51,11 @@ SOFTWARE.</PackageReleaseNotes>
     
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>
@@ -73,7 +78,6 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MagmaSharp" Version="0.2.1" />
     <PackageReference Include="OxyPlot.Core" Version="2.0.0" />
     <PackageReference Include="XPlot.Plotly" Version="3.0.1" />
   </ItemGroup>
@@ -82,6 +86,25 @@ SOFTWARE.</PackageReleaseNotes>
   <ItemGroup>
     <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
     <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
+  </ItemGroup>
+ 
+
+  <ItemGroup>
+    <None Update="runtimes\win-x64\native\ctsa_binding.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x64\native\ctsa_binding.exp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x64\native\ctsa_binding.ilk">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x64\native\ctsa_binding.lib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x64\native\ctsa_binding.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
  
 
