@@ -201,6 +201,19 @@ namespace Daany.MathStuff
             //
             return retVal;
         }
+        /// <summary>
+        /// Convert row vector into column vector
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[,] Transpose(this double[] v)
+        {
+            var retVal = new double[v.Length, 1];
+            for (int i = 0; i < v.Length; i++)
+                retVal[i, 0] = v[i];
+
+            return retVal;
+        }
 
         public static double[,] Zeros(int rows, int cols)
         {
@@ -700,6 +713,14 @@ namespace Daany.MathStuff
                result[i] = m[i] - s;
             return result;
         }
+        public static double[] Substruct(this double[] v, double[] v1)
+        {
+            var res = new double[v.Length];
+            for (int i = 0; i < v.Length; i++)
+                res[i] = v[i] - v1[i];
+
+            return res;
+        }
       
         public static double[,] Multiply(this double[,] m, double s)
         {
@@ -709,6 +730,7 @@ namespace Daany.MathStuff
                     result[i, j] = m[i, j]*s;
             return result;
         }
+
 
         public static double[] Multiply(this double[] v, double s)
         {
@@ -769,6 +791,7 @@ namespace Daany.MathStuff
                 result[i] = Math.Sqrt(v[i]);
             return result;
         }
+
         public static double[,] Log(this double[,] m1)
         {
 
@@ -807,6 +830,12 @@ namespace Daany.MathStuff
             return result;
         }
 
+        /// <summary>
+        /// Returns the vector of matrix columnIndex
+        /// </summary>
+        /// <param name="m1"></param>
+        /// <param name="colIndex"></param>
+        /// <returns></returns>
         public static double[] CVector(this double[,] m1, int colIndex)
         {
 
@@ -817,6 +846,12 @@ namespace Daany.MathStuff
             return result;
         }
 
+        /// <summary>
+        /// Returns the vector of matrix rowIndex
+        /// </summary>
+        /// <param name="m1"></param>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
         public static double[] RVector(this double[,] m1, int rowIndex)
         {
 
@@ -827,17 +862,32 @@ namespace Daany.MathStuff
             return result;
         }
 
-        public static double SquareEuclidean(this double[,] a)
-        {
-            double sum = 0;
-            foreach (var v in a)
-                sum += v * v;
-            return sum;
-        }
-
+        
         public static double Euclidean(this double[,] a)
         {
-            return (double)Math.Sqrt(SquareEuclidean(a));
+            return Norm2(a);
+        }
+
+        public static double Norm2(this double[] v)
+        {
+            var retVal = 0.0;
+            for (int i = 0; i < v.Length; i++)
+                retVal += v[i] * v[i];
+
+            return Math.Sqrt(retVal);
+        }
+
+        public static double Norm2(this double[,] m)
+        {
+            var retVal = 0.0;
+            for (int i = 0; i < m.GetLength(0); i++)
+            {
+                for (int j = 0; j < m.GetLength(1); j++)
+                {
+                    retVal += m[i, j] * m[i, j];
+                }
+            }
+            return Math.Sqrt(retVal);
         }
 
         public static double[] CumulativeSum(this double[] vector)
