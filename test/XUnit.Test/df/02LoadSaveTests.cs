@@ -25,7 +25,7 @@ namespace Unit.Test.DF
         [Fact]
         public void LoadromCSV_Test()
         {
-            string path = "../../../testdata/titanic_full_1310.csv";
+            string path = "../../../../testdata/titanic_full_1310.csv";
             var df = DataFrame.FromCsv(path, '\t', names: null); //
             //row test
             var r1 = df[393].ToList();
@@ -55,7 +55,7 @@ namespace Unit.Test.DF
         [Fact]
         public void Loadrom10RowsFromCSV_Test()
         {
-            string path = "../../../testdata/titanic_full_1310.csv";
+            string path = "../../../../testdata/titanic_full_1310.csv";
             var df = DataFrame.FromCsv(path, '\t', names: null, nRows:400); //
             //row test
             var r1 = df[393].ToList();
@@ -100,7 +100,7 @@ namespace Unit.Test.DF
         [Fact]
         public void LoadromCSV_Test2()
         {
-            string path = "../../../testdata/titanic_train.csv";
+            string path = "../../../../testdata/titanic_train.csv";
             var df = DataFrame.FromCsv(path, ',', names: null, parseDate: true); //
 
             //
@@ -133,7 +133,7 @@ namespace Unit.Test.DF
         [Fact]
         public void SaveToCSV_Test()
         {
-            string saveDfPath = $"../../../testdata/savedcsv_{DateTime.Now.Ticks}.csv";
+            string saveDfPath = $"../../../../testdata/savedcsv_{DateTime.Now.Ticks}.csv";
 
             string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
             var nms = new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" };
@@ -153,7 +153,7 @@ namespace Unit.Test.DF
         public void SaveToCSV_TestWithMissingValues()
         {
 
-            string saveDfPath = $"../../../testdata/savedcsv_{DateTime.Now.Ticks}.csv";
+            string saveDfPath = $"../../../../testdata/savedcsv_{DateTime.Now.Ticks}.csv";
 
             string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
             var nms = new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" };

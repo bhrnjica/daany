@@ -56,7 +56,7 @@ namespace Unit.Test.DF
         public void Filter_Multiple_Columns_Test01()
         {
             //Text,Tag,Datum, Double,IntCol
-            var df = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\filter_dataFrameSample.txt", sep: '\t', names: null, parseDate:true);
+            var df = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\filter_dataFrameSample.txt", sep: '\t', names: null, parseDate:true);
 
             //filter by one numeric column
             var filteredDF = df.Filter("Double", 0.05, FilterOperator.Less);

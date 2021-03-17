@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="intelmkl.redist.win-x64" Version="2020.2.254" />
+    <PackageReference Include="intelopenmp.redist.win" Version="2020.2.254" />
+    <PackageReference Include="inteltbb.redist.win" Version="2020.3.254" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="3.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\.net\LapackSharp\LapackSharp.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy  /Y  &quot;$(SolutionDir)lib\Magmav2Binding.dll&quot; &quot;$(OutDir)runtimes\win-$(PlatformName)\native\Magmav2Binding.dll&quot;&#xD;&#xA;copy  /Y  &quot;$(SolutionDir)lib\LapackBinding.dll&quot;  &quot;$(OutDir)runtimes\win-$(PlatformName)\native\LapackBinding.dll&quot;&#xD;&#xA;" />
+  </Target>
+
+</Project>

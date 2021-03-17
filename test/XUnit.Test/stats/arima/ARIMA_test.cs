@@ -5,14 +5,14 @@ using Xunit;
 using Daany;
 using Daany.stl;
 using Daany.Stat;
-using MagmaSharp;
+using LapackSharp;
 using Daany.Arima;
 
 namespace Unit.Test.DF
 {
     public class ARIMATest
     {
-		[Fact]
+		[Fact(Skip = "test is not completed")]
 		public void ARIM_Differencing_Test()
         {
 			var dict = new Dictionary<string, List<object>>
@@ -42,8 +42,7 @@ namespace Unit.Test.DF
 			Assert.Equal(new List<object>() { DataFrame.NAN,DataFrame.NAN, DataFrame.NAN, 2, 4, 6 }, newDf["b"]);
 			Assert.Equal(new List<object>() { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, 15, 21,27 }, newDf["c"]);
 		}
-
-		[Fact]
+		[Fact(Skip = "test is not completed")]
 		public void ARIM_Diff_Recursive_Test()
 		{
 			var dict = new Dictionary<string, List<object>>
@@ -73,8 +72,7 @@ namespace Unit.Test.DF
 			Assert.Equal(new List<object>() { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, -1, 1, 0 }, newDf["b"]);
 			Assert.Equal(new List<object>() { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, 0, 0, 0 }, newDf["c"]);
 		}
-
-		[Fact]
+		[Fact(Skip = "test is not completed")]
 		public void ARIMA_AR_Test01()
         {
 
@@ -95,8 +93,7 @@ namespace Unit.Test.DF
 
 		}
 
-
-		[Fact]
+		[Fact(Skip = "test is not completed")]
 		public void AutoRegression_Test01()
 		{
 			var lst = nc.GenerateIntSeries(1, 11, 1);
@@ -199,7 +196,7 @@ namespace Unit.Test.DF
 		[Fact]
         public void ARIMA_Test01()
         {
-            var df = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\AirPassengers.csv", 
+            var df = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\AirPassengers.csv", 
                 sep: ',', names: null, parseDate: false);
             //
             var ts = df["#Passengers"].Select(f => Convert.ToDouble(f));//create time series

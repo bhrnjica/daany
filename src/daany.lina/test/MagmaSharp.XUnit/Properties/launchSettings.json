@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MagmaSharp.XUnit": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

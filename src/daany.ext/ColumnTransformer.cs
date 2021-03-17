@@ -23,7 +23,7 @@ namespace Daany.Ext
 {
     public static class DataFrameColumnTransformer
     {
-        public static (DataFrame, float[] , string[]) TransformColumn(this DataFrame df, string colName, ColumnTransformer transformer, bool transformedColumnsOnly = false)
+        public static (DataFrame df, float[] scaledValues, string[] labels) TransformColumn(this DataFrame df, string colName, ColumnTransformer transformer, bool transformedColumnsOnly = false)
         {
             switch (transformer)
             {
