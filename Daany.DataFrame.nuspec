@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Daany.DataFrame</id>
-        <version>0.6.7</version>
+        <version>0.6.8</version>
         <authors>Bahrudin Hrnjica, bhrnjica</authors>
         <owners>bhrnjica</owners>
 		<icon>daanyIcon.png</icon>
@@ -14,7 +14,7 @@
 		<title>Daany.DataFrame</title>
         <description>Daany.DataFrame - .NET library for analysis and transformation of tabular data.</description>
 		<summary>Daany.DataFrame - .NET library for analysis and transformation of tabular data.</summary >
-        <copyright>Copyright ©2019-2020 Bahrudin Hrnjica</copyright>
+        <copyright>Copyright ©2019-2021 Bahrudin Hrnjica</copyright>
         <tags>ml.net, data preparation, data analytics</tags>
         <dependencies>
 			<group targetFramework=".NETStandard2.1" />

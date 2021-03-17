@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>Daany</RootNamespace>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -63,6 +64,7 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="Microsoft.ML" Version="1.4.0" />
     <PackageReference Include="Microsoft.ML.DataView" Version="1.4.0" />
     <PackageReference Include="XPlot.Plotly" Version="3.0.1" />

@@ -9,7 +9,7 @@ namespace Unit.Test.DF
 {
     public class Properties
     {
-        string rootfolder = "..\\..\\..\\testdata\\";
+        string rootfolder = "..\\..\\..\\..\\testdata\\";
 
         [Fact]
         public void DataFrame_Shape_Test()

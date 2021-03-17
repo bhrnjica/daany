@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using LapackSharp;
 
 namespace Daany.Arima
 {
@@ -54,7 +55,7 @@ namespace Daany.Arima
             (float[,] X, float[,] Y) = ts.ToRegressors(order);
 
             ///Least Square Solve
-            var retVal = MagmaSharp.LinAlg.Lss(X, Y);
+            var retVal = LinAlg.Lss(X, Y);
 
             //
             var args = new List<float>();

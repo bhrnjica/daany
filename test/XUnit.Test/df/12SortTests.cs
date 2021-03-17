@@ -157,11 +157,11 @@ namespace Unit.Test.DF
         public void SortBy_MergeSort_Test02()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
 
             //col1,col2,col3,col4
-            var expectedDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_expected_asc.txt", sep: '\t', names: null, dformat: null);
-            var oroginalDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
+            var expectedDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_expected_asc.txt", sep: '\t', names: null, dformat: null);
+            var oroginalDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = false;
@@ -186,11 +186,11 @@ namespace Unit.Test.DF
         public void SortBy_QuickSort_Test02()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
 
             //col1,col2,col3,col4
-            var expectedDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_expected_asc.txt", sep: '\t', names: null, dformat: null);
-            var oroginalDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
+            var expectedDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_expected_asc.txt", sep: '\t', names: null, dformat: null);
+            var oroginalDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = true;
@@ -216,11 +216,11 @@ namespace Unit.Test.DF
         public void SortByDescending_MergeSort_Test02()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
 
             //col1,col2,col3,col4
-            var expectedDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_expected_desc.txt", sep: '\t', names: null, dformat: null);
-            var oroginalDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
+            var expectedDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_expected_desc.txt", sep: '\t', names: null, dformat: null);
+            var oroginalDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = false;
@@ -245,11 +245,11 @@ namespace Unit.Test.DF
         public void SortByDescending_QuickSort_Test02()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
 
             //col1,col2,col3,col4
-            var expectedDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_expected_desc.txt", sep: '\t', names: null, dformat: null);
-            var oroginalDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
+            var expectedDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_expected_desc.txt", sep: '\t', names: null, dformat: null);
+            var oroginalDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = true;
@@ -274,8 +274,8 @@ namespace Unit.Test.DF
         public void SortBy_MergeSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample02.txt", sep: '\t', names: null, dformat: null);
-            var expectedDf1 = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample02_asc_sorted.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample02.txt", sep: '\t', names: null, dformat: null);
+            var expectedDf1 = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample02_asc_sorted.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = false;
@@ -293,8 +293,8 @@ namespace Unit.Test.DF
         public void SortBy_QuickSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample02.txt", sep: '\t', names: null, dformat: null);
-            var expectedDf1 = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample02_asc_sorted.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample02.txt", sep: '\t', names: null, dformat: null);
+            var expectedDf1 = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample02_asc_sorted.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = true;
@@ -310,8 +310,8 @@ namespace Unit.Test.DF
         public void SortByDescending_MergeSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample02.txt", sep: '\t', names: null, dformat: null);
-            var expectedDf1 = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample02.txt", sep: '\t', names: null, dformat: null);
+            var expectedDf1 = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = false;
@@ -329,8 +329,8 @@ namespace Unit.Test.DF
         public void SortByDescending_QuickSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample02.txt", sep: '\t', names: null, dformat: null);
-            var expectedDf1 = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample02.txt", sep: '\t', names: null, dformat: null);
+            var expectedDf1 = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = true;

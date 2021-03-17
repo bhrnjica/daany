@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{6F92D549-54A9-4950-84C7-BFBCC349735E}</ProjectGuid>
+    <RootNamespace>Magmav2Binding</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <linkage-MKL-devel-win-x64>rt</linkage-MKL-devel-win-x64>
+    <threading-MKL-devel-win-x64>sequential</threading-MKL-devel-win-x64>
+    <interface-MKL-devel-win-x64>lp64</interface-MKL-devel-win-x64>
+    <IncludePath>$(SolutionDir)packages\intelmkl.devel.win-x64.2021.1.1.52\lib\native\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SOlutionDir)packages\intelmkl.devel.win-x64.2021.1.1.52\lib\native\win-x64;$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x64;$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <linkage-MKL-devel-win-x64>rt</linkage-MKL-devel-win-x64>
+    <threading-MKL-devel-win-x64>sequential</threading-MKL-devel-win-x64>
+    <interface-MKL-devel-win-x64>lp64</interface-MKL-devel-win-x64>
+    <IncludePath>$(SolutionDir)packages\intelmkl.devel.win-x64.2021.1.1.52\lib\native\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SOlutionDir)packages\intelmkl.devel.win-x64.2021.1.1.52\lib\native\win-x64;$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x64;$(SolutionDir)packages\inteltbb.devel.win.2021.1.1.133\lib\native\win-x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;MAGMAV2BINDING_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;MAGMAV2BINDING_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;MKLBINDING_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)packages\intelmkl.devel.win-x64.2021.1.1.52\lib\native\include</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy  /Y "$(TargetPath)" "$(SolutionDir)..\..\lib\LapackBinding.dll"
+
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;MKLBINDING_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)packages\intelmkl.devel.win-x64.2021.1.1.52\lib\native\include</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+    <PostBuildEvent>
+      <Command> xcopy /E /Y "$(ProjectDir)x64\$(Configuration)" "$(SolutionDir)src/.net/MagmaSharp.TestApp\bin\x64\$(Configuration)\netcoreapp3.1"
+ xcopy /E /Y "$(ProjectDir)x64\$(Configuration)" "$(SolutionDir)test/MagmaSharp.XUnit\bin\x64\$(Configuration)\netcoreapp3.1"
+copy  /Y "$(TargetPath)" "$(SolutionDir)lib\LapackBinding.dll"
+
+copy /Y "C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\redist\intel64_win\mkl\mkl_avx2.dll" "$(SolutionDir)lib\mkl_avx2.dll"
+copy /Y "C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\redist\intel64_win\mkl\mkl_core.dll" "$(SolutionDir)lib\mkl_core.dll"
+copy /Y "C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\redist\intel64_win\mkl\mkl_intel_thread.dll" "$(SolutionDir)lib\mkl_intel_thread.dll"
+copy /Y "C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\redist\intel64_win\mkl\mkl_def.dll" "$(SolutionDir)lib\mkl_def.dll"
+
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="lblapack.h" />
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="lblapack.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\packages\intelopenmp.redist.win.2021.1.1.191\build\native\intelopenmp.redist.win.targets" Condition="Exists('..\..\..\packages\intelopenmp.redist.win.2021.1.1.191\build\native\intelopenmp.redist.win.targets')" />
+    <Import Project="..\..\..\packages\intelopenmp.devel.win.2021.1.1.191\build\native\intelopenmp.devel.win.targets" Condition="Exists('..\..\..\packages\intelopenmp.devel.win.2021.1.1.191\build\native\intelopenmp.devel.win.targets')" />
+    <Import Project="..\..\..\packages\inteltbb.redist.win.2021.1.1.133\build\native\nuget\inteltbb.redist.win.targets" Condition="Exists('..\..\..\packages\inteltbb.redist.win.2021.1.1.133\build\native\nuget\inteltbb.redist.win.targets')" />
+    <Import Project="..\..\..\packages\intelmkl.redist.win-x64.2021.1.1.52\build\native\intelmkl.redist.win-x64.targets" Condition="Exists('..\..\..\packages\intelmkl.redist.win-x64.2021.1.1.52\build\native\intelmkl.redist.win-x64.targets')" />
+    <Import Project="..\..\..\packages\inteltbb.devel.win.2021.1.1.133\build\native\nuget\inteltbb.devel.win.targets" Condition="Exists('..\..\..\packages\inteltbb.devel.win.2021.1.1.133\build\native\nuget\inteltbb.devel.win.targets')" />
+    <Import Project="..\..\..\packages\intelmkl.devel.win-x64.2021.1.1.52\build\native\intelmkl.devel.win-x64.targets" Condition="Exists('..\..\..\packages\intelmkl.devel.win-x64.2021.1.1.52\build\native\intelmkl.devel.win-x64.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\packages\intelopenmp.redist.win.2021.1.1.191\build\native\intelopenmp.redist.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\intelopenmp.redist.win.2021.1.1.191\build\native\intelopenmp.redist.win.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\intelopenmp.devel.win.2021.1.1.191\build\native\intelopenmp.devel.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\intelopenmp.devel.win.2021.1.1.191\build\native\intelopenmp.devel.win.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\inteltbb.redist.win.2021.1.1.133\build\native\nuget\inteltbb.redist.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\inteltbb.redist.win.2021.1.1.133\build\native\nuget\inteltbb.redist.win.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\intelmkl.redist.win-x64.2021.1.1.52\build\native\intelmkl.redist.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\intelmkl.redist.win-x64.2021.1.1.52\build\native\intelmkl.redist.win-x64.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\inteltbb.devel.win.2021.1.1.133\build\native\nuget\inteltbb.devel.win.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\inteltbb.devel.win.2021.1.1.133\build\native\nuget\inteltbb.devel.win.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\intelmkl.devel.win-x64.2021.1.1.52\build\native\intelmkl.devel.win-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\intelmkl.devel.win-x64.2021.1.1.52\build\native\intelmkl.devel.win-x64.targets'))" />
+  </Target>
+</Project>

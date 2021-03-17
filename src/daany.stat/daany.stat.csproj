@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>Daany</RootNamespace>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -73,7 +74,6 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MagmaSharp" Version="0.2.1" />
     <PackageReference Include="OxyPlot.Core" Version="2.0.0" />
     <PackageReference Include="XPlot.Plotly" Version="3.0.1" />
   </ItemGroup>
@@ -81,6 +81,7 @@ SOFTWARE.</PackageReleaseNotes>
 
   <ItemGroup>
     <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
+    <ProjectReference Include="..\daany.lina\src\.net\LapackSharp\Daany.LinA.csproj" />
     <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
   </ItemGroup>
  
