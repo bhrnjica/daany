@@ -5,7 +5,7 @@ using Xunit;
 using Daany;
 using Daany.stl;
 using Daany.Stat;
-using LapackSharp;
+using static Daany.LinA.LinA;
 using Daany.Arima;
 
 namespace Unit.Test.DF

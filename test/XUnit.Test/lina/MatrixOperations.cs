@@ -1,6 +1,6 @@
-using LapackSharp;
 using System;
 using Xunit;
+using static Daany.LinA.LinA;
 
 namespace Unit.Test.LapackSharp
 {
@@ -26,7 +26,7 @@ namespace Unit.Test.LapackSharp
                { 1.58333, -2.75000,    1.58333, -0.16667}
 
             };
-            var C = LinAlg.MInverse(A);
+            var C = MInverse(A);
 
             for (int i = 0; i < C.GetLength(0); i++)
             {
@@ -53,7 +53,7 @@ namespace Unit.Test.LapackSharp
                { 1.58333f, -2.75000f,    1.58333f, -0.16667f}
 
             };
-            var CC = LinAlg.MInverse(A);
+            var CC = MInverse(A);
 
             for (int i = 0; i < CC.GetLength(0); i++)
             {
@@ -83,7 +83,7 @@ namespace Unit.Test.LapackSharp
                     {9,10,15}
                 };
 
-            var C = LinAlg.MMult(A, B);
+            var C = MMult(A, B);
             var result = new double[3, 3]
                 {
                 {95,  110, 110},
@@ -112,7 +112,7 @@ namespace Unit.Test.LapackSharp
                  };
             var B = new double[5] {1,3,5,7,9 };
 
-            var C = LinAlg.MMult(A, B);
+            var C = MMult(A, B);
             var result = new double[3]{95,220,345 };
 
             for (int i = 0; i < C.GetLength(0); i++)
@@ -134,7 +134,7 @@ namespace Unit.Test.LapackSharp
                  };
             var B = new double[5] { 1, 3, 5, 7, 9 };
             var C = new double[3] { 12, 13, 14 };
-            var D = LinAlg.MMult(A, B, C, alpha,betta);
+            var D = MMult(A, B, C, alpha,betta);
             var result = new double[3] { 226, 479, 732 };
 
             for (int i = 0; i < D.GetLength(0); i++)
@@ -154,7 +154,7 @@ namespace Unit.Test.LapackSharp
                  };
             var B = new float[5] { 1, 3, 5, 7, 9 };
 
-            var C = LinAlg.MMult(A, B);
+            var C = MMult(A, B);
             var result = new float[3] { 95, 220, 345 };
 
             for (int i = 0; i < C.GetLength(0); i++)
@@ -183,7 +183,7 @@ namespace Unit.Test.LapackSharp
                     {9,10}
                 };
             var C = new double[3, 2] { {2,4 },{6,8 },{10,12 } };
-            var D = LinAlg.MMult(A, B, C, alpha,betta);
+            var D = MMult(A, B, C, alpha,betta);
             var result = new double[3, 2]
                 {
                 { 196, 232 },

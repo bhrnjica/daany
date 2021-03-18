@@ -1,7 +1,6 @@
-using LapackSharp;
 using System;
 using Xunit;
-
+using static Daany.LinA.LinA;
 namespace Unit.Test.LapackSharp
 {
     public class SolveTests
@@ -43,7 +42,7 @@ namespace Unit.Test.LapackSharp
                 {-3.03f, 2.86f,  8.99f}
                 };
 
-                var X = LinAlg.Solve(A, B);
+                var X = Solve(A, B);
                 for (int i = 0; i < X.GetLength(0); i++)
                 {
                     for (int j = 0; j < X.GetLength(1); j++)
@@ -73,7 +72,7 @@ namespace Unit.Test.LapackSharp
                 {-3.03f, 2.86f,  8.99f}
                 };
 
-                var X = LinAlg.Solve(A, B);
+                var X = Solve(A, B);
                 for (int i = 0; i < X.GetLength(0); i++)
                 {
                     for (int j = 0; j < X.GetLength(1); j++)
@@ -103,7 +102,7 @@ namespace Unit.Test.LapackSharp
                 {-3.03f, 2.86f,  8.99f}
                 };
 
-                var X = LinAlg.Solve(A, B);
+                var X = Solve(A, B);
                 for (int i = 0; i < X.GetLength(0); i++)
                 {
                     for (int j = 0; j < X.GetLength(1); j++)
@@ -150,7 +149,7 @@ namespace Unit.Test.LapackSharp
                 {-3.03f, 2.86f,  8.99f}
                 };
 
-                var X = LinAlg.Solve(A, B);
+                var X = Solve(A, B);
                 for (int i = 0; i < X.GetLength(0); i++)
                 {
                     for (int j = 0; j < X.GetLength(1); j++)
@@ -180,7 +179,7 @@ namespace Unit.Test.LapackSharp
                 {-3.03f, 2.86f,  8.99f}
                 };
 
-                var X = LinAlg.Solve(A, B);
+                var X = Solve(A, B);
                 for (int i = 0; i < X.GetLength(0); i++)
                 {
                     for (int j = 0; j < X.GetLength(1); j++)
@@ -210,7 +209,7 @@ namespace Unit.Test.LapackSharp
                 {-3.03f, 2.86f,  8.99f}
                 };
 
-                var X = LinAlg.Solve(A, B);
+                var X = Solve(A, B);
                 for (int i = 0; i < X.GetLength(0); i++)
                 {
                     for (int j = 0; j < X.GetLength(1); j++)
@@ -238,7 +237,7 @@ namespace Unit.Test.LapackSharp
             ///
             double[] B = new double[3]{ 21.0,22.0,25.0};
 
-            var result = LinAlg.Solve(A,B);
+            var result = Solve(A,B);
             var expected = new double[3] { 1f, 3f, 2f };
 
             for (int j = 0; j < result.Length; j++)
@@ -260,7 +259,7 @@ namespace Unit.Test.LapackSharp
             ///
             float[] B = new float[3] { 21.0F, 22.0F, 25.0F };
 
-            var result = LinAlg.Solve(A, B);
+            var result = Solve(A, B);
             var expected = new float[3] { 1f, 3f, 2f };
 
             for (int j = 0; j < result.Length; j++)

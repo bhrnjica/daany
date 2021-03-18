@@ -1,6 +1,7 @@
-using LapackSharp;
+
 using System;
 using Xunit;
+using static Daany.LinA.LinA;
 
 namespace Unit.Test.LapackSharp
 {
@@ -39,7 +40,7 @@ namespace Unit.Test.LapackSharp
                 {  0.13f,  0.14f} ,
             };
 
-            var X = LinAlg.Lss(A, B);
+            var X = Lss(A, B);
 
             for (int i = 0; i < result.GetLength(0); i++)
             {
@@ -49,7 +50,7 @@ namespace Unit.Test.LapackSharp
                 }
             }
 
-            var X1 = LinAlg.Lss(A, B);
+            var X1 = Lss(A, B);
 
             for (int i = 0; i < X1.GetLength(0); i++)
             {
@@ -59,7 +60,7 @@ namespace Unit.Test.LapackSharp
                 }
             }
 
-            var X2 = LinAlg.Lss(A, B);
+            var X2 = Lss(A, B);
 
             for (int i = 0; i < X2.GetLength(0); i++)
             {
@@ -105,7 +106,7 @@ namespace Unit.Test.LapackSharp
                 {  0.13,  0.14} ,
             };
 
-            var X = LinAlg.Lss(A, B);
+            var X = Lss(A, B);
 
             for (int i = 0; i < X.GetLength(0); i++)
             {
@@ -115,7 +116,7 @@ namespace Unit.Test.LapackSharp
                 }
             }
 
-            var X1 = LinAlg.Lss(A, B);
+            var X1 = Lss(A, B);
 
             for (int i = 0; i < X1.GetLength(0); i++)
             {
@@ -161,7 +162,7 @@ namespace Unit.Test.LapackSharp
 
             };
 
-            var X = LinAlg.Lss(A, B);
+            var X = Lss(A, B);
 
             Assert.Equal(3.5, Math.Round(X[0,0],2));
             Assert.Equal(1.4, Math.Round(X[1, 0],2));

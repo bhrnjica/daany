@@ -27,3 +27,4 @@ bin-release/
 /src/daany.lina/src/cpp/LapackWndTest/Debug
 /src/daany.lina/src/cpp/LapackWndTest/x64/Debug
 /TestResults
+/src/daany.lina/src/cpp/LapackWndTest/x64/Release

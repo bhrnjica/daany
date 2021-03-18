@@ -1,6 +1,8 @@
-using LapackSharp;
+
 using System;
 using Xunit;
+using static Daany.LinA.LinA;
+
 
 namespace Unit.Test.LapackSharp
 {
@@ -56,7 +58,7 @@ namespace Unit.Test.LapackSharp
                     { 9.84f,   0.15f,  -8.99f,  -6.02f,  -5.31f, },
                 };
 
-                (float[] s, float[,] U, float[,] vT) = LinAlg.Svd(A, true, true);
+                (float[] s, float[,] U, float[,] vT) = Svd(A, true, true);
 
 
                 Assert.Equal(A, A1);
@@ -94,7 +96,7 @@ namespace Unit.Test.LapackSharp
                 { 9.84f,   0.15f,  -8.99f,  -6.02f,  -5.31f, },
                 };
 
-                (float[] s, float[,] U, float[,] vT) = LinAlg.Svd(A, true, true);
+                (float[] s, float[,] U, float[,] vT) = Svd(A, true, true);
 
                 for (int i = 0; i < result_s.Length; i++)
                     Assert.Equal(result_s[i], s[i], 2);
@@ -129,7 +131,7 @@ namespace Unit.Test.LapackSharp
                 { 9.84f,   0.15f,  -8.99f,  -6.02f,  -5.31f, },
                 };
 
-                (float[] s, float[,] U, float[,] vT) = LinAlg.Svd(A, true, true);
+                (float[] s, float[,] U, float[,] vT) = Svd(A, true, true);
 
                 for (int i = 0; i < result_s.Length; i++)
                     Assert.Equal(result_s[i], s[i], 2);
@@ -195,7 +197,7 @@ namespace Unit.Test.LapackSharp
                     { 9.84f,   0.15f,  -8.99f,  -6.02f,  -5.31f, },
                 };
 
-                (double[] s, double[,] U, double[,] vT) = LinAlg.Svd(A, true, true);
+                (double[] s, double[,] U, double[,] vT) = Svd(A, true, true);
 
                 for (int i = 0; i < result_s.Length; i++)
                     Assert.Equal(result_s[i], s[i], 2);
@@ -230,7 +232,7 @@ namespace Unit.Test.LapackSharp
                 { 9.84f,   0.15f,  -8.99f,  -6.02f,  -5.31f, },
                 };
 
-                (double[] s, double[,] U, double[,] vT) = LinAlg.Svd(A, true, true);
+                (double[] s, double[,] U, double[,] vT) = Svd(A, true, true);
 
                 for (int i = 0; i < result_s.Length; i++)
                     Assert.Equal(result_s[i], s[i], 2);
@@ -265,7 +267,7 @@ namespace Unit.Test.LapackSharp
                 { 9.84f,   0.15f,  -8.99f,  -6.02f,  -5.31f, },
                 };
 
-                (double[] s, double[,] U, double[,] vT) = LinAlg.Svd(A, true, true);
+                (double[] s, double[,] U, double[,] vT) = Svd(A, true, true);
 
                 for (int i = 0; i < result_s.Length; i++)
                     Assert.Equal(result_s[i], s[i], 2);

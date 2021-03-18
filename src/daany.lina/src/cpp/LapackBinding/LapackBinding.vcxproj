@@ -143,9 +143,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>copy  /Y "$(TargetPath)" "$(SolutionDir)..\..\lib\LapackBinding.dll"
-
-      </Command>
+      <Command>copy  /Y "$(TargetPath)" "$(SolutionDir)..\..\lib\$(Configuration)\LapackBinding.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -169,16 +167,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command> xcopy /E /Y "$(ProjectDir)x64\$(Configuration)" "$(SolutionDir)src/.net/MagmaSharp.TestApp\bin\x64\$(Configuration)\netcoreapp3.1"
- xcopy /E /Y "$(ProjectDir)x64\$(Configuration)" "$(SolutionDir)test/MagmaSharp.XUnit\bin\x64\$(Configuration)\netcoreapp3.1"
-copy  /Y "$(TargetPath)" "$(SolutionDir)lib\LapackBinding.dll"
-
-copy /Y "C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\redist\intel64_win\mkl\mkl_avx2.dll" "$(SolutionDir)lib\mkl_avx2.dll"
-copy /Y "C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\redist\intel64_win\mkl\mkl_core.dll" "$(SolutionDir)lib\mkl_core.dll"
-copy /Y "C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\redist\intel64_win\mkl\mkl_intel_thread.dll" "$(SolutionDir)lib\mkl_intel_thread.dll"
-copy /Y "C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\redist\intel64_win\mkl\mkl_def.dll" "$(SolutionDir)lib\mkl_def.dll"
-
-      </Command>
+      <Command>copy  /Y "$(TargetPath)" "$(SolutionDir)..\..\lib\$(Configuration)\LapackBinding.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

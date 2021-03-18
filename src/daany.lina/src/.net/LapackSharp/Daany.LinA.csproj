@@ -22,4 +22,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="intelmkl.redist.win-x64" Version="2021.1.1.52" />
+    <PackageReference Include="intelopenmp.redist.win" Version="2021.1.2.265" />
+    <PackageReference Include="inteltbb.redist.win" Version="2021.1.1.133" />
+  </ItemGroup>
+
 </Project>

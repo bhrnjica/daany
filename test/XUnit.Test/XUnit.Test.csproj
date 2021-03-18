@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="4.7.0"/>
+    <PackageReference Include="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="intelmkl.redist.win-x64" Version="2021.1.1.52" />
     <PackageReference Include="intelopenmp.redist.win" Version="2021.1.2.265" />
     <PackageReference Include="inteltbb.redist.win" Version="2021.1.1.133" />
@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy  /Y  &quot;$(SolutionDir)lib\LapackBinding.dll&quot;  &quot;$(OutDir)runtimes\win-$(PlatformName)\native\LapackBinding.dll&quot;" />
+    <Exec Command="copy  /Y  &quot;$(SolutionDir)lib\$(ConfigurationName)\LapackBinding.dll&quot;  &quot;$(OutDir)runtimes\win-$(PlatformName)\native\LapackBinding.dll&quot;" />
   </Target>
 
 </Project>

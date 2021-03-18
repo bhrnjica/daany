@@ -10,6 +10,8 @@ msbuild daany.sln -p:Configuration=Release
 
 ./nuget.exe pack Daany.Stat.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
 
+./nuget.exe pack Daany.LinA.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
+
 
 
 

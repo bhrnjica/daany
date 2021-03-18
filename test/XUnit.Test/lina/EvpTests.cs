@@ -1,7 +1,6 @@
-using LapackSharp;
 using System;
 using Xunit;
-
+using static Daany.LinA.LinA;
 namespace Unit.Test.LapackSharp
 {
     public class EvpTests
@@ -23,7 +22,7 @@ namespace Unit.Test.LapackSharp
             float[] result_wi = new float[] {10.76f, -10.76f, 4.70f, -4.70f, 0 };
 
             {
-                (float[] wr, float[] wi, float[,] VL, float[,] VR) = LinAlg.Eigen(A,true, true);
+                (float[] wr, float[] wi, float[,] VL, float[,] VR) = Eigen(A,true, true);
 
                 for (int i = 0; i < result_wr.Length; i++)
                     Assert.Equal(result_wr[i], wr[i], 2);
@@ -35,7 +34,7 @@ namespace Unit.Test.LapackSharp
 
 
             {
-                (float[] wr, float[] wi, float[,] VL, float [,] VR) = LinAlg.Eigen(A, true, true);
+                (float[] wr, float[] wi, float[,] VL, float [,] VR) = Eigen(A, true, true);
 
                 for (int i = 0; i < result_wr.Length; i++)
                     Assert.Equal(result_wr[i], wr[i], 2);
@@ -46,7 +45,7 @@ namespace Unit.Test.LapackSharp
             }
 
             {
-                (float[] wr, float[] wi, float[,] VL, float[,] VR) = LinAlg.Eigen(A,true, true);
+                (float[] wr, float[] wi, float[,] VL, float[,] VR) = Eigen(A,true, true);
 
                 for (int i = 0; i < result_wr.Length; i++)
                     Assert.Equal(result_wr[i], wr[i], 2);
@@ -74,7 +73,7 @@ namespace Unit.Test.LapackSharp
             double[] result_wi = new double[] { 10.76f, -10.76f, 4.70f, -4.70f, 0 };
 
             {
-                (double[] wr, double[] wi, double[,] VL, double[,] VR) = LinAlg.Eigen(A,true, true);
+                (double[] wr, double[] wi, double[,] VL, double[,] VR) = Eigen(A,true, true);
 
                 for (int i = 0; i < result_wr.Length; i++)
                     Assert.Equal(result_wr[i], wr[i], 2);
@@ -86,7 +85,7 @@ namespace Unit.Test.LapackSharp
 
 
             {
-                (double[] wr, double[] wi, double[,] VL, double[,] VR) = LinAlg.Eigen(A, true, true);
+                (double[] wr, double[] wi, double[,] VL, double[,] VR) = Eigen(A, true, true);
 
                 for (int i = 0; i < result_wr.Length; i++)
                     Assert.Equal(result_wr[i], wr[i], 2);
@@ -97,7 +96,7 @@ namespace Unit.Test.LapackSharp
             }
 
             {
-                (double[] wr, double[] wi, double[,] VL, double[,] VR) = LinAlg.Eigen(A, true, true);
+                (double[] wr, double[] wi, double[,] VL, double[,] VR) = Eigen(A, true, true);
 
                 for (int i = 0; i < result_wr.Length; i++)
                     Assert.Equal(result_wr[i], wr[i], 2);

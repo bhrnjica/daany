@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-namespace LapackSharp
+namespace Daany.LinA
 {
-    unsafe public class LinAlg
+    unsafe public class LinA
     {
 
-        static LinAlg()
+        static LinA()
         {
            
         }
