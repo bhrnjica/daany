@@ -1,6 +1,6 @@
-![Daany Logo](./docs/img/daany_logo_small.png)
+﻿![Daany Logo](./docs/img/daany_logo_small.png)
 
-Daany - .NET **DA**ta **AN**al**Y**tics C# library with the implementation of DataFrame, Time series decomposition and various statistical parameters.
+Daany - .NET **DA**ta **AN**al**Y**tics .NET 5 library with the implementation of `DataFrame`, Time series decomposition and Linear Algebra routines based on MKL.
 
 
 ![License](https://img.shields.io/github/license/bhrnjica/Daany)
@@ -9,22 +9,28 @@ Daany - .NET **DA**ta **AN**al**Y**tics C# library with the implementation of Da
 
 *[Daany Developer Guide](/docs/DevGuide/developer_guide.md)* - complete guide for developers.
 
-# Software Requiremens
-The latest version of the library is built on `Standard2.1` and supports `.NET Core 3.0` and above.
+# Software Requirements
+The latest version of the library is built on `Standard2.1` and supports `.NET 5` and above.
 
 However the library is not available for .NET Framework `4.8` and below. In case you want to use this library on `.NET Framework` and `Standard 2.0`, use older version `v0.3.*`, or try to build the version from the source code. 
 
-# Data Frame
+The main components with separate Nuget package of Daany library are:
+- `Daany.DataFrame` - dataframe implementation in pure C#.
+- `Daany.DataFrame.Ext` - dataframe extensions with additional implementation about plotting, data scaling and encoding and similar.
+- `Daany.Stat` - Time series decompositions e.g SSA, STL, ....
+- `Daany.LinA` - .NET wrapper arounf Intel MKL LAPACK and BLASS routines.
 
-Daany ``DataFrame`` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easely passed to ML.NET pipeline. The ``DataFrame`` does not require for any class type implementation prior to data loading and transformation.     
+# Data Frame and its extensions
+
+`Daany.DataFrame` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easily passed to ML.NET pipeline. The `DataFrame` does not require for any class type implementation prior to data loading and transformation.     
 
 
-Once the ``DataFrame`` completes the data transformation, the extension method provides the easy way to pass the data into ```MLContex``` of the ML.NET Framework.
-The following example shows Daany Data Frame in action:
+Once the `DataFrame` completes the data transformation, the extension methods provide the easy way to pass the data into `MLContex` of the ML.NET Framework.
+The following example shows ˛`Daany.DataFrame` in action:
 
 ### Data Loading
-We are going to use iris data file, which can be found on many places on the internet. The basic structure of the file is that it contains 5 tab separated columns: ```sepal_length```,	```sepal_width```,	```petal_length```,	```petal_width```, and 	```species```.
-The Daany DataFrame class has predefined static method to load data from txt or csv file. The following code loads the data and create DataFrame object:
+We are going to use iris data file, which can be found on many places on the internet. The basic structure of the file is that it contains 5 tab separated columns: `sepal_length`,	`sepal_width`,	`petal_length`,	`petal_width`, and 	`species`.
+The `Daany.DataFrame` class has predefined static methods to load data from `txt` or `csv` file. The following code loads the data and create DataFrame object:
 
 ```csharp
 //read the iris data and create DataFrame object. 
@@ -44,17 +50,17 @@ df.AddCalculatedColumns(new string[] { "SepalArea", "PetalArea" },
         });
 
 ```
-Now the ```df``` object has two new columns:```SepalArea``` and ```PetalArea```. 
+Now the `df` object has two new columns:`SepalArea` and `PetalArea`. 
 
-Now we are going to create a new Data Frame containing only three columns: ```SepalArea```, ```PetalArea``` and ```Species```:
+Now we are going to create a new Data Frame containing only three columns: `SepalArea`, `PetalArea` and `Species`:
 ```csharp
 //create new data-frame by selecting only three columns
 var derivedDF = df["SepalArea","PetalArea","species"];
 ```
-For this purpose, we may use ```Create``` method by passing tuples of the old and new column name. In our case, we simply use indexer with column names to get a new data frame.
+For this purpose, we may use `Create` method by passing tuples of the old and new column name. In our case, we simply use indexer with column names to get a new Data Frame.
 
 ### Building model using ML.NET
-Now we transformed the data and created final data frame, which will be passed to ML.NET. Since the data is already in the memory, we should use ```mlContext.Data.LoadFromEnumerable``` ML.NET method. Here we need to provide the type for the loaded data. 
+Now we transformed the data and created final data frame, which will be passed to the ML.NET. Since the data is already in the memory, we should use `mlContext.Data.LoadFromEnumerable` ML.NET method. Here we need to provide the type for the loaded data. 
 
 So let's create the Iris class with only three properties since we want to use only two columns as the features and one as label. 
 ```csharp
@@ -121,9 +127,9 @@ ConsoleHelper.ConsolePrintConfusionMatrix(metricsTest.ConfusionMatrix);
 Once the program is run, the output shows that we have 100% accurate Iris model:
 ![Iris Model Evaluation](./docs/img/2019-09-22_20-23-39.png)
 
-# Daany Statistics
+# Daany Statistics (`Daany.Stat`)
 Besides the DataFrame Daany library contains set of implementation with working on time series data:
-- Conversion time series into ```Daany.DataFrame```
+- Conversion time series into `Daany.DataFrame` and `Series`
 - STL time series decomposition,
 - Singular Spectrum Analysis decomposition,
 - Set of Time Series operations like moving average, etc....
@@ -159,3 +165,6 @@ At the end we can plot ssa predicted and actual values of the time series:
 
 ![Iris Model Evaluation](./docs/img/2019-09-24_22-05-18.png)
 
+# Daany Linear Algebra (`Daany.LinA`)
+
+The `Daany.LinA` provides the ability to use Intel MKL a native and super fast math library to perform linear algebra calculations. With the combination of the previous packages (`DataFrame` and `Daany.Stat`) you are able to transform and analyze very complex data, solve system of linear equations, find eigen values and vectors, use least square method etc. For more information please see th developer guide and Test application and set of implemented unit tests. 
