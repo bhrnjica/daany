@@ -20,7 +20,7 @@ The main components with separate Nuget package of Daany library are:
 - `Daany.Stat` - Time series decompositions e.g SSA, STL, ....
 - `Daany.LinA` - .NET wrapper arounf Intel MKL LAPACK and BLASS routines.
 
-# Data Frame and its extensions
+# Data Frame (`Daany.DataFrame`) and its extensions (`Daany.DataFrame.Ext`)
 
 `Daany.DataFrame` implementation follows the .NET coding paradigm rather than Pandas look and feel. The ``DataFrame`` implementation try to fill the gap in ML.NET data preparation phase, and it can be easily passed to ML.NET pipeline. The `DataFrame` does not require for any class type implementation prior to data loading and transformation.     
 
