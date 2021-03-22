@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy  /Y  &quot;$(SolutionDir)lib\$(ConfigurationName)\LapackBinding.dll&quot;  &quot;$(OutDir)runtimes\win-$(PlatformName)\native\LapackBinding.dll&quot;" />
+    <Exec Command="copy  /Y  &quot;$(SolutionDir)lib\$(ConfigurationName)\LapackBinding.dll&quot;  &quot;$(OutDir)runtimes\win-x64\native\LapackBinding.dll&quot;&#xD;&#xA;copy  /Y  &quot;$(SolutionDir)lib\$(ConfigurationName)\LapackBinding.dll&quot;  &quot;$(OutDir)runtimes\win-x86\native\LapackBinding.dll&quot;" />
   </Target>
 
 </Project>
