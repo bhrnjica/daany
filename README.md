@@ -1,6 +1,6 @@
 ﻿![Daany Logo](./docs/img/daany_logo_small.png)
 
-Daany - .NET **DA**ta **AN**al**Y**tics .NET 5 library with the implementation of `DataFrame`, `Time series` decompositions and `Linear Algebra` routines based on MKL.
+Daany - .NET **DA**ta **AN**al**Y**tics .NET library with the implementation of `DataFrame`, `Time series` decompositions and `Linear Algebra` `LAPACK` and `BLASS` routines.
 
 
 ![License](https://img.shields.io/github/license/bhrnjica/Daany)
