@@ -196,7 +196,7 @@ namespace Unit.Test.DF
 		[Fact]
         public void ARIMA_Test01()
         {
-            var df = DataFrame.FromCsv(filePath: $"..\\..\\..\\..\\testdata\\AirPassengers.csv", 
+            var df = DataFrame.FromCsv(filePath: $"testdata\\AirPassengers.csv", 
                 sep: ',', names: null, parseDate: false);
             //
             var ts = df["#Passengers"].Select(f => Convert.ToDouble(f));//create time series

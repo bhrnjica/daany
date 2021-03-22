@@ -11,7 +11,7 @@ namespace Unit.Test.DF
 {
     public class TimeSeriesSTL_Decomposition
     {
-        static string root = "..\\..\\..\\..\\testdata";
+        static string root = "testdata";
 
         private double[] getAirPassengersData()
         {

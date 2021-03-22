@@ -86,7 +86,7 @@ namespace Unit.Test.DF
         [Fact]
         public void CreateFromCSVFile_Test01()
         {
-            var filePath = $"..\\..\\..\\..\\testdata\\group_sample_testdata.txt";
+            var filePath = $"testdata\\group_sample_testdata.txt";
             var df = DataFrame.FromCsv(filePath: filePath, 
                                                 sep: '\t', 
                                                 names: null, dformat: null);
