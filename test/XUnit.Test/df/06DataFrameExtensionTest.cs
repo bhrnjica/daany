@@ -46,14 +46,14 @@ namespace Unit.Test.DF
             Assert.Equal("FL", df.Columns[6]);
             Assert.Equal("PR", df.Columns[7]);
             //
-            Assert.Equal(1f,df[0,5]);
-            Assert.Equal(1f,df[4, 6]);
-            Assert.Equal(1f,df[5, 6]);
-            Assert.Equal(1f, df[6, 7]);
+            Assert.Equal(1,df[0,5]);
+            Assert.Equal(1,df[4, 6]);
+            Assert.Equal(1,df[5, 6]);
+            Assert.Equal(1, df[6, 7]);
         }
 
         [Fact]
-        public void KeyToValue_Test01()
+        public void CategoryToOrdinal_Test01()
         {
             var dict = new Dictionary<string, List<object>>
             {
@@ -69,7 +69,7 @@ namespace Unit.Test.DF
             var df = new DataFrame(dict);
 
             //add one hot encoding columns
-            df = df.TransformColumn("state",ColumnTransformer.OneHot).df;
+            df = df.TransformColumn("state",ColumnTransformer.Ordinal, transformedColumnsOnly: true).df;
             var col = df["state_cvalues"].Select(x=>Convert.ToInt32(x)).ToArray();
             Assert.Equal(1, col[0]);
             Assert.Equal(1, col[1]);
