@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Xunit;
 using Daany;
 using Daany.Ext;
-using Microsoft.ML;
+
 
 namespace Unit.Test.DF
 {
@@ -26,7 +26,6 @@ namespace Unit.Test.DF
         [Fact]
         public void OneHotEncoding_Test01()
         {
-            var mlContext = new MLContext();
             var dict = new Dictionary<string, List<object>>
             {
                 {"product_id",new List<object>() {1,1,2,2,2,2,2 } },
@@ -41,7 +40,7 @@ namespace Unit.Test.DF
             var df = new DataFrame(dict);
 
             //add one hot encoding columns
-            df = df.EncodeColumn(mlContext, "state");
+            df = df.TransformColumn("state", ColumnTransformer.OneHot).df;
 
             Assert.Equal("CA", df.Columns[5]);
             Assert.Equal("FL", df.Columns[6]);
@@ -56,7 +55,6 @@ namespace Unit.Test.DF
         [Fact]
         public void KeyToValue_Test01()
         {
-            var mlContext = new MLContext();
             var dict = new Dictionary<string, List<object>>
             {
                 {"product_id",new List<object>() {1,1,2,2,2,2,2 } },
@@ -71,7 +69,7 @@ namespace Unit.Test.DF
             var df = new DataFrame(dict);
 
             //add one hot encoding columns
-            df = df.CategoryToKey(mlContext, "state");
+            df = df.TransformColumn("state",ColumnTransformer.OneHot).df;
             var col = df["state_cvalues"].Select(x=>Convert.ToInt32(x)).ToArray();
             Assert.Equal(1, col[0]);
             Assert.Equal(1, col[1]);

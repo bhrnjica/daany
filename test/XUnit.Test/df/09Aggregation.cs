@@ -93,8 +93,9 @@ namespace Unit.Test.DF
             {
                 if(i==9)
                 {
-                    var vall = rollingdf.Values[i];
-                    Assert.True(df["B"].Contains(vall));
+                    var vall = rollingdf.Values[i].ToString();
+                    var value = df["B"].ToString();
+                    Assert.Contains(vall, value);
                 }    
                 else
                     Assert.Equal(rollingdf.Values[i], val[i]);

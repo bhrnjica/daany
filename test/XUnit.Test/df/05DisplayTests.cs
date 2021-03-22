@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Xunit;
 using Daany;
 using Daany.Ext;
-using Microsoft.ML;
 
 namespace Unit.Test.DF
 {
@@ -15,7 +14,6 @@ namespace Unit.Test.DF
         [Fact]
         public void Head_Test01()
         {
-            var mlContext = new MLContext();
             var dict = new Dictionary<string, List<object>>
             {
                 {"product_id",new List<object>() {1,1,2,2,2,2,2 } },

@@ -1149,8 +1149,8 @@ female              Sarajevo
             //create df
             var df = new DataFrame(dict);
             //group df by gender
-            var gDf = df.GroupBy("Gender").Rolling(2, 2, new Dictionary<string, Aggregation>() { { "Values", Aggregation.Sum }, 
-                                                                                                 { "Age", Aggregation.Avg } });
+            var gDf = df.GroupBy("Gender").Rolling(2, new Dictionary<string, Aggregation>() { { "Values", Aggregation.Sum }, 
+                                                                                                 { "Age", Aggregation.Avg } }).TakeEvery(2);
             //check result
             Assert.Equal(7.69, gDf["Values", 0]);
             Assert.Equal(8.76, gDf["Values", 1]);

@@ -342,7 +342,7 @@ namespace Unit.Test.DF
                 { "pressure", Aggregation.Avg },{ "vibration", Aggregation.Avg }
             };
 
-            var df = telDf.GroupBy("machineID").Rolling(3, 3, agg);
+            var df = telDf.GroupBy("machineID").Rolling(3, agg).TakeEvery(3);
 
             var row1 = df[0].ToList();
             Assert.Equal("1", row1[1].ToString());

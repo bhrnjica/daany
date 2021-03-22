@@ -20,10 +20,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using Daany;
-using Microsoft.ML;
-using Microsoft.ML.Data;
-using Microsoft.ML.Tools;
-using Microsoft.ML.Transforms;
+
 using XPlot.Plotly;
 
 namespace Daany.Ext

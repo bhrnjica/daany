@@ -111,7 +111,7 @@ namespace Unit.Test.DF
         public void ARIMA_Test00()
         {
 			Console.WriteLine("ARIMA Math");
-			int q = 1;
+			//int q = 1;
 			ARMAFoundation am = new ARMAFoundation();
 
 			var dataArray = new double[] { 136, 144, 167, 162, 160, 153, 147, 146, 148, 150, 

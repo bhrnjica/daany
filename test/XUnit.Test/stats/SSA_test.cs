@@ -508,7 +508,7 @@ namespace Unit.Test.DF
 
             var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { scatters1, scatters2 });
            // chart.Show();
-            int i= 0;
+           // int i= 0;
            // ssa.PlotComponents(12);
 
             //
