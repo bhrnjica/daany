@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <IsPackable>false</IsPackable>
 
@@ -16,7 +16,6 @@
     <PackageReference Include="intelopenmp.redist.win" Version="2021.1.2.265" />
     <PackageReference Include="inteltbb.redist.win" Version="2021.1.1.133" />
     <PackageReference Include="Microsoft.ML" Version="1.4.0" />
-    <PackageReference Include="Microsoft.ML.DataView" Version="1.4.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
     <PackageReference Include="XPlot.Plotly" Version="3.0.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
