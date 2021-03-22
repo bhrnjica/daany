@@ -5,7 +5,7 @@ using System.Text;
 namespace Daany.Stat
 {
 	//this implementation is based on: https://github.com/jsphLim/ARIMA
-	public class ARModel : BaseModel
+	internal class ARModel : BaseModel
 	{
 		public ARModel(double[] data, int p)
 		{

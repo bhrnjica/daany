@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-using static Daany.LinA.LinA;
 
 namespace Daany.Arima
 {
@@ -12,7 +11,7 @@ namespace Daany.Arima
      ‘q’ is the order of the ‘Moving Average’ (MA) term. 
       'q' is the number of lagged forecast errors that should go into the ARIMA Model.
      */
-    public class ARIMA
+    internal class ARIMA
     {
         //the order of the AR term
         public int p { get; set; }
@@ -52,16 +51,17 @@ namespace Daany.Arima
 
         public float[] AR(Series ts, int order)
         {
-            (float[,] X, float[,] Y) = ts.ToRegressors(order);
+            throw new NotImplementedException();
+            //(float[,] X, float[,] Y) = ts.ToRegressors(order);
 
-            ///Least Square Solve
-            var retVal = Lss(X, Y);
+            /////Least Square Solve
+            //var retVal = null; // Lss(X, Y);
 
-            //
-            var args = new List<float>();
-            for (int i = 0; i < retVal.GetLength(0); i++)
-                args.Add(retVal[i,0]);
-            return args.ToArray();
+            ////
+            //var args = new List<float>();
+            //for (int i = 0; i < retVal.GetLength(0); i++)
+            //    args.Add(retVal[i,0]);
+            //return args.ToArray();
         }
         /// <summary>
         /// Find the best possible ARIMA parameters (p, d, q)

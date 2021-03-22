@@ -5,7 +5,7 @@ using System.Text;
 namespace Daany.Stat
 {
     ///this implementation is based on: https://github.com/jsphLim/ARIMA
-    public class BaseModel
+    internal class BaseModel
     {
         protected double[] data;
         protected int param;

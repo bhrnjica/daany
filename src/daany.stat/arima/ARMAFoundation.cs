@@ -6,7 +6,7 @@ using System.Text;
 namespace Daany.Stat
 {
 	//this implementation is based on: https://github.com/jsphLim/ARIMA
-	public class ARMAFoundation
+	internal class ARMAFoundation
 	{
 		public static Random rnd = new Random(Seed: 1);
 		public double avgData(double[] dataArray)

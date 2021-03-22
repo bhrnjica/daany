@@ -81,8 +81,6 @@ SOFTWARE.</PackageReleaseNotes>
 
   <ItemGroup>
     <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
-    <ProjectReference Include="..\daany.lina\src\.net\LapackSharp\Daany.LinA.csproj" />
-    <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
   </ItemGroup>
  
 
