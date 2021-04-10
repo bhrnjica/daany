@@ -1078,11 +1078,11 @@ namespace Unit.Test.DF
 male                
         ID      City    Zip CodeState   IsHome  Values  Age     Gender  
 0       1       Sarajevo71000   BiH     True    3.14    31      male    
-1       3       Berlin  10115   GER     False   4.55    45      male    
+2       3       Berlin  10115   GER     False   4.55    45      male    
 
 female              
         ID      City    Zip CodeState   IsHome  Values  Age     Gender  
-0       2       Seattle 98101   USA     False   3.21    25      female  
+1       2       Seattle 98101   USA     False   3.21    25      female  
 
 ";
             Assert.Equal(str, swqs);
@@ -1116,11 +1116,11 @@ male                Sarajevo
 
 Berlin              
         ID      City    Zip CodeState   IsHome  Values  Age     Gender  
-0       3       Berlin  10115   GER     False   4.55    45      male    
+2       3       Berlin  10115   GER     False   4.55    45      male    
 
 female              Sarajevo            
         ID      City    Zip CodeState   IsHome  Values  Age     Gender  
-0       2       Sarajevo98101   USA     False   3.21    25      female  
+1       2       Sarajevo98101   USA     False   3.21    25      female  
 
 ";
             Assert.Equal(str, swqs);

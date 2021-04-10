@@ -511,11 +511,11 @@ namespace Daany
         /// Add one row in the data frame
         /// </summary>
         /// <param name="row">List of row values</param>
-        public void AddRow(List<object> row)
+        public void AddRow(List<object> row, object index=null)
         {
             if (row == null || row.Count != Columns.Count)
                 throw new Exception("Inconsistent row, and cannot be inserted in the DataFrame");
-            InsertRow(-1, row);
+            InsertRow(-1, row, index);
         }
 
         #region Calculated Column
@@ -1340,19 +1340,26 @@ namespace Daany
         /// </summary>
         /// <param name="nPos"></param>
         /// <param name="row"></param>
-        public void InsertRow(int nPos, List<object> row)
+        public void InsertRow(int nPos, List<object> row, object index=null)
         {
             if(nPos== -1 )
             {
                 _values.AddRange(row);
                 //add row index
-                _index.Add(_index.Count);
+                if (index == null)
+                    _index.Add(_index.Count);
+                else
+                    _index.Add(index);
             }
             else
             {
                 int ind = nPos * this.ColCount(); 
                 _values.InsertRange(ind, row);
-                _index.Insert(nPos, this.RowCount());
+
+                if (index == null)
+                    _index.Insert(nPos, this.RowCount());
+                else
+                    _index.Insert(nPos, index);
             }            
         }
         #endregion
@@ -2878,7 +2885,7 @@ namespace Daany
             var Group = new Dictionary<object, DataFrame>();
             
             //go through all data to group
-            var index = 0;
+            var pos = 0;
             var rows = Index.Count;
             //
             for (int i = 0; i < rows; i++)
@@ -2891,18 +2898,19 @@ namespace Daany
                 //
                 for (int j = 0; j < colCnt; j++)
                 {
-                    row.Add(_values[index]);
+                    row.Add(_values[pos]);
+                    
                    // if (Columns[j].Equals(groupCol, StringComparison.InvariantCultureIgnoreCase))
                    if(grpColIndex==j)
-                        groupValue = _values[index];
-                    index++;
+                        groupValue = _values[pos];
+                    pos++;
                 }
 
                 //add to group
                 if (!Group.ContainsKey(groupValue))
-                    Group.Add(groupValue, new DataFrame(row,this.Columns, this._colsType));
+                    Group.Add(groupValue, new DataFrame(row, new List<object>(){_index[i]}, this.Columns, this._colsType));
                 else
-                    Group[groupValue].AddRow(row);
+                    Group[groupValue].AddRow(row, _index[i]);
             }
 
             return Group;
