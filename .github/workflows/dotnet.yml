@@ -18,7 +18,7 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Clean
-      run: dotnet clean daany.sln --configuration Debug && dotnet nuget locals all --clear
+      run: dotnet clean && dotnet nuget locals all --clear
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
