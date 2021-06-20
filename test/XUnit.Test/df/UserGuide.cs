@@ -9,7 +9,7 @@ namespace Unit.Test.DF
 {
     public class UserGuide
     {
-        string rootfolder = "testdata\\";
+        string rootfolder = "testdata/";
 
         #region Create DF
         [Fact]

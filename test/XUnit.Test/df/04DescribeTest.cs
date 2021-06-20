@@ -93,7 +93,7 @@ namespace Unit.Test.DF
         public void Describe_Test02()
         {
             //columns: vendor_id,rate_code,passenger_count,trip_time_in_secs,trip_distance,payment_type,fare_amount  
-            var tf = DataFrame.FromCsv("testdata\\desc_test_ds.csv", parseDate: true);
+            var tf = DataFrame.FromCsv("testdata/desc_test_ds.csv", parseDate: true);
 
             var descDf = tf.Describe();
             var ss = descDf.ToStringBuilder();

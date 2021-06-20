@@ -76,7 +76,7 @@ namespace Unit.Test.DF
 		public void ARIMA_AR_Test01()
         {
 
-			var df = DataFrame.FromCsv(filePath: $"..\\..\\..\\testdata\\earth_quake.txt",sep:'\t', names:null, parseDate: false);
+			var df = DataFrame.FromCsv(filePath: $"../../../testdata/earth_quake.txt",sep:'\t', names:null, parseDate: false);
 			var newDf = df.SetIndex("Year");
 			var ts = Series.FromDataFrame(newDf, "Quakes");
 			//
@@ -196,7 +196,7 @@ namespace Unit.Test.DF
 		[Fact]
         public void ARIMA_Test01()
         {
-            var df = DataFrame.FromCsv(filePath: $"testdata\\AirPassengers.csv", 
+            var df = DataFrame.FromCsv(filePath: $"testdata/AirPassengers.csv", 
                 sep: ',', names: null, parseDate: false);
             //
             var ts = df["#Passengers"].Select(f => Convert.ToDouble(f));//create time series

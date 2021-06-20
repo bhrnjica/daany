@@ -85,8 +85,8 @@ namespace Unit.Test.DF
         public void GroupBy_TwoColumns_Test02()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"testdata\\group_sample_testdata.txt", sep: '\t', names: null, dformat: null);
-            var resultDf = DataFrame.FromCsv(filePath: $"testdata\\group_result_testdata.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/group_sample_testdata.txt", sep: '\t', names: null, dformat: null);
+            var resultDf = DataFrame.FromCsv(filePath: $"testdata/group_result_testdata.txt", sep: '\t', names: null, dformat: null);
 
             var aggs = new Dictionary<string, Aggregation>();
             aggs.Add("col3", Aggregation.Sum);
@@ -332,7 +332,7 @@ namespace Unit.Test.DF
         public void GroupByRolling_Test01()
         {
             //datetime, machineID, volt, rotate, pressure, vibration
-            var telDf = DataFrame.FromCsv(filePath: $"testdata\\group_rolling_testdata.txt", sep: '\t', names: null, dformat: null);
+            var telDf = DataFrame.FromCsv(filePath: $"testdata/group_rolling_testdata.txt", sep: '\t', names: null, dformat: null);
 
 
             //
