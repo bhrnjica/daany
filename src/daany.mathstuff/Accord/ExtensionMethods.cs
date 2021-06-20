@@ -276,62 +276,7 @@ namespace Accord
             return matrix;
         }
 
-        /// <summary>
-        ///   Gets the underlying buffer position for a StreamReader.
-        /// </summary>
-        /// 
-        /// <param name="reader">A StreamReader whose position will be retrieved.</param>
-        /// 
-        /// <returns>The current offset from the beginning of the 
-        ///   file that the StreamReader is currently located into.</returns>
-        /// 
-        public static long GetPosition(this StreamReader reader)
-        {
-            // http://stackoverflow.com/a/17457085/262032
 
-#if NETSTANDARD1_4 || NETSTANDARD2_0 || NETSTANDARD2_1
-            var type = typeof(StreamReader).GetTypeInfo();
-            char[] charBuffer = (char[])type.GetDeclaredField("_charBuffer").GetValue(reader);
-            int charPos = (int)type.GetDeclaredField("_charPos").GetValue(reader);
-            int byteLen = (int)type.GetDeclaredField("_byteLen").GetValue(reader);
-#else
-            var type = typeof(StreamReader);
-
-            char[] charBuffer;
-            int charPos;
-            int byteLen;
-
-            if (SystemTools.IsRunningOnMono() && type.GetField("decoded_buffer") != null)
-            {
-                // Mono's StreamReader source code is at: https://searchcode.com/codesearch/view/26576619/
-
-                // The current buffer of decoded characters
-                charBuffer = (char[])GetField(reader, "decoded_buffer");
-
-                // The current position in the buffer of decoded characters
-                charPos = (int)GetField(reader, "decoded_count");
-
-                // The number of encoded bytes that are in the current buffer
-                byteLen = (int)GetField(reader, "buffer_size");
-            }
-            else
-            {
-                // The current buffer of decoded characters
-                charBuffer = (char[])GetField(reader, "charBuffer");
-
-                // The current position in the buffer of decoded characters
-                charPos = (int)GetField(reader, "charPos");
-
-                // The number of encoded bytes that are in the current buffer
-                byteLen = (int)GetField(reader, "byteLen");
-            }
-#endif
-
-            // The number of bytes that the already-read characters need when encoded.
-            int numReadBytes = reader.CurrentEncoding.GetByteCount(charBuffer, 0, charPos);
-
-            return reader.BaseStream.Position - byteLen + numReadBytes;
-        }
 
 #if !NETSTANDARD1_4
 

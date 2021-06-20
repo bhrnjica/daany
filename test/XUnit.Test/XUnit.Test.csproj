@@ -11,12 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="4.7.0" />
-    <PackageReference Include="intelmkl.redist.win-x64" Version="2021.1.1.52" />
-    <PackageReference Include="intelopenmp.redist.win" Version="2021.1.2.265" />
-    <PackageReference Include="inteltbb.redist.win" Version="2021.1.1.133" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
-    <PackageReference Include="XPlot.Plotly" Version="3.0.1" />
+    <PackageReference Include="FSharp.Core" Version="5.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="XPlot.Plotly" Version="4.0.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
@@ -27,7 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\daany.df\Daany.DataFrame.csproj" />
     <ProjectReference Include="..\..\src\daany.ext\Daany.DataFrame.Ext.csproj" />
-    <ProjectReference Include="..\..\src\daany.lina\src\.net\daany.lina\Daany.LinA.csproj" />
+    <ProjectReference Include="..\..\src\daany.lina\Daany.LinA.csproj" />
     <ProjectReference Include="..\..\src\daany.stat\Daany.Stat.csproj" />
   </ItemGroup>
 
@@ -90,9 +88,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy  /Y  &quot;$(SolutionDir)lib\$(ConfigurationName)\LapackBinding.dll&quot;  &quot;$(OutDir)runtimes\win-x64\native\LapackBinding.dll&quot;&#xD;&#xA;copy  /Y  &quot;$(SolutionDir)lib\$(ConfigurationName)\LapackBinding.dll&quot;  &quot;$(OutDir)runtimes\win-x86\native\LapackBinding.dll&quot;" />
-  </Target>
 
 </Project>

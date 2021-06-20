@@ -686,7 +686,7 @@ namespace Daany.Stat
 
         public PlotlyChart PlotwCorrelation(double[,] wValues)
         {
-            var s1 = new Graph.Heatmap()
+            var s1 = new Heatmap()
             {
 
                 name = "W-correlation matrix",
@@ -694,7 +694,7 @@ namespace Daany.Stat
                 z = wValues
             };
 
-            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { s1 });
+            var chart = XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { s1 });
             return chart;
         }
 
@@ -712,11 +712,11 @@ namespace Daany.Stat
             layout.plot_bgcolor = "rgb(223,223,223)";
 
 
-            var scatters1 = new Graph.Scatter() { name = "Actual", x = train.x, y = train.actual, mode = "line", };
-            var scatters2 = new Graph.Scatter() { name = "Predicted", x = train.x, y = train.predicted, mode = "line", };
-            var scatters3 = new Graph.Scatter() { name = "Test Actual", x = test.x, y = test.actual, mode = "line", };
-            var scatters4 = new Graph.Scatter() { name = "Forecast", x = test.x, y = test.predicted, mode = "line", };
-            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { scatters1, scatters2, scatters3, scatters4 });
+            var scatters1 = new Scatter() { name = "Actual", x = train.x, y = train.actual, mode = "line", };
+            var scatters2 = new Scatter() { name = "Predicted", x = train.x, y = train.predicted, mode = "line", };
+            var scatters3 = new Scatter() { name = "Test Actual", x = test.x, y = test.actual, mode = "line", };
+            var scatters4 = new Scatter() { name = "Forecast", x = test.x, y = test.predicted, mode = "line", };
+            var chart = XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { scatters1, scatters2, scatters3, scatters4 });
             chart.WithLayout(layout);
             return chart;
             //chart.Show();
@@ -729,8 +729,8 @@ namespace Daany.Stat
             layout.barmode = "group";
             layout.title = "Logarithms of eigenvalues";
             var x = Enumerable.Range(1, EigenTriple.Count).Select(x => x);
-            var bar1 = new Graph.Scatter() { name = "Eigenvalues", x = x, y = EigenTriple.Select(x => Math.Log(x.Value.Li)), mode = "lines+markers" };
-            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { bar1 });
+            var bar1 = new Scatter() { name = "Eigenvalues", x = x, y = EigenTriple.Select(x => Math.Log(x.Value.Li)), mode = "lines+markers" };
+            var chart = XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { bar1 });
             chart.WithLayout(layout);
             return chart;
         }
@@ -747,7 +747,7 @@ namespace Daany.Stat
             {
                 var p1 = EigenTriple[i + 1];
                 var p2 = EigenTriple[i + 2];
-                var s = new Graph.Scatter()
+                var s = new Scatter()
                 {
                     showlegend = true,
                     name = $"ET{i + 1}({EigenTriple[i + 1].LiContrb}%)-{i + 2}({EigenTriple[i + 2].LiContrb}%)",
@@ -755,7 +755,7 @@ namespace Daany.Stat
                     y = EigenTriple[i + 2].Ui,
                     mode = "line",
                 };
-                lst.Add(XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { s }));
+                lst.Add(XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { s }));
             }
             //
             return lst;
@@ -769,8 +769,8 @@ namespace Daany.Stat
             layout.barmode = "group";
             layout.title = "SSA signal contributions (lambda_i)";
             var x = Enumerable.Range(1, contrib.Count()).Select(x => $"Lambda{x}");
-            var bar1 = new Graph.Bar() { name = "Contributions", x = x, y = contrib };
-            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { bar1 });
+            var bar1 = new Bar() { name = "Contributions", x = x, y = contrib };
+            var chart = XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { bar1 });
             chart.WithLayout(layout);
             return chart;
         }
@@ -782,7 +782,7 @@ namespace Daany.Stat
             for (int i = 0; i < sCount; i++)
             {
                 var ts = EigenTriple[i + 1].Ui;//diagonalAveraging(EM[i]);
-                var s = new Graph.Scatter()
+                var s = new Scatter()
                 {
 
                     showlegend = true,
@@ -791,7 +791,7 @@ namespace Daany.Stat
                     x = Enumerable.Range(1, ts.Length),
                     mode = "line",
                 };
-                lst.Add(XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { s }));
+                lst.Add(XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { s }));
             }
             //
             Chart.ShowAll(lst.ToArray());

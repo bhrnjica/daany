@@ -226,7 +226,7 @@ namespace Unit.Test.LapackSharp
         [Fact]
         public void Test1Double()
         {
-            
+
             double[,] A = new double[3, 3]
                 {
                 {2.0, 3.0, 5.0},
@@ -235,9 +235,9 @@ namespace Unit.Test.LapackSharp
                 };
 
             ///
-            double[] B = new double[3]{ 21.0,22.0,25.0};
+            double[] B = new double[3] { 21.0, 22.0, 25.0 };
 
-            var result = Solve(A,B);
+            var result = Solve(A, B);
             var expected = new double[3] { 1f, 3f, 2f };
 
             for (int j = 0; j < result.Length; j++)

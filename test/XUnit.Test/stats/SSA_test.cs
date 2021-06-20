@@ -58,14 +58,14 @@ namespace Unit.Test.DF
         private XPlot.Plotly.PlotlyChart PlotMatrix(double[,] matrix)
         {
             var m = matrix.Reverse(false);
-            var s1 = new Graph.Heatmap()
+            var s1 = new Heatmap()
             {
                 name = "Heat-map of Matrix",
                 colorscale = @"YIGnBu",
                 z = m
             };
 
-            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { s1 });
+            var chart = XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { s1 });
             return chart;
         }
         [Fact]
@@ -497,16 +497,16 @@ namespace Unit.Test.DF
             XPlot.Plotly.Chart.ShowAll(plt);
 
             var f1 = ssa.Reconstruct(1);
-            var sct1 = new Graph.Scatter() { name = "Actual", x = Enumerable.Range(1, f1.Length), y = f1, mode = "line", };
-            var chart1 = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { sct1 });
+            var sct1 = new Scatter() { name = "Actual", x = Enumerable.Range(1, f1.Length), y = f1, mode = "line", };
+            var chart1 = XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { sct1 });
             chart1.Show();
 
 
             var ff = ssa.Forecast(new int[] {1,2,3,4,5,6,7,8,9,10,11,12,13},6, method:Forecasting.Rforecasing);
-            var scatters1 = new Graph.Scatter() { name = "Predicted", x = Enumerable.Range(1, ff.Length), y = ff, mode = "line", };
-            var scatters2 = new Graph.Scatter() { name = "Actual", x = Enumerable.Range(1, ts.Count()), y = ts, mode = "line", fillcolor="Blue" };
+            var scatters1 = new Scatter() { name = "Predicted", x = Enumerable.Range(1, ff.Length), y = ff, mode = "line", };
+            var scatters2 = new Scatter() { name = "Actual", x = Enumerable.Range(1, ts.Count()), y = ts, mode = "line", fillcolor="Blue" };
 
-            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { scatters1, scatters2 });
+            var chart = XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { scatters1, scatters2 });
            // chart.Show();
            // int i= 0;
            // ssa.PlotComponents(12);
@@ -564,10 +564,10 @@ namespace Unit.Test.DF
 
 
             var ff = ssa.Forecast(new int[] { 1,2, 3, 5, 7 }, 6, method: Forecasting.Rforecasing);
-            var scatters1 = new Graph.Scatter() { name = "Predicted", x = Enumerable.Range(1, ff.Length), y = ff, mode = "line", };
-            var scatters2 = new Graph.Scatter() { name = "Actual", x = Enumerable.Range(1, _ts.Count()), y = _ts, mode = "line", fillcolor = "Blue" };
+            var scatters1 = new Scatter() { name = "Predicted", x = Enumerable.Range(1, ff.Length), y = ff, mode = "line", };
+            var scatters2 = new Scatter() { name = "Actual", x = Enumerable.Range(1, _ts.Count()), y = _ts, mode = "line", fillcolor = "Blue" };
 
-            var chart = XPlot.Plotly.Chart.Plot<Graph.Trace>(new Graph.Trace[] { scatters1, scatters2 });
+            var chart = XPlot.Plotly.Chart.Plot<Trace>(new Trace[] { scatters1, scatters2 });
             chart.Show();
         }
     }

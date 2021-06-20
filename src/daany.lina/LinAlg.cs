@@ -2,6 +2,8 @@
 using System.Runtime.InteropServices;
 namespace Daany.LinA
 {
+    enum CBLAS_LAYOUT { CblasRowMajor = 101, CblasColMajor = 102 };
+    enum CBLAS_TRANSPOSE { CblasNoTrans = 111, CblasTrans = 112, CblasConjTrans = 113 };
     unsafe public class LinA
     {
 
@@ -17,12 +19,12 @@ namespace Daany.LinA
 
         #region Solver- solver of system of linear equations
         // 
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbsgesv_cpu(bool rowmajor, int n, int nrhs, float* A, int lda, float* B, int lbd);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_sgesv(int matrix_layout, int n, int nrhs, float* a, int lda, int* ipiv, float* b, int ldb);
 
         //double
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbdgesv_cpu(bool rowmajor, int n, int nrhs, double* A, int ldda, double* B, int lddb);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_dgesv(int matrix_layout, int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb);
        
         /// <summary>
         /// Sole system of Linear equation A X=B
@@ -38,12 +40,18 @@ namespace Daany.LinA
             int nrhs = B.GetLength(1);
             var Ac = A.Clone() as float[,];
             var Bc = B.Clone() as float[,];
+            int[] ipiv = new int[n]; 
 
             //define arrays
-            fixed(float *pA = Ac, pB = Bc)
+            fixed (float *pA = Ac, pB = Bc)
             {
-                //pInvoke call
-                info = lbsgesv_cpu(true, n, nrhs, pA, n, pB, nrhs);
+                fixed(int* pipiv = ipiv)
+                {
+                    //pInvoke call
+                    //#define LAPACK_ROW_MAJOR               101
+                    //#define LAPACK_COL_MAJOR               102
+                    info = LAPACKE_sgesv(101, n, nrhs, pA, n, pipiv, pB, nrhs);
+                }
             }
             //
             if (info != 0)
@@ -67,18 +75,19 @@ namespace Daany.LinA
             int nrhs = 1;
             var Ac = A.Clone() as float[,];
             var Bc = B.Clone() as float[];
+            int[] ipiv = new int[n];
             //define arrays
-            int[] ipiv = new int[n];//permutation indices
             fixed (float* pA = Ac, pB = Bc)
             {
-                //pInvoke call
-                info = lbsgesv_cpu(true, n, nrhs, pA, n, pB, nrhs);
+                fixed (int* pipiv = ipiv)
+                {
+                    info = LAPACKE_sgesv(101/*by definition*/, n, nrhs, pA, n, pipiv, pB, nrhs);
+                }
             }
             //
             if (info != 0)
                 throw new Exception($"magma_sgesv failed due to invalid parameter {-info}.");
 
-            //
             return Bc;
         }
 
@@ -96,11 +105,16 @@ namespace Daany.LinA
             int nrhs = B.GetLength(1);
             var Ac = A.Clone() as double[,];
             var Bc = B.Clone() as double[,];
+            int[] ipiv = new int[n]; //(int*)malloc(n * sizeof(int));
+
             //define arrays
             fixed (double* pA = Ac, pB = Bc)
             {
-                //pInvoke call
-                info = lbdgesv_cpu(true, n, nrhs, pA, n, pB, nrhs);
+                fixed (int* pipiv = ipiv)
+                {
+                    //pInvoke call
+                    info = LAPACKE_dgesv(101, n, nrhs, pA, n, pipiv, pB, nrhs);
+                }
             }
             //
             if (info != 0)
@@ -124,11 +138,15 @@ namespace Daany.LinA
             int nrhs = 1;
             var Ac = A.Clone() as double[,];
             var Bc = B.Clone() as double[];
+            int[] ipiv = new int[n]; 
             //define arrays
             fixed (double* pA = Ac, pB = Bc)
             {
-                //pInvoke call
-                info = lbdgesv_cpu(true, n, nrhs, pA, n, pB, nrhs);
+                fixed (int* pipiv = ipiv)
+                {
+                    //pInvoke call
+                    info = LAPACKE_dgesv(101, n, nrhs, pA, n, pipiv, pB, nrhs);
+                }
             }
             //
             if (info != 0)
@@ -140,13 +158,13 @@ namespace Daany.LinA
         #endregion
 
         #region LSS - least square solver
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbsgels_cpu(bool rowmajor, int m, int n, int nrhs, float* A, int lda, float* B, int lbd);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_sgels(int matrix_layout, char trans, int m, int n, int nrhs, float* a, int lda, float* b, int ldb);
+        
 
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_dgels(int matrix_layout, char trans, int m, int n, int nrhs, double* a, int lda, double* b, int ldb);
 
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbdgels_cpu(bool rowmajor, int m, int n, int nrhs, double* A, int lda, double* B, int lbd);
-      
         public static float[,] Lss(float[,] A, float[,] B)
         {
             //define parameters
@@ -162,17 +180,17 @@ namespace Daany.LinA
             fixed (float* pA = Ac, pB = Bc)
             {
                 //pInvoke call
-                info = lbsgels_cpu(true, m, n, nrhs, pA, n, pB, nrhs);
+                info = LAPACKE_sgels(101,'N', m, n, nrhs, pA, n, pB, nrhs);
 
                 //
                 if (info != 0)
                     throw new Exception($"lapack_sgesv failed due to invalid parameter {-info}.");
 
                 //X(n, nrhs) matrix is a submatrix of B(m, nrhs).
-                var X = new float[n,nrhs];
-                Array.Copy(Bc,X,n*nrhs);
+                var X = new float[n, nrhs];
+                Array.Copy(Bc, X, n * nrhs);
                 return X;
-            }            
+            }
         }
 
         public static double[,] Lss(double[,] A, double[,] B)
@@ -190,7 +208,7 @@ namespace Daany.LinA
             fixed (double* pA = Ac, pB = Bc)
             {
                 //pInvoke call
-                info = lbdgels_cpu(true, m, n, nrhs, pA, n, pB, nrhs);
+                info = LAPACKE_dgels(101, 'N', m, n, nrhs, pA, n, pB, nrhs);
 
                 //
                 if (info != 0)
@@ -206,30 +224,44 @@ namespace Daany.LinA
         #endregion
 
         #region Eigenvalues 
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbsgeevs_cpu(bool rowmajor, int n, float* A, int lda, float* wr, float* wi, float* VL, bool computeLeft, float* VR, bool computerRight);
-       
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbdgeevs_cpu(bool rowmajor, int n, double* A, int lda, double* wr, double* wi, double* VL, bool computeLeft, double* VR, bool computerRight);
-              
-        public static (float[] wr, float[] wi, float[,] VL, float[,] VR ) Eigen(float[,] A, bool computeLeft= false, bool computeRight= false)
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_sgeev(int matrix_layout, char jobvl, char jobvr, int n, float* a, int lda, float* wr,
+                          float* wi, float* vl, int ldvl, float* vr, int ldvr);
+
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_dgeev(int matrix_layout, char jobvl, char jobvr, int n, double* a, int lda, double* wr,
+                          double* wi, double* vl, int ldvl, double* vr, int ldvr);
+        public static (float[] wr, float[] wi, float[,] VL, float[,] VR) Eigen(float[,] A, bool computeLeft = false, bool computeRight = false)
         {
             //define parameters
             int info = -1;
-            int m = A.GetLength(0);
-            if (m != A.GetLength(1))
+            int n = A.GetLength(0);
+            if (n != A.GetLength(1))
                 throw new Exception("Matrix A must be squared!");
 
             //define arrays
             var Ac = A.Clone() as float[,];
-            var wr = new float[m];
-            var wi = new float[m];
-            var VL = new float[m, m];
-            var VR = new float[m, m];
+            var wr = new float[n];
+            var wi = new float[n];
+            var VL = new float[n, n];
+            var VR = new float[n, n];
+
+            char jjobvl = 'N', jjobvr = 'N';
+
+            //left and right matrices
+            if (computeLeft)
+                jjobvl = 'V';
+            else
+                jjobvl = 'N';
+
+            if (computeRight)
+                jjobvr = 'V';
+            else
+                jjobvr = 'N';
 
             fixed (float* pA = Ac, pwr = wr, pwi = wi, pVL = VL, pVR = VR)
             {
-                info = lbsgeevs_cpu(true, m, pA, m, pwr, pwi, pVL, computeLeft, pVR, computeRight);
+                info = LAPACKE_sgeev(101, jjobvl, jjobvr, n, pA, n, pwr, pwi, pVL, n, pVR, n);
             }
             //
             return (wr, wi, VL, VR);
@@ -239,20 +271,33 @@ namespace Daany.LinA
         {
             //define parameters
             int info = -1;
-            int m = A.GetLength(0);
-            if (m != A.GetLength(1))
+            int n = A.GetLength(0);
+            if (n != A.GetLength(1))
                 throw new Exception("Matrix A must be squared!");
 
             //define arrays
             var Ac = A.Clone() as double[,];
-            var wr = new double[m];
-            var wi = new double[m];
-            var VL = new double[m, m];
-            var VR = new double[m, m];
+            var wr = new double[n];
+            var wi = new double[n];
+            var VL = new double[n, n];
+            var VR = new double[n, n];
+
+            char jjobvl = 'N', jjobvr = 'N';
+
+            //left and right matrices
+            if (computeLeft)
+                jjobvl = 'V';
+            else
+                jjobvl = 'N';
+
+            if (computeRight)
+                jjobvr = 'V';
+            else
+                jjobvr = 'N';
 
             fixed (double* pA = Ac, pwr = wr, pwi = wi, pVL = VL, pVR = VR)
             {
-                info = lbdgeevs_cpu(true, m, pA, m, pwr, pwi, pVL, computeLeft, pVR, computeRight);
+                info = LAPACKE_dgeev(101, jjobvl, jjobvr, n, pA, n, pwr, pwi, pVL, n, pVR, n);
             }
             //
             return (wr, wi, VL, VR);
@@ -260,13 +305,14 @@ namespace Daany.LinA
         #endregion
 
         #region SVD singular value decomposition
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbsgesvds_cpu(bool rowmajor, int m, int n, float* A, float* s, float* U,bool calcU, float* VT, bool calcV);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_sgesvd(int matrix_layout, char jobu, char jobvt,int m, int n, float* a, int lda,
+                           float* s, float* u, int ldu, float* vt, int ldvt, float* superb);
 
-        
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbdgesvds_cpu(bool rowmajor, int m, int n, double* A, double* s, double* U, bool calcU, double* VT, bool calcV);
-      
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_dgesvd(int matrix_layout, char jobu, char jobvt, int m, int n, double* a, int lda,
+                           double* s, double* u, int ldu, double* vt, int ldvt, double* superb);
+
 
         /// <summary>
         ///  Decompose rectangular matrix A on A = U * s * Vt
@@ -284,14 +330,24 @@ namespace Daany.LinA
             float[] s = new float[n];
             float[,] U = new float[m, m];
             float[,] VT = new float[n, n];
-            
+            float [] superb = new float[Math.Min(n,m)];
+            char jobU= 'N';//no vector calculation
+            char jobV = 'N';
+
+            if (calcU)
+                jobU = 'A';//all
+            //
+            if (calcVt)
+                jobV = 'A';
+
+
             //Initialize unmanaged memory to hold the array.
-            fixed (float* pA = Ac, ps=s, pU=U, pVT=VT)
+            fixed (float* pA = Ac, ps = s, pU = U, pVT = VT, psuperb= superb)
             {
-                
+
                 //pInvoke call
                 int info = -1;
-                info = lbsgesvds_cpu(true, m, n, pA, ps, pU, calcU, pVT, calcVt);
+                info = LAPACKE_sgesvd(101, jobU, jobV, m, n, pA, n, ps, pU, m, pVT, n, psuperb);
 
                 //
                 if (info != 0)
@@ -313,17 +369,26 @@ namespace Daany.LinA
             int m = A.GetLength(0);//the number of rows
             int n = A.GetLength(1);//the number of columns
             var Ac = A.Clone() as double[,];
-            double[]   s = new double[n];
-            double[,]  U = new double[m, m];
+            double[] s = new double[n];
+            double[,] U = new double[m, m];
             double[,] VT = new double[n, n];
+            double [] superb = new double[Math.Min(n, m)];
+            char jobU = 'N';//no vector calculation
+            char jobV = 'N';
+
+            if (calcU)
+                jobU = 'A';//all
+            //
+            if (calcVt)
+                jobV = 'A';
 
             //Initialize unmanaged memory to hold the array.
-            fixed (double* pA = Ac, ps = s, pU = U, pVT = VT)
+            fixed (double* pA = Ac, ps = s, pU = U, pVT = VT, psuperb = superb)
             {
 
                 //pInvoke call
                 int info = -1;
-                info = lbdgesvds_cpu(true, m, n, pA, ps, pU, calcU, pVT, calcVt);
+                info = LAPACKE_dgesvd(101, jobU, jobV, m, n, pA, n, ps, pU, m, pVT, n, psuperb);
 
                 if (info != 0)
                     throw new Exception($"lapack_svd failed due to invalid parameter {-info}.");
@@ -335,10 +400,12 @@ namespace Daany.LinA
 
         #region Matrix operations
         // 
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern void  lbsgemm_cpu(bool rowmajor, int m, int n, int k, float alpha, float* A, int lda, float* B, int ldb, float beta, float* C, int ldc);
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern void lbdgemm_cpu(bool rowmajor, int m, int n, int k, double alpha, double* A, int lda, double* B, int ldb, double beta, double* C, int ldc);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern void cblas_sgemm(CBLAS_LAYOUT Layout, CBLAS_TRANSPOSE TransA,CBLAS_TRANSPOSE TransB, int m, int n,int k, float alpha, float* A,
+                 int lda, float* B, int ldb, float beta, float* C, int ldc);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern void cblas_dgemm(CBLAS_LAYOUT Layout, CBLAS_TRANSPOSE TransA, CBLAS_TRANSPOSE TransB, int m, int n, int k, double alpha, double* A,
+                 int lda, double* B, int ldb, double beta, double* C, int ldc);
 
         /// <summary>
         /// Multiplies A * B and multiplies the resulting matrix by alpha. 
@@ -359,7 +426,7 @@ namespace Daany.LinA
         /// <param name="alpha"></param>
         /// <param name="betta"></param>
         /// <returns></returns>
-        public static float[,] MMult(float[,] A, float[,] B,float[,] C=null, float alpha=1, float betta= 1)
+        public static float[,] MMult(float[,] A, float[,] B, float[,] C = null, float alpha = 1, float betta = 1)
         {
             //define parameters
             int m = A.GetLength(0);
@@ -374,10 +441,10 @@ namespace Daany.LinA
             var Bc = B.Clone() as float[,];
             var Cc = C == null ? new float[m, n] : C.Clone() as float[,];
             //define arrays
-            fixed (float* pA = Ac, pB = Bc, pC=Cc)
+            fixed (float* pA = Ac, pB = Bc, pC = Cc)
             {
                 //pInvoke call
-                lbsgemm_cpu(true, m, n, k, alpha, pA, k, pB, n, betta, pC, n);
+                cblas_sgemm(CBLAS_LAYOUT.CblasRowMajor, CBLAS_TRANSPOSE.CblasNoTrans, CBLAS_TRANSPOSE.CblasNoTrans, m, n, k, alpha, pA, k, pB, n, betta, pC, n);
             }
             //
             return Cc;
@@ -401,7 +468,7 @@ namespace Daany.LinA
             fixed (float* pA = Ac, pB = Bc, pC = Cc)
             {
                 //pInvoke call
-                lbsgemm_cpu(true, m, n, k, alpha, pA, k, pB, n, betta, pC, n);
+                cblas_sgemm(CBLAS_LAYOUT.CblasRowMajor, CBLAS_TRANSPOSE.CblasNoTrans, CBLAS_TRANSPOSE.CblasNoTrans, m, n, k, alpha, pA, k, pB, n, betta, pC, n);
             }
             //
             return Cc;
@@ -426,7 +493,7 @@ namespace Daany.LinA
         /// <param name="alpha"></param>
         /// <param name="betta"></param>
         /// <returns></returns>
-        public static double[,] MMult(double[,] A, double[,] B, double[,] C=null, double alpha = 1, double betta = 1)
+        public static double[,] MMult(double[,] A, double[,] B, double[,] C = null, double alpha = 1, double betta = 1)
         {
             //define parameters
             int m = A.GetLength(0);
@@ -438,13 +505,13 @@ namespace Daany.LinA
 
             var Ac = A.Clone() as double[,];
             var Bc = B.Clone() as double[,];
-            var Cc = C==null? new double[m,n]: C.Clone() as double[,];
-            
+            var Cc = C == null ? new double[m, n] : C.Clone() as double[,];
+
             //define arrays
             fixed (double* pA = Ac, pB = Bc, pC = Cc)
             {
                 //pInvoke call
-                lbdgemm_cpu(true, m, n, k, alpha, pA, k, pB, n, betta, pC, n);
+                cblas_dgemm(CBLAS_LAYOUT.CblasRowMajor, CBLAS_TRANSPOSE.CblasNoTrans, CBLAS_TRANSPOSE.CblasNoTrans, m, n, k, alpha, pA, k, pB, n, betta, pC, n);
             }
             //
             return Cc;
@@ -468,17 +535,21 @@ namespace Daany.LinA
             fixed (double* pA = Ac, pB = Bc, pC = Cc)
             {
                 //pInvoke call
-                lbdgemm_cpu(true, m, n, k, alpha, pA, k, pB, n, betta, pC, n);
+                cblas_dgemm(CBLAS_LAYOUT.CblasRowMajor, CBLAS_TRANSPOSE.CblasNoTrans, CBLAS_TRANSPOSE.CblasNoTrans, m, n, k, alpha, pA, k, pB, n, betta, pC, n);
             }
             //
             return Cc;
         }
 
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbdinverse_cpu(bool rowmajor, int n, double* A, int lda);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_sgetrf(int matrix_layout, int m, int n, float* a, int lda, int* ipiv);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_sgetri(int matrix_layout, int n, float* a, int lda, int* ipiv );
 
-        [DllImport("LapackBinding.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int lbsinverse_cpu(bool rowmajor, int n, float* A, int lda);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_dgetrf(int matrix_layout, int m, int n, double* a, int lda, int* ipiv);
+        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_dgetri(int matrix_layout, int n, double* a, int lda, int* ipiv);
 
         public static float[,] MInverse(float[,] A)
         {
@@ -486,13 +557,19 @@ namespace Daany.LinA
             int info = -1;
             int n = A.GetLength(0);
             var Ac = A.Clone() as float[,];
-
+            int[] ipiv = new int[n];
             //define arrays
- 
+
             fixed (float* pA = Ac)
             {
-                //pInvoke call
-                info = lbsinverse_cpu(true, n, pA, n);
+                fixed (int* pipiv = ipiv)
+                {
+                    info = LAPACKE_sgetrf(101, n, n, pA, n, pipiv);
+                    if (info > 0)
+                        throw new Exception($"lapack_sgesv failed due to invalid parameter {-info}.");
+
+                    info = LAPACKE_sgetri(101, n, pA, n, pipiv);
+                }
             }
             //
             if (info != 0)
@@ -508,12 +585,18 @@ namespace Daany.LinA
             int info = -1;
             int n = A.GetLength(0);
             var Ac = A.Clone() as double[,];
-
+            int[] ipiv = new int[n];
             //define arrays
             fixed (double* pA = Ac)
             {
-                //pInvoke call
-                info = lbdinverse_cpu(true, n, pA, n);
+                fixed (int* pipiv = ipiv)
+                {
+                    info = LAPACKE_dgetrf(101, n, n, pA, n, pipiv);
+                    if (info > 0)
+                        throw new Exception($"lapack_sgesv failed due to invalid parameter {-info}.");
+
+                    info = LAPACKE_dgetri(101, n, pA, n, pipiv);
+                }
 
             }
             //

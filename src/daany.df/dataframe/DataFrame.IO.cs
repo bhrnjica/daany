@@ -340,7 +340,7 @@ namespace Daany
             if (IsMissingValue(value, missingChars: missingValue))
                 return DataFrame.NAN;
 
-#if NETSTANDARD2_1
+//#if NETSTANDARD2_1
             switch (colType)
             {
                 case ColType.I2:
@@ -368,57 +368,57 @@ namespace Daany
                 default:
                     throw new Exception("column type is not known.");
             }
-#else
-            var v = new Span<byte>(value.ToArray().Select(x => (byte)x).ToArray());
-            switch (colType)
-            {
-                case ColType.I2:
-                    {
-                        Utf8Parser.TryParse(v,out bool bValue, out int p);
-                        return bValue;
-                    }
-                case ColType.IN:
-                    return new string(value.ToArray());
-                case ColType.I32:
-                    {
-                        Utf8Parser.TryParse(v, out int bValue, out int p);
-                        return bValue;
-                    }
-                case ColType.I64:
-                    {
-                        Utf8Parser.TryParse(v, out long bValue, out int p);
-                        return bValue;
-                    }
-                case ColType.F32:
-                    {
-                        Utf8Parser.TryParse(v, out float bValue, out int p);
-                        return bValue;
-                    }
-                case ColType.DD:
-                    {
-                        Utf8Parser.TryParse(v, out double bValue, out int p);
-                        return bValue;
-                    }
-                case ColType.STR:
-                    return new string(value.ToArray());
-                case ColType.DT:
-                    {
-                        var vStr= new string(value.ToArray());
-                        if (string.IsNullOrEmpty(dFormat))
-                        {
-                            DateTime.TryParse(vStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime bValue);
-                            return bValue;
-                        }      
-                        else
-                        {
-                            DateTime.TryParseExact(vStr, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime bValue);
-                            return bValue;
-                        }
-                    }
-                default:
-                    throw new Exception("column type is not known.");
-            }
-#endif
+//#else
+//            var v = new Span<byte>(value.ToArray().Select(x => (byte)x).ToArray());
+//            switch (colType)
+//            {
+//                case ColType.I2:
+//                    {
+//                        Utf8Parser.TryParse(v,out bool bValue, out int p);
+//                        return bValue;
+//                    }
+//                case ColType.IN:
+//                    return new string(value.ToArray());
+//                case ColType.I32:
+//                    {
+//                        Utf8Parser.TryParse(v, out int bValue, out int p);
+//                        return bValue;
+//                    }
+//                case ColType.I64:
+//                    {
+//                        Utf8Parser.TryParse(v, out long bValue, out int p);
+//                        return bValue;
+//                    }
+//                case ColType.F32:
+//                    {
+//                        Utf8Parser.TryParse(v, out float bValue, out int p);
+//                        return bValue;
+//                    }
+//                case ColType.DD:
+//                    {
+//                        Utf8Parser.TryParse(v, out double bValue, out int p);
+//                        return bValue;
+//                    }
+//                case ColType.STR:
+//                    return new string(value.ToArray());
+//                case ColType.DT:
+//                    {
+//                        var vStr= new string(value.ToArray());
+//                        if (string.IsNullOrEmpty(dFormat))
+//                        {
+//                            DateTime.TryParse(vStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime bValue);
+//                            return bValue;
+//                        }      
+//                        else
+//                        {
+//                            DateTime.TryParseExact(vStr, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime bValue);
+//                            return bValue;
+//                        }
+//                    }
+//                default:
+//                    throw new Exception("column type is not known.");
+//            }
+//#endif
         }
 
         private static object parseValue(ReadOnlySpan<char> value, char[] missingValue, bool parseDate = false, string dFormat = null)
@@ -428,7 +428,7 @@ namespace Daany
                 return DataFrame.NAN;
 
             var val = IsNumeric(value);
- #if NETSTANDARD2_1
+ //#if NETSTANDARD2_1
             if (val == ValueType.Int)
             {
                 int v = int.Parse(value, provider: CultureInfo.InvariantCulture);
@@ -460,40 +460,40 @@ namespace Daany
                 }
 
             }
-#else
-            var v = new Span<byte>(value.ToArray().Select(x => (byte)x).ToArray());
-            if (val == ValueType.Int)
-            {
-                Utf8Parser.TryParse(v, out int bValue, out int p);
-                return bValue;
-            }
-            else if (val == ValueType.Float)
-            {
-                Utf8Parser.TryParse(v, out float bValue, out int p);
-                return bValue;
-            }
-            else // non numeric values
-            {
-                var vStr = new string(value.ToArray());
-                if ((parseDate && dFormat != null) && DateTime.TryParse(vStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dtValue))
-                {
-                    return dtValue;
-                }
-                else if(dFormat != null && DateTime.TryParseExact(vStr, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dteValue))
-                {
-                    return dteValue;
-                }
-                //else if (bool.TryParse(span, out bool bVal))
-                //{
-                //    llst.Add(bVal);
-                //}
-                else
-                {
-                    return vStr;
-                }
+//#else
+            //var v = new Span<byte>(value.ToArray().Select(x => (byte)x).ToArray());
+            //if (val == ValueType.Int)
+            //{
+            //    Utf8Parser.TryParse(v, out int bValue, out int p);
+            //    return bValue;
+            //}
+            //else if (val == ValueType.Float)
+            //{
+            //    Utf8Parser.TryParse(v, out float bValue, out int p);
+            //    return bValue;
+            //}
+            //else // non numeric values
+            //{
+            //    var vStr = new string(value.ToArray());
+            //    if ((parseDate && dFormat != null) && DateTime.TryParse(vStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dtValue))
+            //    {
+            //        return dtValue;
+            //    }
+            //    else if(dFormat != null && DateTime.TryParseExact(vStr, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dteValue))
+            //    {
+            //        return dteValue;
+            //    }
+            //    //else if (bool.TryParse(span, out bool bVal))
+            //    //{
+            //    //    llst.Add(bVal);
+            //    //}
+            //    else
+            //    {
+            //        return vStr;
+            //    }
 
-            }
-#endif
+            //}
+
         }
 
         private static object parseValue(object value, string dformat)
