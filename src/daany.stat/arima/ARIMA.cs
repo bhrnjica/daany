@@ -11,7 +11,7 @@ namespace Daany.Arima
      ‘q’ is the order of the ‘Moving Average’ (MA) term. 
       'q' is the number of lagged forecast errors that should go into the ARIMA Model.
      */
-    internal class ARIMA
+    public class ARIMA
     {
         //the order of the AR term
         public int p { get; set; }

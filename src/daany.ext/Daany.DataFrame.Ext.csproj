@@ -79,9 +79,4 @@ SOFTWARE.</PackageReleaseNotes>
   <ItemGroup>
     <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if $(ConfigurationName) == Release copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;..\..\lib\$(TargetName).dll&quot;" />
-  </Target>
-
 </Project>

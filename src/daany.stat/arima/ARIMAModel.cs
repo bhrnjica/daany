@@ -5,7 +5,7 @@ using System.Text;
 namespace Daany.Stat
 {
 	//this implementation is based on: https://github.com/jsphLim/ARIMA
-	internal class ARIMAModel
+	public class ARIMAModel
 	{
 		double[] dataArray;
 		double[] dataFirDiff;

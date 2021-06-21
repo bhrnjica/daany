@@ -70,9 +70,4 @@ SOFTWARE.</PackageReleaseNotes>
   <ItemGroup>
     <Folder Include="NReco.Csv\" />
   </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if $(ConfigurationName) == Release copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;..\..\lib\$(TargetName).dll&quot;" />
-  </Target>
-
 </Project>
