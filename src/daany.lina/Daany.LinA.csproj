@@ -7,6 +7,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;_WIN32</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -21,11 +22,5 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="intelmkl.redist.win-x64" Version="2021.2.0.296" />
-    <PackageReference Include="intelopenmp.redist.win" Version="2021.2.0.616" />
-    <PackageReference Include="inteltbb.redist.win" Version="2021.2.0.371" />
-  </ItemGroup>
 
 </Project>

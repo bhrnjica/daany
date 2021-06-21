@@ -33,7 +33,7 @@ namespace Daany.Ext
         public static PlotlyChart Plot(string xLabel, string yLabel, params Series[] series)
         {
 
-            var scatters = series.Select(series => new Graph.Scatter()
+            var scatters = series.Select(series => new Scatter()
             {
                 name = series.Name,
 

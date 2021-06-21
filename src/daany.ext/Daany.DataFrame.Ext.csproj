@@ -64,8 +64,8 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="4.7.0" />
-    <PackageReference Include="XPlot.Plotly" Version="3.0.1" />
+    <PackageReference Include="FSharp.Core" Version="5.0.1" />
+    <PackageReference Include="XPlot.Plotly" Version="4.0.2" />
   </ItemGroup>
 
   <ItemGroup>
