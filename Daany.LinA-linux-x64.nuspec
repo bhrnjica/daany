@@ -18,7 +18,9 @@
         <tags>linear algebra, math, matrix, lapack, blass, data preparation, data analytics</tags>
         <dependencies>
 		<group targetFramework=".NETStandard2.1">
-			<dependency id="MKL.NET.linux-x64" version="2020.4.304" />			
+			<dependency id="intelmkl.devel.linux-x64" version="2020.4.304" />
+			<dependency id="intelopenmp.devel.linux" version="2021.2.0.610" />	
+			<dependency id="inteltbb.devel.linux" version="2021.2.0.357" />			
 		</group>			
         </dependencies>
     </metadata>

@@ -1,5 +1,5 @@
 
-msbuild daany.sln -p:Configuration=Release
+dotnet msbuild daany.sln  /p:DefineConstants=LINUX /p:Configuration=Release 
 
 
 
