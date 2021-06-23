@@ -7,10 +7,10 @@ namespace Daany.LinA
     unsafe public class LinA
     {
 
-#if _WIN32
-        const string dllName = "mkl_rt.dll";  
-#else
+#if Linux
         const string dllName = "libmkl_rt.so";
+#else
+        const string dllName = "mkl_rt.dll";  
 #endif
         static LinA()
         {

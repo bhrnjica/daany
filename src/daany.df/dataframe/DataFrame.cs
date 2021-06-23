@@ -3063,18 +3063,6 @@ namespace Daany
             }
         }
 
-        private static List<object> deepCopyObject(IEnumerable<object> list)
-        {
-            var lstObj = new List<object>();
-            foreach (var o in list)
-            {
-                var copy = o.DeepClone();
-                lstObj.Add(copy);
-            }
-
-            return lstObj;
-        }
-
         private ColType[] columnsTypes()
         {
             int cc = ColCount();
