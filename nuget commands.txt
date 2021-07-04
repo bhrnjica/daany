@@ -2,6 +2,11 @@
 dotnet msbuild daany.sln  /p:DefineConstants=LINUX /p:Configuration=Release 
 
 
+dotnet restore
+dotnet build -c Release /p:DefineConstants=Linux
+dotnt test -c Release
+
+
 
 # build this nuget packs
 ./nuget.exe pack Daany.DataFrame.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/ 
@@ -12,7 +17,7 @@ dotnet msbuild daany.sln  /p:DefineConstants=LINUX /p:Configuration=Release
 
 ./nuget.exe pack Daany.LinA-win-x64.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
 
-//before run this command put Linux precompiled directive on the LinA project
+//before run this command put Linux precompiled directive on the LinA project on Release
 ./nuget.exe pack Daany.LinA-linux-x64.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
 
 

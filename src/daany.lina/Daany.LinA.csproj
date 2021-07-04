@@ -9,7 +9,7 @@
 	  <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
   </PropertyGroup>
 	<PropertyGroup Condition="'$(IsWindows)'=='true'">
-		<DefineConstants>Windows</DefineConstants>
+		<DefineConstants></DefineConstants>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(IsOSX)'=='true'">
 		<DefineConstants>OSX</DefineConstants>
