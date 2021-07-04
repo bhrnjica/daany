@@ -29,8 +29,8 @@ namespace Daany.Test.App
             Console.WriteLine($"Open data frame with {maint.RowCount()} rows and {maint.ColCount()} cols, for {sw.ElapsedMilliseconds} milisec.");
             var mCols = new string[] { "datetime", "machineID" };
             sw.Restart();
-            var newDf = telemetry.Merge_old(maint, mCols, mCols, JoinType.Left);
-            Console.WriteLine($"Merge took {sw.ElapsedMilliseconds} milisec.");
+            //var newDf = telemetry.Merge_old(maint, mCols, mCols, JoinType.Left);
+            //Console.WriteLine($"Merge took {sw.ElapsedMilliseconds} milisec.");
 
             sw.Restart();
             var newDf1 = telemetry.Merge(maint, mCols, mCols, JoinType.Left);

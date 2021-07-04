@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using OxyPlot.WindowsForms;
 
 namespace Daany.Plot
 {
@@ -22,7 +23,7 @@ namespace Daany.Plot
             {
                 var strPath = $"{Guid.NewGuid().ToString()}.svg";
                 var strFull = Path.Combine(Directory.GetCurrentDirectory(), strPath);
-                var jpegExporter = new SvgExporter();
+                var jpegExporter = new OxyPlot.SvgExporter();
                 jpegExporter.Export(model, stream);
                 System.IO.File.WriteAllBytes(strFull, stream.ToArray());
                 Process.Start(@"cmd.exe ", @"/c " + strFull);
@@ -77,9 +78,9 @@ namespace Daany.Plot
             });
             return task;
 
-            OxyPlot.WindowsForms.PlotView getplotView(PlotModel model)
+            PlotView getplotView(PlotModel model)
             {
-                var plot1 = new OxyPlot.WindowsForms.PlotView();
+                var plot1 = new PlotView();
                 // 
                 // plot1
                 // 

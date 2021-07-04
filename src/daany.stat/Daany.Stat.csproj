@@ -1,26 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>Daany</RootNamespace>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>Daany.Stat</PackageId>
     <Authors>Bahrudin Hrnjica</Authors>
-    <Product>daany - data analysis and transformation</Product>
-    <Description>Daany.stat - c# statistics library for data analysis.
-Daany - C# library for data analysis and transformation with the implementation of Matrix, DataFrame, Time series generator and decomposition and various statistics' parameters. It is closely implemented with ML.NET, in order to load the transformed data in to ML.NET pipeline.</Description>
-    <Copyright>Bahrudin Hrnjica</Copyright>
+    <Product>daany - DAta ANalYtics on .NET</Product>
+    <Description>Daany.Stat - A set of components for handling with time series.
+</Description>
+    <Copyright>Copyright ©2019-2021 Bahrudin Hrnjica</Copyright>
     <PackageLicenseExpression></PackageLicenseExpression>
     <LicenseUrl>https://github.com/bhrnjica/daany/blob/master/LICENSE</LicenseUrl>
     <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
     <PackageTags>ml.net, data preparation, data analytics</PackageTags>
-    <Version>0.5.0</Version>
+    <Version>1.0.5</Version>
     <PackageReleaseNotes>MIT License
 
-Copyright (c) 2019 Bahrudin Hrnjica
+Copyright (c) 2019-2021 Bahrudin Hrnjica
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -47,12 +47,20 @@ SOFTWARE.</PackageReleaseNotes>
     <ApplicationIcon>daany.ico</ApplicationIcon>
 
     <dependencies>
-      <group targetFramework="netstandard2.0" />
+      <group targetFramework="netstandard2.1" />
     </dependencies>
+
+    <PackageIconUrl />
+
+    <Configurations>Debug;Release;Linux</Configurations>
     
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\daanyIcon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>

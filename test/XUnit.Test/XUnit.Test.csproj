@@ -6,6 +6,7 @@
 		<IsPackable>false</IsPackable>
 		<RootNamespace>Daany.Unit.Test.DataFrame</RootNamespace>
 		<Platforms>AnyCPU;x64</Platforms>
+		<Configurations>Debug;Release;Linux</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>

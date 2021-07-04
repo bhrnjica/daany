@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>Daany</RootNamespace>
@@ -47,9 +47,9 @@ SOFTWARE.</PackageReleaseNotes>
     <ApplicationIcon>daany.ico</ApplicationIcon>
     <AssemblyName>Daany.MathStuff</AssemblyName>
     <dependencies>
-      <group targetFramework="netstandard2.0" />
+      <group targetFramework="netstandard2.1" />
     </dependencies>
-    
+    <Configurations>Debug;Release;Linux</Configurations>   
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE">

@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Globalization;
-using Microsoft.ML.Data;
-using Microsoft.ML;
-using Microsoft.ML.Transforms;
+
 
 using Accord.Math;
 using System.Threading.Tasks;

@@ -8,20 +8,17 @@
     <ApplicationIcon />
     <StartupObject />
     <Platforms>AnyCPU;x64</Platforms>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Configurations>Debug;Release;Linux</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="4.7.0" />
-    <PackageReference Include="OxyPlot.Core" Version="2.0.0" />
-    <PackageReference Include="OxyPlot.WindowsForms" Version="2.0.0" />
-    <PackageReference Include="XPlot.Plotly" Version="3.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\daany.df\Daany.DataFrame.csproj" />
-    <ProjectReference Include="..\..\src\daany.ext\Daany.DataFrame.Ext.csproj" />
-    <ProjectReference Include="..\..\src\daany.mathstuff\Daany.MathStuff.csproj" />
-    <ProjectReference Include="..\..\src\daany.stat\Daany.Stat.csproj" />
+    <PackageReference Include="Daany.DataFrame" Version="1.0.1" />
+    <PackageReference Include="Daany.DataFrame.Ext" Version="1.0.1" />
+    <PackageReference Include="Daany.LinA-win-x64" Version="1.0.1" />
+    <PackageReference Include="Daany.Stat" Version="1.0.1" />
+    <PackageReference Include="OxyPlot.Core" Version="2.1.0-Preview1" />
+    <PackageReference Include="OxyPlot.WindowsForms" Version="2.1.0-Preview1" />
   </ItemGroup>
 
   <ItemGroup>
