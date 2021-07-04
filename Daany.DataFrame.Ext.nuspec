@@ -18,8 +18,8 @@
         <tags>ml.net, data preparation, data analytics</tags>
         <dependencies>
 		  <group targetFramework="netstandard2.1" >
-            <dependency id="Microsoft.ML" version="1.4.0" />
-			<dependency id="Microsoft.ML.DataView" version="1.4.0" />
+            <dependency id="FSharp.Core" version="5.0.2" />
+			<dependency id="XPlot.Plotly" version="4.0.3" />
 		  </group>
         </dependencies>
     </metadata>

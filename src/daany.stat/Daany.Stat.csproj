@@ -75,7 +75,7 @@ SOFTWARE.</PackageReleaseNotes>
 
   <ItemGroup>
     <PackageReference Include="OxyPlot.Core" Version="2.0.0" />
-    <PackageReference Include="XPlot.Plotly" Version="4.0.2" />
+    <PackageReference Include="XPlot.Plotly" Version="4.0.3" />
   </ItemGroup>
  
 

@@ -36,9 +36,4 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MKL.NET.linux-x64" Version="2020.4.304" />
-    <PackageReference Include="MKL.NET.win-x64" Version="2021.2.0.296" />
-  </ItemGroup>
-
 </Project>

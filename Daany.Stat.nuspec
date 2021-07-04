@@ -17,7 +17,11 @@
         <copyright>Copyright ©2019-2021 Bahrudin Hrnjica</copyright>
         <tags>ml.net, data preparation, data analytics</tags>
         <dependencies>
-		 <group targetFramework="netstandard2.1" />
+		 <group targetFramework="netstandard2.1" >
+			<dependency id="OxyPlot.Core" version="2.0.0" />
+            <dependency id="FSharp.Core" version="5.0.2" />
+			<dependency id="XPlot.Plotly" version="4.0.3" />
+		  </group>
         </dependencies>
     </metadata>
     <!-- A readme.txt to display when the package is installed -->
