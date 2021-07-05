@@ -22,6 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\daany.util\daany.util.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="AirPassengers.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

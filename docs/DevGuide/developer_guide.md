@@ -860,9 +860,9 @@ var dict = new Dictionary<string, List<object>>
 //create df
 var df = new DataFrame(dict);
 
-//remove rows with 'Miami'
+//remove rows with 'Seattle'
 DataFrame newDf = null;
-df = df.RemoveRows((row, i) => row["City"].ToString() == "Berlin");
+df = df.RemoveRows((row, i) => row["City"]?.ToString() == "Seattle");
 ```
 As can be seen the Function delegate is implemented with boolean return type. Every row will be remove if function delegate returns ```true``` value.
 
@@ -1017,12 +1017,9 @@ var dict = new Dictionary<string, List<object>>
 var df = new DataFrame(dict);
 //group df by gender
 var gDf = df.GroupBy("Gender")
-            .Rolling(2, 2, 
-                new Dictionary<string, Aggregation>() 
-                    { 
-                        { "Values", Aggregation.Sum }, 
-                        {"Age", Aggregation.Avg } }
-            );
+            .Rolling(2, new Dictionary<string, Aggregation>()
+                    { { "Values", Aggregation.Sum }, 
+                       { "Age", Aggregation.Avg } }).TakeEvery(2);
 
 ```
 The output of the code above is shown on the following image:
@@ -1049,7 +1046,7 @@ var dict1 = new Dictionary<string, List<object>>
 //
 var df1 = new DataFrame(dict);
 var df2 = new DataFrame(dict1);
-var mergedDf = df1.Join(df2, 
+var mergedDf = df1.Merge(df2, 
                     new string[] { "itemID", "catId" }, //left key columns
                     new string[] { "item2ID", "cat2ID" }, //right key columns
                     JoinType.Inner);//join type
