@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Daany.Stat
+namespace Daany.Stat.Arima
 {
 	//this implementation is based on: https://github.com/jsphLim/ARIMA
 	public class ARMAFoundation

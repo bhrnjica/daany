@@ -868,7 +868,7 @@ As can be seen the Function delegate is implemented with boolean return type. Ev
 
 Sorting in data frame
 ----------------------------------------------------
-Data frame can be sorted by using `SortBy` or `SortByDescending`. The following code sorts data frame in ascending and descending order:
+The following code sorts data frame in ascending and descending order:
 
 ```csharp
 var dict = new Dictionary<string, List<object>>
@@ -1097,3 +1097,48 @@ The data from data frame can be selected on many ways. It is useful to have set 
 - ```TakeRandom(int rows)``` - select randomly `nrows` and return data frame.
 - ```Tail(int count = 5)``` - select last `count` rows.
 - ```Head(int count = 5)``` - select first `count` rows.
+
+# Daany Statistics (`Daany.Stat`)
+Besides the `Daany.DataFrame` the library contains set of implementation with working on time series data. The following list contains some of them: 
+- Conversion time series into `Daany.DataFrame` and `Series`
+- Seasonal and Trend decomposition using Loess -`STL` time series decomposition,
+- Singular Spectrum Analysis  `SSA` time series decomposition,
+- Set of `Time Series` operations like moving average, etc....
+
+### Singular Spectrum Analysis, SSA
+
+With `SSA`, you can decompose the time series into any number of components (signals). The following code loads the famous `AirPassengers`time series data:
+
+```csharp
+var strPath = $"{root}/AirPassengers.csv";
+var mlDF = DataFrame.FromCsv(strPath, sep: ',');
+var ts = mlDF["#Passengers"].Select(f => Convert.ToDouble(f));//create time series from data frame
+```
+Now that we have `AirPasanger` time series object `ts`, we can create SSA object by passing the`ts` into it:
+```csharp
+//create Singular Spectrum Analysis object
+var ssa = new SSA(ts);
+
+//perform analysis
+ssa.Fit(36);
+```
+So we created the `ssa` object by passing the number of components that we are going to create. Once the `ssa` object has been created we can call the ```Fit``` method to start with time series SSA analysis.
+
+Once we have analyzed the time series, we can plot its components. The following plot shows the first 4 components:
+
+![Iris Model Evaluation](../img//2019-09-24_22-03-27.png)
+
+The following plot shows how previous 4 components approximate the actual `AirPassengers` data:
+
+
+![Iris Model Evaluation](../img/2019-09-24_22-04-57.png)
+
+At the end we can plot `ssa` predicted and actual values of the time series:
+
+![Iris Model Evaluation](../img/2019-09-24_22-05-18.png)
+
+# Daany Linear Algebra (`Daany.LinA`)
+
+The `Daany.LinA` provides the ability to use Intel MKL a native and super fast math library to perform linear algebra calculations. With the combination of the previous packages (`DataFrame` and `Daany.Stat`) you are able to transform and analyze very complex data, solve system of linear equations, find eigen values and vectors, use least square method etc. 
+
+For more information how to use any of the implemented methods please see the *[Daany Developer Guide](/docs/DevGuide/developer_guide.md)*, test application implemented in the library  or you can use `unit test` methods which cover almost all implementation in the library. 

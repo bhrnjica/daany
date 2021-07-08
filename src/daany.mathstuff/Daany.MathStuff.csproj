@@ -51,6 +51,12 @@ SOFTWARE.</PackageReleaseNotes>
     </dependencies>
     <Configurations>Debug;Release;Linux</Configurations>   
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Accord\**" />
+    <EmbeddedResource Remove="Accord\**" />
+    <None Remove="Accord\**" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>

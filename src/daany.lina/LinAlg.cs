@@ -236,6 +236,19 @@ namespace Daany.LinA
         [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgeev(int matrix_layout, char jobvl, char jobvr, int n, double* a, int lda, double* wr,
                           double* wi, double* vl, int ldvl, double* vr, int ldvr);
+        /// <summary>
+        /// Computes the eigenvalues and left and right eigenvectors of a general matrix.
+        /// 
+        /// The routine computes for an n-by-n real nonsymmetric matrix A, the eigenvalues and, optionally, 
+        /// the left and/or right eigenvectors. The right eigenvector v of A satisfies A* v = λ * v where λ is its eigenvalue.
+        /// 
+        /// The left eigenvector u of A satisfies uH* A = λ * uH where uH denotes the conjugate transpose of u. 
+        /// The computed eigenvectors are normalized to have Euclidean norm equal to 1 and largest component real.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="computeLeft"></param>
+        /// <param name="computeRight"></param>
+        /// <returns></returns>
         public static (float[] wr, float[] wi, float[,] VL, float[,] VR) Eigen(float[,] A, bool computeLeft = false, bool computeRight = false)
         {
             //define parameters
@@ -408,7 +421,7 @@ namespace Daany.LinA
         [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern void cblas_sgemm(CBLAS_LAYOUT Layout, CBLAS_TRANSPOSE TransA,CBLAS_TRANSPOSE TransB, int m, int n,int k, float alpha, float* A,
                  int lda, float* B, int ldb, float beta, float* C, int ldc);
-[DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern void cblas_dgemm(CBLAS_LAYOUT Layout, CBLAS_TRANSPOSE TransA, CBLAS_TRANSPOSE TransB, int m, int n, int k, double alpha, double* A,
                  int lda, double* B, int ldb, double beta, double* C, int ldc);
 

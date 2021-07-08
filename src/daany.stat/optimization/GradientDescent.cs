@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Daany.Optimizers
+namespace Daany.Stat.Optimizers
 {
     public static class Optimization
     {

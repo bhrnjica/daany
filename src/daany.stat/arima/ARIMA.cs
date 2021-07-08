@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Daany.Arima
+namespace Daany.Stat.Arima
 {
     /*
      ‘p’ is the order of the ‘Auto Regressive’ (AR) term. 

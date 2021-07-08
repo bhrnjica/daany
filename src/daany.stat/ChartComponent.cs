@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 
-namespace Daany.Plot
+namespace Daany.Stat.Plot
 {
     public class Chart
     {

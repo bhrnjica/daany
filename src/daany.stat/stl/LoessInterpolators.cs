@@ -1,6 +1,6 @@
 ﻿using System;
 //The code is converted from the java version found at https://github.com/ServiceNow/stl-decomp-4j
-namespace Daany.stl
+namespace Daany.Stat.stl
 {
     public enum State
     {

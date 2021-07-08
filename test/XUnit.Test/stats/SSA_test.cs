@@ -3,11 +3,12 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
-using Daany.stl;
+using Daany.Stat.stl;
 using Daany.MathStuff;
 using Daany.Stat;
 using Daany.Ext;
 using XPlot.Plotly;
+using Daany.Stat.SSA;
 
 namespace Unit.Test.DF
 {

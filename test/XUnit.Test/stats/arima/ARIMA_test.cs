@@ -3,10 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
-using Daany.stl;
+using Daany.Stat.stl;
 using Daany.Stat;
 using static Daany.LinA.LinA;
-using Daany.Arima;
+using Daany.Stat.Arima;
 
 namespace Unit.Test.DF
 {

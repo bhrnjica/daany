@@ -89,6 +89,7 @@ SOFTWARE.</PackageReleaseNotes>
 
   <ItemGroup>
     <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
+    <ProjectReference Include="..\daany.lina\Daany.LinA.csproj" />
   </ItemGroup>
 
 </Project>

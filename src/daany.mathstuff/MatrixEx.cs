@@ -12,7 +12,7 @@
 // Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
-using Accord;
+
 using Daany.MathStuff.MatrixExt;
 using System;
 
@@ -393,10 +393,6 @@ namespace Daany.MathStuff
                 if (rows != cols)
                     throw new ArgumentException("Only square matrices can be transposed in place.", "matrix");
 
-#if DEBUG
-                T[,] expected = matrix.Transpose();
-#endif
-
                 for (int i = 0; i < rows; i++)
                 {
                     for (int j = i; j < cols; j++)
@@ -406,11 +402,6 @@ namespace Daany.MathStuff
                         matrix[i, j] = element;
                     }
                 }
-
-//#if DEBUG
-//                if (!expected.IsEqual(matrix))
-//                    throw new Exception();
-//#endif
 
                 return matrix;
             }
@@ -445,9 +436,6 @@ namespace Daany.MathStuff
         /// 
         public static double[,] DotWithDiagonal(this double[,] a, double[] diagonal, double[,] result)
         {
-#if DEBUG
-            var C = Dot(a.To<double[,]>(), MatrixEx.Diagonal(diagonal.To<double[]>()));
-#endif
             int rows = a.Rows();
 
             unsafe
@@ -462,10 +450,7 @@ namespace Daany.MathStuff
                             *R++ = (double)((double)(*A++) * (double)diagonal[j]);
                 }
             }
-#if DEBUG
-            if (!MatrixEx.IsEqual(C, result.To<double[,]>(), 1e-4))
-                throw new Exception();
-#endif
+
             return result;
         }
         /// <summary>
@@ -480,12 +465,6 @@ namespace Daany.MathStuff
         /// 
         public static double[,] DotWithTransposed(this double[,] a, double[,] b, double[,] result)
         {
-#if DEBUG
-            if (a.Columns() != b.Columns() || result.Rows() > a.Rows() || result.Columns() > b.Rows())
-                throw new Exception("Dimension mismatch!");
-            //
-           var C = MatrixEx.Dot(a.To<double[,]>(), b.Transpose().To<double[,]>());
-#endif
             int n = a.Columns();
             int m = a.Rows();
             int p = b.Rows();
@@ -512,10 +491,6 @@ namespace Daany.MathStuff
                     }
                 }
             }
-#if DEBUG
-            if (!MatrixEx.IsEqual(C, result.To<double[,]>(), 1e-4))
-                throw new Exception();
-#endif
             return result;
         }
         /// <summary>
@@ -531,8 +506,8 @@ namespace Daany.MathStuff
                 return true;
             if (a == null ^ b == null)
                 return false;
-            int[] la = a.GetLength(true);
-            int[] lb = b.GetLength(true);
+            int[] la = new int[a.GetLength(1)];
+            int[] lb = new int[b.GetLength(1)];
             if (la.Length != lb.Length)
                 return false;
             for (int i = 0; i < la.Length; i++)
