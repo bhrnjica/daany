@@ -1,4 +1,4 @@
-name: .NET
+name: Daany Build & Test .NET Solution
 
 on:
   push:
@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
+defaults:
+  run:
+    shell: bash
+    
 jobs:
   build:
 
@@ -13,7 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET
+    - name: Setup .NET Linux
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
@@ -23,4 +27,19 @@ jobs:
       run: dotnet build --no-restore -c Linux
     - name: Test 
       run: dotnet test --no-build --verbosity normal -c Linux
+      
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Windows
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build 
+      run: dotnet build --no-restore -c Release
+    - name: Test 
+      run: dotnet test --no-build --verbosity normal -c Release
     
