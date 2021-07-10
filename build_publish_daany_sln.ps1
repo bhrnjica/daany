@@ -16,7 +16,7 @@ dotnet pack -p:PackageVersion=$nversion -p:NuspecFile=../../Daany.DataFrame.nusp
 dotnet pack -p:PackageVersion=$nversion -p:NuspecFile=../../Daany.DataFrame.Ext.nuspec -p:Configuration=Release  -o nuget/
 dotnet pack -p:PackageVersion=$nversion -p:NuspecFile=../../Daany.Stat.nuspec -p:Configuration=Release  -o nuget/
 dotnet pack -p:PackageVersion=$nversion -p:NuspecFile=../../Daany.LinA-win-x64.nuspec -p:Configuration=Release  -o nuget/
-dotnet pack -p:PackageVersion=$nversion -p:NuspecFile=../../Daany.LinA-linux-x64.nuspec -p:Configuration=Linux  -o nuget/
+dotnet pack -p:PackageVersion=$nversion -p:NuspecFile=../../Daany.LinA.linux-x64.nuspec -p:Configuration=Linux  -o nuget/
 
 dotnet clean -c Debug
 dotnet clean -c Release

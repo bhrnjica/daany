@@ -10,17 +10,8 @@ namespace Daany.LinA
 #if Linux
         const string dllName = "libmkl_rt.so";
 #else
-        const string dllName = "mkl_rt.dll";  
+        const string dllName = "mkl_rt.1.dll";  
 #endif
-        static LinA()
-        {
-           
-        }
-
-        /// <summary>
-        /// Dummy method to be called first 
-        /// </summary>
-        public static void init(){;}
 
         #region Solver- solver of system of linear equations
         // 
