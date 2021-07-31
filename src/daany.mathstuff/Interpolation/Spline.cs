@@ -42,12 +42,12 @@ namespace Daany.MathStuff.Interpolation
             sety2(xv, yv, yp1, ypn);
         }
 
-        public void sety2(double[] xv, double[] yv)
+        protected void sety2(double[] xv, double[] yv)
         {
             sety2(xv, yv, 1.0E99, 1.0E99);
         }
 
-        public void sety2(double[] xv, double[] yv, double yp1, double ypn)
+        protected void sety2(double[] xv, double[] yv, double yp1, double ypn)
         {
             int i,k;
             double p, qn, sig, un;
@@ -93,7 +93,7 @@ namespace Daany.MathStuff.Interpolation
 
         }
 
-        public override double rawinterp(int jl, double x)
+        protected override double rawinterp(int jl, double x)
         {
             int khi = jl + 1;
             int klo = jl;

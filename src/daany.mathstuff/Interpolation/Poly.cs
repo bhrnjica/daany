@@ -33,7 +33,7 @@ namespace Daany.MathStuff.Interpolation
             
         }
 
-        public override double rawinterp(int jl, double x)
+        protected override double rawinterp(int jl, double x)
         {
             int i, m, ns = 0;
             double y, den, dif, dift, ho, hp, w;

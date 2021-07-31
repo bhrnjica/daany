@@ -29,7 +29,7 @@ namespace Daany.MathStuff.Interpolation
         {
         }
 
-        public override double rawinterp(int j, double x)
+        protected override double rawinterp(int j, double x)
         {
             if (xx[j] == xx[j + 1])
             {

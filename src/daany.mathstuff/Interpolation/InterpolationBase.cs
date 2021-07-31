@@ -59,9 +59,9 @@ namespace Daany.MathStuff.Interpolation
             return RetVal;
         }
 
-        public abstract double rawinterp(int jlo, double x);
+        protected abstract double rawinterp(int jlo, double x);
 
-        public int locate(double x)
+        private int locate(double x)
         {
             int jl;
             int ju;
