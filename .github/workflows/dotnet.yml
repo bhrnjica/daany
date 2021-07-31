@@ -26,20 +26,4 @@ jobs:
     - name: Build 
       run: dotnet build --no-restore -c Linux
     - name: Test 
-      run: dotnet test --no-build --verbosity normal -c Linux
-      
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Windows
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build 
-      run: dotnet build --no-restore -c Release
-    - name: Test 
-      run: dotnet test --no-build --verbosity normal -c Release
-    
+      run: dotnet test --no-build --verbosity normal -c Linux   
