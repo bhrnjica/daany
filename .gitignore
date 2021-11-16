@@ -37,3 +37,4 @@ bin-release/
 /src/daany.lina/src/cpp/LapackWndTest/x64/Release
 /.vs/daany.linux
 /.vs/daany/v17
+/.vs
