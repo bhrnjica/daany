@@ -7,13 +7,12 @@ trigger:
 - master
 
 pool:
-  vmImage: 'windows-latest'
-  vmImage: 'ubuntu-lates'
+  vmImage: 'ubuntu-latest'
 
 variables:
   solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  buildPlatform: 'x64'
+  buildConfiguration: 'Linux'
 
 steps:
 - task: NuGetToolInstaller@1

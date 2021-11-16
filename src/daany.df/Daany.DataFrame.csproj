@@ -25,7 +25,7 @@
     <FileVersion>1.0.0.0</FileVersion>
     <AssemblyName>Daany.DataFrame</AssemblyName>
     <dependencies>
-      <group targetFramework="netstandard2.1" />
+      <group targetFramework="net6.0" />
     </dependencies>
     <PackageIcon>daanyIcon.png</PackageIcon>
     <PackageIconUrl />

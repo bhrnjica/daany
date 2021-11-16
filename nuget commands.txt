@@ -15,10 +15,10 @@ dotnt test -c Release
 
 ./nuget.exe pack Daany.Stat.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
 
-./nuget.exe pack Daany.LinA-win-x64.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
+./nuget.exe pack Daany.LinA.win-x64.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
 
 //before run this command put Linux precompiled directive on the LinA project on Release
-./nuget.exe pack Daany.LinA-linux-x64.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
+./nuget.exe pack Daany.LinA.linux-x64.nuspec -Properties Configuration=Release -IncludeReferencedProjects -OutputDirectory nuget/
 
 
 

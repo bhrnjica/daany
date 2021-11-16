@@ -45,7 +45,7 @@ SOFTWARE.</PackageReleaseNotes>
     <PackageIcon>daanyIcon.png</PackageIcon>
     <ApplicationIcon>daany.ico</ApplicationIcon>
     <dependencies>
-      <group targetFramework="netstandard2.1" />
+      <group targetFramework="net6.0" />
     </dependencies>
     <PackageIconUrl />
     <Configurations>Debug;Release;Linux</Configurations>

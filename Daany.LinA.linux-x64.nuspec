@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Daany.LinA.linux-x64</id>
-        <version>1.0.0</version>
+        <version>1.2.0</version>
         <authors>Bahrudin Hrnjica, bhrnjica</authors>
         <owners>bhrnjica</owners>
 		<icon>daanyIcon.png</icon>
@@ -17,7 +17,7 @@
         <copyright>Copyright ©2020-2021 Bahrudin Hrnjica</copyright>
         <tags>linear algebra, math, matrix, lapack, blass, data preparation, data analytics</tags>
 		<dependencies>
-		<group targetFramework="netstandard2.1">
+		<group targetFramework="net6.0">
 		   <dependency id="intelmkl.devel.linux-x64" version="2020.4.304" />	
 		</group>		
         </dependencies>
@@ -27,6 +27,6 @@
         <file src="README.MD"/>	
 		<file src="daanyIcon.png"/>
 		<file src="LICENSE"/>
-		<file src="src/daany.lina/bin/Linux/netstandard2.1/Daany.LinA.dll" target="lib/netstandard2.1" />
+		<file src="src/daany.lina/bin/Linux/net6.0/Daany.LinA.dll" target="lib/net6.0" />
     </files>
 </package>

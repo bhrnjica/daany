@@ -4,9 +4,6 @@
     <TargetFramework>net6.0</TargetFramework>
 	  <LangVersion>9.0</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
-	  <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
-	  <IsOSX Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsOSX>
-	  <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
 	  <Authors>Bahrudin Hrnjica</Authors>
 	  <Product>daany - DAta ANalYtics on .NET</Product>
 	  <Description>Daany.LinA - .NET wrapper for selected routines of MKL LAPACK and BLASS.</Description>
@@ -16,7 +13,7 @@
 	  <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
 	  <PackageIcon>daanyIcon.png</PackageIcon>
     <dependencies>
-      <group targetFramework="netstandard2.1" />
+      <group targetFramework="net6.0" />
     </dependencies>
 	  <PackageIconUrl />
 	  <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
@@ -64,7 +61,7 @@ SOFTWARE.</PackageReleaseNotes>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>Linux</DefineConstants>
+	<PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Linux|AnyCPU'">
@@ -74,7 +71,9 @@ SOFTWARE.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Linux|x64'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <PlatformTarget>x64</PlatformTarget>
+	  <DefineConstants>Linux</DefineConstants>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
