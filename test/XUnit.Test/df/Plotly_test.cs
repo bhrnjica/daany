@@ -6,18 +6,20 @@ using Daany;
 using System.Globalization;
 using XPlot.Plotly;
 using Daany.Stat.SSA;
+using System.Threading.Tasks;
+
 namespace Unit.Test.DF
 {
     public class PLotlyTests
     {
         [Fact]
-        public void testPLot()
+        public async Task testPLot()
         {
             var url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
 
             var cols = new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" };
 
-            var df = DataFrame.FromWeb(url, sep: ',', names: cols);
+            var df = await DataFrame.FromWebAsync(url, sep: ',', names: cols);
 
             //calculate two new columns into dataset
             df.AddCalculatedColumns(new string[] { "SepalArea", "PetalArea" },

@@ -43,7 +43,7 @@ namespace Daany.MathStuff
         
 #else
         /// <summary>Seed provider.</summary>
-        private static readonly RNGCryptoServiceProvider _global = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator _global = RandomNumberGenerator.Create(); //new RNGCryptoServiceProvider();
         public static bool FixedRandomSeed = false;
 #endif
 

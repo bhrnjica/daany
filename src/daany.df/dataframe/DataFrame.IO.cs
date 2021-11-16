@@ -24,6 +24,8 @@ using System.Text.RegularExpressions;
 
 using Daany.MathStuff;
 using System.Buffers.Text;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Daany
 {
@@ -70,7 +72,27 @@ namespace Daany
             return true;
         }
 
-      
+        public static async Task<bool> ToCsvAsync(string filePath, DataFrame dataFrame)
+        {
+            if (dataFrame == null)
+                throw new ArgumentNullException(nameof(dataFrame));
+
+            var lst = new List<string>();
+            var header = string.Join(",", dataFrame.Columns);
+            lst.Add(header);
+
+            for (int i = 0; i < dataFrame.Index.Count; i++)
+            {
+                var row = dataFrame[i];
+                var strRow = string.Join(",", row.ToList());
+                lst.Add(strRow);
+
+            }
+
+            await File.WriteAllLinesAsync(filePath, lst);
+            return true;
+        }
+
 
         /// <summary>
         /// Saves data frame .NET object in a csv file.
@@ -150,11 +172,7 @@ namespace Daany
             return true;
         }
 
-        private static void writeHeader(CsvWriter csvWriter, IList<string> columns)
-        {
-            for (int i = 0; i < columns.Count; i++)
-                csvWriter.WriteField(columns[i]);
-        }
+
         /// <summary>
         /// Load data from the remote server.
         /// </summary>
@@ -169,15 +187,53 @@ namespace Daany
         {
             if (string.IsNullOrEmpty(urlPath))
                 throw new ArgumentNullException(nameof(urlPath), "Argument should not be null.");
-            var strPath = $"web_csv_{DateTime.Now.Ticks}";
-            using (System.Net.WebClient fileDownloader = new System.Net.WebClient())
-            {
 
-                fileDownloader.DownloadFile(urlPath, strPath);
+            var lines = new List<string>();
+            //
+            using (var fileDownloader = new HttpClient())
+            {
+                var streamTask = fileDownloader.GetStreamAsync(urlPath);
+                streamTask.Wait();
+                var stream = streamTask.Result;
+
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    while(!reader.EndOfStream)
+                    {
+                        string line = reader.ReadLine();
+                        if (!string.IsNullOrEmpty(line))
+                            lines.Add(line);
+                    }
+                }
             }
              
-            var df =  FromCsv(strPath, sep, names, dformat, colTypes:colTypes);
-            File.Delete(strPath);
+            var df  = FromStrings(lines.ToArray(), sep,names, dformat, colTypes);
+            return df;
+        }
+
+        public static async Task<DataFrame> FromWebAsync(string urlPath, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, int nRows = -1)
+        {
+            if (string.IsNullOrEmpty(urlPath))
+                throw new ArgumentNullException(nameof(urlPath), "Argument should not be null.");
+
+            var lines = new List<string>();
+            //
+            using (var fileDownloader = new HttpClient())
+            {
+                var stream = await fileDownloader.GetStreamAsync(urlPath);
+
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        string line = reader.ReadLine();
+                        if (!string.IsNullOrEmpty(line))
+                            lines.Add(line);
+                    }
+                }
+            }
+
+            var df = FromStrings(lines.ToArray(), sep, names, dformat, colTypes);
             return df;
         }
 
@@ -333,14 +389,13 @@ namespace Daany
 
             return listValues;
         }
-        
+
         private static object parseValue(ReadOnlySpan<char> value, char[] missingValue, ColType colType, string dFormat = null)
         {
             //check the missing value
             if (IsMissingValue(value, missingChars: missingValue))
                 return DataFrame.NAN;
 
-//#if NETSTANDARD2_1
             switch (colType)
             {
                 case ColType.I2:
@@ -368,57 +423,12 @@ namespace Daany
                 default:
                     throw new Exception("column type is not known.");
             }
-//#else
-//            var v = new Span<byte>(value.ToArray().Select(x => (byte)x).ToArray());
-//            switch (colType)
-//            {
-//                case ColType.I2:
-//                    {
-//                        Utf8Parser.TryParse(v,out bool bValue, out int p);
-//                        return bValue;
-//                    }
-//                case ColType.IN:
-//                    return new string(value.ToArray());
-//                case ColType.I32:
-//                    {
-//                        Utf8Parser.TryParse(v, out int bValue, out int p);
-//                        return bValue;
-//                    }
-//                case ColType.I64:
-//                    {
-//                        Utf8Parser.TryParse(v, out long bValue, out int p);
-//                        return bValue;
-//                    }
-//                case ColType.F32:
-//                    {
-//                        Utf8Parser.TryParse(v, out float bValue, out int p);
-//                        return bValue;
-//                    }
-//                case ColType.DD:
-//                    {
-//                        Utf8Parser.TryParse(v, out double bValue, out int p);
-//                        return bValue;
-//                    }
-//                case ColType.STR:
-//                    return new string(value.ToArray());
-//                case ColType.DT:
-//                    {
-//                        var vStr= new string(value.ToArray());
-//                        if (string.IsNullOrEmpty(dFormat))
-//                        {
-//                            DateTime.TryParse(vStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime bValue);
-//                            return bValue;
-//                        }      
-//                        else
-//                        {
-//                            DateTime.TryParseExact(vStr, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime bValue);
-//                            return bValue;
-//                        }
-//                    }
-//                default:
-//                    throw new Exception("column type is not known.");
-//            }
-//#endif
+        }
+
+        private static void writeHeader(CsvWriter csvWriter, IList<string> columns)
+        {
+            for (int i = 0; i < columns.Count; i++)
+                csvWriter.WriteField(columns[i]);
         }
 
         private static object parseValue(ReadOnlySpan<char> value, char[] missingValue, bool parseDate = false, string dFormat = null)
@@ -428,7 +438,7 @@ namespace Daany
                 return DataFrame.NAN;
 
             var val = IsNumeric(value);
- //#if NETSTANDARD2_1
+
             if (val == ValueType.Int)
             {
                 int v = int.Parse(value, provider: CultureInfo.InvariantCulture);
@@ -460,39 +470,6 @@ namespace Daany
                 }
 
             }
-//#else
-            //var v = new Span<byte>(value.ToArray().Select(x => (byte)x).ToArray());
-            //if (val == ValueType.Int)
-            //{
-            //    Utf8Parser.TryParse(v, out int bValue, out int p);
-            //    return bValue;
-            //}
-            //else if (val == ValueType.Float)
-            //{
-            //    Utf8Parser.TryParse(v, out float bValue, out int p);
-            //    return bValue;
-            //}
-            //else // non numeric values
-            //{
-            //    var vStr = new string(value.ToArray());
-            //    if ((parseDate && dFormat != null) && DateTime.TryParse(vStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dtValue))
-            //    {
-            //        return dtValue;
-            //    }
-            //    else if(dFormat != null && DateTime.TryParseExact(vStr, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dteValue))
-            //    {
-            //        return dteValue;
-            //    }
-            //    //else if (bool.TryParse(span, out bool bVal))
-            //    //{
-            //    //    llst.Add(bVal);
-            //    //}
-            //    else
-            //    {
-            //        return vStr;
-            //    }
-
-            //}
 
         }
 
