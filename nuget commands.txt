@@ -3,8 +3,8 @@ dotnet msbuild daany.sln  /p:DefineConstants=LINUX /p:Configuration=Release
 
 
 dotnet restore
-dotnet build -c Release /p:DefineConstants=Linux
-dotnt test -c Release
+dotnet build -c Release
+dotnet test -c Release
 
 
 

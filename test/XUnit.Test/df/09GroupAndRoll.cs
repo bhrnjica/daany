@@ -152,6 +152,7 @@ namespace Unit.Test.DF
             var df = createDataFrame();
             var rollingdf = df.Rolling(3, new Dictionary<string, Aggregation> { { "A", Aggregation.Sum } });
 
+           
             //column test
             var c1 = new object[] { DataFrame.NAN, DataFrame.NAN, -2.655105, -0.971785, -0.214335, 1.514216, 1.074618, 2.718061, -0.289082, 0.212673 };
 
@@ -343,6 +344,9 @@ namespace Unit.Test.DF
             };
 
             var df = telDf.GroupBy("machineID").Rolling(3, agg).TakeEvery(3);
+            var df1 = telDf.GroupBy("machineID").Rolling(3,3, agg);
+            for(int i =0; i< df.Values.Count; i++)
+                Assert.Equal(df.Values[i], df1.Values[i]);
 
             var row1 = df[0].ToList();
             Assert.Equal("1", row1[1].ToString());
@@ -368,6 +372,8 @@ namespace Unit.Test.DF
 
 
         }
+
+       
     }
 
 }

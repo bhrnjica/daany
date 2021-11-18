@@ -2064,7 +2064,7 @@ namespace Daany
                     ind.Add(this._index[i]);
                     counter = 0;
                 }
-                if(i+1 == _index.Count && includeLast)
+                if(i + 1 == _index.Count && includeLast)
                 {
                     if(counter > 0)
                     {

@@ -225,7 +225,7 @@ namespace Daany
                 return lst;
             }
         }
-        [Obsolete("The method is obsolete. Please use overloaded method.")]
+        //[Obsolete("The method is obsolete. Please use overloaded method.")]
         public DataFrame Rolling(int rollingWindow, int window, Dictionary<string, Aggregation> agg)
         {
             //create columns and aggregation
@@ -287,12 +287,16 @@ namespace Daany
             //create columns and aggregation
             var ag = new Dictionary<string, Aggregation>();
             ag.Add(this.GroupedColumn, Daany.Aggregation.Last);
+            
             if (Group2 != null && Group2.Count > 0)
                 ag.Add(this.SecondGroupedColumn, Daany.Aggregation.Last);
+            
             if (Group3 != null && Group3.Count > 0)
                 ag.Add(this.ThirdGroupedColumn, Daany.Aggregation.Last);
+
             foreach (var d in agg)
                 ag.Add(d.Key, d.Value);
+
             //
             DataFrame df = null;
             if (Group != null && Group.Count > 0)
