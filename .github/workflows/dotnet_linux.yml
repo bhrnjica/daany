@@ -1,4 +1,4 @@
-name: Daany Build & Test .NET Solution
+name: Daany Build & Test on Linux
 
 on:
   push:
