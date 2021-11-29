@@ -11,9 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="FSharp.Core" Version="5.0.2" />
-		<PackageReference Include="intelmkl.redist.win-x64" Version="2021.3.0.524" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
-		<PackageReference Include="MKL.NET.linux-x64" Version="2020.4.304" Condition="$([MSBuild]::IsOsPlatform('Linux'))" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="XPlot.Plotly" Version="4.0.3" />
 		<PackageReference Include="xunit" Version="2.4.1" />

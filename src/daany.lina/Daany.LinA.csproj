@@ -14,7 +14,7 @@
 	  <PackageIcon>daanyIcon.png</PackageIcon>
     <dependencies>
       <group targetFramework="net6.0" />
-    </dependencies>
+    </dependencies>	  
 	  <PackageIconUrl />
 	  <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
 	  <PackageTags>inelmkl, lapack, blass</PackageTags>
@@ -87,4 +87,8 @@ SOFTWARE.</PackageReleaseNotes>
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+	  <PackageReference Include="MKL.NET.win-x64" Version="2021.4.0.640" Condition="$([MSBuild]::IsOsPlatform('Windows'))" />
+	  <PackageReference Include="MKL.NET.linux-x64" Version="2021.4.0.640"  Condition="$([MSBuild]::IsOsPlatform('Linux'))" /> 
+  </ItemGroup>
 </Project>
