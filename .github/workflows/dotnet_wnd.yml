@@ -1,11 +1,11 @@
-name: Daany Build & Test .NET Solution
+name:  Daany Build & Test on Windows
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-
+    
 defaults:
   run:
     shell: bash
@@ -13,7 +13,7 @@ defaults:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -24,6 +24,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build 
-      run: dotnet build --no-restore -c Linux
+      run: dotnet build --no-restore -c Release
     - name: Test 
-      run: dotnet test --no-build --verbosity normal -c Linux   
+      run: dotnet test --no-build --verbosity normal -c Release   
