@@ -30,6 +30,7 @@
     <PackageIcon>daanyIcon.png</PackageIcon>
     <PackageIconUrl />
     <Configurations>Debug;Release;Linux</Configurations>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
