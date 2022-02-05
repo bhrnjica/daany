@@ -1140,5 +1140,3 @@ At the end we can plot `ssa` predicted and actual values of the time series:
 # Daany Linear Algebra (`Daany.LinA`)
 
 The `Daany.LinA` provides the ability to use Intel MKL a native and super fast math library to perform linear algebra calculations. With the combination of the previous packages (`DataFrame` and `Daany.Stat`) you are able to transform and analyze very complex data, solve system of linear equations, find eigen values and vectors, use least square method etc. 
-
-For more information how to use any of the implemented methods please see the *[Daany Developer Guide](/docs/DevGuide/developer_guide.md)*, test application implemented in the library  or you can use `unit test` methods which cover almost all implementation in the library. 
