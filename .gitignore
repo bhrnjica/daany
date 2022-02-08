@@ -20,6 +20,7 @@ bin-release/
 /.vs/daany/DesignTimeBuild
 /test/Daany.Test.App
 /nuget.exe
+*.nupkg
 
 /TestResults/eb78576d-20c6-4d8e-802f-cf2d0281c089
 /TestResults/4055a533-4553-4ea6-b2df-fb90ad9d5bc8
@@ -38,3 +39,4 @@ bin-release/
 /.vs/daany.linux
 /.vs/daany/v17
 /.vs
+/nuget
