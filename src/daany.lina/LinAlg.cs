@@ -7,7 +7,7 @@ namespace Daany.LinA
     unsafe public class LinA
     {
 
-#if Linux
+#if LINUX
         const string dllName = "libmkl_rt.so";
 #else
         const string dllName = "mkl_rt.dll";  
