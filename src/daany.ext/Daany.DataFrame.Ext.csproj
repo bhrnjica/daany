@@ -46,7 +46,7 @@ SOFTWARE.</PackageReleaseNotes>
     <PackageIcon>daanyIcon.png</PackageIcon>
     <ApplicationIcon>daany.ico</ApplicationIcon>
     <PackageIconUrl />
-    <Configurations>Debug;Release;Linux</Configurations>
+    <Configurations>Debug;Release;Linux;Linux_Debug;Linux_Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

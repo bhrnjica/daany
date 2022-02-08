@@ -53,7 +53,7 @@ SOFTWARE.</PackageReleaseNotes>
 
     <PackageIconUrl />
 
-    <Configurations>Debug;Release;Linux</Configurations>
+    <Configurations>Debug;Release;Linux;Linux_Debug;Linux_Release</Configurations>
     
   </PropertyGroup>
 

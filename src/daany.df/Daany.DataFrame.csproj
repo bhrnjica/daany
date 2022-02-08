@@ -30,7 +30,7 @@
     </dependencies>
     <PackageIcon>daanyIcon.png</PackageIcon>
     <PackageIconUrl />
-    <Configurations>Debug;Release;Linux</Configurations>
+    <Configurations>Debug;Release;Linux;Linux_Debug;Linux_Release</Configurations>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
   </PropertyGroup>
 
