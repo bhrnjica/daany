@@ -24,6 +24,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build 
-      run: dotnet build --no-restore -c Linux
+      run: dotnet build --no-restore -c Linux_Release
     - name: Test 
-      run: dotnet test --no-build --verbosity normal -c Linux   
+      run: dotnet test --no-build --verbosity normal -c Linux_Release   
