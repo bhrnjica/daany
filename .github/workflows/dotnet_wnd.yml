@@ -1,4 +1,4 @@
-name:  Daany Build & Test on Linux
+name:  Daany Build & Test on Windows
 
 on:
   push:
@@ -13,17 +13,17 @@ defaults:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Linux
+    - name: Setup .NET WIndows
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build 
-      run: dotnet build --no-restore -c Linux_Release
+      run: dotnet build --no-restore -c Release
     - name: Test 
-      run: dotnet test --no-build --verbosity normal -c Linux_Release   
+      run: dotnet test --no-build --verbosity normal -c Release   
