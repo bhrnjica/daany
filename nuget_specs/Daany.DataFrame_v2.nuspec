@@ -30,17 +30,17 @@
     </metadata>
     <!-- A readme.txt to display when the package is installed -->
     <files>
-        <file src="README.MD"/>
-		<file src="daanyIcon.png" />
-		<file src="LICENSE"/>
+        <file src="../README.MD"/>
+		<file src="../daanyIcon.png" />
+		<file src="../LICENSE"/>
         <!-- net6.0 !-->
-		<file src="src/daany.mathstuff/bin/Release/net6.0/Daany.MathStuff.dll" target="lib/net6.0" />
-		<file src="src/daany.df/bin/Release/net6.0/Daany.DataFrame.dll" target="lib/net6.0" />
+		<file src="../src/daany.mathstuff/bin/Release/net6.0/Daany.MathStuff.dll" target="lib/net6.0" />
+		<file src="../src/daany.df/bin/Release/net6.0/Daany.DataFrame.dll" target="lib/net6.0" />
         <!-- net5.0 !-->
-        <file src="src/daany.mathstuff/bin/Release/net5.0/Daany.MathStuff.dll" target="lib/net5.0" />
-		<file src="src/daany.df/bin/Release/net5.0/Daany.DataFrame.dll" target="lib/net5.0" />
+        <file src="../src/daany.mathstuff/bin/Release/net5.0/Daany.MathStuff.dll" target="lib/net5.0" />
+		<file src="../src/daany.df/bin/Release/net5.0/Daany.DataFrame.dll" target="lib/net5.0" />
         <!-- netcoreapp3.1 !-->
-        <file src="src/daany.mathstuff/bin/Release/netcoreapp3.1/Daany.MathStuff.dll" target="lib/netcoreapp3.1" />
-		<file src="src/daany.df/bin/Release/netcoreapp3.1/Daany.DataFrame.dll" target="lib/netcoreapp3.1" />
+        <file src="../src/daany.mathstuff/bin/Release/netcoreapp3.1/Daany.MathStuff.dll" target="lib/netcoreapp3.1" />
+		<file src="../src/daany.df/bin/Release/netcoreapp3.1/Daany.DataFrame.dll" target="lib/netcoreapp3.1" />
     </files>
 </package>
