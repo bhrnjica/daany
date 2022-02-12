@@ -408,6 +408,8 @@ namespace Daany.LinA
         #endregion
 
         #region Matrix operations
+
+ 
         // 
         [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern void cblas_sgemm(CBLAS_LAYOUT Layout, CBLAS_TRANSPOSE TransA,CBLAS_TRANSPOSE TransB, int m, int n,int k, float alpha, float* A,
@@ -550,16 +552,25 @@ namespace Daany.LinA
             return Cc;
         }
 
+
+        #region Matrix Inverse
         [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_sgetrf(int matrix_layout, int m, int n, float* a, int lda, int* ipiv);
         [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_sgetri(int matrix_layout, int n, float* a, int lda, int* ipiv );
-
+        ///
         [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgetrf(int matrix_layout, int m, int n, double* a, int lda, int* ipiv);
         [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgetri(int matrix_layout, int n, double* a, int lda, int* ipiv);
 
+        /// <summary>
+        /// Computes the inverse of an LU-factored general matrix.
+        /// The routine computes the inverse inv(A) of a general matrix A. Before calling this routine, call ?getrf to factorize A.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static float[,] MInverse(float[,] A)
         {
             //define parameters
@@ -615,7 +626,8 @@ namespace Daany.LinA
             //
             return Ac;
         }
-
+        #endregion
+        
         #endregion
     }
 }
