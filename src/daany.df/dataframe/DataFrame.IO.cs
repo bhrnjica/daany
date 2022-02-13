@@ -23,7 +23,6 @@ using System.Text.RegularExpressions;
 
 
 using Daany.MathStuff;
-using System.Buffers.Text;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -42,66 +41,18 @@ namespace Daany
         private static readonly char[] _missingChars = new char[] { ' ', '?', '*', };
         private static readonly string[] _missingCharacters = new string[] { "n/a", "?", "*"," " };
         #endregion
-
-
         #region Static members
         /// <summary>
-        /// Saves data frame .NET object in a csv file.
+        ///  Saves data frame .NET object to  csv file.
         /// </summary>
         /// <param name="filePath">Full or relative file path.</param>
-        /// <param name="dataFrame">Data frame to persist into file.</param>
-        /// <returns>True if save successfully passed</returns>
-        public static bool ToCsv(string filePath, DataFrame dataFrame)
-        {
-            if (dataFrame == null)
-                throw new ArgumentNullException(nameof(dataFrame));
-
-            var lst = new List<string>();
-            var header = string.Join(",", dataFrame.Columns);
-            lst.Add(header);
-
-            for (int i = 0; i < dataFrame.Index.Count; i++)
-            {
-                var row = dataFrame[i];
-                var strRow = string.Join(",", row.ToList());
-                lst.Add(strRow);
-
-            }
-
-            File.WriteAllLines(filePath, lst);
-            return true;
-        }
-
-        public static async Task<bool> ToCsvAsync(string filePath, DataFrame dataFrame)
-        {
-            if (dataFrame == null)
-                throw new ArgumentNullException(nameof(dataFrame));
-
-            var lst = new List<string>();
-            var header = string.Join(",", dataFrame.Columns);
-            lst.Add(header);
-
-            for (int i = 0; i < dataFrame.Index.Count; i++)
-            {
-                var row = dataFrame[i];
-                var strRow = string.Join(",", row.ToList());
-                lst.Add(strRow);
-
-            }
-
-            await File.WriteAllLinesAsync(filePath, lst);
-            return true;
-        }
-
-
-        /// <summary>
-        /// Saves data frame .NET object in a csv file.
-        /// </summary>
-        /// <param name="filePath">Full or relative file path.</param>
-        /// <param name="dataFrame">Data frame to persist into file.</param>
-        /// <param name="dFormat">Date Time format during persisting data value.</param>
-        /// <returns>True if save successfully passed</returns>
-        public static bool ToCsv(string filePath, DataFrame dataFrame, string dFormat)
+        /// <param name="dataFrame">Data frame to persist.</param>
+        /// <param name="delimiter">Use delimiter while writing.</param>
+        /// <param name="dateFormat">Use data time  format while writing.</param>
+        /// <param name="writHeader">Include heade in the file.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static bool ToCsv(string filePath, DataFrame dataFrame, char delimiter = ',', string dateFormat = null, bool writHeader = true)
         {
             if (dataFrame == null)
                 throw new ArgumentNullException(nameof(dataFrame));
@@ -109,9 +60,15 @@ namespace Daany
             using (var strWr = File.CreateText(filePath))
             {
                 var csvWriter = new CsvWriter(strWr);
+
                 //write header
-                writeHeader(csvWriter, dataFrame.Columns);
-                csvWriter.NextRecord();
+                if(writHeader)
+                {
+                    for (int i = 0; i < dataFrame.Columns.Count; i++)
+                        csvWriter.WriteField(dataFrame.Columns[i]); 
+
+                    csvWriter.NextRecord();
+                }
 
                 //write values
                 int lstIndex = 0;
@@ -119,50 +76,26 @@ namespace Daany
                 {
                     for (int j = 0; j < dataFrame.ColCount(); j++)
                     {
-                        if(dataFrame._values[lstIndex]== DataFrame.NAN)
+                        if (dataFrame._values[lstIndex] == DataFrame.NAN)
                         {
                             csvWriter.WriteField("");
                             lstIndex++;
                             continue;
                         }
 
-                        switch (dataFrame.ColTypes[j])
+                        else if(dataFrame.ColTypes[j]  == ColType.DT)
                         {
-                            case ColType.I2:
-                                var bv = Convert.ToBoolean(dataFrame._values[lstIndex]);
-                                csvWriter.WriteField(bv.ToString(CultureInfo.InvariantCulture));
-                                break;
-                            case ColType.IN:
-                                csvWriter.WriteField(dataFrame._values[lstIndex].ToString());
-                                break;
-                            case ColType.I32:
-                                var iv = Convert.ToInt32(dataFrame._values[lstIndex]);
-                                csvWriter.WriteField(iv.ToString(CultureInfo.InvariantCulture));
-                                break;
-                            case ColType.I64:
-                                var lv = Convert.ToInt64(dataFrame._values[lstIndex]);
-                                csvWriter.WriteField(lv.ToString(CultureInfo.InvariantCulture));
-                                break;
-                            case ColType.F32:
-                                var df = Convert.ToSingle(dataFrame._values[lstIndex]);
-                                csvWriter.WriteField(df.ToString(CultureInfo.InvariantCulture));
-                                break;
-                            case ColType.DD:
-                                var dv = Convert.ToDouble(dataFrame._values[lstIndex]);
-                                csvWriter.WriteField(dv.ToString(CultureInfo.InvariantCulture));
-                                break;
-                            case ColType.STR:
-                                csvWriter.WriteField(dataFrame._values[lstIndex].ToString());
-                                break;
-                            case ColType.DT:
-                                var dt = Convert.ToDateTime(dataFrame._values[lstIndex]);
-                                if (dFormat != null)
-                                    csvWriter.WriteField(dt.ToString(dFormat));
-                                else
-                                    csvWriter.WriteField(dt.ToString());
-                                break;
+                            var dt = Convert.ToDateTime(dataFrame._values[lstIndex]);
+                            if (!string.IsNullOrEmpty(dateFormat))
+                                csvWriter.WriteField(dt.ToString(dateFormat));
+                            else
+                                csvWriter.WriteField(dt.ToString());
                         }
-
+                        else
+                        {
+                            var strValue = Convert.ToString(dataFrame._values[lstIndex], CultureInfo.InvariantCulture);
+                            csvWriter.WriteField(strValue);
+                        }
                         //
                         lstIndex++;
                     }
@@ -171,6 +104,66 @@ namespace Daany
             }
 
             return true;
+
+        }
+
+        public static async Task<bool> ToCsvAsync(string filePath, DataFrame dataFrame, char delimiter = ',', string dateFormat = null, bool writHeader = true)
+        {
+            if (dataFrame == null)
+                throw new ArgumentNullException(nameof(dataFrame));
+
+            using (var strWr = File.CreateText(filePath))
+            {
+                var csvWriter = new CsvWriter(strWr);
+                //write header
+                if (writHeader)
+                {
+                    for (int i = 0; i < dataFrame.Columns.Count; i++)
+                        await csvWriter.WriteFieldAsync(dataFrame.Columns[i]);
+
+                    csvWriter.NextRecord();
+                }
+
+                //write values
+                int lstIndex = 0;
+                for (int i = 0; i < dataFrame.RowCount(); i++)
+                {
+                    for (int j = 0; j < dataFrame.ColCount(); j++)
+                    {
+                        if (dataFrame._values[lstIndex] == DataFrame.NAN)
+                        {
+                            await csvWriter.WriteFieldAsync("");
+                            lstIndex++;
+                            continue;
+                        }
+
+                        else if (dataFrame.ColTypes[j] == ColType.DT)
+                        {
+                            var dt = Convert.ToDateTime(dataFrame._values[lstIndex]);
+                            if (!string.IsNullOrEmpty(dateFormat))
+                                await csvWriter.WriteFieldAsync(dt.ToString(dateFormat));
+                            else
+                                await csvWriter.WriteFieldAsync(dt.ToString());
+                        }
+                        else
+                        {
+                            var strValue = Convert.ToString(dataFrame._values[lstIndex], CultureInfo.InvariantCulture);
+                            await csvWriter.WriteFieldAsync(strValue);
+                        }
+                        //
+                        lstIndex++;
+                    }
+                    csvWriter.NextRecord();
+                }
+            }
+
+            return true;
+
+        }
+
+        public static bool ToCsv(string filePath, DataFrame dataFrame, string dFormat)
+        {
+            return DataFrame.ToCsv(filePath, dataFrame,',',dFormat);
         }
 
 
@@ -356,9 +349,13 @@ namespace Daany
                 }
 
                 //check consistency of the current line in the file
+#if NETSTANDARD2_0                           
+                if (csvReader.FieldsCount == 1 && string.IsNullOrEmpty(csvReader[0]))//skip empty line
+                    continue;
+#else
                 if (csvReader.FieldsCount == 1 && csvReader.AsSpan(0).IsEmpty)//skip empty line
                     continue;
-
+#endif
                 if (csvReader.FieldsCount != columns.Count)
                     throw new Exception($"The number of parsed elements at the line '{line}' is not equal to column count.");
                 //
@@ -371,17 +368,31 @@ namespace Daany
                     }
                     else
                     {
+#if NETSTANDARD2_0
+                        var strValue = csvReader[i];
+#else
                         //get value as Span
                         var span = csvReader.AsSpan(i);
+#endif
 
                         if (colTypes != null)
                         {
+#if NETSTANDARD2_0
+                             var val = parseValue(strValue, missingValue, colTypes[i], dateFormats);
+#else
                             var val = parseValue(span, missingValue, colTypes[i], dateFormats);
+#endif
+
                             listValues.Add(val);
                         }
                         else
                         {
+#if NETSTANDARD2_0
+                            var val = parseValue(strValue, missingValue, parseDate, dateFormats);
+#else
                             var val = parseValue(span, missingValue, parseDate, dateFormats);
+#endif
+
                             listValues.Add(val);
                         }
                     }
@@ -390,7 +401,131 @@ namespace Daany
 
             return listValues;
         }
+#if NETSTANDARD2_0
 
+        private static object parseValue(string strValue, char[] missingValue, ColType colType, string dFormat = null)
+        {
+            //check the missing value
+            if (IsMissingValue(strValue, missingChars: missingValue))
+                return DataFrame.NAN;
+
+            switch (colType)
+            {
+                case ColType.I2:
+                    return bool.Parse(strValue);
+                case ColType.IN:
+                    return new string(strValue.ToArray());
+                case ColType.I32:
+                    return int.Parse(strValue);
+                case ColType.I64:
+                    return long.Parse(strValue);
+                case ColType.F32:
+                    return float.Parse(strValue);
+                case ColType.DD:
+                    return double.Parse(strValue);
+                case ColType.STR:
+                    return new string(strValue.ToArray());
+                case ColType.DT:
+                    {
+                        if (string.IsNullOrEmpty(dFormat))
+                            return DateTime.Parse(strValue, CultureInfo.InvariantCulture, DateTimeStyles.None);
+                        else
+                            return DateTime.ParseExact(strValue, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
+
+                    }
+                default:
+                    throw new Exception("column type is not known.");
+            }
+        }
+
+        private static object parseValue(string strValue, char[] missingValue, bool parseDate = false, string dFormat = null)
+        {
+            //check the missing value
+            if (IsMissingValue(strValue, missingChars: missingValue))
+                return DataFrame.NAN;
+
+            var val = IsNumeric(strValue);
+
+            if (val == ValueType.Int)
+            {
+                int v = int.Parse(strValue, provider: CultureInfo.InvariantCulture);
+                return v;
+            }
+            else if (val == ValueType.Float)
+            {
+                float v = float.Parse(strValue, provider: CultureInfo.InvariantCulture);
+                return v;
+            }
+            else // non numeric values
+            {
+                if (dFormat != null && DateTime.TryParseExact(strValue, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime pdtValue))
+                {
+                    return pdtValue;
+                }
+                else if (parseDate && DateTime.TryParse(strValue, out DateTime dtValue))
+                {
+                    return dtValue;
+                }
+                //else if (bool.TryParse(span, out bool bVal))
+                //{
+                //    llst.Add(bVal);
+                //}
+                else
+                {
+                    var strVal = new string(strValue.ToArray());
+                    return strVal;
+                }
+
+            }
+
+        }
+
+        private static bool IsMissingValue(string spanValue, char[] missingChars)
+        {
+            if (spanValue.Length > 1)
+                return false;
+            else if (spanValue.Length < 1)
+                return true;
+            for (int i = 0; i < spanValue.Length; i++)
+            {
+                if (missingChars != null)
+                {
+                    if (missingChars.Contains(spanValue[i]))
+                        return true;
+                }
+                else if (_missingChars.Contains(spanValue[i]))
+                    return true;
+            }
+            return false;
+        }
+
+        private static ValueType IsNumeric(string spanValue)
+        {
+            int pointCounter = 0;
+            for (int i = 0; i < spanValue.Length; i++)
+            {
+                if (i == 0 && (spanValue[i] == '-' || spanValue[i] == '+'))
+                    continue;
+                if (spanValue[i] == '.')
+                {
+                    pointCounter++;
+                }
+                else if (!char.IsNumber(spanValue[i]))
+                {
+                    return 0;
+                }
+
+            }
+
+            if (pointCounter == 0)
+                return ValueType.Int;
+            else if (pointCounter == 1)
+                return ValueType.Float;
+            else
+                return ValueType.None;
+        }
+  
+#else
         private static object parseValue(ReadOnlySpan<char> value, char[] missingValue, ColType colType, string dFormat = null)
         {
             //check the missing value
@@ -424,12 +559,6 @@ namespace Daany
                 default:
                     throw new Exception("column type is not known.");
             }
-        }
-
-        private static void writeHeader(CsvWriter csvWriter, IList<string> columns)
-        {
-            for (int i = 0; i < columns.Count; i++)
-                csvWriter.WriteField(columns[i]);
         }
 
         private static object parseValue(ReadOnlySpan<char> value, char[] missingValue, bool parseDate = false, string dFormat = null)
@@ -473,15 +602,6 @@ namespace Daany
             }
 
         }
-
-        private static object parseValue(object value, string dformat)
-        {
-            if (value is string)
-                return parseValue(value.ToString().AsSpan(),null, true, dformat);
-            else
-                return value;
-        }
-
 
         private static bool IsMissingValue(ReadOnlySpan<char> spanValue, char[] missingChars)
         {
@@ -527,5 +647,24 @@ namespace Daany
             else
                 return ValueType.None;
         }
+
+#endif
+
+        private static object parseValue(object value, string dformat)
+        {
+            if (value is string)
+#if NETSTANDARD2_0
+                return parseValue(value.ToString(), null, true, dformat);
+#else
+                return parseValue(value.ToString().AsSpan(),null, true, dformat);
+#endif
+            else
+                return value;
+        }
+
+
+
+
+       
     }
 }

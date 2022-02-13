@@ -154,19 +154,19 @@ namespace Daany {
 				return null;
 			}
 		}
+#if !NETSTANDARD2_0
+		public ReadOnlySpan<char> AsSpan(int idx)
+		{
+			if (idx < fieldsCount)
+			{
+				var f = fields[idx];
+				return fields[idx].GetSpanValue(buffer);
+			}
+			return null;
+		}
+#endif
 
-        public ReadOnlySpan<char> AsSpan(int idx)
-        {
-            if (idx < fieldsCount)
-            {
-                var f = fields[idx];
-                return fields[idx].GetSpanValue(buffer);
-            }
-            return null;
-        }
-
-
-        public int GetValueLength(int idx) {
+		public int GetValueLength(int idx) {
 			if (idx < fieldsCount) {
 				var f = fields[idx];
 				return f.Quoted ? f.Length-f.EscapedQuotesCount : f.Length;
@@ -321,7 +321,8 @@ namespace Daany {
 				return cachedValue;
 			}
 
-            internal ReadOnlySpan<char> GetSpanValue(char[] buf)
+#if !NETSTANDARD2_0
+			internal ReadOnlySpan<char> GetSpanValue(char[] buf)
             {
                 if (cachedValue == null)
                 {
@@ -330,7 +331,7 @@ namespace Daany {
                 return cachedValue.AsSpan();
             }
 
-            Span<char> GetSpanInternal(char[] buf)
+			Span<char> GetSpanInternal(char[] buf)
             {
                 if (Quoted)
                 {
@@ -358,8 +359,32 @@ namespace Daany {
                 return len > 0 ? GetSpan(buf, Start, len) : Span<char>.Empty;
             }
 
+			private Span<char> GetSpan(char[] buf, int start, int len)
+			{
+				var bufLen = buf.Length;
+				start = start < bufLen ? start : start % bufLen;
+				var endIdx = start + len - 1;
+				if (endIdx >= bufLen)
+				{
+					var prefixLen = buf.Length - start;
+					var prefix = SubArray(buf, start, prefixLen);
+					var suffix = SubArray(buf, 0, len - prefixLen);
+					var span = new Span<char>(new char[len]);
+					for (int i = 0; i < len; i++)
+					{
+						if (i < prefixLen)
+							span[i] = prefix[i];
+						else
+							span[i] = suffix[i - prefixLen];
+					}
 
-            string GetValueInternal(char[] buf) {
+					return span;
+				}
+				return new Span<char>(SubArray(buf, start, len));
+			}
+
+#endif
+			string GetValueInternal(char[] buf) {
 				if (Quoted) {
 					var s = Start + 1;
 					var lenWithoutQuotes = Length - 2;
@@ -385,29 +410,7 @@ namespace Daany {
 				return new string(buf, start, len);
 			}
 
-            private Span<char> GetSpan(char[] buf, int start, int len)
-            {
-                var bufLen = buf.Length;
-                start = start < bufLen ? start : start % bufLen;
-                var endIdx = start + len - 1;
-                if (endIdx >= bufLen)
-                {
-                    var prefixLen = buf.Length - start;
-                    var prefix = SubArray(buf, start, prefixLen);
-                    var suffix = SubArray(buf, 0, len - prefixLen);
-                    var span = new Span<char>(new char[len]);
-                    for(int i=0; i< len; i++)
-                    {
-                        if (i < prefixLen)
-                            span[i] = prefix[i];
-                        else
-                            span[i] = suffix[i - prefixLen];
-                    }
 
-                    return span;
-                }
-                return new Span<char>(SubArray(buf, start, len));
-            }
 
             public static T[] SubArray<T>(T[] data, int index, int length)
             {
