@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Daany;
 using System.Linq;
-using Daany.Arima;
+using Daany.Stat.Arima;
 
 namespace DataFrame.Test.App
 {

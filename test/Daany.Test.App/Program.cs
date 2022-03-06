@@ -38,7 +38,7 @@ namespace Daany.Test.App
         {
 
 
-            ARIMATest.ARIMA_Test01();
+          //  ARIMATest.ARIMA_Test01();
 
 
 

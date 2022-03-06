@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Daany.DataFrame</id>
-        <version>1.3.0</version>
+        <version>1.3.5</version>
         <authors>Bahrudin Hrnjica, bhrnjica</authors>
         <owners>bhrnjica</owners>
 		<icon>daanyIcon.png</icon>
@@ -26,6 +26,15 @@
           <group targetFramework="netcoreapp3.1" >
 
 		  </group>
+           <group targetFramework="netcoreapp3.0" >
+
+		  </group>
+          <group targetFramework="netstandard2.1" >
+
+		  </group>
+           <group targetFramework="netstandard2.0" >
+
+		  </group>
         </dependencies>
     </metadata>
     <!-- A readme.txt to display when the package is installed -->
@@ -42,5 +51,14 @@
         <!-- netcoreapp3.1 !-->
         <file src="../src/daany.mathstuff/bin/Release/netcoreapp3.1/Daany.MathStuff.dll" target="lib/netcoreapp3.1" />
 		<file src="../src/daany.df/bin/Release/netcoreapp3.1/Daany.DataFrame.dll" target="lib/netcoreapp3.1" />
+        <!-- netcoreapp3.0 !-->
+        <file src="../src/daany.mathstuff/bin/Release/netcoreapp3.0/Daany.MathStuff.dll" target="lib/netcoreapp3.0" />
+		<file src="../src/daany.df/bin/Release/netcoreapp3.0/Daany.DataFrame.dll" target="lib/netcoreapp3.0" />
+        <!-- netstandard2.1 !-->
+        <file src="../src/daany.mathstuff/bin/Release/netstandard2.1/Daany.MathStuff.dll" target="lib/netstandard2.1" />
+		<file src="../src/daany.df/bin/Release/netstandard2.1/Daany.DataFrame.dll" target="lib/netstandard2.1" />
+         <!-- netstandard2.0 !-->
+        <file src="../src/daany.mathstuff/bin/Release/netstandard2.0/Daany.MathStuff.dll" target="lib/netstandard2.0" />
+		<file src="../src/daany.df/bin/Release/netstandard2.0/Daany.DataFrame.dll" target="lib/netstandard2.0" />
     </files>
 </package>
