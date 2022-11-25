@@ -15,38 +15,12 @@ jobs:
 
    runs-on: windows-latest
 
-   steps:
-
-    - name: Setup .NET Core 2.0	
-      uses: actions/setup-dotnet@v3	
-      with:	
-        dotnet-version: 2.0.x	
-    
-    - name: Setup .NET Core 2.1	
-      uses: actions/setup-dotnet@v3	
-      with:	
-        dotnet-version: 2.1.x	
-        
-    - name: Setup .NET Core 3.1	
-      uses: actions/setup-dotnet@v3	
-      with:	
-        dotnet-version: 3.1.x
-        
-    - name: Setup .NET Core 5.0
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 5.0.x
-    
+   steps:    
     - name: Setup .NET Core 6.0
       uses: actions/setup-dotnet@v3
       with: 
         dotnet-version: 6.0.x
     
-    - name: Setup .NET Core 7.0
-      uses: actions/setup-dotnet@v3
-      with: 
-        dotnet-version: 7.0.x
-        
     - name: Restore dependencies
       run: dotnet restore daany.sln
       
@@ -54,4 +28,4 @@ jobs:
       run: dotnet build daany.sln 
       
     - name: Test 
-      run: dotnet test .\daany.sln --no-build --verbosity normal 
+      run: dotnet test .\daany.sln 
