@@ -48,10 +48,10 @@ jobs:
         dotnet-version: 7.0.x
         
     - name: Restore dependencies
-      run: dotnet restore .\daany.sln
+      run: dotnet restore daany.sln
       
     - name: Build 
-      run: dotnet build .\daany.sln --no-restore 
+      run: dotnet build daany.sln 
       
     - name: Test 
       run: dotnet test .\daany.sln --no-build --verbosity normal 
