@@ -22,7 +22,7 @@ jobs:
         dotnet-version: 6.0.x
     
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore GITHUB_REPOSITORY/daany.sln
       
     - name: Build 
       run: dotnet build 
