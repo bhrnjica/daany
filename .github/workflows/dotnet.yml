@@ -22,10 +22,10 @@ jobs:
         dotnet-version: 6.0.x
     
     - name: Restore dependencies
-      run: dotnet restore daany.sln
+      run: dotnet restore
       
     - name: Build 
-      run: dotnet build daany.sln 
+      run: dotnet build 
       
     - name: Test 
-      run: dotnet test .\daany.sln 
+      run: dotnet test
