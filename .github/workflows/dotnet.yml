@@ -13,7 +13,7 @@ on:
 jobs:
   build:
 
-   runs-on: ubuntu-latest
+   runs-on: windows-latest
 
    steps:
 
@@ -37,7 +37,7 @@ jobs:
       with:
         dotnet-version: 5.0.x
     
-    - name: Setup .NET 6
+    - name: Setup .NET Core 6.0
       uses: actions/setup-dotnet@v3
       with: 
         dotnet-version: 6.0.x
@@ -46,7 +46,7 @@ jobs:
       run: dotnet restore
       
     - name: Build 
-      run: dotnet build --no-restore -c Linux
+      run: dotnet build --no-restore 
       
     - name: Test 
-      run: dotnet test --no-build --verbosity normal -c Linux
+      run: dotnet test --no-build --verbosity normal
