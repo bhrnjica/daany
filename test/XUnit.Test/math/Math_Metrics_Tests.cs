@@ -72,6 +72,9 @@ namespace Unit.Test.DF
             value = AdvancedStatistics.MASE(xActual, yPredicted, 9);
             Assert.Equal(1.024809, value, 4);
 
+            value = BasicStatistics.MedianOf(xActual);
+            Assert.Equal(0.654895, value, 2);
+
 
         }
 
@@ -83,8 +86,8 @@ namespace Unit.Test.DF
             {
                 data[i] = new double[3];
                 data[i][0] = i + 5;
-                data[i][1] = Math.Sin(i * 2.14);
-                data[i][2] = Math.Sin(2 * i + i * i - 5);
+                data[i][1] = System.Math.Sin(i * 2.14);
+                data[i][2] = System.Math.Sin(2 * i + i * i - 5);
             }
             var minMax = BasicStatistics.calculateMinMax(data);
 
@@ -104,8 +107,8 @@ namespace Unit.Test.DF
             {
                 data[i] = new double[3];
                 data[i][0] = i + 5;
-                data[i][1] = Math.Sin(i * 2.14);
-                data[i][2] = Math.Sin(2 * i + i * i - 5);
+                data[i][1] = System.Math.Sin(i * 2.14);
+                data[i][2] = System.Math.Sin(2 * i + i * i - 5);
             }
             var minMax = BasicStatistics.calculateMeanStDev(data);
 

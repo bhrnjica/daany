@@ -22,7 +22,7 @@ namespace ML.Net.App.TimeSeries
     //Singular Spectrum Analysis
     public class SSADemo
     {
-        static string root = "..\\..\\..\\..\\..\\dataset"; 
+        //static string root = "..\\..\\..\\..\\..\\dataset"; 
 
         public static void Forecasting()
         {

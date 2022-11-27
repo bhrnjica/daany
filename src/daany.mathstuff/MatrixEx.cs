@@ -67,9 +67,12 @@ namespace Daany.MathStuff
         public static T[,] Diagonal<T>(int rows, int cols, T[] values)
         {
             var result =  new T[rows, cols];
+
             int size = Math.Min(rows, Math.Min(cols, values.Length));
+
             for (int i = 0; i < size; i++)
                 result[i, i] = values[i];
+
             return result;
         }
 
@@ -263,7 +266,7 @@ namespace Daany.MathStuff
         {
             var retVal = new double[m1.GetLength(0), m1.GetLength(1)];
             //Init matrix
-            var mat = new Matrix(m1.GetLength(0), m1.GetLength(1));
+            var mat = new Daany.MathStuff.MatrixExt.Matrix(m1.GetLength(0), m1.GetLength(1));
             for (int i = 0; i < m1.GetLength(0); i++)
                 for (int j = 0; j < m1.GetLength(1); j++)
                     mat[i, j] = m1[j, i];

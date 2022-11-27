@@ -15,11 +15,11 @@ namespace Daany.Plot
     {
         public static void Run()
         {
-            var outputToFile = "test-oxyplot-static-export-file";
+            //var outputToFile = "test-oxyplot-static-export-file";
             var outputExportStreamOOP = "test-oxyplot-export-stream";
 
-            var width = 1024;
-            var height = 768;
+            //var width = 1024;
+            //var height = 768;
             var resolutions = new[] { 72d, 96d, 182d };
 
             var model = HeatMapExample();//BuildPlotModel();

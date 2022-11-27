@@ -5,6 +5,7 @@ using Xunit;
 using Daany;
 using Daany.Stat.stl;
 
+
 namespace Unit.Test.DF
 {
     public class LoessInterpolatorTest
@@ -88,7 +89,7 @@ namespace Unit.Test.DF
 
             for (int i = 0; (i < data.Length); i++)
             {
-                double y = it.smoothOnePoint(i, Math.Max(0, (i - 2)), Math.Min((i + 2), (data.Length - 1)));
+                double y = it.smoothOnePoint(i,System.Math.Max(0, (i - 2)), System.Math.Min((i + 2), (data.Length - 1)));
                 Assert.True(y != 0);
                 Assert.Equal(data[i], y, 5);
             }

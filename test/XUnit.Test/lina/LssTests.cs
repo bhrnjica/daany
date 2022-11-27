@@ -164,8 +164,8 @@ namespace Unit.Test.LapackSharp
 
             var X = Lss(A, B);
 
-            Assert.Equal(3.5, Math.Round(X[0,0],2));
-            Assert.Equal(1.4, Math.Round(X[1, 0],2));
+            Assert.Equal(3.5, System.Math.Round(X[0,0],2));
+            Assert.Equal(1.4, System.Math.Round(X[1, 0],2));
         }
     }
 }

@@ -102,7 +102,7 @@ namespace Unit.Test.DF
 			var ar = new ARIMA();
 			
 			var coeff = ar.AR(ser, 2);
-            Assert.Equal(new float[3] {1.91f,0.91f,0.09f }, coeff.Select(x=>Convert.ToSingle(Math.Round((double)x,2))));
+            Assert.Equal(new float[3] {1.91f,0.91f,0.09f }, coeff.Select(x=>Convert.ToSingle(System.Math.Round((double)x,2))));
 
         }
 
@@ -162,7 +162,7 @@ namespace Unit.Test.DF
 			{
 				sumPredict += ((double)tmpPredict[k]) / (double)cnt;
 			}
-			int predict = (int)Math.Round(sumPredict);
+			int predict = (int)System.Math.Round(sumPredict);
 			Console.Write("Predict value=");
 			Console.Write(predict);
 			Console.Write("\n");
