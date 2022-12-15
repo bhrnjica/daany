@@ -137,7 +137,7 @@ namespace Daany
         /// <returns>object array</returns>
         public IEnumerable<object[]> GetRowEnumerator()
         {
-            var r = new object[this._columns.Count];
+
             for (int i = 0; i < Index.Count; i++)
             {
                 yield return this[i].ToArray();

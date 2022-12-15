@@ -189,6 +189,7 @@ namespace Daany {
 		}
 
 		public bool Read() {
+			Start:
 			if (fields == null) {
 				fields = new List<Field>();
 				fieldsCount = 0;
@@ -286,7 +287,8 @@ namespace Daany {
 
 			if (fieldsCount==1 && fields[0].Length==0) {
 				// skip empty lines
-				return Read();
+				//return Read();
+				goto Start;
 			}
 
 			return true;
