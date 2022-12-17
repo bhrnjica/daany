@@ -64,11 +64,11 @@ SOFTWARE.</PackageReleaseNotes>
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
+    <Folder Include="NReco.Csv\" />
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="NReco.Csv\" />
+    <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
