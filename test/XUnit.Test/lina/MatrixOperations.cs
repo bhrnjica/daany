@@ -32,7 +32,7 @@ namespace Unit.Test.LapackSharp
             {
                 for (int j = 0; j < C.GetLength(1); j++)
                 {
-                    Assert.Equal(Math.Round(C[i, j],5), result[i, j], 2);
+                    Assert.Equal(System.Math.Round(C[i, j],5), result[i, j], 2);
                 }
             }
 
@@ -59,7 +59,7 @@ namespace Unit.Test.LapackSharp
             {
                 for (int j = 0; j < CC.GetLength(1); j++)
                 {
-                    Assert.Equal(Convert.ToSingle(Math.Round(CC[i, j], 5)), result1[i, j], 2);
+                    Assert.Equal(Convert.ToSingle(System.Math.Round(CC[i, j], 5)), result1[i, j], 2);
                 }
             }
 
@@ -95,7 +95,7 @@ namespace Unit.Test.LapackSharp
             {
                 for (int j = 0; j < C.GetLength(1); j++)
                 {
-                    Assert.Equal(Convert.ToSingle(Math.Round(C[i, j], 5)), result[i, j], 2);
+                    Assert.Equal(Convert.ToSingle(System.Math.Round(C[i, j], 5)), result[i, j], 2);
                 }
             }
         }
@@ -194,7 +194,7 @@ namespace Unit.Test.LapackSharp
             {
                 for (int j = 0; j < C.GetLength(1); j++)
                 {
-                    Assert.Equal(Convert.ToSingle(Math.Round(D[i, j], 5)), result[i, j], 2);
+                    Assert.Equal(Convert.ToSingle(System.Math.Round(D[i, j], 5)), result[i, j], 2);
                 }
             }
         }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 
-namespace Daany.Plot
+namespace Daany.Stat.Plot
 {
     public class Chart
     {
@@ -17,24 +17,36 @@ namespace Daany.Plot
         {
             var model = new PlotModel { Title = title };
 
-            var barSeries = new ColumnSeries();
-            var bars = new List<ColumnItem>();
+            var barSeries = new BarSeries { XAxisKey = xLabel, YAxisKey = yLabel }; ;// new ColumnSeries();
+
             for (int i = 0; i < y.Count(); i++)
-            {
-                var b = new ColumnItem(y.ElementAt(i), i);
-                bars.Add(b);
-            }
-            barSeries.ItemsSource = bars;
+                barSeries.Items.Add(new BarItem(y.ElementAt(i), i));
+
+            //var bars = new List<ColumnItem>();
+            //for (int i = 0; i < y.Count(); i++)
+            //{
+            //    var b = new ColumnItem(y.ElementAt(i), i);
+            //    bars.Add(b);
+            //}
+            //barSeries.ItemsSource = bars;
+
             //add category axis
-            var xAxes = new CategoryAxis
-            {
-                Title = xLabel,
-                Position = AxisPosition.Bottom,
-                Key = "Target",
-                ItemsSource = x.ToArray(),
-            };
-            xAxes.ActualLabels.AddRange(x.Select(xx => xx.ToString()));
+            // specify key and position
+            var xAxes = new CategoryAxis { Position = AxisPosition.Bottom, Key = xLabel };
+            foreach (var xL in x)
+                xAxes.Labels.Add(xL.ToString());
+
             model.Axes.Add(xAxes);
+
+            //var xAxes = new CategoryAxis
+            //{
+            //    Title = xLabel,
+            //    Position = AxisPosition.Bottom,
+            //    Key = "Target",
+            //    ItemsSource = x.ToArray(),
+            //};
+            //xAxes.ActualLabels.AddRange(x.Select(xx => xx.ToString()));
+            //model.Axes.Add(xAxes);
 
 
             //add category axis
@@ -48,9 +60,6 @@ namespace Daany.Plot
             model.Axes.Add(yAxes);
 
             model.Series.Add(barSeries);
-
-
-
             //
             return model;
 

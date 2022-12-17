@@ -137,7 +137,7 @@ namespace Daany
         /// <returns>object array</returns>
         public IEnumerable<object[]> GetRowEnumerator()
         {
-            var r = new object[this._columns.Count];
+
             for (int i = 0; i < Index.Count; i++)
             {
                 yield return this[i].ToArray();
@@ -2064,7 +2064,7 @@ namespace Daany
                     ind.Add(this._index[i]);
                     counter = 0;
                 }
-                if(i+1 == _index.Count && includeLast)
+                if(i + 1 == _index.Count && includeLast)
                 {
                     if(counter > 0)
                     {
@@ -3061,18 +3061,6 @@ namespace Daany
             {
                 throw new Exception($"Column '{colName}' already exists in the data frame.");
             }
-        }
-
-        private static List<object> deepCopyObject(IEnumerable<object> list)
-        {
-            var lstObj = new List<object>();
-            foreach (var o in list)
-            {
-                var copy = o.DeepClone();
-                lstObj.Add(copy);
-            }
-
-            return lstObj;
         }
 
         private ColType[] columnsTypes()

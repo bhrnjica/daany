@@ -3,10 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
-using Daany.stl;
+using Daany.Stat.stl;
 using Daany.Stat;
 using static Daany.LinA.LinA;
-using Daany.Arima;
+using Daany.Stat.Arima;
 
 namespace Unit.Test.DF
 {
@@ -102,7 +102,7 @@ namespace Unit.Test.DF
 			var ar = new ARIMA();
 			
 			var coeff = ar.AR(ser, 2);
-            Assert.Equal(new float[3] {1.91f,0.91f,0.09f }, coeff.Select(x=>Convert.ToSingle(Math.Round((double)x,2))));
+            Assert.Equal(new float[3] {1.91f,0.91f,0.09f }, coeff.Select(x=>Convert.ToSingle(System.Math.Round((double)x,2))));
 
         }
 
@@ -162,7 +162,7 @@ namespace Unit.Test.DF
 			{
 				sumPredict += ((double)tmpPredict[k]) / (double)cnt;
 			}
-			int predict = (int)Math.Round(sumPredict);
+			int predict = (int)System.Math.Round(sumPredict);
 			Console.Write("Predict value=");
 			Console.Write(predict);
 			Console.Write("\n");

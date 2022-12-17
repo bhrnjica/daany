@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
-using Daany.stl;
+using Daany.Stat.stl;
 using Daany.MathStuff;
 using Daany.Stat;
 

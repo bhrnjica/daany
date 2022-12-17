@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Daany.Stat
+namespace Daany.Stat.Arima
 {
 	//this implementation is based on: https://github.com/jsphLim/ARIMA
-	internal class ARMAFoundation
+	public class ARMAFoundation
 	{
 		public static Random rnd = new Random(Seed: 1);
 		public double avgData(double[] dataArray)

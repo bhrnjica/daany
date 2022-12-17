@@ -3,12 +3,11 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
-using Daany.stl;
+using Daany.Stat.stl;
 using Daany.MathStuff;
 using Daany.Stat;
 using Daany.Ext;
 using XPlot.Plotly;
-using Accord.Math.Decompositions;
 
 namespace Unit.Test.DF
 {
@@ -150,13 +149,13 @@ namespace Unit.Test.DF
             { 9.84,  0.15, -8.99, -6.02, -5.31 }
             };
              //SVD
-            var svd = new SingularValueDecomposition(matrix);
+            var svd = Daany.LinA.LinA.Svd(matrix, false,false);
             //
-            Assert.Equal(27.47, svd.Diagonal[0], 2);
-            Assert.Equal(22.64, svd.Diagonal[1], 2);
-            Assert.Equal(8.56, svd.Diagonal[2], 2);
-            Assert.Equal(5.99, svd.Diagonal[3], 2);
-            Assert.Equal(2.01, svd.Diagonal[4], 2);
+            Assert.Equal(27.47, svd.s[0], 2);
+            Assert.Equal(22.64, svd.s[1], 2);
+            Assert.Equal(8.56, svd.s[2], 2);
+            Assert.Equal(5.99, svd.s[3], 2);
+            Assert.Equal(2.01, svd.s[4], 2);
 
 
         }

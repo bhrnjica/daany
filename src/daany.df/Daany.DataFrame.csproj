@@ -1,42 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net5.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+	<TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1;netcoreapp3.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+	<LangVersion>10.0</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>Daany</RootNamespace>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>Daany.DataFrame</PackageId>
     <Authors>Bahrudin Hrnjica</Authors>
-    <Product>daany - DAta ANalYtics.</Product>
-    <Description>Daany.DataFrame - .NET library for analysis and transformation of tabular data.</Description>
-    <Copyright>Bahrudin Hrnjica</Copyright>
+    <Product>daany - DAta ANalYtics on .NET</Product>
+    <Description>Daany.DataFrame - cross platform NET library for analysis and transformation of tabular data.</Description>
+    <summary>Daany.DataFrame - cross platform NET library for analysis and transformation of tabular data.</summary>
+    <Copyright>Copyright ©2019-2021 Bahrudin Hrnjica</Copyright>
     <PackageLicenseExpression></PackageLicenseExpression>
     <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
     <PackageTags>ml.net, data preparation, data analytics</PackageTags>
-    <Version>0.5.0</Version>
-    <PackageReleaseNotes>MIT License
-
-Copyright (c) 2019 Bahrudin Hrnjica
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.</PackageReleaseNotes>
+    <Version>1.0.6</Version>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <LicenseUrl>https://github.com/bhrnjica/daany/blob/master/LICENSE</LicenseUrl>
@@ -44,24 +26,40 @@ SOFTWARE.</PackageReleaseNotes>
     <FileVersion>1.0.0.0</FileVersion>
     <AssemblyName>Daany.DataFrame</AssemblyName>
     <dependencies>
-      <group targetFramework="netstandard2.0" />
+      <group targetFramework="net6.0" />
     </dependencies>
+    <PackageIcon>daanyIcon.png</PackageIcon>
+    <PackageIconUrl />
+    <Configurations>Debug;Release;Linux;Linux_Debug;Linux_Release</Configurations>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DocumentationFile>C:\Users\bhrnjica\source\repos\daany\src\daany.df\Daany.DataFrame.xml</DocumentationFile>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Linux|x64'">
+    <DocumentationFile>C:\Users\bhrnjica\source\repos\daany\src\daany.df\Daany.DataFrame.xml</DocumentationFile>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="..\..\daanyIcon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\README.MD">
+    <Content Include="..\..\README.MD">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.5.3" />
-  </ItemGroup>
+
   
   <ItemGroup>
     <Folder Include="NReco.Csv\" />
@@ -70,9 +68,4 @@ SOFTWARE.</PackageReleaseNotes>
   <ItemGroup>
     <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
   </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if $(ConfigurationName) == Release copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;..\..\lib\$(TargetName).dll&quot;" />
-  </Target>
-
 </Project>

@@ -626,6 +626,35 @@ namespace Daany.MathStuff
 
         #region Variance
         /// <summary>
+        /// Calculate variance for the whole population.
+        /// </summary>
+        /// <param name="colData"></param>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public static double VarianceOfP(this double[] colData)
+        {
+            if (colData == null || colData.Length < 2)
+                throw new Exception("'coldData' cannot be null or less than 2 elements!");
+
+            //number of elements
+            int count = colData.Length;
+
+            //calculate the mean
+            var mean = colData.MeanOf();
+
+            //calculate summ of square 
+            double parSum = 0;
+            for (int i = 0; i < colData.Length; i++)
+            {
+                var res = (colData[i] - mean);
+
+                parSum += res * res;
+            }
+
+            return parSum / count;
+        }
+
+        /// <summary>
         /// Calculate variance for the sample data .
         /// </summary>
         /// <param name="colData"></param>
@@ -824,35 +853,6 @@ namespace Daany.MathStuff
             }
                 
           
-        }
-
-        /// <summary>
-        /// Calculate variance for the whole population.
-        /// </summary>
-        /// <param name="colData"></param>
-        /// <param name="ctx"></param>
-        /// <returns></returns>
-        public static double VarianceOfP(this double[] colData)
-        {
-            if (colData == null || colData.Length < 2)
-                throw new Exception("'coldData' cannot be null or less than 2 elements!");
-
-            //number of elements
-            int count = colData.Length;
-
-            //calculate the mean
-            var mean = colData.MeanOf();
-
-            //calculate summ of square 
-            double parSum = 0;
-            for (int i = 0; i < colData.Length; i++)
-            {
-                var res = (colData[i] - mean);
-
-                parSum += res * res;
-            }
-
-            return parSum / count;
         }
  
 

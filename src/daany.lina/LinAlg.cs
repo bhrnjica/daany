@@ -7,23 +7,19 @@ namespace Daany.LinA
     unsafe public class LinA
     {
 
-        static LinA()
-        {
-           
-        }
-
-        /// <summary>
-        /// Dummy method to be called first 
-        /// </summary>
-        public static void init(){;}
+#if LINUX
+        const string dllName = "libmkl_rt.so";
+#else
+        const string dllName = "mkl_rt.dll";  
+#endif
 
         #region Solver- solver of system of linear equations
         // 
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_sgesv(int matrix_layout, int n, int nrhs, float* a, int lda, int* ipiv, float* b, int ldb);
 
         //double
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgesv(int matrix_layout, int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb);
        
         /// <summary>
@@ -158,11 +154,11 @@ namespace Daany.LinA
         #endregion
 
         #region LSS - least square solver
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_sgels(int matrix_layout, char trans, int m, int n, int nrhs, float* a, int lda, float* b, int ldb);
         
 
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgels(int matrix_layout, char trans, int m, int n, int nrhs, double* a, int lda, double* b, int ldb);
 
         public static float[,] Lss(float[,] A, float[,] B)
@@ -224,13 +220,26 @@ namespace Daany.LinA
         #endregion
 
         #region Eigenvalues 
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_sgeev(int matrix_layout, char jobvl, char jobvr, int n, float* a, int lda, float* wr,
                           float* wi, float* vl, int ldvl, float* vr, int ldvr);
 
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgeev(int matrix_layout, char jobvl, char jobvr, int n, double* a, int lda, double* wr,
                           double* wi, double* vl, int ldvl, double* vr, int ldvr);
+        /// <summary>
+        /// Computes the eigenvalues and left and right eigenvectors of a general matrix.
+        /// 
+        /// The routine computes for an n-by-n real nonsymmetric matrix A, the eigenvalues and, optionally, 
+        /// the left and/or right eigenvectors. The right eigenvector v of A satisfies A* v = λ * v where λ is its eigenvalue.
+        /// 
+        /// The left eigenvector u of A satisfies uH* A = λ * uH where uH denotes the conjugate transpose of u. 
+        /// The computed eigenvectors are normalized to have Euclidean norm equal to 1 and largest component real.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="computeLeft"></param>
+        /// <param name="computeRight"></param>
+        /// <returns></returns>
         public static (float[] wr, float[] wi, float[,] VL, float[,] VR) Eigen(float[,] A, bool computeLeft = false, bool computeRight = false)
         {
             //define parameters
@@ -305,11 +314,11 @@ namespace Daany.LinA
         #endregion
 
         #region SVD singular value decomposition
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_sgesvd(int matrix_layout, char jobu, char jobvt,int m, int n, float* a, int lda,
                            float* s, float* u, int ldu, float* vt, int ldvt, float* superb);
 
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgesvd(int matrix_layout, char jobu, char jobvt, int m, int n, double* a, int lda,
                            double* s, double* u, int ldu, double* vt, int ldvt, double* superb);
 
@@ -399,11 +408,13 @@ namespace Daany.LinA
         #endregion
 
         #region Matrix operations
+
+ 
         // 
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern void cblas_sgemm(CBLAS_LAYOUT Layout, CBLAS_TRANSPOSE TransA,CBLAS_TRANSPOSE TransB, int m, int n,int k, float alpha, float* A,
                  int lda, float* B, int ldb, float beta, float* C, int ldc);
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern void cblas_dgemm(CBLAS_LAYOUT Layout, CBLAS_TRANSPOSE TransA, CBLAS_TRANSPOSE TransB, int m, int n, int k, double alpha, double* A,
                  int lda, double* B, int ldb, double beta, double* C, int ldc);
 
@@ -541,16 +552,25 @@ namespace Daany.LinA
             return Cc;
         }
 
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int LAPACKE_sgetrf(int matrix_layout, int m, int n, float* a, int lda, int* ipiv);
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int LAPACKE_sgetri(int matrix_layout, int n, float* a, int lda, int* ipiv );
 
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        #region Matrix Inverse
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_sgetrf(int matrix_layout, int m, int n, float* a, int lda, int* ipiv);
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int LAPACKE_sgetri(int matrix_layout, int n, float* a, int lda, int* ipiv );
+        ///
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgetrf(int matrix_layout, int m, int n, double* a, int lda, int* ipiv);
-        [DllImport("mkl_rt.1", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_dgetri(int matrix_layout, int n, double* a, int lda, int* ipiv);
 
+        /// <summary>
+        /// Computes the inverse of an LU-factored general matrix.
+        /// The routine computes the inverse inv(A) of a general matrix A. Before calling this routine, call ?getrf to factorize A.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static float[,] MInverse(float[,] A)
         {
             //define parameters
@@ -606,7 +626,8 @@ namespace Daany.LinA
             //
             return Ac;
         }
-
+        #endregion
+        
         #endregion
     }
 }

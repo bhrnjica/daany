@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net5.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+	<TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1;netcoreapp3.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+	<LangVersion>11.0</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>Daany</RootNamespace>
+    <RootNamespace>Daany.MathStuff</RootNamespace>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>Daany.Math</PackageId>
     <Authors>Bahrudin Hrnjica</Authors>
@@ -92,9 +93,4 @@ SOFTWARE.</PackageReleaseNotes>
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if $(ConfigurationName) == Release copy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;..\..\lib\$(TargetName).dll&quot;" />
-  </Target>
-
 </Project>

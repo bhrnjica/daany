@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Daany {
 
@@ -92,6 +93,51 @@ namespace Daany {
 			}
 			if (field.Length>0)
 				wr.Write(field);
+			recordFieldCount++;
+		}
+
+		public async Task WriteFieldAsync(string field)
+		{
+			var shouldQuote = QuoteAllFields;
+
+			field = field ?? String.Empty;
+
+			if (field.Length > 0 && Trim)
+			{
+				field = field.Trim();
+			}
+
+			if (field.Length > 0)
+			{
+				if (shouldQuote // Quote all fields
+					|| field.Contains(quoteString) // Contains quote
+					|| field[0] == ' ' // Starts with a space
+					|| field[field.Length - 1] == ' ' // Ends with a space
+					|| field.IndexOfAny(quoteRequiredChars) > -1 // Contains chars that require quotes
+					|| (checkDelimForQuote && field.Contains(Delimiter)) // Contains delimiter
+				)
+				{
+					shouldQuote = true;
+				}
+			}
+
+			// All quotes must be doubled.       
+			if (shouldQuote && field.Length > 0)
+			{
+				field = field.Replace(quoteString, doubleQuoteString);
+			}
+
+			if (shouldQuote)
+			{
+				field = quoteString + field + quoteString;
+			}
+			if (recordFieldCount > 0)
+			{
+				await wr.WriteAsync(Delimiter);
+			}
+			if (field.Length > 0)
+				await wr.WriteAsync(field);
+
 			recordFieldCount++;
 		}
 

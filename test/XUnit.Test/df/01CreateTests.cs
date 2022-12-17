@@ -94,6 +94,7 @@ namespace Unit.Test.DF
             Assert.Equal(27, df.RowCount());
             Assert.Equal(6, df.ColCount());
         }
+#if NETCOREAPP3_0_OR_GREATER
         [Fact]
         public void CreateFromCSVFile_Failed_Test01()
         {
@@ -103,9 +104,10 @@ namespace Unit.Test.DF
             var exception = Assert.ThrowsAny<System.ArgumentException>(() => DataFrame.FromCsv(filePath: filePath,
                                                                                         sep: '\t',
                                                                                         names: null, dformat: null));
+            
             Assert.Equal("filePath (Parameter 'File name does not exist.')", exception.Message);
         }
-
+#endif
 
         [Fact]
         public void CreateTest01()

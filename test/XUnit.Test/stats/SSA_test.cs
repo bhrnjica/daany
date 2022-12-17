@@ -3,11 +3,12 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
-using Daany.stl;
+using Daany.Stat.stl;
 using Daany.MathStuff;
 using Daany.Stat;
 using Daany.Ext;
 using XPlot.Plotly;
+using Daany.Stat.SSA;
 
 namespace Unit.Test.DF
 {
@@ -245,8 +246,8 @@ namespace Unit.Test.DF
             var trend = temp1.Multiply(0.001);
             var p1 = 20.0;
             var p2 = 30.0;
-            var periodic1 = t.Multiply(2.0 * Math.PI / p1).Select(x => 2 * Math.Sin(x)).ToArray();
-            var periodic2 = t.Multiply(2.0 * Math.PI / p2).Select(x => 0.75 * Math.Sin(x)).ToArray();
+            var periodic1 = t.Multiply(2.0 * System.Math.PI / p1).Select(x => 2 * System.Math.Sin(x)).ToArray();
+            var periodic2 = t.Multiply(2.0 * System.Math.PI / p2).Select(x => 0.75 * System.Math.Sin(x)).ToArray();
 
             var r = Daany.MathStuff.Constant.FixedRandomSeed = true;
             //Since we cannot replicate random we take it from the source;
@@ -540,7 +541,7 @@ namespace Unit.Test.DF
             var w = ssa.WCorrelation(new int[] {1,2,3,4,5,6,7,8,9,10,11,12 });
            // ssa.PlotwCorrelation(w).Show();
             for (int i = 0; i < w.GetLength(0); i++)
-                Assert.True(Math.Round(w[i, i], 5) == 1.0000);
+                Assert.True(System.Math.Round(w[i, i], 5) == 1.0000);
 
         }
 

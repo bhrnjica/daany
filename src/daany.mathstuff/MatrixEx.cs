@@ -67,9 +67,12 @@ namespace Daany.MathStuff
         public static T[,] Diagonal<T>(int rows, int cols, T[] values)
         {
             var result =  new T[rows, cols];
+
             int size = Math.Min(rows, Math.Min(cols, values.Length));
+
             for (int i = 0; i < size; i++)
                 result[i, i] = values[i];
+
             return result;
         }
 
@@ -263,7 +266,7 @@ namespace Daany.MathStuff
         {
             var retVal = new double[m1.GetLength(0), m1.GetLength(1)];
             //Init matrix
-            var mat = new Matrix(m1.GetLength(0), m1.GetLength(1));
+            var mat = new Daany.MathStuff.MatrixExt.Matrix(m1.GetLength(0), m1.GetLength(1));
             for (int i = 0; i < m1.GetLength(0); i++)
                 for (int j = 0; j < m1.GetLength(1); j++)
                     mat[i, j] = m1[j, i];
@@ -393,10 +396,6 @@ namespace Daany.MathStuff
                 if (rows != cols)
                     throw new ArgumentException("Only square matrices can be transposed in place.", "matrix");
 
-#if DEBUG
-                T[,] expected = matrix.Transpose();
-#endif
-
                 for (int i = 0; i < rows; i++)
                 {
                     for (int j = i; j < cols; j++)
@@ -406,11 +405,6 @@ namespace Daany.MathStuff
                         matrix[i, j] = element;
                     }
                 }
-
-//#if DEBUG
-//                if (!expected.IsEqual(matrix))
-//                    throw new Exception();
-//#endif
 
                 return matrix;
             }
@@ -516,8 +510,8 @@ namespace Daany.MathStuff
                 return true;
             if (a == null ^ b == null)
                 return false;
-            int[] la = a.GetLength(true);
-            int[] lb = b.GetLength(true);
+            int[] la = new int[a.GetLength(1)];
+            int[] lb = new int[b.GetLength(1)];
             if (la.Length != lb.Length)
                 return false;
             for (int i = 0; i < la.Length; i++)

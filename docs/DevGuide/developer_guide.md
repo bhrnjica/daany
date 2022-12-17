@@ -3,56 +3,45 @@
 
 ![Daany - .NET DAta ANalYtics library ](../img/daany_logo.png)
 
-Introduction
+
+
+
+
+Daany  - DAta ANalYtics on .NET
 =======================
 
-```Daany``` is .NET data analytics library written in C# and it supposed to be a tool
-for data preparation, feature engineering and other kinds of data
-transformations prior to creating ml-ready data set. It is .NET Core based
-library with ability to run on Windows Linux based distribution and Mac. It is
-based on .NET Standard 2.1.
+### Summary
 
-Besides data analysis, the library implements a set of statistics or data
-science features e.g. time series decompositions, optimization performance
-parameters and similar. 
+`Daany` is .NET and cross platform data analytics and linear algebra library written in C\# supposed to be a tool for data preparation, feature engineering and other kinds of data transformations. The library is implemented on top of .NET Standard 2.1 and supports .NET Core 3.0 and above separated on several Visual Studio projects that can be installed separately as a NuGet package. The library implements `DataFrame` as the core component with extensions of a set of data science and linear algebra features. The library contains several implementation of time series decomposition (SSA, STL ARIMA), optimization  methods (SGD) as well as plotting support. The library also implements set of features based on matrix, vectors and similar linear algebra operations. The main part of the library is the `Daany.DataFrame` with similar implementation that can be found in python based Pandas library. 
 
-Currently ```Daany``` project consists of four main
-components:
+### Introduction
+
+`Daany` is .NET  data analytic library written in `C#` with support various kind of data transformation, descriptive statistics and linear algebra. With `Daany` an user can load the data from txt based file into the `DataFrame` arranged into columns, rows and index. The user can also create `Series` object - a special kind of `Daany.DataFrame` in order to work with time series data. Once the data is loaded the user can start analyzing the data by performing various transformation and results can be display as chart or tabular data.
+
+The library implements the `Daany.MathStuff` module which consists of of mathematics operations on matrix and vectors as well as rich set of statistics distributions and parameters. Furthermore `Daany.LinA` extends it in order to gain better performance and functionalities. The `Daany.LinA` is the .NET wrapper around the LAPACK  and BLAS  C++ libraries. Besides data analysis, the library implements a set of statistics or data science features e.g. time series decomposition, optimization performance parameters and similar. The main components of the library which can be installed separately as a NuGet package are:
+
+Currently ```Daany``` project consists of four main components:
 
 -   ```Daany.DataFrame```,
--   ```Daany.Stats```,
--   ```Daany.MathStuff``` and
 -   ```Daany.DataFrame.Ext```
+-   ```Daany.Stats```, and
+-   ```Daany.LinA``` 
 
-The main ```Daany``` component is ```Daany.DataFrame``` - a data frame implementation for
-data analysis. It is much like ```Pandas``` but the component is not going to follow
-pandas implementation. It is suitable for doing data exploration and preparation
-with ```C# Jupyter Notebook```. In order to create or load data into data frame it
-doesn’t require any predefined class type. In order to defined relevant value type of each column all data are parsed internally during data frame creation. The ```Daany.DataFrame``` implements set of powerful features for data manipulation, handling missing values, calculated columns, merging two or more data frames into one, and similar. It is handy for extracting its rows or columns as series of elements and put into the chart to visualizing the data.
+### Daany Architecture
 
-```Daany.Stat``` is a collection of statistics features e.g. time series
-decompositions, optimization, performance parameters and similar.
+`Daany` is a classic .NET component implemented through the several visual studio projects. The library is based on .NET Framework and Intel MKL implementation of LAPACK and BLASS libraries. The architecture diagram of the library is described at the following figure. 
 
-```Daany.Math``` is a component within data frame with implementation of od matrix and related
-linear algebra capabilities. It also contains some implementation of other great open source projects. The component is not going to be separate NuGet package.
+![](../img/daany_architecture_diagram.jpg)
 
-```Daany.DataFrame.Ext``` contains extensions for ```Daany.DataFrame``` component, but they are related to other projects mostly to ML.NET. The ```Daany.DataFrame```  should not be dependent on ```ML.NET```  and other libraries. So, any future data frame feature which depends on something other than ```Daany.Math```, should be placed in ```Daany.Ext```.
 
-The project is developed as a need to have a set of data transformation features
-in one library while I am working with machine learning. So, I thought it might
-help to others. Currently, the library has pretty much data transformation
-features and might be your number one data analytics library on .NET
-platform. Collaboration to the project is also welcome.
+
+The project is developed as a need to have a set of data transformation features in one library while I am working with machine learning. So, I thought it might help to others. Currently, the library has pretty much data transformation features and might be your number one data analytics library on .NET platform. Collaboration to the project is also welcome.
 
 How to start with Daany
 =======================
 
-```Daany``` is 100% .NET Core component and can be run on any platform .NET Core supports, from the Windows x86/x64 to Mac or Linux based OS. It can be used by Visual Studio or Visual Studio Code. It consisted of 4 NuGet packages, so
-the easiest way to start with it is to install the packages in your .NET
-application. Within Visual Studio create or open your .NET application and open
-NuGet packages window. Type ```Daany``` in the browse edit box and hit enter. You can
-find four packages starting with Daany. You have few options to install the
-packages.
+```Daany``` is 100% .NET Core component and can be run on any platform .NET Core supports, from the Windows x86/x64 to Mac or Linux based OS. It can be used by Visual Studio or Visual Studio Code. It consisted of five NuGet packages, so the easiest way to start with it is to install the packages in your .NET application. Within Visual Studio create or open your .NET application and open
+NuGet packages window. Type ```Daany``` in the browse edit box and hit enter. You can find four packages starting with Daany. You have few options to install the packages.
 
 1.  Install ```Daany.DataFrame```  – only. *Use this option if you want only data
     analysis by using data frame. Once you click Install button, Daany.DataFrame
@@ -87,6 +76,7 @@ implementation. The following list contains relevant namespaces:
 -   ```using Daany.MathStuff``` – math related stuff implemented in Daany,
 -   ```using Daany.Optimizers``` – set of optimizers like SGD,
 -   ```using Daany.Stat``` – set of statistics implementations in the project.
+-   `using Daany.LineA` - Linear algebra routines for using LAPACK and BLASS.
 
 Working with ```Daany.DataFrame```
 ============================
@@ -170,9 +160,7 @@ Assert.Equal(7, df.ColCount());
 
 ## Create ```DataFrame``` by loading data from a file
 
-By using static method ```DataFrame.FromCsv``` a user can create data frame object
-from the ``csv`` file. Otherwise, data frame can be persisted on disk by calling
-static method ```DataFrame.ToCsv```. 
+By using static method ```DataFrame.FromCsv``` a user can create data frame object from the ``csv`` file. Otherwise, data frame can be persisted on disk by calling static method ```DataFrame.ToCsv```. 
 The following code shows how to use static methods ```ToCsv``` and ```FromCsv``` to show persisting and loading data to data frame:
 
 ```csharp
@@ -208,12 +196,13 @@ First, we created data frame from the dictionary collection. Then we store data 
 
 In case the performance is important, you should pass column types to `FromCSV` method in order to achieve up to 50% of loading time. 
 For example the following code loads the data from the file, by passing predefined column types:
+
 ```csharp
 //defined types of the column 
 var colTypes1 = new ColType[] { ColType.I32, ColType.IN, ColType.I32, ColType.STR, ColType.I2, ColType.F32, ColType.DT };
 //create data frame with 3 rows and 7 columns
 var dfFromFile = DataFrame.FromCsv(filename, sep: ',', colTypes: colTypes1);
-```   
+```
 ## Loading Data from a Web
 
 Data can be loaded directly from the web storage by using `FromWeb`static method. The following code shows how to load the `Concrete Slump Test` data from the web. The data set includes 103 data points. There are 7 input variables, and 3 output variables in the data set: `Cement`, `Slag`, `Fly ash`, `Water`, `SP`, `Coarse Aggr.`,`Fine Aggr.`, `SLUMP (cm)`, `FLOW (cm)`, `Strength (Mpa)`. 
@@ -871,15 +860,15 @@ var dict = new Dictionary<string, List<object>>
 //create df
 var df = new DataFrame(dict);
 
-//remove rows with 'Miami'
+//remove rows with 'Seattle'
 DataFrame newDf = null;
-df = df.RemoveRows((row, i) => row["City"].ToString() == "Berlin");
+df = df.RemoveRows((row, i) => row["City"]?.ToString() == "Seattle");
 ```
 As can be seen the Function delegate is implemented with boolean return type. Every row will be remove if function delegate returns ```true``` value.
 
 Sorting in data frame
 ----------------------------------------------------
-Data frame can be sorted by using `SortBy` or `SortByDescending`. The following code sorts data frame in ascending and descending order:
+The following code sorts data frame in ascending and descending order:
 
 ```csharp
 var dict = new Dictionary<string, List<object>>
@@ -1028,12 +1017,9 @@ var dict = new Dictionary<string, List<object>>
 var df = new DataFrame(dict);
 //group df by gender
 var gDf = df.GroupBy("Gender")
-            .Rolling(2, 2, 
-                new Dictionary<string, Aggregation>() 
-                    { 
-                        { "Values", Aggregation.Sum }, 
-                        {"Age", Aggregation.Avg } }
-            );
+            .Rolling(2, new Dictionary<string, Aggregation>()
+                    { { "Values", Aggregation.Sum }, 
+                       { "Age", Aggregation.Avg } }).TakeEvery(2);
 
 ```
 The output of the code above is shown on the following image:
@@ -1060,7 +1046,7 @@ var dict1 = new Dictionary<string, List<object>>
 //
 var df1 = new DataFrame(dict);
 var df2 = new DataFrame(dict1);
-var mergedDf = df1.Join(df2, 
+var mergedDf = df1.Merge(df2, 
                     new string[] { "itemID", "catId" }, //left key columns
                     new string[] { "item2ID", "cat2ID" }, //right key columns
                     JoinType.Inner);//join type
@@ -1111,3 +1097,46 @@ The data from data frame can be selected on many ways. It is useful to have set 
 - ```TakeRandom(int rows)``` - select randomly `nrows` and return data frame.
 - ```Tail(int count = 5)``` - select last `count` rows.
 - ```Head(int count = 5)``` - select first `count` rows.
+
+# Daany Statistics (`Daany.Stat`)
+Besides the `Daany.DataFrame` the library contains set of implementation with working on time series data. The following list contains some of them: 
+- Conversion time series into `Daany.DataFrame` and `Series`
+- Seasonal and Trend decomposition using Loess -`STL` time series decomposition,
+- Singular Spectrum Analysis  `SSA` time series decomposition,
+- Set of `Time Series` operations like moving average, etc....
+
+### Singular Spectrum Analysis, SSA
+
+With `SSA`, you can decompose the time series into any number of components (signals). The following code loads the famous `AirPassengers`time series data:
+
+```csharp
+var strPath = $"{root}/AirPassengers.csv";
+var mlDF = DataFrame.FromCsv(strPath, sep: ',');
+var ts = mlDF["#Passengers"].Select(f => Convert.ToDouble(f));//create time series from data frame
+```
+Now that we have `AirPasanger` time series object `ts`, we can create SSA object by passing the`ts` into it:
+```csharp
+//create Singular Spectrum Analysis object
+var ssa = new SSA(ts);
+
+//perform analysis
+ssa.Fit(36);
+```
+So we created the `ssa` object by passing the number of components that we are going to create. Once the `ssa` object has been created we can call the ```Fit``` method to start with time series SSA analysis.
+
+Once we have analyzed the time series, we can plot its components. The following plot shows the first 4 components:
+
+![Iris Model Evaluation](../img//2019-09-24_22-03-27.png)
+
+The following plot shows how previous 4 components approximate the actual `AirPassengers` data:
+
+
+![Iris Model Evaluation](../img/2019-09-24_22-04-57.png)
+
+At the end we can plot `ssa` predicted and actual values of the time series:
+
+![Iris Model Evaluation](../img/2019-09-24_22-05-18.png)
+
+# Daany Linear Algebra (`Daany.LinA`)
+
+The `Daany.LinA` provides the ability to use Intel MKL a native and super fast math library to perform linear algebra calculations. With the combination of the previous packages (`DataFrame` and `Daany.Stat`) you are able to transform and analyze very complex data, solve system of linear equations, find eigen values and vectors, use least square method etc. 

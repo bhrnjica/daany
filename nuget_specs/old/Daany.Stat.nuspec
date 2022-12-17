@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata>
+        <id>Daany.Stat</id>
+        <version>1.2.0</version>
+        <authors>Bahrudin Hrnjica, bhrnjica</authors>
+        <owners>bhrnjica</owners>
+		<icon>daanyIcon.png</icon>
+        <projectUrl>https://github.com/bhrnjica/daany</projectUrl>
+		<repository type="git" url="https://github.com/bhrnjica/daany.git" />
+		<license type="expression">MIT</license>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <releaseNotes> </releaseNotes>
+		<title>Daany.Stat</title>
+        <description>Daany.Stat - A set of components for handling with time series.</description>
+		<summary>Daany.Stat - A set of components for handling with time series.</summary>
+        <copyright>Copyright ©2019-2021 Bahrudin Hrnjica</copyright>
+        <tags>ml.net, data preparation, data analytics</tags>
+        <dependencies>
+		 <group targetFramework="net6.0" >
+			<dependency id="OxyPlot.Core" version="2.0.0" />
+            <dependency id="FSharp.Core" version="5.0.2" />
+			<dependency id="XPlot.Plotly" version="4.0.3" />
+		  </group>
+        </dependencies>
+    </metadata>
+    <!-- A readme.txt to display when the package is installed -->
+    <files>
+        <file src="README.MD"/>
+		<file src="daanyIcon.png"/>
+		<file src="LICENSE"/>
+		<file src="src/daany.mathstuff/bin/Release/net6.0/Daany.MathStuff.dll" target="lib/net6.0" />
+		<file src="src/daany.df/bin/Release/net6.0/Daany.DataFrame.dll" target="lib/net6.0" />
+		<file src="src/daany.stat/bin/Release/net6.0/Daany.Stat.dll" target="lib/net6.0" />
+    </files>
+</package>

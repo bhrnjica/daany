@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Daany.stl
+namespace Daany.Stat.stl
 {
     public class STL
     {

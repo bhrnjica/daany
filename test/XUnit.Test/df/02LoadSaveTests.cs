@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+using System.Threading.Tasks;
 
 namespace Unit.Test.DF
 {
@@ -84,12 +85,11 @@ namespace Unit.Test.DF
 
 
         [Fact]
-        public void LoadFromWeb_Test()
+        public async Task LoadFromWeb_Test()
         {
 
-
             string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
-            var df = DataFrame.FromWeb(url, sep: ',', names: new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" }); //
+            var df = await DataFrame.FromWebAsync(url, sep: ',', names: new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" }); //
             //row test
             var r100 = df[100].ToList();
             //
@@ -150,7 +150,7 @@ namespace Unit.Test.DF
 
         //[Fact(Skip = "SSL certificcate")]
         [Fact]
-        public void SaveToCSV_TestWithMissingValues()
+        public async Task SaveToCSV_TestWithMissingValues()
         {
 
             string saveDfPath = $"testdata/savedcsv_{DateTime.Now.Ticks}.csv";
@@ -158,7 +158,7 @@ namespace Unit.Test.DF
             string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
             var nms = new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" };
             var colTy = new ColType[] { ColType.F32, ColType.F32, ColType.F32, ColType.F32, ColType.STR };
-            var df = DataFrame.FromWeb(url, sep: ',', names: nms, colTypes: colTy); //
+            var df = await DataFrame.FromWebAsync(url, sep: ',', names: nms, colTypes: colTy); //
 
             df["sepal_length", 10] = DataFrame.NAN;
             df["sepal_width", 11] = DataFrame.NAN;
@@ -173,6 +173,5 @@ namespace Unit.Test.DF
                 Assert.Equal(dfsaved.Values[i], df.Values[i]);
             Assert.True(retVal);
         }
-
     }
 }

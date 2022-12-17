@@ -1,31 +1,124 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net5.0</TargetFramework>
-    <Platforms>AnyCPU;x64</Platforms>
-  </PropertyGroup>
+	<TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1;netcoreapp3.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<LangVersion>10.0</LangVersion>
+	<Platforms>AnyCPU;x64</Platforms>
+	<Authors>Bahrudin Hrnjica</Authors>
+	<Product>daany - DAta ANalYtics on .NET</Product>
+	<Description>Daany.LinA - .NET wrapper for selected routines of MKL LAPACK and BLASS.</Description>
+	<Copyright>Copyright ©2019-2022 Bahrudin Hrnjica</Copyright>
+	<Version>1.3.0</Version>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
+	<PackageIcon>daanyIcon.png</PackageIcon>  
+	<PackageIconUrl />
+	<RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
+	<PackageTags>inelmkl, lapack, blass</PackageTags>
+	<PackageReleaseNotes>MIT License
 
+Copyright (c) 2019-2021 Bahrudin Hrnjica
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</PackageReleaseNotes>
+    
+    <Configurations>Debug;Release;Linux;Linux_Debug;Linux_Release</Configurations>
+    
+    <PackageReadmeFile>README.MD</PackageReadmeFile>
+    
+  </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Linux_Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
+	  <DefineConstants>LINUX</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Linux_Debug|x64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <DefineConstants>LINUX</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+	
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Linux_Release|AnyCPU'">
+		<PlatformTarget>x64</PlatformTarget>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<DefineConstants>LINUX</DefineConstants>
+	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Linux_Release|x64'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<PlatformTarget>x64</PlatformTarget>
+		<DefineConstants>LINUX</DefineConstants>
+	</PropertyGroup>
+	
+	
   <ItemGroup>
-    <PackageReference Include="intelmkl.redist.win-x64" Version="2021.2.0.296" />
-    <PackageReference Include="intelopenmp.redist.win" Version="2021.2.0.616" />
-    <PackageReference Include="inteltbb.redist.win" Version="2021.2.0.371" />
+    <None Include="..\..\daanyIcon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\README.MD">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
+	<Choose>
+		<When Condition="$(RuntimeIdentifier) != ''">
+			<ItemGroup>
+				<PackageReference Include="MKL.NET.win-x64" Version="2022.0.0.115" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
+				<PackageReference Include="MKL.NET.osx-x64" Version="2022.0.0.105" Condition="$(RuntimeIdentifier.StartsWith('osx'))" />
+				<PackageReference Include="MKL.NET.linux-x64" Version="2022.0.1.117" Condition="$(RuntimeIdentifier.StartsWith('linux'))" />
+			</ItemGroup>
+		</When>
+		<Otherwise>
+			<ItemGroup>
+				<PackageReference Include="MKL.NET.win-x64" Version="2022.0.0.115" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+				<PackageReference Include="MKL.NET.osx-x64" Version="2022.0.0.105" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+				<PackageReference Include="MKL.NET.linux-x64" Version="2022.0.1.117" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+			</ItemGroup>
+		</Otherwise>
+	</Choose>
 </Project>
