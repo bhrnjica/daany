@@ -24,6 +24,7 @@ namespace Daany.MathStuff
     /// Modul calculate mean value of array of numbers. 
     /// The mean is the average of the numbers.
     /// </summary>
+    [Obsolete("The class is obsolite. Use classes from Daany.MathStuff.Matrix namespace instead.")]
     public static class BasicStatistics
     {
       

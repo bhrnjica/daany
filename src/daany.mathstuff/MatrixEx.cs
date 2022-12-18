@@ -21,6 +21,7 @@ namespace Daany.MathStuff
     /// <summary>
     /// Matrix implementation based on 2D array type
     /// </summary>
+    [Obsolete("The class is obsolite. Use Daany.MathStuff.Matrix.Extensions instead.")]
     public static class MatrixEx
     {
         public static int Rows<T>(this T[] vector)

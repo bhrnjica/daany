@@ -39,7 +39,7 @@ namespace Daany.MathStuff;
 
         if (colData == null || count < 2)
         {
-            throw new Exception("'coldData' cannot be null or empty!");
+            throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
         TResult sum = default;
@@ -67,7 +67,7 @@ namespace Daany.MathStuff;
 
         if (colData == null || count < 2)
         {
-            throw new Exception("'coldData' cannot be null or empty!");
+            throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
         TResult sum = default;
@@ -95,7 +95,7 @@ namespace Daany.MathStuff;
     {
         if (colData == null || colData.Count() < 2)
         {
-            throw new Exception( "'coldData' cannot be null or empty!" );
+            throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
         var count = colData.Count();
@@ -152,7 +152,7 @@ namespace Daany.MathStuff;
 
         if (colData == null || colData.Count() < 2)
         {
-            throw new Exception("'coldData' cannot be null or empty!");
+            throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
         var count = colData.Count();
@@ -193,7 +193,7 @@ namespace Daany.MathStuff;
     {
         if (colData == null || colData.Count() < 2)
         {
-            throw new Exception("'coldData' cannot be null or empty!");
+            throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
         var count = colData.Count();
@@ -331,7 +331,7 @@ namespace Daany.MathStuff;
 
         if (Xi == null || Xi.Count() < 2)
         {
-            throw new Exception("'data' cannot be null or less than 4 elements!");
+            throw new Exception("'data' cannot be null or less than 2 elements!");
         }
 
         var xiCount = Xi.Count();
@@ -352,17 +352,6 @@ namespace Daany.MathStuff;
             }
         }
 
-        //inverse matrix
-        //try
-        //{
-        //    var covMat = matrix.Invert();
-        //    return covMat;
-        //}
-        //catch
-        //{
-
-        //    return MatrixEx.Identity(xiCount, xiCount);
-        //}
         return matrix;
 
     }
@@ -379,7 +368,7 @@ namespace Daany.MathStuff;
     {
         if (colData == null || colData.Count() < 2)
         {
-            throw new Exception("'coldData' cannot be null or empty!");
+            throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
         var count = colData.Count();
@@ -402,7 +391,7 @@ namespace Daany.MathStuff;
     {
         if ( colData == null || colData.Count() < 2 )
         {
-            throw new Exception("'coldData' cannot be null or empty!");
+            throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
         Random rand = new Random( seed );
@@ -423,7 +412,7 @@ namespace Daany.MathStuff;
     {
         if ( colData == null || colData.Count() < 2 )
         {
-            throw new Exception("'coldData' cannot be null or empty!");
+            throw new Exception("'coldData' should contains at least 2 elements!!");
         }
 
         var query = colData.GroupBy(g => g).Select(g => (g.Key, g.Count()));
@@ -592,10 +581,10 @@ namespace Daany.MathStuff;
     private static void checkDataSets< T >( T[] obsData, T[] preData)
     {
         if (obsData == null || obsData.Length < 2)
-            throw new Exception("'observed Data' cannot be null or empty!");
+            throw new Exception("'observed Data' should contains at least 2 elements!");
 
         if (preData == null || preData.Length < 2)
-            throw new Exception("'predicted data' cannot be null or empty!");
+            throw new Exception("'predicted data' should contains at least 2 elements!");
 
         if (obsData.Length != preData.Length)
             throw new Exception("Both datasets must be of the same size!");
@@ -604,10 +593,10 @@ namespace Daany.MathStuff;
     private static void checkDataSets<T>(IEnumerable<T> obsData, IEnumerable<T> preData)
     {
         if (obsData == null || obsData.Count() < 2)
-            throw new Exception("'observed Data' cannot be null or empty!");
+            throw new Exception("'observed Data' should contains at least 2 elements!");
 
         if (preData == null || preData.Count() < 2)
-            throw new Exception("'predicted data' cannot be null or empty!");
+            throw new Exception("'predicted data' should contains at least 2 elements!");
 
         if (obsData.Count() != preData.Count())
             throw new Exception("Both datasets must be of the same size!");

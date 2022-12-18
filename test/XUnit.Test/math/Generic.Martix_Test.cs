@@ -8,7 +8,7 @@ using Daany.MathStuff;
 using Daany.Stat;
 using Daany.Ext;
 using XPlot.Plotly;
-
+using Daany.MathStuff.Matrix;
 namespace Unit.Test.Math.Stats;
 
 
@@ -32,7 +32,7 @@ public class Generic_Matrix_Test
     [Fact]
     public void Test_GetColumn()
     { 
-        var result = Matrix.GetColumn< double > (m1, 0);
+        var result = Daany.MathStuff.Matrix.Extensions.GetColumn< double > (m1, 0);
         var expected = new double[] { 1, 2, 2 };
 
         Assert.Equal(expected, result);
@@ -41,7 +41,7 @@ public class Generic_Matrix_Test
     [Fact]
     public void Test_GetRow()
     {
-        var result = Matrix.GetRow<double>(m1, 0);
+        var result = Daany.MathStuff.Matrix.Extensions.GetRow<double>(m1, 0);
         var expected = new double[] { 1, 2, -1 };
 
         Assert.Equal(expected, result);
@@ -50,7 +50,7 @@ public class Generic_Matrix_Test
     [Fact]
     public void Test_MainDiagonal()
     {
-        var result = Matrix.GetDiagonal<double>(m1);
+        var result = Daany.MathStuff.Matrix.Extensions.GetDiagonal<double>(m1);
 
         var expected = new double[] { 1, -2, -4 };
 
@@ -60,7 +60,7 @@ public class Generic_Matrix_Test
     [Fact]
     public void Test_Reverse_ByRow()
     {
-        var result = Matrix.Reverse<double>( m1, true );
+        var result = Daany.MathStuff.Matrix.Extensions.Reverse<double>( m1, true );
 
         var expected = new double[3, 3]
                                 { {  2 ,  9,-4 },
@@ -74,7 +74,7 @@ public class Generic_Matrix_Test
     [Fact]
     public void Test_Reverse_ByColumns()
     {
-        var result = Matrix.Reverse<double>(m1, false);
+        var result = Daany.MathStuff.Matrix.Extensions.Reverse<double>(m1, false);
 
         var expected = new double[3, 3]
                                 { {  -1 , 2, 1 },
@@ -88,7 +88,7 @@ public class Generic_Matrix_Test
     [Fact]
     public void Test_Transponse_Matrix()
     {
-        var result = Matrix.Transpose<double>(m1, false);
+        var result = Daany.MathStuff.Matrix.Extensions.Transpose<double>(m1);
 
         var expected = new double[3, 3]
                                 { {  1 , 2, 2 },
@@ -102,7 +102,7 @@ public class Generic_Matrix_Test
     [Fact]
     public void Test_Transponse_Vector()
     {
-        var result = Matrix.Transpose<double>( v1 );
+        var result = Daany.MathStuff.Matrix.Extensions.Transpose<double>( v1 );
 
         var expected = new double[3, 1]
                                 { {  1  },
