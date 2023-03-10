@@ -6,6 +6,7 @@ Daany - .NET **DA**ta **AN**al**Y**tics .NET library with the implementation of 
 ![License](https://img.shields.io/github/license/bhrnjica/Daany)
 [![NuGet Status](https://img.shields.io/nuget/v/Daany.DataFrame?color=red&style=plastic)](https://www.nuget.org/packages/Daany.DataFrame/)
 
+[![Continuous Integration Windows](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet.yml/badge.svg)](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet.yml)
 
 *[Daany Developer Guide](/docs/DevGuide/developer_guide.md)* - complete guide for developers.
 
