@@ -8,7 +8,7 @@ Daany - .NET **DA**ta **AN**al**Y**tics .NET library with the implementation of 
 
 [![Continuous Integration Windows](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet.yml/badge.svg)](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet.yml)
 
-[![Continous Integration Linux](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet_Linux.yml/badge.svg)](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet_Linux.yml)
+[![Continuous Integration Linux](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet_Linux.yml/badge.svg)](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet_Linux.yml)
 
 *[Daany Developer Guide](/docs/DevGuide/developer_guide.md)* - complete guide for developers.
 
