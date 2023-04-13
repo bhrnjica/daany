@@ -22,18 +22,18 @@ using System.Numerics;
 
 #if NET7_0_OR_GREATER
 
-namespace Daany.MathStuff;
+namespace Daany.MathStuff.Stats;
 
-    /// <summary>
-    /// Implement statistics metrics.
-    /// </summary>
-    public class Metrics
+/// <summary>
+/// Implement statistics metrics.
+/// </summary>
+public class Metrics
+{
+    public Metrics()
     {
-        public Metrics()
-        {
-        }
+    }
 
-    public static TResult Sum<T, TResult>(IEnumerable<T> colData) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult Sum<T, TResult>(IEnumerable< T > colData) where T : INumber<T> where TResult : INumber<TResult>
     {
         int count = colData.Count();
 
@@ -394,7 +394,7 @@ namespace Daany.MathStuff;
             throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
-        Random rand = new Random( seed );
+        var rand = new System.Random( seed );
 
         var randIndex = rand.Next(0, colData.Count() );
         
@@ -501,9 +501,9 @@ namespace Daany.MathStuff;
 
         var count = obsData.Count();
 
-        var se = SE <T, TResult>(obsData, preData);
+        var se = SE <T, T>(obsData, preData);
 
-        TResult sss = Sum<T,TResult>(obsData);
+        TResult sss = Sum<T,TResult>( se );
 
         return sss / TResult.CreateChecked( count );
     }
@@ -578,6 +578,8 @@ namespace Daany.MathStuff;
         return sum / TResult.CreateChecked( count );
 
     }
+
+
     private static void checkDataSets< T >( T[] obsData, T[] preData)
     {
         if (obsData == null || obsData.Length < 2)

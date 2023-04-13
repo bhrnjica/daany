@@ -12,7 +12,7 @@
 // Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
-using Daany.MathStuff;
+using Daany.MathStuff.Random;
 using System;
 using System.Collections.Generic;
 using System.Text;

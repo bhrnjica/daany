@@ -12,8 +12,7 @@ using System.Security.Cryptography;
 
 using System.Threading;
 
-
-namespace Daany.MathStuff;
+namespace Daany.MathStuff.Random;
 
 #if NET7_0_OR_GREATER
 public sealed class TSRandom : ThreadSafeRandom
@@ -68,7 +67,7 @@ public sealed class TSRandom : ThreadSafeRandom
 /// Represents a thread-safe, pseudo-random number generator.
 /// </summary>
 [Obsolete("The class is obsolite. Use TSRandom instead.")]
-public class ThreadSafeRandom : Random, IDisposable
+public class ThreadSafeRandom : System.Random, IDisposable
 {
     public void Dispose()
     {
@@ -85,18 +84,18 @@ public class ThreadSafeRandom : Random, IDisposable
 
 
     /// <summary>The underlying provider of randomness, one instance per thread, initialized with _global.</summary>
-    private ThreadLocal<Random> _local = new ThreadLocal<Random>(() =>
+    private ThreadLocal<System.Random> _local = new ThreadLocal<System.Random>(() =>
     {
         byte[] buffer = new byte[4];
 
         _global.GetBytes(buffer); // RNGCryptoServiceProvider is thread-safe for use in this manner
         if (FixedRandomSeed)
-            return new Random(8888);
+            return new System.Random(8888);
         else
-            return new Random(BitConverter.ToInt32(buffer, 0));
+            return new System.Random(BitConverter.ToInt32(buffer, 0));
     });
 
-    
+
     /// <summary>Returns a nonnegative random number.</summary>
     /// <returns>A 32-bit signed integer greater than or equal to zero and less than MaxValue.</returns>
     public override int Next()

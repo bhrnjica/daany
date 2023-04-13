@@ -13,22 +13,22 @@
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-using Daany.MathStuff.MatrixExt;
+using Daany.MathStuff.Random;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Numerics;
 
-namespace Daany.MathStuff;
-
 #if NET7_0_OR_GREATER
+namespace Daany.MathStuff.MatrixGeneric;
+
 
 
 public static class SpecialMatrix 
 {
     //https://mathworld.wolfram.com/HankelMatrix.html
-    public static T [,] Hankel< T >( T[] vector, int colCount=-1) where T : INumber<T>
+    public static T [,] Hankel< T >(this T[] vector, int colCount=-1) where T : IFloatingPoint<T>
     {
         int N = vector.Length;
         int L = colCount == -1 ? N : colCount;
@@ -46,7 +46,7 @@ public static class SpecialMatrix
         return result;
     }
     //https://mathworld.wolfram.com/ToeplitzMatrix.html
-    public static T[,] Toeplitz <T> ( T[] vector) where T : INumber<T>
+    public static T[,] Toeplitz <T> ( this T[] vector) where T : IFloatingPoint<T>
     {
         int N = vector.Length;
         var result = new T[N, N];
@@ -83,7 +83,7 @@ public static class SpecialMatrix
         return result;
     }
 
-    public static TResult[] Unit<TResult>(int elements) where TResult : INumber<TResult>
+    public static TResult[] Unit<TResult>(int elements) where TResult : IFloatingPoint<TResult>
     {
         var result = new TResult[elements];
         for (int i = 0; i < result.GetLength(0); i++)
@@ -92,7 +92,7 @@ public static class SpecialMatrix
         return result;
     }
 
-    public static TResult[,] Identity<TResult>(int rows, int cols) where TResult : INumber<TResult>
+    public static TResult[,] Identity<TResult>(int rows, int cols) where TResult : IFloatingPoint<TResult>
     {
         var retVal = new TResult[rows, cols];
         for (int i = 0; i < rows; i++)
@@ -118,7 +118,7 @@ public static class SpecialMatrix
     /// <param name="row"></param>
     /// <param name="col"></param>
     /// <returns></returns>
-    public static T[] Rand<T>(int row, int col) where T : IFloatingPointIeee754<T>
+    public static T[] Rand<T>(int row, int col) where T : IFloatingPoint<T>
     {
         var size = row * col;
         var obj = new T[size];
@@ -129,7 +129,7 @@ public static class SpecialMatrix
         return obj;
     }
 
-    public static T[] Rand<T>(int length, double min, double max) where T : IFloatingPointIeee754<T>
+    public static T[] Rand<T>(int length, double min, double max) where T : IFloatingPoint<T>
     {
         var obj = new T[length];
         for (int i = 0; i < length; i++)
@@ -138,12 +138,12 @@ public static class SpecialMatrix
     }
 
   
-    public static T[] Arange<T>(int stop) where T : IFloatingPointIeee754<T>
+    public static T[] Arange<T>(int stop) where T : IFloatingPoint<T>
     {
         return Arange<T>(0, stop, 1);
     }
 
-    public static T[] Arange<T>(int start, int stop, int step = 1) where T : IFloatingPointIeee754<T>
+    public static T[] Arange<T>(int start, int stop, int step = 1) where T : IFloatingPoint<T>
     {
         if (start > stop)
         {
@@ -161,7 +161,7 @@ public static class SpecialMatrix
     }
 
    
-    public static T[] Generate<T>(int row, int col, T val) where T: INumber<T>
+    public static T[] Generate<T>(int row, int col, T val) where T: IFloatingPoint<T>
     {
         var size = row * col;
         var obj = new T[size];
@@ -208,7 +208,7 @@ public static class SpecialMatrix
         return lst.ToArray();
     }
 
-    public static T[] SSeries<T>(T fromNumber, T toNumber, T step) where T : INumber<T>
+    public static T[] SSeries<T>(T fromNumber, T toNumber, T step) where T : IFloatingPoint<T>
     {
         var lst = new List<T>();
         for (T i = fromNumber; i < toNumber; i += step)
@@ -222,7 +222,7 @@ public static class SpecialMatrix
 
     
 
-    public static T[] NSeries<T>(T fromNumber, T toNumber, T count) where T : INumber<T>
+    public static T[] NSeries<T>(T fromNumber, T toNumber, T count) where T : IFloatingPoint<T>
     {
         var lst = new List<T>();
         var step = (toNumber - fromNumber) / count;
@@ -234,7 +234,7 @@ public static class SpecialMatrix
         return lst.ToArray();
     }
 
-    public static T[] ConstSeries<T>(T value, int count) where T : INumber<T>
+    public static T[] ConstSeries<T>(T value, int count) where T : IFloatingPoint<T>
     {
         var lst = new List<T>();
         for (double i = 0; i < count; i++)

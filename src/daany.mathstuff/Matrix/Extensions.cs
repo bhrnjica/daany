@@ -13,13 +13,12 @@
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-using Daany.MathStuff.MatrixExt;
 using System;
 using System.Numerics;
 
-namespace Daany.MathStuff.Matrix;
-
 #if NET7_0_OR_GREATER
+
+namespace Daany.MathStuff.MatrixGeneric;
 
 /// <summary>
 /// Matrix generic math implementation based on 2D array type
@@ -27,7 +26,7 @@ namespace Daany.MathStuff.Matrix;
 public static class Extensions
 {
 
-    public static T[] GetColumn<T>(T[,] m, int index) where T : INumber<T>
+    public static T[] GetColumn<T>(this T[,] m, int index)
     {
         T[] result = new T[m.Rows()];
 
@@ -44,7 +43,25 @@ public static class Extensions
         return result;
     }
 
-    public static T[] GetRow<T>(T[,] matrix, int index) where T : INumber<T>
+    public static T[] GetColumn<T>(this T[][] m, int index)
+    {
+        T[] result = new T[m.Length];
+
+        if (index < 0)
+        {
+            index = m[0].Length + index;
+        }
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            result[i] = m[i][index];
+        }
+
+        return result;
+    }
+
+
+    public static T[] GetRow<T>(this T[,] matrix, int index)
     {
         T[] result = new T[matrix.Columns()];
 
@@ -59,7 +76,23 @@ public static class Extensions
         return result;
     }
 
-    public static T[] GetDiagonal<T>(T[,] matrix)
+    public static T[] GetRow<T>(this T[][] matrix, int index)
+    {
+        T[] result = new T[matrix[0].Length];
+
+        if (index < 0)
+            index = matrix.Length + index;
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            result[i] = matrix[index][i];
+        }
+
+        return result;
+    }
+
+
+    public static T[] GetDiagonal<T>(this T[,] matrix)
     {
         var rows = matrix.GetLength(0);
         var cols = matrix.GetLength(1);
@@ -76,7 +109,25 @@ public static class Extensions
         return result;
     }
 
-    public static T[,] MakeDiagonal<T>(T[] values)
+    public static T[] GetDiagonal<T>(this T[][] matrix)
+    {
+        var rows = matrix.Length;
+        var cols = matrix[0].Length;
+
+        int size = Math.Min(rows, cols);
+
+        var result = new T[size];
+
+        for (int i = 0; i < size; i++)
+        {
+            result[i] = matrix[i][i];
+        }
+
+        return result;
+    }
+
+
+    public static T[,] MakeDiagonal<T>(this T[] values)
     {
         var result = new T[values.Length, values.Length];
 
@@ -87,12 +138,12 @@ public static class Extensions
         return result;
     }
 
-    public static T[,] Copy<T>(T[,] matrix)
+    public static T[,] Copy<T>(this T[,] matrix)
     {
         return (T[,])matrix.Clone();
     }
 
-    public static T[,] Reverse<T>(T[,] matrix, bool row)
+    public static T[,] Reverse<T>(this T[,] matrix, bool row)
     {
         int r = matrix.GetLength(0);
         int c = matrix.GetLength(1);
@@ -118,7 +169,36 @@ public static class Extensions
         return m;
     }
 
-    public static T[,] ToMatrix<T>(T[][] matrix, bool transpose = false)
+    public static T[][] Reverse<T>(this T[][] matrix, bool row)
+    {
+        int r = matrix.Length;
+        int c = matrix[0].Length;
+
+        T[][] m = new T[r][];
+
+        for (int i = 0; i < r; i++)
+        {
+            int ii = i;
+
+            m[i] = new T[c];
+
+            for (int j = 0; j < c; j++)
+            {
+                int jj = j;
+
+                if (row)
+                    ii = r - i - 1;
+                else
+                    jj = c - j - 1;
+
+                m[i][j] = matrix[ii][jj];
+            }
+        }
+        return m;
+    }
+
+
+    public static T[,] ToMatrix<T>(this T[][] matrix, bool transpose = false)
     {
         int rows = matrix.Length;
 
@@ -158,7 +238,7 @@ public static class Extensions
         return retVal;
     }
 
-    public static T[,] ToMatrix<T>(T[] matrix, bool asColumnVector = false)
+    public static T[,] ToMatrix<T>(this T[] matrix, bool asColumnVector = false)
     {
         if (asColumnVector)
         {
@@ -182,7 +262,7 @@ public static class Extensions
         }
     }
 
-    public static T[,] ToMatrix<T>(T[] matrix, int nRows)
+    public static T[,] ToMatrix<T>(this T[] matrix, int nRows)
     {
         int rows = nRows;
         int cols = matrix.Length / rows;
@@ -202,7 +282,7 @@ public static class Extensions
         return retVal;
     }
 
-    public static T[][] ToMatrix<T>(T[,] matrix)
+    public static T[][] ToMatrix<T>(this T[,] matrix)
     {
         int rowsFirstIndex = matrix.GetLowerBound(0);
         int rowsLastIndex = matrix.GetUpperBound(0);
@@ -226,7 +306,7 @@ public static class Extensions
     }
 
 
-    public static T[,] Transpose<T>(T[,] matrix)
+    public static T[,] Transpose<T>(this T[,] matrix)
     {
         int rows = matrix.GetLength(0);
         int cols = matrix.GetLength(1);
@@ -244,8 +324,28 @@ public static class Extensions
         return retVal;
     }
 
+     public static T[][] Transpose<T>(this T[][] matrix)
+    {
+        int rows = matrix.Length;
+        int cols = matrix[0].Length;
 
-    public static T[,] Transpose<T>(T[] vector)
+        T[][] retVal = new T[cols][];
+
+        for (int i = 0; i < rows; i++)
+        {
+            retVal[i] = new T[cols];
+
+            for (int j = 0; j < cols; j++)
+            {
+                retVal[i][j] = matrix[j][i];
+            }
+        }
+        //
+        return retVal;
+    }
+
+
+    public static T[,] Transpose<T>(this T[] vector)
     {
         var retVal = new T[vector.Length, 1];
 
@@ -257,8 +357,22 @@ public static class Extensions
         return retVal;
     }
 
+    public static T Det<T>(this T[,] matrix) where T : IFloatingPoint<T>
+    {
+        var rows = matrix.GetLength(0);
 
-    public static T[,] Invert<T>(T[,] matrix) where T : INumber<T>
+        var lu = matrix.MakeLU<T, T>();
+
+        T det = T.CreateChecked( 1.0 );
+
+        for (int i = 0; i < rows; i++)
+        {
+            det *= lu.U[i, i];
+        }
+        return det;
+    }
+
+    public static T[,] Invert<T>(this T[,] matrix) where T : IFloatingPoint<T>
     {
         var rows = matrix.GetLength(0);
         var cols = matrix.GetLength(1);
@@ -287,9 +401,9 @@ public static class Extensions
     }
 
     // Function solves Ax = v 
-    public static TResult[] Solve<T, TResult>(T[,] matrix, T[] vector)
-                                                where T : INumber<T>
-                                                where TResult : INumber<TResult>
+    public static TResult[] Solve<T, TResult>( this T[,] matrix, T[] vector)
+                                                where T : IFloatingPoint<T>
+                                                where TResult : IFloatingPoint<TResult>
     {
         var rows = matrix.GetLength(0);
         var cols = matrix.GetLength(1);
@@ -318,7 +432,7 @@ public static class Extensions
     }
 
     // Function solves Ax = b for A as a lower triangular matrix
-    public static T[] SubsForth<T>(T[,] L, T[] b) where T : INumber<T>
+    public static T[] SubsForth<T>(this T[,] L, T[] b) where T : IFloatingPoint<T>
     {
 
         int n = L.Length;
@@ -341,7 +455,7 @@ public static class Extensions
     }
 
     // Function solves Ax = b for A as an upper triangular matrix
-    public static T[] SubsBack<T>(T[,] U, T[] b) where T : INumber<T>
+    public static T[] SubsBack<T>(this T[,] U, T[] b) where T : IFloatingPoint<T>
     {
         int n = U.Length;
         T[] x = new T[n];
@@ -360,9 +474,10 @@ public static class Extensions
         return x;
     }
 
-    public static (TResult[,] L, TResult[,] U) MakeLU<T, TResult>(T[,] matrix)
-                                                                        where T : INumber<T>
-                                                                        where TResult : INumber<TResult>
+   public static (TResult[,] L, TResult[,] U) MakeLU<T, TResult>(this T[,] matrix)
+                                                                        where T : IFloatingPoint<T>
+                                                                        where TResult : IFloatingPoint<TResult>
+                                                                       
     {
         if (matrix.GetLength(0) != matrix.GetLength(1))
         {
@@ -443,7 +558,6 @@ public static class Extensions
 
         return (L, U);
     }
-
 }
 
 #endif
