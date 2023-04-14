@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using Xunit;
 using Daany;
 using Daany.Stat.stl;
-using Daany.MathStuff;
 using Daany.Stat;
 using Daany.Ext;
 using XPlot.Plotly;
 using Daany.Stat.SSA;
+using Daany.MathStuff.Random;
+using Daany.MathStuff;
 
 namespace Unit.Test.DF
 {
@@ -249,7 +250,7 @@ namespace Unit.Test.DF
             var periodic1 = t.Multiply(2.0 * System.Math.PI / p1).Select(x => 2 * System.Math.Sin(x)).ToArray();
             var periodic2 = t.Multiply(2.0 * System.Math.PI / p2).Select(x => 0.75 * System.Math.Sin(x)).ToArray();
 
-            var r = Daany.MathStuff.Constant.FixedRandomSeed = true;
+            var r = Constant.FixedRandomSeed = true;
             //Since we cannot replicate random we take it from the source;
             var noise = new double[] {
              0.39293837, -0.42772133, -0.54629709,  0.10262954,  0.43893794,

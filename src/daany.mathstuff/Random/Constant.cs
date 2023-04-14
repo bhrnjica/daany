@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Daany.MathStuff
+namespace Daany.MathStuff.Random
 {
     public static class Constant
     {
-        public static  ThreadSafeRandom rand = new ThreadSafeRandom();
+        public static ThreadSafeRandom rand = new ThreadSafeRandom();
         static bool _fixedRandom = false;
         public static bool FixedRandomSeed
         {
@@ -20,6 +20,6 @@ namespace Daany.MathStuff
                 ThreadSafeRandom.FixedRandomSeed = value;
                 rand = new ThreadSafeRandom();
             }
-        } 
+        }
     }
 }

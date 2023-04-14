@@ -24,6 +24,7 @@ namespace Daany.MathStuff
     /// Implement extension methods for statistics calculation between two data sets X and Y eg. sum of square error, pearson coeff,... 
     /// 
     /// </summary>
+    [Obsolete("The class is obsolite. Use classes from Daany.MathStuff.Matrix namespace instead.")]
     public static class AdvancedStatistics
     {
        

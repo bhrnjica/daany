@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using Xunit;
 using Daany;
 using Daany.Stat.stl;
-using Daany.MathStuff;
 using Daany.Stat;
 using Daany.Ext;
 using XPlot.Plotly;
+using Daany.MathStuff;
 
 namespace Unit.Test.DF
 {

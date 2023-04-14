@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Xunit;
 using Daany;
 using System.Globalization;
-using Daany.MathStuff;
+using Daany.MathStuff.Random;
 
 namespace Unit.Test.DF
 {
@@ -76,7 +76,7 @@ namespace Unit.Test.DF
             agg.Add("E", new Aggregation[] { Aggregation.Min, Aggregation.Max });
 
             //set random seed
-            Daany.MathStuff.ThreadSafeRandom.FixedRandomSeed = true;
+            ThreadSafeRandom.FixedRandomSeed = true;
             //
             var df = createDataFrame();
             var rollingdf = df.Aggragate(agg);

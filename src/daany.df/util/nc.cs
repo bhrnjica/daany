@@ -2,7 +2,7 @@
 // Daany - DAta ANalYtics Library                                                        //
 // https://github.com/bhrnjica/daany                                                    //
 //                                                                                      //
-// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
+// Copyright 2006-2023 Bahrudin Hrnjica                                                 //
 //                                                                                      //
 // This code is free software under the MIT License                                     //
 // See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
@@ -12,7 +12,7 @@
 // Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
-using Daany.MathStuff;
+using Daany.MathStuff.Random;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,6 +23,7 @@ namespace Daany
     /// Class implementation for generating various vector or matrix numbers and elements.
     /// nc - stands for 
     /// </summary>
+    [Obsolete("The class is obsolite. Use SpecialMatrix instead.")]
     public class nc
     {
         /// <summary>

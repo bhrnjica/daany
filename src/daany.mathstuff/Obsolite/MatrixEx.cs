@@ -13,193 +13,80 @@
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-using Daany.MathStuff.MatrixExt;
 using System;
-using System.Collections;
-using System.Data.Common;
-using System.Numerics;
 
 namespace Daany.MathStuff;
-
-#if NET7_0_OR_GREATER
 
 /// <summary>
 /// Matrix implementation based on 2D array type
 /// </summary>
-public static class Matrix 
+[Obsolete("The class is obsolite. Use Daany.MathStuff.Matrix.Extensions instead.")]
+public static class MatrixEx
 {
-    public static int Rows<T>(T[] vector) 
+    public static int Rows<T>(this T[] vector)
     {
         return vector.Length;
     }
 
-    public static int Rows<T>( T[,] matrix)
+    public static int Rows<T>(this T[,] matrix)
     {
         return matrix.GetLength(0);
     }
 
-    public static int Columns<T>( T[,] matrix)
+    public static int Columns<T>(this T[,] matrix)
     {
         return matrix.GetLength(1);
     }
 
-    public static T[ , ] Rand<T>(int row, int col) where T : INumber<T>
-    {
-        var size = row * col;
-        var obj = new T[row, col];
-
-        for (int i = 0; i < size; i++)
-            for(int j=0; j< col; j++)
-                obj[i, j] = T.CreateChecked( Constant.rand.NextDouble() );
-
-        return obj;
-    }
-
-    public static T[,] Rand<T>(int row, int col, T min, T max) where T : INumber<T>
-    {
-        var size = row * col;
-        var obj = new T[row, col];
-
-        for (int i = 0; i < size; i++)
-            for (int j = 0; j < col; j++)
-                obj[i, j] = T.CreateChecked(Constant.rand.NextDouble(Convert.ToDouble(min), Convert.ToDouble(max)));
-
-        return obj;
-    }
-
-    public static T[] Rand<T>(int count) where T : INumber<T>
-    {
-        var obj = new T[ count ];
-
-        for (int i = 0; i < count; i++)
-
-            obj[ i ] = T.CreateChecked(Constant.rand.NextDouble());
-
-        return obj;
-    }
-
-    public static T[] Rand<T>(int length, T min, T max) where T: INumber<T>
-    {
-        var obj = new T[length];
-        for (int i = 0; i < length; i++)
-            obj[i] = T.CreateChecked( Constant.rand.NextDouble(Convert.ToDouble( min ), Convert.ToDouble( max )) );
-        return obj;
-    }
-
-    public static TResult[,] Zeros<TResult>(int rows, int cols)
-    {
-        var result = new TResult[rows, cols];
-
-        for (int i = 0; i < result.GetLength(0); i++)
-            for (int j = 0; j < result.GetLength(1); j++)
-                result[i, j] = default;
-
-        return result;
-    }
-
-    public static TResult[] Zeros<TResult>(int elements)
-    {
-        var result = new TResult[elements];
-        for (int i = 0; i < result.GetLength(0); i++)
-            result[i] = default;
-
-        return result;
-    }
-
-    public static TResult[] Unit<TResult>(int elements) where TResult : INumber<TResult>
-    {
-        var result = new TResult[elements];
-        for (int i = 0; i < result.GetLength(0); i++)
-            result[i] = TResult.CreateChecked(1); 
-
-        return result;
-    }
-
-    public static TResult[,] Identity<TResult>(int rows, int cols) where TResult : INumber<TResult>
-    {
-        var retVal = new TResult[rows, cols];
-        for (int i = 0; i < rows; i++)
-        {
-            for (int j = 0; j < cols; j++)
-            {
-                if (i != j)
-                    retVal[i, j] = default;
-                else
-                    retVal[i, j] = TResult.CreateChecked(1);
-
-            }
-        }
-
-        //
-        return retVal;
-    }
-
-    public static T[] GetColumn<T>( T[,] m, int index) where T : INumber<T>
+    public static T[] GetColumn<T>(this T[,] m, int index)
     {
         T[] result = new T[m.Rows()];
-
+        //in case we have negative index
         if (index < 0)
-        {
             index = m.GetLength(1) + index;
-        }
 
         for (int i = 0; i < result.Length; i++)
-        {
-            result[i] = m[i,index];
-        }
+            result[i] = m[i, index];
 
         return result;
     }
 
-    public static T[] GetRow<T>( T[,] matrix, int index) where T : INumber<T>
+    public static T[] GetRow<T>(this T[,] m, int index)
     {
-        T[] result = new T[matrix.Columns()];
-
+        T[] result = new T[m.Columns()];
+        //in case we have negative index
         if (index < 0)
-            index = matrix.GetLength(0) + index;
+            index = m.GetLength(0) + index;
 
         for (int i = 0; i < result.Length; i++)
-        {
-            result[i] = matrix[index, i];
-        }
+            result[i] = m[index, i];
 
         return result;
     }
 
-    public static T[] GetDiagonal<T>( T[ , ] matrix )
+    public static T[,] Diagonal<T>(int rows, int cols, T[] values)
     {
-        var rows = Rows<T> (matrix );
-        var cols = Columns<T>( matrix );
+        var result = new T[rows, cols];
 
-        int size = Math.Min(rows, cols);
-            
-        var result = new T[ size ];
+        int size = Math.Min(rows, Math.Min(cols, values.Length));
 
         for (int i = 0; i < size; i++)
-            result[ i ] = matrix[ i, i];
-
-        return result;
-    }
-
-    public static T[,] MakeDiagonal<T>(T[] values)
-    {
-        var result = new T[values.Length, values.Length];
-        for (int i = 0; i < values.Length; i++)
             result[i, i] = values[i];
+
         return result;
     }
 
-    public static T[,] Copy<T>( T[,] matrix )
+    public static T[,] Copy<T>(this T[,] a)
     {
-        return (T[,]) matrix.Clone();
+        return (T[,])a.Clone();
     }
 
-    public static T[,] Reverse<T>(T[,] matrix, bool row)
+    public static T[,] Reverse<T>(this T[,] array, bool row)
     {
-        int r = matrix.GetLength(0);
-        int c = matrix.GetLength(1);
-            
-        T[,] m = new T[r,c];
+        int r = array.GetLength(0);
+        int c = array.GetLength(1);
+
+        T[,] m = new T[r, c];
         for (int i = 0; i < r; i++)
         {
             int ii = i;
@@ -212,13 +99,13 @@ public static class Matrix
                 else
                     jj = c - j - 1;
 
-                m[i,j] = matrix[ii,jj];
+                m[i, j] = array[ii, jj];
             }
         }
         return m;
     }
 
-    public static T[,] ToMatrix<T>( T[][] array, bool transpose = false)
+    public static T[,] ToMatrix<T>(this T[][] array, bool transpose = false)
     {
         int rows = array.Length;
         if (rows == 0)
@@ -246,7 +133,7 @@ public static class Matrix
         return retVal;
     }
 
-    public static T[,] ToMatrix<T>( T[] array, bool asColumnVector = false)
+    public static T[,] ToMatrix<T>(this T[] array, bool asColumnVector = false)
     {
         if (asColumnVector)
         {
@@ -264,27 +151,27 @@ public static class Matrix
         }
     }
 
-    public static T[,] ToMatrix<T>( T[] array, int nRows)
+    public static T[,] ToMatrix<T>(this T[] array, int nRows)
     {
         int rows = nRows;
         int cols = array.Length / rows;
         int k = 0;
-        T[,] retVal = new T[rows,cols];
-                
+        T[,] retVal = new T[rows, cols];
+
         for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < cols; j++)
             {
                 retVal[i, j] = array[k];
                 k++;
-                    
+
             }
         }
 
         return retVal;
     }
 
-    public static T[][] ToMatrix<T>( T[,] array)
+    public static T[][] ToMatrix<T>(this T[,] array)
     {
         int rowsFirstIndex = array.GetLowerBound(0);
         int rowsLastIndex = array.GetUpperBound(0);
@@ -308,7 +195,7 @@ public static class Matrix
     }
 
 
-    public static T[,] Transpose<T>( T[,] m1)
+    public static T[,] Transpose<T>(this T[,] m1)
     {
         var retVal = new T[m1.GetLength(1), m1.GetLength(0)];
         for (int i = 0; i < retVal.GetLength(0); i++)
@@ -317,201 +204,99 @@ public static class Matrix
         //
         return retVal;
     }
-
-
-    public static T[,] Transpose< T >( T[] vector)
+    /// <summary>
+    /// Convert row vector into column vector
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
+    public static double[,] Transpose(this double[] v)
     {
-        var retVal = new T[vector.Length, 1];
-
-        for (int i = 0; i < vector.Length; i++)
-            retVal[i, 0] = vector[i];
+        var retVal = new double[v.Length, 1];
+        for (int i = 0; i < v.Length; i++)
+            retVal[i, 0] = v[i];
 
         return retVal;
     }
 
-
-    public static T[ , ] Invert< T >( T[,] matrix) where T : IFloatingPointIeee754<T>
+    public static double[,] Zeros(int rows, int cols)
     {
-        var rows = matrix.GetLength(0);
-        var cols = matrix.GetLength(1);
-         
-        (T[,] L, T[,] U) = MakeLU<T, T>( matrix );
+        var result = new double[rows, cols];
+        for (int i = 0; i < result.GetLength(0); i++)
+            for (int j = 0; j < result.GetLength(1); j++)
+                result[i, j] = 0;
+        return result;
+    }
 
-        var invert = new T[rows, cols];
+    public static double[] Zeros(int elements)
+    {
+        var result = new double[elements];
+        for (int i = 0; i < result.GetLength(0); i++)
+            result[i] = 0;
+        return result;
+    }
 
+    public static T[,] Diagonal<T>(T[] values)
+    {
+        var result = new T[values.Length, values.Length];
+        for (int i = 0; i < values.Length; i++)
+            result[i, i] = values[i];
+        return result;
+    }
 
+    public static double[,] Identity(int rows, int cols)
+    {
+        var retVal = new double[rows, cols];
         for (int i = 0; i < rows; i++)
         {
-            var Ei = Zeros<T>( rows );
-
-            Ei[i] = T.CreateChecked( 1 );
-
-            var col = Solve<T, T >(matrix, Ei);
-
-            //inv.SetCol(col, i);
-            for (int j = 0; j < invert.GetLength(1); i++)
-            {
-                invert[j, i] = col[ j ];
-            }
-
-        }
-
-        return invert;
-    }
-
-    public static TResult[] Solve <T, TResult >( T[,] matrix, T[] vector) where T : IFloatingPointIeee754<T> where TResult : IFloatingPointIeee754<TResult>                        // Function solves Ax = v in confirmity with solution vector "v"
-    {
-        var rows = matrix.GetLength(0);
-        var cols = matrix.GetLength(1);
-        var elems = vector.Length;
-
-        if (rows != cols) 
-            throw new MException("The matrix is not square!");
-
-        if (rows != elems) 
-            throw new MException("Wrong number of results in solution vector!");
-
-        (TResult[,] L, TResult[,] U ) =  MakeLU< T, TResult >( matrix );
-
-        var b = new TResult[rows];
-
-        for (int i = 0; i < vector.Length; i++)
-            b[i] = TResult.CreateChecked(vector[i]);
-
-        var z = SubsForth<TResult>(L, b);
-
-        var x = SubsBack<TResult>(U, z);
-
-        return x;
-    }
-
-    public static T[ ] SubsForth< T >( T[,] L, T[] b) where T : IFloatingPointIeee754<T>          // Function solves Ax = b for A as a lower triangular matrix
-    {
-
-        int n = L.Length;
-
-        T[] x = new T[ n ];
-
-        for (int i = 0; i < n; i++)
-        {
-            x[ i ] = b[i ];
-
-            for (int j = 0; j < i; j++)
-                x[i] -= L[i, j] * x[j];
-
-            x[i] = x[i] / L[i, i];
-        }
-
-        return x;
-    }
-
-    public static T[ ] SubsBack< T >(T[,] U, T[] b) where T : IFloatingPointIeee754<T>         // Function solves Ax = b for A as an upper triangular matrix
-    {
-        int n = U.Length;
-        T[] x = new T[n];
-
-        for (int i = n - 1; i > -1; i--)
-        {
-            x[i] = b[i];
-
-            for (int j = n - 1; j > i; j--)
-                x[i] -= U[i, j] * x[j];
-
-            x[i] = x[i] / U[i, i];
-        }
-        return x;
-    }
-
-    public static (TResult[ , ] L, TResult[ , ] U) MakeLU< T, TResult >( T[ , ] matrix ) where T : IFloatingPointIeee754< T > where TResult : IFloatingPointIeee754<TResult>
-{
-        if (matrix.GetLength(0) != matrix.GetLength(1))
-        {
-            throw new Exception("The matrix is not squared.");
-        }
-
-        var rows = matrix.GetLength(0);
-        var cols = matrix.GetLength(1);
-
-        var L = Identity<TResult>(rows, cols);
-
-        var U = new TResult[rows,cols ];
-
-        for (int i = 0; i < rows; i++)
             for (int j = 0; j < cols; j++)
-                U[i, j] = TResult.CreateChecked( matrix[i, j] );
-
-
-        var vector = new int[ rows ];
-
-        for (int i = 0; i < rows; i++)
-            vector[i] = i;
-
-        TResult p = default;
-        TResult pom2;
-        int k0 = 0;
-        int pom1 = 0;
-        int detOfP = 1;
-
-        for (int k = 0; k < cols - 1; k++)
-        {
-            p = default;
-            for (int i = k; i < rows; i++)      // find the row with the biggest pivot
             {
-                if (TResult.Abs(U[i, k]) > p)
-                {
-                    p = TResult.Abs(U[i, k]);
+                if (i != j)
+                    retVal[i, j] = 0;
+                else
+                    retVal[i, j] = 1;
 
-                    k0 = i;
-                }
-            }
-            if (p == default) 
-                throw new MException("The matrix is singular!");
-
-            pom1 = vector[k]; vector[k] = vector[k0]; vector[k0] = pom1;    // switch two rows in permutation matrix
-
-            for (int i = 0; i < k; i++)
-            {
-                pom2 = L[k, i]; L[k, i] = L[k0, i]; L[k0, i] = pom2;
-            }
-
-            if (k != k0)
-                detOfP *= -1;
-
-            for (int i = 0; i < cols; i++) 
-            {
-                pom2 = U[k, i]; U[k, i] = U[k0, i]; U[k0, i] = pom2;
-            }
-
-            for (int i = k + 1; i < rows; i++)
-            {
-                L[i, k] = U[i, k] / U[k, k];
-
-                for (int j = k; j < cols; j++)
-
-                    U[i, j] = U[i, j] - L[i, k] * U[k, j];
             }
         }
 
-        return ( L, U );
+        //
+        return retVal;
     }
 
-    public static double[] Div( double[] a, double b)
+    public static double[,] Invert(this double[,] m1)
+    {
+        var retVal = new double[m1.GetLength(0), m1.GetLength(1)];
+        //Init matrix
+        var mat = new Matrix(m1.GetLength(0), m1.GetLength(1));
+        for (int i = 0; i < m1.GetLength(0); i++)
+            for (int j = 0; j < m1.GetLength(1); j++)
+                mat[i, j] = m1[j, i];
+        //calculate invert matrix
+        var inMat = mat.Invert();
+
+        for (int i = 0; i < m1.GetLength(0); i++)
+            for (int j = 0; j < m1.GetLength(1); j++)
+                retVal[i, j] = inMat[j, i];
+        //
+        return retVal;
+    }
+
+    public static double[] Div(this double[] a, double b)
     {
         double[] r = new double[a.Length];
         for (int i = 0; i < a.Length; i++)
-            r[i] = (a[i] / b);
+            r[i] = a[i] / b;
         return r;
     }
 
-    public static double[] Dot( double[] a, double b)
+    public static double[] Dot(this double[] a, double b)
     {
         double[] r = new double[a.Length];
         for (int i = 0; i < a.Length; i++)
-            r[i] = (a[i] * b);
+            r[i] = a[i] * b;
         return r;
     }
 
-    public static double[] Dot( double[,] m, double[] v)
+    public static double[] Dot(this double[,] m, double[] v)
     {
         if (m.GetLength(1) != v.Length)
             throw new Exception("Wrong dimensions of matrix or vector!");
@@ -524,10 +309,10 @@ public static class Matrix
         return result;
     }
 
-    public static double[,] Dot( double[,] m1, double[,] m2)
+    public static double[,] Dot(this double[,] m1, double[,] m2)
     {
 
-        if (m1.GetLength(1) != m2.GetLength(0)) 
+        if (m1.GetLength(1) != m2.GetLength(0))
             throw new Exception("Wrong dimensions of matrices!");
 
         double[,] result = new double[m1.GetLength(0), m2.GetLength(1)];
@@ -539,45 +324,45 @@ public static class Matrix
                 for (int k = 0; k < m1.GetLength(1); k++)
                     result[i, j] += m1[i, k] * m2[k, j];
             }
-                   
+
         }
-                
+
         return result;
     }
 
-    public static double[] Dot( double[] v, double[,] m1)
+    public static double[] Dot(this double[] v, double[,] m1)
     {
         var result = new double[m1.Columns()];
         int cols = m1.Columns();
         for (int j = 0; j < cols; j++)
         {
-            double s = (double)0;
+            double s = 0;
             for (int k = 0; k < v.Length; k++)
-                s += (double)((double)v[k] * (double)m1[k, j]);
-            result[j] = (double)s;
+                s += (double)(v[k] * m1[k, j]);
+            result[j] = s;
         }
         return result;
     }
     //https://mathworld.wolfram.com/HankelMatrix.html
-    public static double [,] Hankel( double[] v, int colCount=-1)
+    public static double[,] Hankel(this double[] v, int colCount = -1)
     {
         int N = v.Length;
         int L = colCount == -1 ? N : colCount;
         int K = colCount == -1 ? N : N - L + 1;
         var result = new double[L, K];
 
-        for(int i = 0; i < L; i++)
+        for (int i = 0; i < L; i++)
         {
             for (int j = 0; j < K; j++)
             {
-                result[i, j] = (i + j) > N-1 ? 0: v[i + j];
+                result[i, j] = i + j > N - 1 ? 0 : v[i + j];
             }
         }
 
         return result;
     }
     //https://mathworld.wolfram.com/ToeplitzMatrix.html
-    public static double[,] Toeplitz( double[] v)
+    public static double[,] Toeplitz(this double[] v)
     {
         int N = v.Length;
         var result = new double[N, N];
@@ -601,7 +386,7 @@ public static class Matrix
     /// Accord.Math
     ///   Gets the transpose of a matrix.
     /// </summary>
-    public static T[,] Transpose<T>( T[,] matrix, bool inPlace)
+    public static T[,] Transpose<T>(this T[,] matrix, bool inPlace)
     {
         int rows = matrix.GetLength(0);
         int cols = matrix.GetLength(1);
@@ -633,13 +418,13 @@ public static class Matrix
             return result;
         }
     }
-    public static double[,] DotWithDiagonal( double[,] a, double[] b)
+    public static double[,] DotWithDiagonal(this double[,] a, double[] b)
     {
-        return DotWithDiagonal(a, b, new double[a.Rows(), b.Length]);
+        return a.DotWithDiagonal(b, new double[a.Rows(), b.Length]);
     }
-    public static double[,] DotWithTransposed( double[,] a, double[,] b)
+    public static double[,] DotWithTransposed(this double[,] a, double[,] b)
     {
-        return DotWithTransposed(a, b, new double[a.Rows(), b.Rows()]);
+        return a.DotWithTransposed(b, new double[a.Rows(), b.Rows()]);
     }
 
     /// <summary>
@@ -652,7 +437,7 @@ public static class Matrix
     /// <param name="result">The matrix <c>R</c> to store the product <c>R = A*B</c>
     ///   of the given matrices <c>A</c> and <c>B</c>.</param>
     /// 
-    public static double[,] DotWithDiagonal( double[,] a, double[] diagonal, double[,] result)
+    public static double[,] DotWithDiagonal(this double[,] a, double[] diagonal, double[,] result)
     {
         int rows = a.Rows();
 
@@ -665,10 +450,9 @@ public static class Matrix
                 double* R = ptrR;
                 for (int i = 0; i < rows; i++)
                     for (int j = 0; j < diagonal.Length; j++)
-                        *R++ = (double)((double)(*A++) * (double)diagonal[j]);
+                        *R++ = (double)((double)*A++ * diagonal[j]);
             }
         }
-
         return result;
     }
     /// <summary>
@@ -681,8 +465,9 @@ public static class Matrix
     ///
     /// <returns>The product <c>A*B'</c> of the given matrices <c>A</c> and <c>B</c>.</returns>
     /// 
-    public static double[,] DotWithTransposed( double[,] a, double[,] b, double[,] result)
+    public static double[,] DotWithTransposed(this double[,] a, double[,] b, double[,] result)
     {
+
         int n = a.Columns();
         int m = a.Rows();
         int p = b.Rows();
@@ -701,14 +486,15 @@ public static class Matrix
                     {
                         double* pa = A + n * i;
 
-                        double s = (double)0;
+                        double s = 0;
                         for (int k = 0; k < n; k++)
-                            s += (double)((double)(*pa++) * (double)(*pb++));
+                            s += (double)((double)*pa++ * (double)*pb++);
                         *pr = (double)s;
                     }
                 }
             }
         }
+
         return result;
     }
     /// <summary>
@@ -716,7 +502,7 @@ public static class Matrix
     /// </summary>
     ///
 
-    public static bool IsEqual( Double[,] a, Double[,] b, Double atol = 0, Double rtol = 0)
+    public static bool IsEqual(this double[,] a, double[,] b, double atol = 0, double rtol = 0)
     {
         if (a == b)
             return true;
@@ -734,8 +520,8 @@ public static class Matrix
 
         unsafe
         {
-            fixed (Double* ptrA = a)
-            fixed (Double* ptrB = b)
+            fixed (double* ptrA = a)
+            fixed (double* ptrB = b)
             {
                 if (rtol > 0)
                 {
@@ -745,13 +531,13 @@ public static class Matrix
                         var B = ptrB[i];
                         if (A == B)
                             continue;
-                        if (Double.IsNaN(A) && Double.IsNaN(B))
+                        if (double.IsNaN(A) && double.IsNaN(B))
                             continue;
-                        if (Double.IsNaN(A) ^ Double.IsNaN(B))
+                        if (double.IsNaN(A) ^ double.IsNaN(B))
                             return false;
-                        if (Double.IsPositiveInfinity(A) ^ Double.IsPositiveInfinity(B))
+                        if (double.IsPositiveInfinity(A) ^ double.IsPositiveInfinity(B))
                             return false;
-                        if (Double.IsNegativeInfinity(A) ^ Double.IsNegativeInfinity(B))
+                        if (double.IsNegativeInfinity(A) ^ double.IsNegativeInfinity(B))
                             return false;
                         var C = A;
                         var D = B;
@@ -781,13 +567,13 @@ public static class Matrix
                         var B = ptrB[i];
                         if (A == B)
                             continue;
-                        if (Double.IsNaN(A) && Double.IsNaN(B))
+                        if (double.IsNaN(A) && double.IsNaN(B))
                             continue;
-                        if (Double.IsNaN(A) ^ Double.IsNaN(B))
+                        if (double.IsNaN(A) ^ double.IsNaN(B))
                             return false;
-                        if (Double.IsPositiveInfinity(A) ^ Double.IsPositiveInfinity(B))
+                        if (double.IsPositiveInfinity(A) ^ double.IsPositiveInfinity(B))
                             return false;
-                        if (Double.IsNegativeInfinity(A) ^ Double.IsNegativeInfinity(B))
+                        if (double.IsNegativeInfinity(A) ^ double.IsNegativeInfinity(B))
                             return false;
                         var C = A;
                         var D = B;
@@ -803,13 +589,13 @@ public static class Matrix
                     {
                         var A = ptrA[i];
                         var B = ptrB[i];
-                        if (Double.IsNaN(A) && Double.IsNaN(B))
+                        if (double.IsNaN(A) && double.IsNaN(B))
                             continue;
-                        if (Double.IsNaN(A) ^ Double.IsNaN(B))
+                        if (double.IsNaN(A) ^ double.IsNaN(B))
                             return false;
-                        if (Double.IsPositiveInfinity(A) ^ Double.IsPositiveInfinity(B))
+                        if (double.IsPositiveInfinity(A) ^ double.IsPositiveInfinity(B))
                             return false;
-                        if (Double.IsNegativeInfinity(A) ^ Double.IsNegativeInfinity(B))
+                        if (double.IsNegativeInfinity(A) ^ double.IsNegativeInfinity(B))
                             return false;
                         if (A != B)
                             return false;
@@ -827,7 +613,7 @@ public static class Matrix
     ///   themselves are copied only in a shallowed manner (i.e. not cloned).
     /// </summary>
     /// 
-    public static T[,] MemberwiseClone<T>( T[,] a)
+    public static T[,] MemberwiseClone<T>(this T[,] a)
     {
         // TODO: Rename to Copy and implement shallow and deep copies
         return (T[,])a.Clone();
@@ -838,14 +624,14 @@ public static class Matrix
     ///   themselves are copied only in a shallow manner (i.e. not cloned).
     /// </summary>
     /// 
-    public static T[] MemberwiseClone<T>( T[] a)
+    public static T[] MemberwiseClone<T>(this T[] a)
     {
         // TODO: Rename to Copy and implement shallow and deep copies
         return (T[])a.Clone();
     }
     #endregion
 
-    public static double[,] Add( double[,] m1, double[,] m2)
+    public static double[,] Add(this double[,] m1, double[,] m2)
     {
         var retVal = new double[m1.GetLength(0), m2.GetLength(1)];
         for (int i = 0; i < m1.GetLength(0); i++)
@@ -855,7 +641,7 @@ public static class Matrix
         return retVal;
     }
 
-    public static double[] Add( double[] v1, double[] v2)
+    public static double[] Add(this double[] v1, double[] v2)
     {
         var result = new double[v1.Length];
         for (int i = 0; i < result.Length; i++)
@@ -863,7 +649,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[] Add( double[] m, double s)
+    public static double[] Add(this double[] m, double s)
     {
         var result = new double[m.Length];
         for (int i = 0; i < result.GetLength(0); i++)
@@ -871,7 +657,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[,] Add( double[,] m, double s)
+    public static double[,] Add(this double[,] m, double s)
     {
         var result = new double[m.GetLength(0), m.GetLength(1)];
         for (int i = 0; i < result.GetLength(0); i++)
@@ -880,7 +666,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[,] Substract( double[,] m1, double[,] m2)
+    public static double[,] Substract(this double[,] m1, double[,] m2)
     {
         var retVal = new double[m1.GetLength(0), m2.GetLength(1)];
         for (int i = 0; i < m1.GetLength(0); i++)
@@ -890,7 +676,7 @@ public static class Matrix
         return retVal;
     }
 
-    public static double[,] Substract( double[,] m, double s)
+    public static double[,] Substract(this double[,] m, double s)
     {
         var result = new double[m.GetLength(0), m.GetLength(1)];
         for (int i = 0; i < result.GetLength(0); i++)
@@ -899,14 +685,14 @@ public static class Matrix
         return result;
     }
 
-    public static double[] Substract( double[] m, double s)
+    public static double[] Substract(this double[] m, double s)
     {
         var result = new double[m.Length];
         for (int i = 0; i < result.Length; i++)
             result[i] = m[i] - s;
         return result;
     }
-    public static double[] Substruct( double[] v, double[] v1)
+    public static double[] Substruct(this double[] v, double[] v1)
     {
         var res = new double[v.Length];
         for (int i = 0; i < v.Length; i++)
@@ -914,18 +700,18 @@ public static class Matrix
 
         return res;
     }
-      
-    public static double[,] Multiply( double[,] m, double s)
+
+    public static double[,] Multiply(this double[,] m, double s)
     {
-        var result = new double[m.GetLength(0),m.GetLength(1)];
+        var result = new double[m.GetLength(0), m.GetLength(1)];
         for (int i = 0; i < result.GetLength(0); i++)
             for (int j = 0; j < result.GetLength(1); j++)
-                result[i, j] = m[i, j]*s;
+                result[i, j] = m[i, j] * s;
         return result;
     }
 
 
-    public static double[] Multiply( double[] v, double s)
+    public static double[] Multiply(this double[] v, double s)
     {
         var result = new double[v.Length];
         for (int i = 0; i < result.GetLength(0); i++)
@@ -933,7 +719,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[] Multiply( double[] v1, double[] v2)
+    public static double[] Multiply(this double[] v1, double[] v2)
     {
         var result = new double[v1.Length];
         for (int i = 0; i < v1.Length; i++)
@@ -941,7 +727,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[,] Divide( double[,] m, double s)
+    public static double[,] Divide(this double[,] m, double s)
     {
         var result = new double[m.GetLength(0), m.GetLength(1)];
         for (int i = 0; i < result.GetLength(0); i++)
@@ -950,7 +736,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[] Divide( double[] m, double s)
+    public static double[] Divide(this double[] m, double s)
     {
         var result = new double[m.Length];
         for (int i = 0; i < result.GetLength(0); i++)
@@ -958,7 +744,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[] Divide( double[] v1, double[] v2)
+    public static double[] Divide(this double[] v1, double[] v2)
     {
         var result = new double[v1.Length];
         for (int i = 0; i < v1.Length; i++)
@@ -966,7 +752,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[,] Sqrt( double[,] m1)
+    public static double[,] Sqrt(this double[,] m1)
     {
 
         double[,] result = new double[m1.GetLength(0), m1.GetLength(1)];
@@ -976,7 +762,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[] Sqrt( double[] v)
+    public static double[] Sqrt(this double[] v)
     {
 
         double[] result = new double[v.Length];
@@ -985,7 +771,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[,] Log( double[,] m1)
+    public static double[,] Log(this double[,] m1)
     {
 
         double[,] result = new double[m1.GetLength(0), m1.GetLength(1)];
@@ -995,7 +781,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[] Log( double[] v)
+    public static double[] Log(this double[] v)
     {
 
         double[] result = new double[v.Length];
@@ -1004,7 +790,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[,] Pow( double[,] m1, double y)
+    public static double[,] Pow(this double[,] m1, double y)
     {
 
         double[,] result = new double[m1.GetLength(0), m1.GetLength(1)];
@@ -1014,7 +800,7 @@ public static class Matrix
         return result;
     }
 
-    public static double[] Pow( double[] v, double y)
+    public static double[] Pow(this double[] v, double y)
     {
 
         double[] result = new double[v.Length];
@@ -1029,7 +815,7 @@ public static class Matrix
     /// <param name="m1"></param>
     /// <param name="colIndex"></param>
     /// <returns></returns>
-    public static double[] CVector( double[,] m1, int colIndex)
+    public static double[] CVector(this double[,] m1, int colIndex)
     {
 
         double[] result = new double[m1.GetLength(0)];
@@ -1045,7 +831,7 @@ public static class Matrix
     /// <param name="m1"></param>
     /// <param name="rowIndex"></param>
     /// <returns></returns>
-    public static double[] RVector( double[,] m1, int rowIndex)
+    public static double[] RVector(this double[,] m1, int rowIndex)
     {
 
         double[] result = new double[m1.GetLength(1)];
@@ -1055,13 +841,13 @@ public static class Matrix
         return result;
     }
 
-        
-    public static double Euclidean( double[,] a)
+
+    public static double Euclidean(this double[,] a)
     {
-        return Norm2(a);
+        return a.Norm2();
     }
 
-    public static double Norm2( double[] v)
+    public static double Norm2(this double[] v)
     {
         var retVal = 0.0;
         for (int i = 0; i < v.Length; i++)
@@ -1070,7 +856,7 @@ public static class Matrix
         return Math.Sqrt(retVal);
     }
 
-    public static double Norm2( double[,] m)
+    public static double Norm2(this double[,] m)
     {
         var retVal = 0.0;
         for (int i = 0; i < m.GetLength(0); i++)
@@ -1083,7 +869,7 @@ public static class Matrix
         return Math.Sqrt(retVal);
     }
 
-    public static double[] CumulativeSum( double[] vector)
+    public static double[] CumulativeSum(this double[] vector)
     {
         if (vector == null || vector.Length == 0)
             return new double[0];
@@ -1091,9 +877,7 @@ public static class Matrix
         var result = new double[vector.Length];
         result[0] = vector[0];
         for (int i = 1; i < vector.Length; i++)
-            result[i] = (double)(result[i - 1] + vector[i]);
+            result[i] = result[i - 1] + vector[i];
         return result;
     }
 }
-
-#endif

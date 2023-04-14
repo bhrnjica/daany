@@ -11,14 +11,15 @@ using System.Threading.Tasks;
 using OxyPlot;
 using System.Windows.Forms;
 using Daany;
-using Daany.MathStuff;
 using Daany.Stat;
 using Daany.Plot;
 using Daany.Stat.SSA;
 using Daany.Stat.Plot;
+using Daany.MathStuff;
 
 namespace ML.Net.App.TimeSeries
 {
+
     //Singular Spectrum Analysis
     public class SSADemo
     {
