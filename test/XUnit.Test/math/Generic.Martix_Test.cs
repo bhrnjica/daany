@@ -210,28 +210,22 @@ public class Generic_Matrix_Test
     {
 
        var result =  m1d.MakeLU<decimal,decimal>();
-        
-        
-        
-        
-        
-        
-       // var result = m3<decimal, decimal>();
 
-        var L = new double[3, 3]
+        var L = new decimal[3, 3]
                                 { {  1 , 0, 0 },
-                                  {  2, 1, 0 },
-                                  { 2,  -1.2, 1 }
+                                  {  1, 1, 0 },
+                                  {0.5m,  0.2727272727272727272727272727M, 1 }
                                };
 
-        var U = new double[3, 3]
-                                { {  1 , 2, -1 },
-                                  {  0, 5, -2},
-                                  { 0,  0, 3.6 }
+        var U = new decimal[3, 3]
+                                { {  2 , -2, 4 },
+                                  {  0, 11, -8},
+                                  { 0,  0.0000000000000000000000000003M,-0.8181818181818181818181818184M }
                                };
 
-        //Assert.Equal(L, result.Item1);
-        //Assert.Equal(U, result.Item2);
+        Assert.Equal(L, result.Item1);
+
+        Assert.Equal(U, result.Item2);
 
 
     }
