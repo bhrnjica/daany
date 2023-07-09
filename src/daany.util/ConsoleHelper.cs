@@ -213,10 +213,7 @@ namespace Daany.Util
         }
         public static void ConsolePrintConfusionMatrix(ConfusionMatrix confusionMatrix)
         {
-            var defaultColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(" ");
-            var cm = confusionMatrix.GetFormattedConfusionTable();
+            
             Console.Write(cm);
 
             Console.ForegroundColor = defaultColor;

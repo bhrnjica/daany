@@ -149,9 +149,12 @@ namespace Daany.Ext
             //define encoded columns
             var dict = new Dictionary<string, List<object>>();
             var dummyClasses = classValues.SkipLast(1);
+
             //add dummy encoded columns
             foreach (var c in dummyClasses)
+            {
                 dict.Add(c, new List<object>());
+            }
 
             //encode values
             foreach (var cValue in colVector)

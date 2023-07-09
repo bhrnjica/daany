@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,10 @@ namespace Daany.MathStuff.Stats
     /// </summary>
     public class ConfusionMatrix
     {
+        public bool IsSampled { get; }
+        public bool IsWeighted { get; }
+        public bool IsBinary { get => m_matrix[0].Length == 2; }
+
         #region Init
         int[][] m_matrix;
         public int [][] Matrix { get=>m_matrix;}
@@ -35,7 +40,10 @@ namespace Daany.MathStuff.Stats
         public ConfusionMatrix(int [][] matrix)
         {
             if (matrix == null && matrix.Length != matrix[0].Length)
+            {
                 throw new Exception("Confusion matrix cannot be created with invalid data!");
+            }
+
             m_matrix = matrix;
         }
 
@@ -45,14 +53,20 @@ namespace Daany.MathStuff.Stats
         /// <param name="observed"></param>
         /// <param name="predicted"></param>
         /// <param name="classCount"></param>
-        public ConfusionMatrix (int [] observed, int [] predicted, int classCount)
+        public ConfusionMatrix (int [] predicted, int[] observed, int classCount)
         {
+
             if (observed == null || predicted == null || observed.Length == 0 || observed.Length != predicted.Length)
+            {
                 throw new Exception("Cannot create Confusion matrix. Invalid data.");
+            }
+
             //reserve space for matrix
             m_matrix = new int[classCount][];
             for (int i = 0; i < classCount; i++)
+            {
                 m_matrix[i] = new int[classCount];
+            }
 
             //calculate confusion matrix
             for (int row = 0; row < observed.Length; row++)
