@@ -53,7 +53,7 @@ namespace Daany.MathStuff.Stats
         /// <param name="observed"></param>
         /// <param name="predicted"></param>
         /// <param name="classCount"></param>
-        public ConfusionMatrix (int [] predicted, int[] observed, int classCount)
+        public ConfusionMatrix (int[] observed, int[] predicted, int classCount)
         {
 
             if (observed == null || predicted == null || observed.Length == 0 || observed.Length != predicted.Length)
