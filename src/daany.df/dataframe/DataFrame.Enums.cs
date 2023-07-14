@@ -89,7 +89,7 @@ namespace Daany
         Binary2,
         [Description("N")]//for (4 classes, one column) =1,2,3,4 
         Ordinal,
-        [Description("1:N")]//one hot vector (4 categories, 4 columns) = (1,0,0);(0,1,0);(0,0,1);
+        [Description("1:N")]//one hot vector (4 categories, 4 columns) = (1,0,0,0);(0,1,0,0);(0,0,1,0);(0,0,0,1);
         OneHot,
         [Description("1:N-1(0)")] //category encoding (4 categories, 3 columns) = (1,0,0);(0,1,0);(0,0,1);(0,0,0)
         Dummy,
