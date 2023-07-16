@@ -78,4 +78,8 @@ SOFTWARE.</PackageReleaseNotes>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
+  </ItemGroup>
 </Project>
