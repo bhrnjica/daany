@@ -211,15 +211,23 @@ namespace Daany.Ext
         {
             var colVector = df[colName];
 
-            var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x.ToString()).Distinct().ToList();
+            var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x).Distinct().ToList();
 
             //define encoded columns
             var dict = new Dictionary<string, List<object>>();
             var encodedValues = new List<object>();
             foreach (var value in colVector)
             {
-                int ordinalValue = classValues.IndexOf(value.ToString());
-                encodedValues.Add(ordinalValue);
+                if (value is bool)
+                {
+                    int ordinalValue = Convert.ToInt16(value);
+                    encodedValues.Add(ordinalValue);
+                }
+                else
+                {
+                    int ordinalValue = classValues.IndexOf(value.ToString());
+                    encodedValues.Add(ordinalValue);
+                }
             }
 
             //
@@ -227,9 +235,9 @@ namespace Daany.Ext
             var newDf = df.AddColumns(dict);
 
             if (encodedOnly)
-                return (newDf[new string[] { colName + "_cvalues" }], classValues.ToArray());
+                return (newDf[new string[] { colName + "_cvalues" }], classValues.Select(x=>x.ToString()).ToArray());
             else
-                return (newDf, classValues.ToArray());
+                return (newDf, classValues.Select(x => x.ToString()).ToArray());
 
         }
 
@@ -244,10 +252,20 @@ namespace Daany.Ext
             var encodedValues = new List<object>();
             foreach (var value in colVector)
             {
-                int ordinalValue = classValues.IndexOf(value.ToString());
-                if (ordinalValue == 0)
-                    ordinalValue = -1;
-                encodedValues.Add(ordinalValue);
+                if (value is bool)
+                {
+                    int ordinalValue = Convert.ToInt16(value);
+                    if (ordinalValue == 0)
+                        ordinalValue = -1;
+                    encodedValues.Add(ordinalValue);
+                }
+                else
+                {
+                    int ordinalValue = classValues.IndexOf(value.ToString());
+                    if (ordinalValue == 0)
+                        ordinalValue = -1;
+                    encodedValues.Add(ordinalValue);
+                }
             }
 
             //
@@ -255,9 +273,9 @@ namespace Daany.Ext
             var newDf = df.AddColumns(dict);
 
             if (encodedOnly)
-                return (newDf[new string[] { colName + "_cvalues" }], classValues.ToArray());
+                return (newDf[new string[] { colName + "_cvalues" }], classValues.Select(x => x.ToString()).ToArray());
             else
-                return (newDf, classValues.ToArray());
+                return (newDf, classValues.Select(x => x.ToString()).ToArray());
 
         }
 

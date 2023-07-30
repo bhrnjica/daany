@@ -57,7 +57,7 @@ namespace Daany
 
         public (int rows, int cols) Shape => (RowCount(), ColCount());
 
-        internal IList<object> Values => _values;
+        public IList<object> Values => _values;
 
 
 
@@ -2332,7 +2332,6 @@ namespace Daany
         {
             return Index.Count;
         }
-
         /// <summary>
         /// Returns the number of columns in the data frame
         /// </summary>
