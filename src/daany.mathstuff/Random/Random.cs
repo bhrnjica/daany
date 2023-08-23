@@ -12,11 +12,19 @@ using System.Security.Cryptography;
 
 using System.Threading;
 
+
 namespace Daany.MathStuff.Random;
 
 #if NET7_0_OR_GREATER
-public sealed class TSRandom : ThreadSafeRandom
+public sealed class TSRandom 
 {
+    /// <summary>
+    /// Select row x col random elements from interval (0, 1) values.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="row"></param>
+    /// <param name="col"></param>
+    /// <returns></returns>
     public static T[,] Rand<T>(int row, int col) where T : INumber<T>
     {
         var size = row * col;
@@ -29,6 +37,15 @@ public sealed class TSRandom : ThreadSafeRandom
         return obj;
     }
 
+    /// <summary>
+    /// Select row x col random elements from interval (min, max) values.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="row"></param>
+    /// <param name="col"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
     public static T[,] Rand<T>(int row, int col, T min, T max) where T : INumber<T>
     {
         var size = row * col;
@@ -41,6 +58,12 @@ public sealed class TSRandom : ThreadSafeRandom
         return obj;
     }
 
+    /// <summary>
+    /// Select n numbers from interval (0, 1) values.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="count"></param>
+    /// <returns></returns>
     public static T[] Rand<T>(int count) where T : INumber<T>
     {
         var obj = new T[count];
@@ -53,13 +76,47 @@ public sealed class TSRandom : ThreadSafeRandom
         return obj;
     }
 
-    public static T[] Rand<T>(int length, T min, T max) where T : INumber<T>
+    /// <summary>
+    /// Select n random elements from interval (min, max) values.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="n"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
+    public static T[] Rand<T>(int n, T min, T max) where T : INumber<T>
     {
-        var obj = new T[length];
-        for (int i = 0; i < length; i++)
+        var obj = new T[n];
+        for (int i = 0; i < n; i++)
             obj[i] = T.CreateChecked(Constant.rand.NextDouble(Convert.ToDouble(min), Convert.ToDouble(max)));
         return obj;
     }
+
+    /// <summary>
+    /// Reservoir Sampling to select n random elements from the array.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="array">input array of elements</param>
+    /// <param name="n">number of random elements to select</param>
+    /// <returns>array of n random elements</returns>
+    public static T[] Rand<T>(T[] array, int n, int seed= 1234) where T : INumber<T>
+    {
+        var result = new T[n];
+        Array.Copy(array, result, n);
+        var rand = new System.Random(seed);
+
+        for (int i = n; i < array.Length; i++)
+        {
+            int j = rand.Next(0, i + 1);
+            if (j < n)
+            {
+                result[j] = array[i];
+            }
+        }
+
+        return result;
+    }
+
 
 }
 #endif

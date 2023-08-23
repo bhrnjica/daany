@@ -33,6 +33,8 @@ public class Metrics
     {
     }
 
+   
+
     public static TResult Sum<T, TResult>(IEnumerable< T > colData) where T : INumber<T> where TResult : INumber<TResult>
     {
         int count = colData.Count();
