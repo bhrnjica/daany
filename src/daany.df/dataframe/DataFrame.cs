@@ -607,20 +607,9 @@ namespace Daany
 
             }
             //add new columns
+            this._colsType = null;
             this._columns.AddRange(colNames);
-            var newTypes = new List<ColType>();
-            foreach(var c in colNames)
-            {
-                var val = this[c].Where(x=>x!=DataFrame.NAN).FirstOrDefault();
-                if (val != null)
-                    newTypes.Add(GetValueType(val));
-                else
-                    newTypes.Add(ColType.STR);
-            }
-
-            var colss = this._colsType.ToList();
-            colss.AddRange(newTypes);
-            this._colsType = colss.ToArray();
+           
 
             //apply new data frame values
             this._values = vals;
@@ -671,9 +660,8 @@ namespace Daany
 
             }
             //add new column
+            this._colsType = null;
             this._columns.AddRange(colNames);
-            //foreach (var colName in colNames)
-            //    addNewColumnName(this.Columns, colName);
 
             this._values = vals;
             return true;
@@ -2283,7 +2271,7 @@ namespace Daany
 
                 ColType[] colTypes= null;
                 if (_colsType != null)
-                    colTypes = idxs.Select(i=>_colsType[i]).ToArray();
+                    colTypes = idxs.Select(j=>_colsType[j]).ToArray();
 
                 var df = new DataFrame(lst.ToList(),this._index.ToList(), cols.ToList(), colTypes);
                 return df;

@@ -33,8 +33,11 @@ namespace Unit.Test.DF
             var c1 = new int[] { 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
 
             var cc1 = df["col11"].ToList();
+
             for (int i = 0; i < 10; i++)
                 Assert.Equal((int)c1[i], cc1[i]);
+
+            Assert.Equal(df.Columns.Count, df.ColTypes.Count);
 
         }
 
@@ -66,6 +69,8 @@ namespace Unit.Test.DF
             for (int i = 0; i < 10; i++)
                 Assert.Equal((int)c1[i], cc1[i]);
 
+            Assert.Equal(df.Columns.Count, df.ColTypes.Count);
+
         }
 
 
@@ -89,15 +94,21 @@ namespace Unit.Test.DF
             var df = new DataFrame(dict);
             var sCols = new string[] { "col11" };
             var df01 = df.AddCalculatedColumns(sCols, (row, i) => calculate(row,i) );
+            
+            
             //local function declaration
             object[] calculate(object[] row, int i)
                 {return new object[1] { i + 11 };}
+
+
             //column test
             var c1 = new int[] { 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
 
             var cc1 = df["col11"].ToList();
             for (int i = 0; i < 10; i++)
                 Assert.Equal((int)c1[i], cc1[i]);
+
+            Assert.Equal(df.Columns.Count, df.ColTypes.Count);
 
         }
 
@@ -127,6 +138,7 @@ namespace Unit.Test.DF
             var exception = Assert.ThrowsAny<System.Exception>(() => df.AddCalculatedColumns(sCols, (row, i) => calculate(row, i)));
             Assert.Equal("Column(s) 'col10' already exist(s) in the data frame.", exception.Message);
 
+            
             //local function declaration
             object[] calculate(object[] row, int i)
             { return new object[1] { i + 11 }; }
@@ -169,6 +181,8 @@ namespace Unit.Test.DF
 
             for (int i = 0; i < newDf.Values.Count; i++)
                 Assert.Equal(i+1, newDf.Values[i]);
+
+            Assert.Equal(df.Columns.Count, df.ColTypes.Count);
 
         }
 
@@ -235,6 +249,8 @@ namespace Unit.Test.DF
             for (int i = 0; i < df.Values.Count; i++)
                 Assert.Equal(i + 1, df.Values[i]);
 
+            Assert.Equal(df.Columns.Count, df.ColTypes.Count);
+
         }
 
 
@@ -271,6 +287,8 @@ namespace Unit.Test.DF
             for (int i = 0; i < df.Values.Count; i++)
                 Assert.Equal(i + 1, df.Values[i]);
 
+            Assert.Equal(df.Columns.Count, df.ColTypes.Count);
+
         }
 
         [Fact]
@@ -300,6 +318,8 @@ namespace Unit.Test.DF
 
             for (int i = 0; i < df.Values.Count; i++)
                 Assert.Equal(i + 1, df.Values[i]);
+
+            Assert.Equal(df.Columns.Count, df.ColTypes.Count);
 
         }
     }
