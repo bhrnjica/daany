@@ -319,6 +319,59 @@ public class ConfusionMatrix
 
     #endregion
 
+    #region Accuracy
+    public static double MicroAccuracy(int[][] matrix)
+    {
+        int numClasses = matrix.GetLength(0);
+
+        int totalCorrect = 0;
+        int totalSamples = 0;
+
+        for (int i = 0; i < numClasses; i++)
+        {
+            for (int j = 0; j < numClasses; j++)
+            {
+                totalSamples += matrix[i][j];
+                if (i == j)
+                {
+                    totalCorrect += matrix[i][j];
+                }
+            }
+        }
+
+        return (double)totalCorrect / totalSamples;
+    }
+
+    public static double MacroAccuracy(int[][] matrix)
+    {
+        int numClasses = matrix.GetLength(0);
+        double[] classAccuracies = new double[numClasses];
+
+        for (int i = 0; i < numClasses; i++)
+        {
+            int correct = matrix[i][i];
+            int total = 0;
+
+            for (int j = 0; j < numClasses; j++)
+            {
+                total += matrix[i][j];
+            }
+
+            double classAccuracy = (double)correct / total;
+            classAccuracies[i] = classAccuracy;
+        }
+
+        double macroAccuracy = 0;
+
+        for (int i = 0; i < numClasses; i++)
+        {
+            macroAccuracy += classAccuracies[i];
+        }
+
+        return macroAccuracy / numClasses;
+    }
+    #endregion
+
     #region Precision
     /// <summary>
     /// Micro Recall value calculate based on given confusion matrix

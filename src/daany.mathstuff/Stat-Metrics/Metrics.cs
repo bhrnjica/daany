@@ -20,6 +20,7 @@ using static System.Math;
 using System.Numerics;
 
 
+
 #if NET7_0_OR_GREATER
 
 namespace Daany.MathStuff.Stats;
@@ -422,6 +423,39 @@ public class Metrics
         return query.OrderByDescending(x => x.Item2).ToList();
     }
 
+    public static T RSquared<T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T>
+    {
+        if (preData.Count() != obsData.Count())
+            throw new ArgumentException("Input arrays must have the same length.");
+
+        var n = preData.Count();
+
+        T sumX = default;
+        T sumY = default;
+        T sumXSquared = default;
+        T sumYSquared = default;
+        T sumXY = default;
+
+        for (int i = 0; i < n; i++)
+        {
+            sumX += preData.ElementAt(i);
+            sumY += obsData.ElementAt(i);
+            sumXSquared += preData.ElementAt(i) * preData.ElementAt(i);
+            sumYSquared += obsData.ElementAt(i) * obsData.ElementAt(i);
+            sumXY += preData.ElementAt(i) * obsData.ElementAt(i);
+        }
+
+        T numerator = T.CreateChecked(n) * sumXY - sumX * sumY;
+        T denominatorX = (T.CreateChecked(n) * sumXSquared - sumX * sumX)* (T.CreateChecked(n) * sumXSquared - sumX * sumX);
+        T denominatorY = (T.CreateChecked(n) * sumYSquared - sumY * sumY)* (T.CreateChecked(n) * sumYSquared - sumY * sumY);
+
+        if (denominatorX == default || denominatorY == default)
+            return default; 
+
+        return numerator / (denominatorX * denominatorY);
+    }
+
+
     /// <summary>
     /// Calculate Classification Accuracy between two sets.
     /// </summary>
@@ -430,7 +464,7 @@ public class Metrics
     /// <param name="obsData">Actual values.</param>
     /// <param name="preData">Predicted value.</param>
     /// <returns>Returned accuracy value (0-1).</returns>
-    public static TResult CA <T, TResult>(IEnumerable<T> obsData, IEnumerable<T> preData) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult CA <T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -454,7 +488,7 @@ public class Metrics
     /// <param name="obsData">Actual values.</param>
     /// <param name="preData">Predicted value.</param>
     /// <returns>Returned error value (0-1)</returns>
-    public static TResult CE <T, TResult>(IEnumerable<T> obsData, IEnumerable<T> preData) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult CE <T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -477,7 +511,7 @@ public class Metrics
     /// <param name="obsData">Observer data</param>
     /// <param name="preData">Predicted data</param>
     /// <returns></returns>
-    public static IEnumerable< TResult > SE< T, TResult >( IEnumerable< T >  obsData, IEnumerable<T> preData) where T : INumber<T> where TResult : INumber<TResult>
+    public static IEnumerable< TResult > SE< T, TResult >(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -497,7 +531,7 @@ public class Metrics
     }
 
 
-    public static TResult MSE< T, TResult >(IEnumerable< T > obsData, IEnumerable<T> preData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static TResult MSE< T, TResult >(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -510,14 +544,14 @@ public class Metrics
         return sss / TResult.CreateChecked( count );
     }
 
-    public static TResult RMSE< T, TResult >(IEnumerable<T> obsData, IEnumerable<T> preData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static TResult RMSE< T, TResult >(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
         return TResult.Sqrt( MSE<T, TResult>(obsData, preData) );
     }
 
-    public static IEnumerable<TResult> AE<T, TResult>( IEnumerable<T> obsData, IEnumerable<T> preData ) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static IEnumerable<TResult> AE<T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -533,7 +567,7 @@ public class Metrics
         return ae;
     }
 
-    public static TResult MAE<T, TResult>( IEnumerable<T> obsData, IEnumerable<T> preData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static TResult MAE<T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -546,7 +580,7 @@ public class Metrics
         return sumare / TResult.CreateChecked( count ) ;
     }
 
-    public static IEnumerable<TResult> APE<T, TResult > (IEnumerable< T > obsData, IEnumerable<T> preData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static IEnumerable<TResult> APE<T, TResult > (IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -567,7 +601,7 @@ public class Metrics
         return retVal;
     }
 
-    public static TResult MAPE<T, TResult>(IEnumerable<T> obsData, IEnumerable<T> preData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static TResult MAPE<T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -582,7 +616,7 @@ public class Metrics
     }
 
 
-    private static void checkDataSets< T >( T[] obsData, T[] preData)
+    private static void checkDataSets< T >( T[] preData, T[] obsData)
     {
         if (obsData == null || obsData.Length < 2)
             throw new Exception("'observed Data' should contains at least 2 elements!");
@@ -594,7 +628,7 @@ public class Metrics
             throw new Exception("Both datasets must be of the same size!");
     }
 
-    private static void checkDataSets<T>(IEnumerable<T> obsData, IEnumerable<T> preData)
+    private static void checkDataSets<T>(IEnumerable<T> preData, IEnumerable<T> obsData)
     {
         if (obsData == null || obsData.Count() < 2)
             throw new Exception("'observed Data' should contains at least 2 elements!");
