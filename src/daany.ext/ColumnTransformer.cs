@@ -181,6 +181,15 @@ namespace Daany.Ext
 
         }
 
+        /// <summary>
+        /// Ordinal encoding of classification data. First value start from 0. So in case of example:
+        /// var colors = new string[] { "red", "green", "blue", "green", "red" }; endoded values are:
+        /// var colors = new int { 0, 1, 2, 1, 0 };
+        /// </summary>
+        /// <param name="df"></param>
+        /// <param name="colName"></param>
+        /// <param name="encodedOnly"></param>
+        /// <returns></returns>
         private static (DataFrame, string[]) OrdinalEncoding(this DataFrame df, string colName, bool encodedOnly = false)
         {
             var colVector = df[colName];
@@ -192,7 +201,7 @@ namespace Daany.Ext
             var encodedValues = new List<object>();
             foreach(var value in colVector)
             {
-                int ordinalValue = classValues.IndexOf(value.ToString())+1;
+                int ordinalValue = classValues.IndexOf(value.ToString());
                 encodedValues.Add(ordinalValue);
             }
             
@@ -211,7 +220,7 @@ namespace Daany.Ext
         {
             var colVector = df[colName];
 
-            var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x).Distinct().ToList();
+            var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x.ToString()).Distinct().ToList();
 
             //define encoded columns
             var dict = new Dictionary<string, List<object>>();

@@ -71,13 +71,13 @@ namespace Unit.Test.DF
             //add one hot encoding columns
             df = df.TransformColumn("state",ColumnTransformer.Ordinal, transformedColumnsOnly: true).df;
             var col = df["state_cvalues"].Select(x=>Convert.ToInt32(x)).ToArray();
-            Assert.Equal(1, col[0]);
-            Assert.Equal(1, col[1]);
-            Assert.Equal(1, col[2]);
-            Assert.Equal(1, col[3]);
-            Assert.Equal(2, col[4]);
-            Assert.Equal(2, col[5]);
-            Assert.Equal(3, col[6]);
+            Assert.Equal(0, col[0]);
+            Assert.Equal(0, col[1]);
+            Assert.Equal(0, col[2]);
+            Assert.Equal(0, col[3]);
+            Assert.Equal(1, col[4]);
+            Assert.Equal(1, col[5]);
+            Assert.Equal(2, col[6]);
 
         }
 
@@ -161,13 +161,13 @@ namespace Unit.Test.DF
             (DataFrame edf, float[] fValues, string[] classes) = df.TransformColumn("state", ColumnTransformer.Ordinal, true);
 
             Assert.Equal(1, edf.ColCount());
-            Assert.Equal(new List<object> { 1 }, edf[0]);
-            Assert.Equal(new List<object> { 1 }, edf[1]);
-            Assert.Equal(new List<object> { 1 }, edf[2]);
-            Assert.Equal(new List<object> { 1 }, edf[3]);
-            Assert.Equal(new List<object> { 2 }, edf[4]);
-            Assert.Equal(new List<object> { 2 }, edf[5]);
-            Assert.Equal(new List<object> { 3 }, edf[6]);
+            Assert.Equal(new List<object> { 0 }, edf[0]);
+            Assert.Equal(new List<object> { 0 }, edf[1]);
+            Assert.Equal(new List<object> { 0 }, edf[2]);
+            Assert.Equal(new List<object> { 0 }, edf[3]);
+            Assert.Equal(new List<object> { 1 }, edf[4]);
+            Assert.Equal(new List<object> { 1 }, edf[5]);
+            Assert.Equal(new List<object> { 2 }, edf[6]);
 
         }
         [Fact]

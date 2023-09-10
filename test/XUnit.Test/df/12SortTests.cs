@@ -273,9 +273,10 @@ namespace Unit.Test.DF
         [Fact]
         public void SortBy_MergeSort_Test03()
         {
+            var dtFormat = "M/dd/yyyy H:mm";
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: null);
-            var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_asc_sorted.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, parseDate:true, dformat: dtFormat);
+            var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_asc_sorted.txt", sep: '\t', parseDate: true, names: null, dformat: dtFormat);
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = false;
@@ -293,7 +294,7 @@ namespace Unit.Test.DF
         public void SortBy_QuickSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "M/dd/yyy hh:mm");
             var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_asc_sorted.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
@@ -310,7 +311,7 @@ namespace Unit.Test.DF
         public void SortByDescending_MergeSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "M/dd/yyy hh:mm");
             var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo
@@ -329,7 +330,7 @@ namespace Unit.Test.DF
         public void SortByDescending_QuickSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "M/dd/yyy hh:mm");
             var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: null);
 
             //internal variable to change sort algo

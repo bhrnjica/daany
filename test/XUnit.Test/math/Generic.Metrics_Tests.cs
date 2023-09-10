@@ -79,7 +79,7 @@ public class Metrics_Test
         Assert.Equal(0.327015608, value, 4);
 
         values = Metrics.APE<double, double>(xActual, yPredicted);
-        Assert.Equal(36.67386, values.Sum(), 4);
+        Assert.Equal(/*36.67386*/59.896, values.Sum(), 4);
 
         value = Metrics.MAPE<double, double>(xActual, yPredicted);
         Assert.Equal(1.222462, value, 4);

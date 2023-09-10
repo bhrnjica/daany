@@ -111,7 +111,13 @@ namespace Unit.Test.DF
             //defined types of the column 
             var colTypes1 = new ColType[] { ColType.I32, ColType.IN, ColType.I32, ColType.STR, ColType.I2, ColType.F32, ColType.DT };
             //create data frame with 3 rows and 7 columns
-            var dfFromFile = DataFrame.FromCsv(filename, sep: ',', colTypes: colTypes1, parseDate: true);
+            
+            // Get the current culture
+            CultureInfo cultureInfo = CultureInfo.CurrentCulture;
+            string dateFormat = cultureInfo.DateTimeFormat.ShortDatePattern+" "+ cultureInfo.DateTimeFormat.LongTimePattern;
+             
+
+            var dfFromFile = DataFrame.FromCsv(filename, sep: ',', colTypes: colTypes1, parseDate: true, dformat: dateFormat);
 
             //check the size of the data frame
             Assert.Equal(3, dfFromFile.RowCount());
@@ -236,6 +242,10 @@ namespace Unit.Test.DF
             //create data frame with 3 rows and 7 columns
             var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", parseDate: true);
 
+            CultureInfo customCulture = new CultureInfo("en-US");
+            customCulture.DateTimeFormat.ShortDatePattern = "MM/dd/yyyy";
+            customCulture.DateTimeFormat.LongTimePattern = "hh:mm:ss tt";// 10/17/2019 1:03:40 PM
+
             //convert data frame into strongly typed list
             List<Person> list = df.GetEnumerator<Person>((oRow) =>
             {
@@ -248,7 +258,7 @@ namespace Unit.Test.DF
                 prRow.State = Convert.ToString(oRow["State"]);
                 prRow.IsHome = Convert.ToBoolean(oRow["IsHome"]);
                 prRow.Values = Convert.ToSingle(oRow["Values"]);
-                prRow.Date = Convert.ToDateTime(oRow["Date"]);
+                prRow.Date = Convert.ToDateTime(oRow["Date"], customCulture);
                 //
                 return prRow;
             }).ToList();

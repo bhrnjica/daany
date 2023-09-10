@@ -194,20 +194,6 @@ public class ConfusionMatrix
         acc = tmp / count;
 
         return acc;
-
-        //var tpi = 0.0;
-        //var tni = 0.0;
-        //var fni = 0.0;
-        //var fpi = 0.0;
-        //for (int i = 0; i < matrix.Length; i++)
-        //{
-        //    tpi += TPi(matrix, i);
-        //    tni += TNi(matrix, i);
-        //    fni += FNi(matrix, i);
-        //    fpi += FPi(matrix, i);
-        //}
-
-        //return (tpi + tni) / (tpi + tni + fni + fpi);
     }
     /// <summary>
     /// Average Accuracy,The average per-class effectiveness of a classifier
@@ -256,66 +242,6 @@ public class ConfusionMatrix
         return 1 - AAC(matrix);
     }
 
-    public static Dictionary<double, Tuple<double, double>> CalculateROCCurve(double[][] oneHotActual, double[][] oneHotPredicted)
-    {
-        Dictionary<double, Tuple<double, double>> rocCurve = new Dictionary<double, Tuple<double, double>>();
-
-        for (double threshold = 0.0; threshold <= 1.0; threshold += 0.01)
-        {
-            int truePositive = 0;
-            int falsePositive = 0;
-            int trueNegative = 0;
-            int falseNegative = 0;
-
-            for (int i = 0; i < oneHotActual.Length; i++)
-            {
-                int actualClass = oneHotActual[i].MaxArg(); 
-                int predictedClass = oneHotPredicted[i].MaxArg();
-
-                if (oneHotActual[i][actualClass] >= threshold)
-                {
-                    if (actualClass == predictedClass)
-                        truePositive++;
-                    else
-                        falsePositive++;
-                }
-                else
-                {
-                    if (actualClass == predictedClass)
-                        falseNegative++;
-                    else
-                        trueNegative++;
-                }
-            }
-
-            double truePositiveRate = (double)truePositive / (truePositive + falseNegative);
-            double falsePositiveRate = (double)falsePositive / (falsePositive + trueNegative);
-            rocCurve.Add(threshold, new Tuple<double, double>(truePositiveRate, falsePositiveRate));
-        }
-
-        return rocCurve;
-    }
-
-    public static double CalculateAUC(Dictionary<double, Tuple<double, double>> rocCurve)
-    {
-        var sortedPoints = rocCurve.OrderBy(p => p.Value.Item2).ToArray();
-        double auc = 0.0;
-        double prevFPR = 0.0;
-        double prevTPR = 0.0;
-
-        foreach (var point in sortedPoints)
-        {
-            double fpr = point.Value.Item2;
-            double tpr = point.Value.Item1;
-
-            auc += (fpr - prevFPR) * (tpr + prevTPR) / 2.0;
-
-            prevFPR = fpr;
-            prevTPR = tpr;
-        }
-
-        return auc;
-    }
 
     #endregion
 

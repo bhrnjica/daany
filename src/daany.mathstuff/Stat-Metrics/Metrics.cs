@@ -36,7 +36,7 @@ public class Metrics
 
    
 
-    public static TResult Sum<T, TResult>(IEnumerable< T > colData) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult Sum<T, TResult>(IList<T> colData) where T : INumber<T> where TResult : INumber<TResult>
     {
         int count = colData.Count();
 
@@ -49,7 +49,7 @@ public class Metrics
 
         for (int i = 0; i < count; i++)
         {
-            sum +=  TResult.CreateChecked(colData.ElementAt(i));
+            sum +=  TResult.CreateChecked(colData[i]);
 
         }
 
@@ -64,7 +64,7 @@ public class Metrics
     /// <param name="colData">1D column vector array.</param>
     /// <returns>Returned mean or average value.</returns>
     /// <exception cref="Exception"></exception>
-    public static TResult Mean< T, TResult > (IEnumerable< T > colData) where T: INumber< T > where TResult: INumber < TResult >
+    public static TResult Mean< T, TResult > (IList<T> colData) where T: INumber< T > where TResult: INumber < TResult >
     {
         int count =  colData.Count();
 
@@ -77,7 +77,7 @@ public class Metrics
 
         for (int i = 0; i < count; i++)
         {
-            sum = sum + TResult.CreateChecked( colData.ElementAt(i) );
+            sum = sum + TResult.CreateChecked( colData[i] );
 
         }
 
@@ -94,7 +94,7 @@ public class Metrics
     /// <param name="colData">1D column vector array.</param>
     /// <returns>Returned mode value.</returns>
     /// <exception cref="Exception"></exception>
-    public static T Mode <T> ( IEnumerable<T> colData ) where T : INumber<T> 
+    public static T Mode <T> ( IList<T> colData ) where T : INumber<T> 
     {
         if (colData == null || colData.Count() < 2)
         {
@@ -150,7 +150,7 @@ public class Metrics
     /// <param name="colData">1D column vector array.</param>
     /// <returns>Returned median value.</returns>
     /// <exception cref="Exception"></exception>
-    public static TResult Median<T, TResult>(IEnumerable< T > colData) where T : INumber<T> where TResult : INumber< TResult>    
+    public static TResult Median<T, TResult>(IList<T> colData) where T : INumber<T> where TResult : INumber< TResult>    
     {
 
         if (colData == null || colData.Count() < 2)
@@ -192,7 +192,7 @@ public class Metrics
     /// <param name="p">Percentage value.</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static T Percentile< T >(IEnumerable< T > colData, double p) where T : INumber<T>
+    public static T Percentile< T >(IList<T> colData, double p) where T : INumber<T>
     {
         if (colData == null || colData.Count() < 2)
         {
@@ -249,7 +249,7 @@ public class Metrics
     /// otherwize the variance over the data population is calculated.</param>
     /// <returns>Variance value.</returns>
     /// <exception cref="Exception"></exception>
-    public static TResult Variance<T, TResult >( IEnumerable<T> colData, bool isDataSample = true ) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult Variance<T, TResult >( IList<T> colData, bool isDataSample = true ) where T : INumber<T> where TResult : INumber<TResult>
     {
         if (colData == null || colData.Count() < 2)
         {
@@ -290,7 +290,7 @@ public class Metrics
     /// <param name="Y">Second vector</param>
     /// <returns>Covariance value.</returns>
     /// <exception cref="Exception"></exception>
-    public static TResult Covariance< T, TResult >(IEnumerable< T > X, IEnumerable<T> Y) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult Covariance< T, TResult >(IList<T> X, IList<T> Y) where T : INumber<T> where TResult : INumber<TResult>
     {
         if (X == null || X.Count() < 2 || Y == null || Y.Count() < 2)
         {
@@ -309,8 +309,8 @@ public class Metrics
 
         for ( int i = 0; i < countX; i++ )
         {
-            var itemX = TResult.CreateChecked( X.ElementAt(i) );
-            var itemY = TResult.CreateChecked( Y.ElementAt(i) );
+            var itemX = TResult.CreateChecked( X[i] );
+            var itemY = TResult.CreateChecked( Y[i] );
 
             Sxy += ( itemX  - mx ) * ( itemY - my );
         }
@@ -329,7 +329,7 @@ public class Metrics
     /// <param name="Xi">Matrix data.</param>
     /// <returns>Returned the covariant matrix.</returns>
     /// <exception cref="Exception"></exception>
-    public static TResult[,] CovMatrix< T, TResult >( IEnumerable<IEnumerable<T>> Xi) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult[,] CovMatrix< T, TResult >( IList<IList<T>> Xi) where T : INumber<T> where TResult : INumber<TResult>
     {
 
         if (Xi == null || Xi.Count() < 2)
@@ -349,9 +349,9 @@ public class Metrics
                 if (i > j)
                     matrix[i, j] = matrix[j, i];
                 else if (i == j)
-                    matrix[i, j] = Metrics.Variance<T, TResult> ( Xi.ElementAt( i ) );
+                    matrix[i, j] = Metrics.Variance<T, TResult>(Xi[i]);
                 else
-                    matrix[i, j] = Metrics.Covariance<T, TResult>(Xi.ElementAt(i), Xi.ElementAt(j)); 
+                    matrix[i, j] = Metrics.Covariance<T, TResult>(Xi[i], Xi[j]); 
             }
         }
 
@@ -367,7 +367,7 @@ public class Metrics
     /// <param name="colData">1D column vector array.</param>
     /// <returns>Return standard deviation value.</returns>
     /// <exception cref="Exception"></exception>
-    public static TResult Stdev< T, TResult >( IEnumerable<T> colData ) where T : INumber<T> where TResult : INumber<TResult>  
+    public static TResult Stdev< T, TResult >( IList<T> colData ) where T : INumber<T> where TResult : INumber<TResult>  
     {
         if (colData == null || colData.Count() < 2)
         {
@@ -390,7 +390,7 @@ public class Metrics
     /// <param name="seed">Random seed.</param>
     /// <returns>Randon element from the array.</returns>
     /// <exception cref="Exception"></exception>
-    public static T Random<T>( IEnumerable<T> colData, int seed = 0 )
+    public static T Random<T>( IList<T> colData, int seed = 0 )
     {
         if ( colData == null || colData.Count() < 2 )
         {
@@ -411,7 +411,7 @@ public class Metrics
     /// <param name="colData">1D column vector array.</param>
     /// <returns>Tuple of value T and count of the value T</returns>
     /// <exception cref="Exception"></exception>
-    public static List<(T, int)> Frequency< T >( IEnumerable< T > colData)
+    public static List<(T, int)> Frequency< T >( IList<T> colData)
     {
         if ( colData == null || colData.Count() < 2 )
         {
@@ -423,36 +423,37 @@ public class Metrics
         return query.OrderByDescending(x => x.Item2).ToList();
     }
 
-    public static T RSquared<T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T>
+    public static TResult RSquared<T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
-        if (preData.Count() != obsData.Count())
-            throw new ArgumentException("Input arrays must have the same length.");
+        //calculate average for each dataset
+        var r = R<T, TResult>(preData, obsData);
 
-        var n = preData.Count();
+        return r*r;
+    }
 
-        T sumX = default;
-        T sumY = default;
-        T sumXSquared = default;
-        T sumYSquared = default;
-        T sumXY = default;
+    public static TResult R<T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    {
+        //calculate average for each dataset
+        TResult aav = Mean<T, TResult>(obsData);
+        TResult bav = Mean<T, TResult>(preData);
 
-        for (int i = 0; i < n; i++)
+        var count = obsData.Count();
+
+        TResult corr = default;
+        TResult ab = default, aa = default, bb = default;
+        for (int i = 0; i < count; i++)
         {
-            sumX += preData.ElementAt(i);
-            sumY += obsData.ElementAt(i);
-            sumXSquared += preData.ElementAt(i) * preData.ElementAt(i);
-            sumYSquared += obsData.ElementAt(i) * obsData.ElementAt(i);
-            sumXY += preData.ElementAt(i) * obsData.ElementAt(i);
+            var a = TResult.CreateChecked(obsData[i]) - aav;
+            var b = TResult.CreateChecked(preData[i]) - bav;
+
+            ab += a * b;
+            aa += a * a;
+            bb += b * b;
         }
 
-        T numerator = T.CreateChecked(n) * sumXY - sumX * sumY;
-        T denominatorX = (T.CreateChecked(n) * sumXSquared - sumX * sumX)* (T.CreateChecked(n) * sumXSquared - sumX * sumX);
-        T denominatorY = (T.CreateChecked(n) * sumYSquared - sumY * sumY)* (T.CreateChecked(n) * sumYSquared - sumY * sumY);
+        corr = ab / TResult.Sqrt(aa * bb);
 
-        if (denominatorX == default || denominatorY == default)
-            return default; 
-
-        return numerator / (denominatorX * denominatorY);
+        return corr;
     }
 
 
@@ -464,7 +465,7 @@ public class Metrics
     /// <param name="obsData">Actual values.</param>
     /// <param name="preData">Predicted value.</param>
     /// <returns>Returned accuracy value (0-1).</returns>
-    public static TResult CA <T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult CA <T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -473,7 +474,7 @@ public class Metrics
         TResult corected = default;
         for (int i = 0; i < count; i++)
         {
-            if (obsData.ElementAt( i )  == preData.ElementAt(i))
+            if (obsData.ElementAt( i )  == preData[i])
                 corected++;
         }
 
@@ -488,7 +489,7 @@ public class Metrics
     /// <param name="obsData">Actual values.</param>
     /// <param name="preData">Predicted value.</param>
     /// <returns>Returned error value (0-1)</returns>
-    public static TResult CE <T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
+    public static TResult CE <T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -498,7 +499,7 @@ public class Metrics
         TResult one = TResult.CreateChecked(1);
         for (int i = 0; i < count; i++)
         {
-            if (obsData.ElementAt(i) == preData.ElementAt(i))
+            if (obsData[i] == preData[i])
                 corected++;
         }
 
@@ -511,7 +512,7 @@ public class Metrics
     /// <param name="obsData">Observer data</param>
     /// <param name="preData">Predicted data</param>
     /// <returns></returns>
-    public static IEnumerable< TResult > SE< T, TResult >(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
+    public static IList<TResult> SE< T, TResult >(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : INumber<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -522,7 +523,7 @@ public class Metrics
 
         for (int i = 0; i < count; i++)
         {
-            var r = TResult.CreateChecked( obsData.ElementAt( i )) - TResult.CreateChecked( preData.ElementAt(i));
+            var r = TResult.CreateChecked( obsData[i]) - TResult.CreateChecked( preData[i]);
 
             se[i] = r * r;
         }
@@ -531,7 +532,7 @@ public class Metrics
     }
 
 
-    public static TResult MSE< T, TResult >(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static TResult MSE< T, TResult >(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -544,14 +545,14 @@ public class Metrics
         return sss / TResult.CreateChecked( count );
     }
 
-    public static TResult RMSE< T, TResult >(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static TResult RMSE< T, TResult >(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
         return TResult.Sqrt( MSE<T, TResult>(obsData, preData) );
     }
 
-    public static IEnumerable<TResult> AE<T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static IList<TResult> AE<T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -560,14 +561,14 @@ public class Metrics
         TResult[] ae = new TResult[count];
         for (int i = 0; i < count; i++)
         {
-            var r = TResult.Abs( TResult.CreateChecked( obsData.ElementAt(i)) - TResult.CreateChecked( preData.ElementAt(i)));
+            var r = TResult.Abs( TResult.CreateChecked( obsData[i]) - TResult.CreateChecked( preData[i]));
             
             ae[i] = r;
         }
         return ae;
     }
 
-    public static TResult MAE<T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static TResult MAE<T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -580,7 +581,7 @@ public class Metrics
         return sumare / TResult.CreateChecked( count ) ;
     }
 
-    public static IEnumerable<TResult> APE<T, TResult > (IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static IList<TResult> APE<T, TResult > (IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -591,8 +592,14 @@ public class Metrics
 
         for (int i = 0; i < count; i++)
         {
-            var v1 = TResult.CreateChecked(obsData.ElementAt(i));
-            var v2 = TResult.CreateChecked(preData.ElementAt(i));
+            var v1 = TResult.CreateChecked(obsData[i]);
+            var v2 = TResult.CreateChecked(preData[i]);
+
+            if (v1 == default)
+            {
+                retVal[i] = default;
+                continue;
+            }
             var r = TResult.Abs(v1 - v2) / v1;
             
             retVal[i] = r;
@@ -601,7 +608,7 @@ public class Metrics
         return retVal;
     }
 
-    public static TResult MAPE<T, TResult>(IEnumerable<T> preData, IEnumerable<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    public static TResult MAPE<T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
     {
         checkDataSets(obsData, preData);
 
@@ -612,6 +619,64 @@ public class Metrics
         var sum = Sum<TResult, TResult>(ae);
         //c
         return sum / TResult.CreateChecked( count );
+
+    }
+
+
+    /// <summary>
+    /// The Nash-Sutcliffe efficiency (NSE)  proposed by Nash and Sutcliffe (1970) 
+    /// is defined as one minus the sum of the absolute squared differences between 
+    /// the predicted and observed values normalized by the variance of the observed
+    /// values during the period under investigation.
+    /// 
+    /// The Nash-Sutcliffe efficiency (NSE) is a normalized statistic
+    /// that determines the relative magnitude of the residual variance (“noise”) compared to the 
+    /// measured data variance (“information”) (Nash and Sutcliffe, 1970). NSE indicates how well 
+    /// the plot of observed versus simulated data fits the 1:1 line. 
+    /// </summary>
+    /// <param name="obsData">Observer data</param>
+    /// <param name="preData">Predicted data</param>
+    /// <returns>NSE ranges between −∞ and 1.0 (1 inclusive), with NSE = 1 being the optimal value. 
+    /// Values between 0.0 and 1.0 are generally viewed as acceptable levels of performance, 
+    /// whereas values lower than 0.0 indicates that the mean observed value is a better predictor 
+    /// than the simulated value, which indicates unacceptable performance.</returns>
+    public static TResult NSE<T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    {
+        var se = SE<T, TResult>(obsData, preData);
+        var sse = Sum<TResult, TResult>(se);
+       
+        var count = obsData.Count();
+
+
+        //calculate the mean
+        var mean = Mean<T, T>(obsData);
+        //calculate sum of square 
+        TResult ose = default;
+        for (int i = 0; i < count; i++)
+        {
+            var res = obsData[i] - mean;
+
+            ose += TResult.CreateChecked(res * res);
+        }
+
+        //calculate NSE
+        var nse = TResult.CreateChecked(1.0) - sse / ose;
+        return nse;
+    }
+
+    /// <summary>
+    /// Normalized NSE: https://en.wikipedia.org/wiki/Nash%E2%80%93Sutcliffe_model_efficiency_coefficient
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="preData"></param>
+    /// <param name="obsData"></param>
+    /// <returns></returns>
+    public static TResult NNSE<T, TResult>(IList<T> preData, IList<T> obsData) where T : INumber<T> where TResult : IFloatingPointIeee754<TResult>
+    {
+        var nse = NSE<T, TResult>(obsData, preData);
+        //calculate NNSE
+        return TResult.CreateChecked(1.0) / (TResult.CreateChecked(2.0) - nse);
 
     }
 
@@ -628,7 +693,7 @@ public class Metrics
             throw new Exception("Both datasets must be of the same size!");
     }
 
-    private static void checkDataSets<T>(IEnumerable<T> preData, IEnumerable<T> obsData)
+    private static void checkDataSets<T>(IList<T> preData, IList<T> obsData)
     {
         if (obsData == null || obsData.Count() < 2)
             throw new Exception("'observed Data' should contains at least 2 elements!");
