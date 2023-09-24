@@ -15,7 +15,7 @@ Daany v2.0 - .NET **DA**ta **AN**al**Y**tics .NET library with the implementatio
 # Software Requirements
 The latest version of the library is built on `.NET 7` and above. 
 
-In case you want to use it on `.NET Framework` and `Standard 2.0`, use older version below `v2.0`, or try to build the version from the source code. 
+In case you want to use it on `.NET Framework` and `Standard 2.0`, use older versions below `v2.0`, or try to build the version from the source code. 
 
 The main components with separate `NuGet` package of `Daany` library are:
 - `Daany.DataFrame` - data frame implementation in pure C#.
