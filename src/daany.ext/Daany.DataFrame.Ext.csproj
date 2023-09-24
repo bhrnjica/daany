@@ -53,6 +53,6 @@
 	</ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="XPlot.Plotly" Version="4.0.3" />
+    <PackageReference Include="XPlot.Plotly" Version="4.0.6" />
   </ItemGroup>
 </Project>
