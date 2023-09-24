@@ -1,91 +1,57 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1;netcoreapp3.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+	<TargetFrameworks>net8.0;net7.0</TargetFrameworks>
 	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
-	<LangVersion>11.0</LangVersion>
+	<LangVersion>Latest</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
     <RootNamespace>Daany.MathStuff</RootNamespace>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageId>Daany.Math</PackageId>
-    <Authors>Bahrudin Hrnjica</Authors>
-    <Product>daany - data analysis and transformation</Product>
-    <Description>Daany.math - c# math library for data analysis.
-Daany - C# library for data analysis and transformation with the implementation of Matrix, DataFrame, Time series generator and decomposition and various statistics' parameters. It is closely implemented with ML.NET, in order to load the transformed data in to ML.NET pipeline.</Description>
-    <Copyright>Bahrudin Hrnjica</Copyright>
-    <PackageLicenseExpression></PackageLicenseExpression>
-    <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
-    <PackageTags>ml.net, data preparation, data analytics</PackageTags>
-    <Version>0.5.0</Version>
-    <PackageReleaseNotes>MIT License
-
-Copyright (c) 2019 Bahrudin Hrnjica
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.</PackageReleaseNotes>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PackageIcon>daanyIcon.png</PackageIcon>
-    <ApplicationIcon>daany.ico</ApplicationIcon>
     <AssemblyName>Daany.MathStuff</AssemblyName>
-    <Configurations>Debug;Release</Configurations>   
+    <Configurations>Debug;Release</Configurations>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <Title>Package title</Title>
+    <Version>2.0.0</Version>
+    <Description>Daany - .NET DAta ANalYtics .NET library with the implementation of DataFrame, Time series decompositions and Linear Algebra LAPACK and BLASS routines.</Description>
+    <Copyright>Bahrudin Hrnjica, 2019-2023</Copyright>
+    <PackageProjectUrl>github.com/bhrnjica/daany</PackageProjectUrl>
+    <PackageIcon>daanyIcon.png</PackageIcon>
+    <PackageReadmeFile>README.MD</PackageReadmeFile>
+    <RepositoryUrl>github.com/bhrnjica/daany</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>ml, math, data preparation, data analytics</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>   
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0|AnyCPU'">
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0|x64'">
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0|AnyCPU'">
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0|x64'">
+    <WarningLevel>7</WarningLevel>
+  </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Accord\**" />
-    <EmbeddedResource Remove="Accord\**" />
-    <None Remove="Accord\**" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <Compile Remove="Accord\**" />
-    <EmbeddedResource Remove="Accord\**" />
-    <None Remove="Accord\**" />
-  </ItemGroup>
-   
-  <ItemGroup>
-    <Compile Remove="Accord\**" />
-    <EmbeddedResource Remove="Accord\**" />
-    <None Remove="Accord\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
+    <None Include="..\..\daanyIcon.png">
       <Pack>True</Pack>
-      <PackagePath></PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>\</PackagePath>
     </None>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Content Include="..\..\docs\img\daanyIcon.png" Link="daanyIcon.png" Pack="true" Visible="false" PackagePath="\" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>
-      <PackagePath></PackagePath>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.MD">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 </Project>

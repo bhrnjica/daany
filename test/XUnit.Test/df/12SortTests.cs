@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
+using System.Diagnostics;
 
 namespace Unit.Test.DF
 {
@@ -271,12 +272,21 @@ namespace Unit.Test.DF
         }
 
         [Fact]
+        
         public void SortBy_MergeSort_Test03()
         {
-            var dtFormat = "M/dd/yyyy H:mm";
+            var dtFormat = "dd/MM/yyyy HH:mm";
             //col1,col2,col3,col4
             var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, parseDate:true, dformat: dtFormat);
+
+            //
+            Assert.Equal(sampleDf.ColTypes[0] , ColType.DT);
+            
+
             var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_asc_sorted.txt", sep: '\t', parseDate: true, names: null, dformat: dtFormat);
+
+            Assert.Equal(expectedDf1.ColTypes[0], ColType.DT);
+
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = false;
@@ -294,8 +304,8 @@ namespace Unit.Test.DF
         public void SortBy_QuickSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "M/dd/yyy hh:mm");
-            var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_asc_sorted.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "dd/MM/yyyy HH:mm");
+            var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_asc_sorted.txt", sep: '\t', names: null, dformat: "dd/MM/yyyy HH:mm");
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = true;
@@ -303,6 +313,7 @@ namespace Unit.Test.DF
 
             for (int i = 0; i < result.Values.Count; i++)
             {
+
                 Assert.Equal<object>(expectedDf1.Values[i], result.Values[i]);
             }
         }
@@ -311,8 +322,8 @@ namespace Unit.Test.DF
         public void SortByDescending_MergeSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "M/dd/yyy hh:mm");
-            var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "dd/MM/yyyy HH:mm");
+            var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: "dd/MM/yyyy HH:mm");
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = false;
@@ -330,8 +341,8 @@ namespace Unit.Test.DF
         public void SortByDescending_QuickSort_Test03()
         {
             //col1,col2,col3,col4
-            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "M/dd/yyy hh:mm");
-            var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: null);
+            var sampleDf = DataFrame.FromCsv(filePath: $"testdata/sort_sample02.txt", sep: '\t', names: null, dformat: "dd/MM/yyyy HH:mm");
+            var expectedDf1 = DataFrame.FromCsv(filePath: $"testdata/sort_sample02_desc_sorted.txt", sep: '\t', names: null, dformat: "dd/MM/yyyy HH:mm");
 
             //internal variable to change sort algo
             DataFrame.qsAlgo = true;

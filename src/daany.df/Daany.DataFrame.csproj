@@ -1,71 +1,52 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net7.0</TargetFrameworks>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+		<LangVersion>Latest</LangVersion>
+		<Platforms>AnyCPU;x64</Platforms>
+		<RootNamespace>Daany.DataFrame</RootNamespace>
+		<AssemblyName>Daany.DataFrame</AssemblyName>
+		<Configurations>Debug;Release</Configurations>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Title>Daany - .NET DAta ANalYtics</Title>
 
-  <PropertyGroup>
-	<TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1;netcoreapp3.0;netstandard2.1;netstandard2.0</TargetFrameworks>
-	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
-	<LangVersion>10.0</LangVersion>
-    <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>Daany</RootNamespace>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageId>Daany.DataFrame</PackageId>
-    <Authors>Bahrudin Hrnjica</Authors>
-    <Product>daany - DAta ANalYtics on .NET</Product>
-    <Description>Daany.DataFrame - cross platform NET library for analysis and transformation of tabular data.</Description>
-    <summary>Daany.DataFrame - cross platform NET library for analysis and transformation of tabular data.</summary>
-    <Copyright>Copyright ©2019-2021 Bahrudin Hrnjica</Copyright>
-    <PackageLicenseExpression></PackageLicenseExpression>
-    <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
-    <PackageTags>ml.net, data preparation, data analytics</PackageTags>
-    <Version>1.0.6</Version>
-    <PackageReleaseNotes></PackageReleaseNotes>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <LicenseUrl>https://github.com/bhrnjica/daany/blob/master/LICENSE</LicenseUrl>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <AssemblyName>Daany.DataFrame</AssemblyName>
-    <dependencies>
-      <group targetFramework="net6.0" />
-    </dependencies>
-    <PackageIcon>daanyIcon.png</PackageIcon>
-    <PackageIconUrl />
-    <Configurations>Debug;Release;Linux;Linux_Debug;Linux_Release</Configurations>
-    <GenerateDocumentationFile>False</GenerateDocumentationFile>
-  </PropertyGroup>
+		<PackageId>Daany.DataFrame</PackageId>
+		<Version>2.0.0</Version>
+		<Description>Daany - .NET DAta ANalYtics .NET library with the implementation of DataFrame, Time series decompositions and Linear Algebra LAPACK and BLASS routines.</Description>
+		<Copyright>Bahrudin Hrnjica, 2019-2023</Copyright>
+		<PackageProjectUrl>github.com/bhrnjica/daany</PackageProjectUrl>
+		<PackageIcon>daanyIcon.png</PackageIcon>
+		<PackageReadmeFile>README.MD</PackageReadmeFile>
+		<RepositoryUrl>github.com/bhrnjica/daany</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>ml, math, data preparation, data analytics</PackageTags>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<ApplicationIcon>daany.ico</ApplicationIcon>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <DocumentationFile>C:\Users\bhrnjica\source\repos\daany\src\daany.df\Daany.DataFrame.xml</DocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
+	<ItemGroup>
+	  <Content Include="daany.ico" />
+	</ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Linux|x64'">
-    <DocumentationFile>C:\Users\bhrnjica\source\repos\daany\src\daany.df\Daany.DataFrame.xml</DocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include="..\..\daanyIcon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Content Include="..\..\README.MD">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\daanyIcon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.MD">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 
-  
-  <ItemGroup>
-    <Folder Include="NReco.Csv\" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
-  </ItemGroup>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
+	</ItemGroup>
 </Project>

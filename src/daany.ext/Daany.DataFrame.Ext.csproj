@@ -1,85 +1,58 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	<TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1;netcoreapp3.0;netstandard2.1;netstandard2.0</TargetFrameworks>
-	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
-	<LangVersion>10.0</LangVersion>
-    <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>Daany</RootNamespace>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageId>Daany.DataFrame.Ext</PackageId>
-    <Authors>Bahrudin Hrnjica</Authors>
-    <Product>daany - DAta ANalYtics on .NET</Product>
-    <Description>Daany.DataFrame.Ext - A set of extensions for Daany.DataFrame.</Description>
-    <Copyright>Copyright ©2019-2021 Bahrudin Hrnjica</Copyright>
-    <PackageLicenseExpression></PackageLicenseExpression>
-    <LicenseUrl>https://github.com/bhrnjica/daany/blob/master/LICENSE</LicenseUrl>
-    <PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/bhrnjica/daany</RepositoryUrl>
-    <PackageTags>ml.net, data preparation, data analytics</PackageTags>
-    <Version>1.0.5</Version>
-    <PackageReleaseNotes>MIT License
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net7.0</TargetFrameworks>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+		<LangVersion>Latest</LangVersion>
+		<Platforms>AnyCPU;x64</Platforms>
+		<RootNamespace>Daany.DataFrame.Ext</RootNamespace>
+		<AssemblyName>Daany.DataFrame.Ext</AssemblyName>
+		<Configurations>Debug;Release</Configurations>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Title>Daany - .NET DAta ANalYtics</Title>
 
-Copyright (c) 2019 Bahrudin Hrnjica
+		<PackageId>Daany.DataFrame.Ext</PackageId>
+		<Version>2.0.0</Version>
+		<Description>Daany - .NET DAta ANalYtics .NET library with the implementation of DataFrame, Time series decompositions and Linear Algebra LAPACK and BLASS routines.</Description>
+		<Copyright>Bahrudin Hrnjica, 2019-2023</Copyright>
+		<PackageProjectUrl>github.com/bhrnjica/daany</PackageProjectUrl>
+		<PackageIcon>daanyIcon.png</PackageIcon>
+		<PackageReadmeFile>README.MD</PackageReadmeFile>
+		<RepositoryUrl>github.com/bhrnjica/daany</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>ml, math, data preparation, data analytics</PackageTags>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<ApplicationIcon>daany.ico</ApplicationIcon>
+	</PropertyGroup>
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+	<ItemGroup>
+		<Content Include="daany.ico" />
+	</ItemGroup>
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+	<ItemGroup>
+		<None Include="..\..\daanyIcon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.MD">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.</PackageReleaseNotes>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <PackageIcon>daanyIcon.png</PackageIcon>
-    <ApplicationIcon>daany.ico</ApplicationIcon>
-    <PackageIconUrl />
-    <Configurations>Debug;Release;Linux;Linux_Debug;Linux_Release</Configurations>
-  </PropertyGroup>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\daanyIcon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\README.MD">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
+		<ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
+	</ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="5.0.2" />
     <PackageReference Include="XPlot.Plotly" Version="4.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
   </ItemGroup>
 </Project>
