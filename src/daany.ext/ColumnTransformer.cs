@@ -28,26 +28,26 @@ namespace Daany.Ext
             switch (transformer)
             {
                 case ColumnTransformer.None:
-                    return (df, null, null);
+                    return (df, null, null)!;
                 case ColumnTransformer.Binary1:
-                    (var edf, var cValues) = BinaryEncoding(df, colName, transformedColumnsOnly);
-                    return (edf, null, cValues);
+                    var (edf, cValues) = BinaryEncoding(df, colName, transformedColumnsOnly);
+                    return (edf, null, cValues)!;
                 case ColumnTransformer.Binary2:
                     (edf, cValues) = BinaryEncoding2(df, colName, transformedColumnsOnly);
-                    return (edf, null, cValues);
+                    return (edf, null, cValues)!;
                 case ColumnTransformer.Ordinal:
                     (edf, cValues) = OrdinalEncoding(df, colName, transformedColumnsOnly);
-                    return (edf, null, cValues);
+                    return (edf, null, cValues)!;
                 case ColumnTransformer.OneHot:
                     (edf, cValues) = OneHotEncodeColumn(df, colName, transformedColumnsOnly);
-                    return (edf, null, cValues);
+                    return (edf, null, cValues)!;
                 case ColumnTransformer.Dummy:
                     (edf, cValues) = DummyEncodeColumn(df, colName, transformedColumnsOnly);
-                    return (edf, null, cValues);
+                    return (edf, null, cValues)!;
                 case ColumnTransformer.MinMax:
                 case ColumnTransformer.Standardizer:
                     (var tdf, float[] fValues) = ScaleColumn(df, colName, transformer, transformedColumnsOnly);
-                    return (tdf, fValues, null);                 
+                    return (tdf, fValues, null)!;                 
                 default:
                     throw new NotSupportedException("Data normalization is not supported.");
             }
@@ -97,7 +97,7 @@ namespace Daany.Ext
 
             if (transformedColumnsOnly)
             {
-                var ddf = df.Create((newColName, null));
+                var ddf = df.Create((newColName, null)!);
                 return (ddf, new float[] { param1, param2 });
             }
             else
@@ -107,6 +107,12 @@ namespace Daany.Ext
         private static (DataFrame, string[]) OneHotEncodeColumn(this DataFrame df, string colName, bool encodedOnly = false)
         {
             var colVector = df[colName];
+
+            if (colVector == null)
+            {
+                throw new Exception("colVector is null");
+            }
+
             var classValues = colVector.Where(x=> DataFrame.NAN != x).Select(x => x.ToString()).Distinct().ToArray();
             
             //define encoded columns
@@ -114,8 +120,13 @@ namespace Daany.Ext
 
             //add one-hot encoded columns
             foreach (var c in classValues)
-                dict.Add(c, new List<object>());
+            {
+                if (c != null)
+                {
+                    dict.Add(c, new List<object>());
+                }
 
+            }
             //encode values
             foreach (var cValue in colVector)
             {
