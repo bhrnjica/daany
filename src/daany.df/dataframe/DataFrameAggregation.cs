@@ -47,7 +47,7 @@ namespace Daany
 
             return value;
         }
-        internal static object _calculateAggregation(IEnumerable<object> vals, Aggregation aggregation, ColType colType)
+        internal static object? _calculateAggregation(IEnumerable<object> vals, Aggregation aggregation, ColType colType)
         {
             switch (aggregation)
             {

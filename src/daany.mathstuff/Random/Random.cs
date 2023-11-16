@@ -129,7 +129,7 @@ public class ThreadSafeRandom : System.Random, IDisposable
     public void Dispose()
     {
         _global.Dispose();
-        _local.Dispose();
+        _local?.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -141,9 +141,9 @@ public class ThreadSafeRandom : System.Random, IDisposable
 
 
     /// <summary>The underlying provider of randomness, one instance per thread, initialized with _global.</summary>
-    private ThreadLocal<System.Random> _local = new ThreadLocal<System.Random>(() =>
+    private ThreadLocal<System.Random>? _local = new ThreadLocal<System.Random>(() =>
     {
-        byte[] buffer = new byte[4];
+        byte[]? buffer = new byte[4];
 
         _global.GetBytes(buffer); // RNGCryptoServiceProvider is thread-safe for use in this manner
         if (FixedRandomSeed)
@@ -157,7 +157,11 @@ public class ThreadSafeRandom : System.Random, IDisposable
     /// <returns>A 32-bit signed integer greater than or equal to zero and less than MaxValue.</returns>
     public override int Next()
     {
-        return _local.Value.Next();
+        if (_local != null)
+            if (_local.Value != null)
+                return _local.Value.Next();
+
+        throw new InvalidOperationException();
     }
 
     /// <summary>Returns a nonnegative random number less than the specified maximum.</summary>
@@ -171,7 +175,11 @@ public class ThreadSafeRandom : System.Random, IDisposable
     /// </returns>
     public override int Next(int maxValue)
     {
-        return _local.Value.Next(maxValue);
+        if (_local != null)
+            if (_local.Value != null)
+                return _local.Value.Next(maxValue);
+
+        throw new InvalidOperationException();
     }
 
     /// <summary>Returns a random number within a specified range.</summary>
@@ -184,23 +192,39 @@ public class ThreadSafeRandom : System.Random, IDisposable
     /// </returns>
     public override int Next(int minValue, int maxValue)
     {
-        return _local.Value.Next(minValue, maxValue);
+        if (_local != null)
+            if (_local.Value != null)
+                return _local.Value.Next(minValue, maxValue);
+
+        throw new InvalidOperationException();
     }
     /// <summary>Fills the elements of a specified array of bytes with random numbers.</summary>
     /// <param name="buffer">An array of bytes to contain random numbers.</param>
     public override void NextBytes(byte[] buffer)
     {
-        _local.Value.NextBytes(buffer);
+        _local?.Value?.NextBytes(buffer);
     }
     /// <summary>Returns a random number between 0.0 and 1.0.</summary>
     /// <returns>A double-precision floating point number greater than or equal to 0.0, and less than 1.0.</returns>
     public override double NextDouble()
     {
-        return _local.Value.NextDouble();
+        if (_local != null)
+            if (_local.Value != null)
+                return _local.Value.NextDouble();
+
+        throw new InvalidOperationException();
     }
     public double NextDouble(double minValue, double maxValue)
     {
-        return minValue + _local.Value.NextDouble() * (maxValue - minValue);
+        double nextValue = 0;
+
+        if (_local != null)
+            if (_local.Value != null)
+                nextValue = _local.Value.NextDouble();
+
+        throw new InvalidOperationException();
+
+        return minValue + nextValue * (maxValue - minValue);
     }
 
 }

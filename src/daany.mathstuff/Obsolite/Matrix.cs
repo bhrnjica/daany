@@ -41,14 +41,14 @@ namespace Daany.MathStuff;
 
 internal class Matrix
 {
-    public int rows;
-    public int cols;
-    public double[] mat;
+    private int      rows;
+    private int      cols;
+    private double[] mat;
 
-    public Matrix L;
-    public Matrix U;
-    private int[] pi;
-    private double detOfP = 1;
+    private Matrix? L;
+    private Matrix? U;
+    private int[]?  pi;
+    private double  detOfP = 1;
 
     public Matrix(int iRows, int iCols)         // Matrix Class constructor
     {
@@ -57,15 +57,15 @@ internal class Matrix
         mat = new double[rows * cols];
     }
 
-    public bool IsSquare()
+    private bool IsSquare()
     {
         return rows == cols;
     }
 
     public double this[int iRow, int iCol]      // Access this matrix as a 2D array
     {
-        get { return mat[iRow * cols + iCol]; }
-        set { mat[iRow * cols + iCol] = value; }
+        get => mat[iRow * cols + iCol];
+        set => mat[iRow * cols + iCol] = value;
     }
 
     public Matrix GetCol(int k)
@@ -75,7 +75,7 @@ internal class Matrix
         return m;
     }
 
-    public void SetCol(Matrix v, int k)
+    private void SetCol(Matrix v, int k)
     {
         for (int i = 0; i < rows; i++) this[i, k] = v[i, 0];
     }
@@ -89,14 +89,11 @@ internal class Matrix
         pi = new int[rows];
         for (int i = 0; i < rows; i++) pi[i] = i;
 
-        double p = 0;
-        double pom2;
         int k0 = 0;
-        int pom1 = 0;
 
         for (int k = 0; k < cols - 1; k++)
         {
-            p = 0;
+            double p = 0;
             for (int i = k; i < rows; i++)      // find the row with the biggest pivot
             {
                 if (Math.Abs(U[i, k]) > p)
@@ -105,11 +102,15 @@ internal class Matrix
                     k0 = i;
                 }
             }
-            if (p == 0) // samé nuly ve sloupci
+            if (p == 0)
                 throw new MException("The matrix is singular!");
 
-            pom1 = pi[k]; pi[k] = pi[k0]; pi[k0] = pom1;    // switch two rows in permutation matrix
+            if (pi != null)
+            {
+                (pi[k], pi[k0]) = (pi[k0], pi[k]);
+            }
 
+            double pom2;
             for (int i = 0; i < k; i++)
             {
                 pom2 = L[k, i]; L[k, i] = L[k0, i]; L[k0, i] = pom2;
@@ -141,9 +142,7 @@ internal class Matrix
         for (int i = 0; i < rows; i++) pi[i] = i;
 
         double p = 0;
-        double pom2;
         int k0 = 0;
-        int pom1 = 0;
 
         for (int k = 0; k < cols - 1; k++)
         {
@@ -159,8 +158,9 @@ internal class Matrix
             if (p == 0)
                 return true;
 
-            pom1 = pi[k]; pi[k] = pi[k0]; pi[k0] = pom1;    // switch two rows in permutation matrix
+            (pi[k], pi[k0]) = (pi[k0], pi[k]);
 
+            double pom2;
             for (int i = 0; i < k; i++)
             {
                 pom2 = L[k, i]; L[k, i] = L[k0, i]; L[k0, i] = pom2;
@@ -184,7 +184,7 @@ internal class Matrix
         return false;
     }
 
-    public Matrix SolveWith(Matrix v)                        // Function solves Ax = v in confirmity with solution vector "v"
+    private Matrix SolveWith(Matrix v) // Function solves Ax = v in confirmity with solution vector "v"
     {
         if (rows != cols) throw new MException("The matrix is not square!");
         if (rows != v.rows) throw new MException("Wrong number of results in solution vector!");
@@ -194,13 +194,19 @@ internal class Matrix
 
         for (int i = 0; i < rows; i++)
 
-            b[i, 0] = v[pi[i], 0];   // switch two items in "v" due to permutation matrix
+            if (pi != null)
+                b[i, 0] = v[pi[i], 0]; // switch two items in "v" due to permutation matrix
 
 
-        Matrix z = SubsForth(L, b);
-        Matrix x = SubsBack(U, z);
+        if (L != null && U != null)
+        {
+            Matrix z = SubsForth(L, b);
+            Matrix x = SubsBack(U, z);
 
-        return x;
+            return x;
+        }
+
+        throw new ArgumentNullException(nameof(L));
     }
 
     // TODO check for redundancy with MakeLU() and SolveWith()
@@ -227,9 +233,7 @@ internal class Matrix
             }
             for (int j = 0; j < cols; j++)
             {
-                double temp = this[r, j];
-                this[r, j] = this[i, j];
-                this[i, j] = temp;
+                (this[r, j], this[i, j]) = (this[i, j], this[r, j]);
             }
             double div = this[r, lead];
             for (int j = 0; j < cols; j++) this[r, j] /= div;
@@ -369,7 +373,7 @@ internal class Matrix
         for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < cols; j++)
-                s.Append(string.Format("{0,5:E2}", this[i, j]) + " ");
+                s.Append($"{this[i, j],5:E2}" + " ");
             s.AppendLine();
         }
         return s.ToString();
@@ -459,7 +463,7 @@ internal class Matrix
     {
         if (A.cols != B.rows) throw new MException("Wrong dimension of matrix!");
 
-        Matrix R;
+        Matrix r;
 
         int msize = Math.Max(Math.Max(A.rows, A.cols), Math.Max(B.rows, B.cols));
 
@@ -512,29 +516,29 @@ internal class Matrix
         SafeAplusBintoC(B, 0, h, B, h, h, mField[0, 1], h);
         StrassenMultiplyRun(mField[0, 0], mField[0, 1], mField[0, 1 + 7], 1, mField); // (A12 - A22) * (B21 + B22);
 
-        R = new Matrix(A.rows, B.cols);                  // result
+        r = new Matrix(A.rows, B.cols);                  // result
 
         /// C11
-        for (int i = 0; i < Math.Min(h, R.rows); i++)          // rows
-            for (int j = 0; j < Math.Min(h, R.cols); j++)     // cols
-                R[i, j] = mField[0, 1 + 1][i, j] + mField[0, 1 + 4][i, j] - mField[0, 1 + 5][i, j] + mField[0, 1 + 7][i, j];
+        for (int i = 0; i < Math.Min(h, r.rows); i++)          // rows
+            for (int j = 0; j < Math.Min(h, r.cols); j++)     // cols
+                r[i, j] = mField[0, 1 + 1][i, j] + mField[0, 1 + 4][i, j] - mField[0, 1 + 5][i, j] + mField[0, 1 + 7][i, j];
 
         /// C12
-        for (int i = 0; i < Math.Min(h, R.rows); i++)          // rows
-            for (int j = h; j < Math.Min(2 * h, R.cols); j++)     // cols
-                R[i, j] = mField[0, 1 + 3][i, j - h] + mField[0, 1 + 5][i, j - h];
+        for (int i = 0; i < Math.Min(h, r.rows); i++)          // rows
+            for (int j = h; j < Math.Min(2 * h, r.cols); j++)     // cols
+                r[i, j] = mField[0, 1 + 3][i, j - h] + mField[0, 1 + 5][i, j - h];
 
         /// C21
-        for (int i = h; i < Math.Min(2 * h, R.rows); i++)          // rows
-            for (int j = 0; j < Math.Min(h, R.cols); j++)     // cols
-                R[i, j] = mField[0, 1 + 2][i - h, j] + mField[0, 1 + 4][i - h, j];
+        for (int i = h; i < Math.Min(2 * h, r.rows); i++)          // rows
+            for (int j = 0; j < Math.Min(h, r.cols); j++)     // cols
+                r[i, j] = mField[0, 1 + 2][i - h, j] + mField[0, 1 + 4][i - h, j];
 
         /// C22
-        for (int i = h; i < Math.Min(2 * h, R.rows); i++)          // rows
-            for (int j = h; j < Math.Min(2 * h, R.cols); j++)     // cols
-                R[i, j] = mField[0, 1 + 1][i - h, j - h] - mField[0, 1 + 2][i - h, j - h] + mField[0, 1 + 3][i - h, j - h] + mField[0, 1 + 6][i - h, j - h];
+        for (int i = h; i < Math.Min(2 * h, r.rows); i++)          // rows
+            for (int j = h; j < Math.Min(2 * h, r.cols); j++)     // cols
+                r[i, j] = mField[0, 1 + 1][i - h, j - h] - mField[0, 1 + 2][i - h, j - h] + mField[0, 1 + 3][i - h, j - h] + mField[0, 1 + 6][i - h, j - h];
 
-        return R;
+        return r;
     }
     private static void StrassenMultiplyRun(Matrix A, Matrix B, Matrix C, int l, Matrix[,] f)    // A * B into C, level of recursion, matrix field
     {
@@ -648,7 +652,7 @@ internal class Matrix
     public static string NormalizeMatrixString(string matStr)   // From Andy - thank you! :)
     {
         // Remove any multiple spaces
-        while (matStr.IndexOf("  ") != -1)
+        while (matStr.IndexOf("  ", StringComparison.Ordinal) != -1)
             matStr = matStr.Replace("  ", " ");
 
         // Remove any spaces before or after newlines
@@ -659,7 +663,7 @@ internal class Matrix
         // Make it easier by first replacing \r\n’s with |’s then
         // restore the |’s with \r\n’s
         matStr = matStr.Replace("\r\n", "|");
-        while (matStr.LastIndexOf("|") == matStr.Length - 1)
+        while (matStr.LastIndexOf("|", StringComparison.Ordinal) == matStr.Length - 1)
             matStr = matStr.Substring(0, matStr.Length - 1);
 
         matStr = matStr.Replace("|", "\r\n");
@@ -688,7 +692,7 @@ internal class Matrix
 
 public class MException : Exception
 {
-    public MException(string Message)
-        : base(Message)
+    public MException(string message)
+        : base(message)
     { }
 }

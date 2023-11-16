@@ -40,10 +40,8 @@ public static class BasicStatistics
             throw new Exception("'coldData' cannot be null or empty!");
 
         var counts = new Dictionary<T, int>();
-        for (int i = 0; i < colData.Length; i++)
+        foreach (var a in colData)
         {
-            var a = colData[i];
-
             if (counts.ContainsKey(a))
                 counts[a] = counts[a] + 1;
             else

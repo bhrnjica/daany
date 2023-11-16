@@ -42,7 +42,7 @@ public class ConfusionMatrix
     /// <param name="matrix"></param>
     public ConfusionMatrix(int [][] matrix)
     {
-        if (_matrix == null && _matrix.Length != _matrix[0].Length)
+        if (_matrix == null || _matrix.Length != _matrix[0].Length)
         {
             throw new Exception("Confusion matrix cannot be created with invalid data!");
         }
@@ -73,7 +73,8 @@ public class ConfusionMatrix
             //retrieve the values
             var o = observed[row];
             var p = predicted[row];
-            ++_matrix[o][p];
+            if (_matrix != null) 
+                _matrix[o][p] += 1;
         }
         
     }

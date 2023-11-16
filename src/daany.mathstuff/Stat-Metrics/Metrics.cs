@@ -45,7 +45,7 @@ public class Metrics
             throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
-        TResult sum = default;
+        TResult sum = default!;
 
         for (int i = 0; i < count; i++)
         {
@@ -73,7 +73,7 @@ public class Metrics
             throw new Exception("'coldData' should contains at least 2 elements!");
         }
 
-        TResult sum = default;
+        TResult sum = default!;
 
         for (int i = 0; i < count; i++)
         {

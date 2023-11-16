@@ -75,7 +75,7 @@ namespace Daany
         /// Data type for each data frame column.
         /// </summary>
         /// 
-        private ColType[] _colsType;
+        private ColType[]? _colsType;
         /// <summary>
         /// 1D element contains data frame values
         /// </summary>
@@ -114,7 +114,7 @@ namespace Daany
         /// Return row enumerators by returning row as dictionary 
         /// </summary>
         /// <returns>dictionary</returns>
-        public IEnumerable<IDictionary<string, object>> GetEnumerator()
+        public IEnumerable<IDictionary<string?, object>> GetEnumerator()
         {
             var dic = new Dictionary<string, object>();
             for (int i = 0; i < Index.Count; i++)
@@ -124,7 +124,7 @@ namespace Daany
                 for (int j = 0; j < this.Columns.Count; j++)
                     dic.Add(this.Columns[j], row[j]);
 
-                yield return dic;
+                yield return dic!;
             }
 
         }
@@ -928,14 +928,14 @@ namespace Daany
             };
             
             //initialize column types
-            if (this._colsType == null)
+            if (_colsType == null)
                 this._colsType = columnsTypes();
 
             var lstCols = new List<(string cName, ColType cType)>();
             var idxs = getColumnIndex(inclColumns);
 
             //include columns
-            if (inclColumns == null || inclColumns.Length == 0)
+            if (inclColumns.Length == 0)
             {
                 for (int i = 0; i < this.Columns.Count(); i++)
                 {
@@ -944,16 +944,16 @@ namespace Daany
             }
             else
             {
-                for (int i = 0; i < idxs.Length; i++)
+                foreach (var t in idxs)
                 {
-                    var c = this.Columns[idxs[i]];
-                    lstCols.Add((c, this._colsType[idxs[i]]));
+                    var c = this.Columns[t];
+                    lstCols.Add((c, this._colsType[t]));
                 }
             }
 
             //only numeric columns
             var finalCols = new Dictionary<string, Aggregation[]>(); // new List<(string cName, ColType cType)>();
-            for (int i = 0; i < lstCols.Count(); i++)
+            for (var i = 0; i < lstCols.Count(); i++)
             {
                 if (numericOnly)
                 {

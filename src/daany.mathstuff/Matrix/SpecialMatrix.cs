@@ -28,18 +28,23 @@ namespace Daany.MathStuff.MatrixGeneric;
 public static class SpecialMatrix 
 {
     //https://mathworld.wolfram.com/HankelMatrix.html
-    public static T [,] Hankel< T >(this T[] vector, int colCount=-1) where T : IFloatingPoint<T>
+    public static T [,] Hankel< T >(this T[]? vector, int colCount =-1) where T : IFloatingPoint<T>
     {
-        int N = vector.Length;
-        int L = colCount == -1 ? N : colCount;
-        int K = colCount == -1 ? N : N - L + 1;
-        var result = new T[L, K];
-
-        for(int i = 0; i < L; i++)
+        if (vector == null)
         {
-            for (int j = 0; j < K; j++)
+            throw new ArgumentNullException(nameof(vector));    
+        }
+
+        int n = vector.Length;
+        int l = colCount == -1 ? n : colCount;
+        int k = colCount == -1 ? n : n - l + 1;
+        var result = new T[l, k];
+
+        for(int i = 0; i < l; i++)
+        {
+            for (int j = 0; j < k; j++)
             {
-                result[i, j] = (i + j) > N-1 ? default: vector[i + j];
+                result[i, j] = (i + j) > n - 1 ? default! : vector[i + j];
             }
         }
 
@@ -48,12 +53,12 @@ public static class SpecialMatrix
     //https://mathworld.wolfram.com/ToeplitzMatrix.html
     public static T[,] Toeplitz <T> ( this T[] vector) where T : IFloatingPoint<T>
     {
-        int N = vector.Length;
-        var result = new T[N, N];
+        int n = vector.Length;
+        var result = new T[n, n];
 
-        for (int i = 0; i < N; i++)
+        for (int i = 0; i < n; i++)
         {
-            for (int j = i; j < N; j++)
+            for (int j = i; j < n; j++)
             {
                 result[i, j] = vector[j - i];
                 result[j, i] = result[i, j];
@@ -69,7 +74,7 @@ public static class SpecialMatrix
 
         for (int i = 0; i < result.GetLength(0); i++)
             for (int j = 0; j < result.GetLength(1); j++)
-                result[i, j] = default;
+                result[i, j] = default!;
 
         return result;
     }
@@ -78,7 +83,7 @@ public static class SpecialMatrix
     {
         var result = new TResult[elements];
         for (int i = 0; i < result.GetLength(0); i++)
-            result[i] = default;
+            result[i] = default!;
 
         return result;
     }
@@ -100,7 +105,7 @@ public static class SpecialMatrix
             for (int j = 0; j < cols; j++)
             {
                 if (i != j)
-                    retVal[i, j] = default;
+                    retVal[i, j] = default!;
                 else
                     retVal[i, j] = TResult.CreateChecked(1);
 

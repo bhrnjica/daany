@@ -128,7 +128,7 @@ SOFTWARE.</PackageReleaseNotes>
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Linux_Release|net8.0|x64'">
 	  <WarningLevel>7</WarningLevel>
 	</PropertyGroup>
-	
+
 	
   <ItemGroup>
     <None Include="..\..\daanyIcon.png">
