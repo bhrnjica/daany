@@ -1,6 +1,6 @@
 ﻿![Daany Logo](./docs/img/daany_logo_small.png)
 
-Daany - .NET **DA**ta **AN**al**Y**tics .NET library with the implementation of `DataFrame`, `Time series` decompositions and `Linear Algebra` `LAPACK` and `BLASS` routines.
+Daany v2.0 - .NET **DA**ta **AN**al**Y**tics .NET library with the implementation of `DataFrame`, `Time series` decompositions and `Linear Algebra` `LAPACK` and `BLASS` routines.
 
 
 ![License](https://img.shields.io/github/license/bhrnjica/Daany)
@@ -13,9 +13,9 @@ Daany - .NET **DA**ta **AN**al**Y**tics .NET library with the implementation of 
 *[Daany Developer Guide](/docs/DevGuide/developer_guide.md)* - complete guide for developers.
 
 # Software Requirements
-The latest version of the library is built on `.NET Standard2.1` and supports `.NET 3` and above.
+The latest version of the library is built on `.NET 7` and above. 
 
-Unfortunately the library is not available for .NET Framework `4.8` and below. In case you want to use it on `.NET Framework` and `Standard 2.0`, use older version `v0.3.*`, or try to build the version from the source code. 
+In case you want to use it on `.NET Framework` and `Standard 2.0`, use older versions below `v2.0`, or try to build the version from the source code. 
 
 The main components with separate `NuGet` package of `Daany` library are:
 - `Daany.DataFrame` - data frame implementation in pure C#.
