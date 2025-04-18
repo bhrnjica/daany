@@ -28,22 +28,29 @@ using System.Threading.Tasks;
 
 namespace Daany
 {
-    /// <summary>
-    /// Class implementation for DataFrame. The DataFrame is going to be C# specific implementation
-    /// to handle data loading from files, grouping, sorting, filtering, handling with columns and rows
-    /// accessing data frame (df) elements etc.
-    /// </summary>
-  
-    public partial class DataFrame : IDataFrame
+	/// <summary>
+	/// Represents a tabular data structure with strongly-typed columns, similar to pandas DataFrames.
+	/// Provides functionality for data loading, transformation, filtering, and analysis.
+	/// </summary>
+	/// <remarks>
+	/// The DataFrame is optimized for:
+	/// - Efficient columnar storage
+	/// - Type safety with explicit column types
+	/// - Null/missing value handling
+	/// - CSV/JSON/web data source integration
+	/// - Common data operations (filter, sort, group, aggregate)
+	/// </remarks>
+	public partial class DataFrame : IDataFrame
     {
 
         #region Private fields
         private static readonly char[] _missingChars = new char[] { ' ', '?', '*', };
         private static readonly string[] _missingCharacters = new string[] { "n/a", "?", "*"," " };
         #endregion
+
         #region Static members
         /// <summary>
-        ///  Saves data frame .NET object to  csv file.
+        ///  Saves data frame .NET object to csv file.
         /// </summary>
         /// <param name="filePath">Full or relative file path.</param>
         /// <param name="dataFrame">Data frame to persist.</param>
@@ -52,7 +59,7 @@ namespace Daany
         /// <param name="writHeader">Include heade in the file.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static bool ToCsv(string filePath, DataFrame dataFrame, char delimiter = ',', string dateFormat = null, bool writHeader = true)
+        public static bool ToCsv(string filePath, DataFrame dataFrame, char delimiter = ',', string? dateFormat = null, bool writHeader = true)
         {
             if (dataFrame == null)
                 throw new ArgumentNullException(nameof(dataFrame));
@@ -93,8 +100,8 @@ namespace Daany
                         }
                         else
                         {
-                            var strValue = Convert.ToString(dataFrame._values[lstIndex], CultureInfo.InvariantCulture);
-                            csvWriter.WriteField(strValue);
+                            if(Convert.ToString(dataFrame._values[lstIndex], CultureInfo.InvariantCulture) is string strValue)
+                                csvWriter.WriteField(strValue);
                         }
                         //
                         lstIndex++;
@@ -107,7 +114,7 @@ namespace Daany
 
         }
 
-        public static async Task<bool> ToCsvAsync(string filePath, DataFrame dataFrame, char delimiter = ',', string dateFormat = null, bool writHeader = true)
+        public static async Task<bool> ToCsvAsync(string filePath, DataFrame dataFrame, char delimiter = ',', string? dateFormat = null, bool writHeader = true)
         {
             if (dataFrame == null)
                 throw new ArgumentNullException(nameof(dataFrame));
@@ -147,8 +154,8 @@ namespace Daany
                         }
                         else
                         {
-                            var strValue = Convert.ToString(dataFrame._values[lstIndex], CultureInfo.InvariantCulture);
-                            await csvWriter.WriteFieldAsync(strValue);
+                            if(Convert.ToString(dataFrame._values[lstIndex], CultureInfo.InvariantCulture) is string strValue)
+                                await csvWriter.WriteFieldAsync(strValue);
                         }
                         //
                         lstIndex++;
@@ -177,7 +184,7 @@ namespace Daany
         /// <param name="dformat">Date time format.</param>
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
         /// <returns>Data Frame object.</returns>
-        public static DataFrame FromWeb(string urlPath, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, int nRows = -1)
+        public static DataFrame FromWeb(string urlPath, char sep = ',', string[]? names = null, string? dformat = null, ColType[]? colTypes = null, int nRows = -1)
         {
             if (string.IsNullOrEmpty(urlPath))
                 throw new ArgumentNullException(nameof(urlPath), "Argument should not be null.");
@@ -205,7 +212,7 @@ namespace Daany
             return df;
         }
 
-        public static async Task<DataFrame> FromWebAsync(string urlPath, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, int nRows = -1)
+        public static async Task<DataFrame> FromWebAsync(string urlPath, char sep = ',', string[]? names = null, string? dformat = null, ColType[]? colTypes = null, int nRows = -1)
         {
             if (string.IsNullOrEmpty(urlPath))
                 throw new ArgumentNullException(nameof(urlPath), "Argument should not be null.");
@@ -231,7 +238,7 @@ namespace Daany
             return df;
         }
 
-        public static DataFrame FromText(string strText, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, char[] missingValues=null, int nRows = -1, int skipLines = 0)
+        public static DataFrame FromText(string strText, char sep = ',', string[]? names = null, string? dformat = null, ColType[]? colTypes = null, char[]? missingValues=null, int nRows = -1, int skipLines = 0)
         {
             if (string.IsNullOrEmpty(strText))
                 throw new ArgumentNullException(nameof(strText), "Argument should not be null.");
@@ -245,9 +252,10 @@ namespace Daany
 
                     var columns = names == null ? new List<string>() : names.ToList();
 
-                    var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue:missingValues, skipLines: skipLines);
+                    var retVal = ParseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue:missingValues, skipLines: skipLines);
 
                     var df = new DataFrame(retVal, columns, colTypes);
+
                     if (colTypes != null)
                         df._colsType = colTypes;
                     return df;
@@ -255,7 +263,7 @@ namespace Daany
             }
         }
 
-        public static DataFrame FromStrings(string[] strArray, char sep = ',', string[] names = null, string dformat = null, ColType[] colTypes = null, char[] missingValues = null, int nRows = -1, int skipLines = 0)
+        public static DataFrame FromStrings(string[] strArray, char sep = ',', string[]? names = null, string? dformat = null, ColType[]? colTypes = null, char[]? missingValues = null, int nRows = -1, int skipLines = 0)
         {
             if (strArray==null || strArray.Length ==0)
                 throw new ArgumentNullException(nameof(strArray), "Argument should not be null or empty.");
@@ -270,7 +278,7 @@ namespace Daany
 
                     var columns = names == null ? new List<string>() : names.ToList();
 
-                    var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue: missingValues, skipLines: skipLines);
+                    var retVal = ParseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: null, nRows: nRows, parseDate: true, missingValue: missingValues, skipLines: skipLines);
 
                     var df = new DataFrame(retVal, columns, colTypes);
                     if (colTypes != null)
@@ -292,7 +300,7 @@ namespace Daany
         /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
         /// <param name="skipLines">Number of first lines to skip with parsing. This is handy in case we need to put description to data before actual data.</param>
         /// <returns>Data Frame object.</returns>
-        public static DataFrame FromCsv(string filePath, char sep = ',', string[] names = null, string dformat = null, bool parseDate = true, ColType[] colTypes = null, char[] missingValues = null, int nRows = -1, int skipLines = 0)
+        public static DataFrame FromCsv(string filePath, char sep = ',', string[]? names = null, string? dformat = null, bool parseDate = true, ColType[]? colTypes = null, char[]? missingValues = null, int nRows = -1, int skipLines = 0)
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
@@ -306,7 +314,7 @@ namespace Daany
 
                 var columns = names == null ? new List<string>() : names.ToList();
 
-                var retVal = parseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: dformat, nRows: nRows, parseDate: parseDate, missingValue: missingValues, skipLines: skipLines);
+                var retVal = ParseReader(csvReader, columns: ref columns, colTypes: colTypes, dateFormats: dformat, nRows: nRows, parseDate: parseDate, missingValue: missingValues, skipLines: skipLines);
 
                 var df = new DataFrame(retVal, columns, colTypes);
                 if (colTypes != null)
@@ -318,7 +326,7 @@ namespace Daany
         }
 
         #endregion
-        private static List<object> parseReader(CsvReader csvReader, ref List<string> columns, ColType[] colTypes, string dateFormats, int nRows, bool parseDate, char[] missingValue, int skipLines)
+        private static List<object> ParseReader(CsvReader csvReader, ref List<string> columns, ColType[]? colTypes, string? dateFormats, int nRows, bool parseDate, char[]? missingValue, int skipLines)
         {
             //Define header
             int line = 0;
@@ -348,15 +356,11 @@ namespace Daany
                     continue;
                 }
 
-                //check consistency of the current line in the file
-#if NETSTANDARD2_0                           
-                if (csvReader.FieldsCount == 1 && string.IsNullOrEmpty(csvReader[0]))//skip empty line
-                    continue;
-#else
-                if (csvReader.FieldsCount == 1 && csvReader.AsSpan(0).IsEmpty)//skip empty line
-                    continue;
-#endif
-                if (csvReader.FieldsCount != columns.Count)
+				//check consistency of the current line in the file
+				if (csvReader.FieldsCount == 1 && csvReader.AsSpan(0).IsEmpty)//skip empty line
+					continue;
+
+				if (csvReader.FieldsCount != columns.Count)
                     throw new Exception($"The number of parsed elements at the line '{line}' is not equal to column count.");
                 //
                 for (int i = 0; i < columns.Count; i++)
@@ -368,32 +372,20 @@ namespace Daany
                     }
                     else
                     {
-#if NETSTANDARD2_0
-                        var strValue = csvReader[i];
-#else
-                        //get value as Span
-                        var span = csvReader.AsSpan(i);
-#endif
+						//get value as Span
+						var span = csvReader.AsSpan(i);
 
-                        if (colTypes != null)
+						if (colTypes != null)
                         {
-#if NETSTANDARD2_0
-                             var val = parseValue(strValue, missingValue, colTypes[i], dateFormats);
-#else
-                            var val = parseValue(span, missingValue, colTypes[i], dateFormats);
-#endif
+							var val = ParseValue(span, missingValue, colTypes[i], dateFormats);
 
-                            listValues.Add(val);
+							listValues.Add(val);
                         }
                         else
                         {
-#if NETSTANDARD2_0
-                            var val = parseValue(strValue, missingValue, parseDate, dateFormats);
-#else
-                            var val = parseValue(span, missingValue, parseDate, dateFormats);
-#endif
+							var val = ParseValue(span, missingValue, parseDate, dateFormats);
 
-                            listValues.Add(val);
+							listValues.Add(val);
                         }
                     }
                 }
@@ -401,167 +393,76 @@ namespace Daany
 
             return listValues;
         }
-#if NETSTANDARD2_0
 
-        private static object parseValue(string strValue, char[] missingValue, ColType colType, string dFormat = null)
-        {
-            //check the missing value
-            if (IsMissingValue(strValue, missingChars: missingValue))
-                return DataFrame.NAN;
+		//private static object parseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
+		//{
+		//    //check the missing value
+		//    if (IsMissingValue(value, missingChars: missingValue))
+		//        return DataFrame.NAN;
 
-            switch (colType)
-            {
-                case ColType.I2:
-                    return bool.Parse(strValue);
-                case ColType.IN:
-                    return new string(strValue.ToArray());
-                case ColType.I32:
-                    return int.Parse(strValue);
-                case ColType.I64:
-                    return long.Parse(strValue);
-                case ColType.F32:
-                    return float.Parse(strValue);
-                case ColType.DD:
-                    return double.Parse(strValue);
-                case ColType.STR:
-                    return new string(strValue.ToArray());
-                case ColType.DT:
-                    {
-                        if (string.IsNullOrEmpty(dFormat))
-                            return DateTime.Parse(strValue, CultureInfo.InvariantCulture, DateTimeStyles.None);
-                        else
-                            return DateTime.ParseExact(strValue, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
+		//    switch (colType)
+		//    {
+		//        case ColType.I2:
+		//            return bool.Parse(value);
+		//        case ColType.IN:
+		//            return new string(value.ToArray());
+		//        case ColType.I32:
+		//            return int.Parse(value);
+		//        case ColType.I64:
+		//            return long.Parse(value);
+		//        case ColType.F32:
+		//            return float.Parse(value);
+		//        case ColType.DD:
+		//            return double.Parse(value);
+		//        case ColType.STR:
+		//            return new string(value.ToArray());
+		//        case ColType.DT:
+		//            {
+		//                if (string.IsNullOrEmpty(dFormat))
+		//                    return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
+		//                else
+		//                    return DateTime.ParseExact(value, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
 
-                    }
-                default:
-                    throw new Exception("column type is not known.");
-            }
-        }
+		//            }
+		//        default:
+		//            throw new Exception("column type is not known.");
+		//    }
+		//}
 
-        private static object parseValue(string strValue, char[] missingValue, bool parseDate = false, string dFormat = null)
-        {
-            //check the missing value
-            if (IsMissingValue(strValue, missingChars: missingValue))
-                return DataFrame.NAN;
+		internal static object ParseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
+		{
+			// Check if the value is a missing value
+			if (IsMissingValue(value, missingChars: missingValue))
+				return DataFrame.NAN;
 
-            var val = IsNumeric(strValue);
+			// Use a switch expression for improved readability and efficiency
+			return colType switch
+			{
+				ColType.I2 => bool.TryParse(value, out var boolResult) ? boolResult : throw new FormatException("Invalid boolean value."),
+				ColType.IN or ColType.STR => value.ToString(), // Avoids extra allocations with 'ToArray'
+				ColType.I32 => int.TryParse(value, out var intResult) ? intResult : throw new FormatException("Invalid integer value."),
+				ColType.I64 => long.TryParse(value, out var longResult) ? longResult : throw new FormatException("Invalid long integer value."),
+				ColType.F32 => float.TryParse(value, out var floatResult) ? floatResult : throw new FormatException("Invalid float value."),
+				ColType.DD => double.TryParse(value, out var doubleResult) ? doubleResult : throw new FormatException("Invalid double value."),
+				ColType.DT => ParseDateTime(value, dFormat),
+				_ => throw new ArgumentException("Unknown column type.")
+			};
+		}
 
-            if (val == ValueType.Int)
-            {
-                int v = int.Parse(strValue, provider: CultureInfo.InvariantCulture);
-                return v;
-            }
-            else if (val == ValueType.Float)
-            {
-                float v = float.Parse(strValue, provider: CultureInfo.InvariantCulture);
-                return v;
-            }
-            else // non numeric values
-            {
-                if (dFormat != null && DateTime.TryParseExact(strValue, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime pdtValue))
-                {
-                    return pdtValue;
-                }
-                else if (parseDate && DateTime.TryParse(strValue, out DateTime dtValue))
-                {
-                    return dtValue;
-                }
-                //else if (bool.TryParse(span, out bool bVal))
-                //{
-                //    llst.Add(bVal);
-                //}
-                else
-                {
-                    var strVal = new string(strValue.ToArray());
-                    return strVal;
-                }
+		private static object ParseDateTime(ReadOnlySpan<char> value, string? dFormat)
+		{
+			// Extracted DateTime parsing logic for modularity
+			return string.IsNullOrEmpty(dFormat)
+				? DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateResult)
+					? dateResult
+					: throw new FormatException("Invalid DateTime value.")
+				: DateTime.TryParseExact(value, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateExactResult)
+					? dateExactResult
+					: throw new FormatException("Invalid DateTime format.");
+		}
 
-            }
 
-        }
-
-        private static bool IsMissingValue(string spanValue, char[] missingChars)
-        {
-            if (spanValue.Length > 1)
-                return false;
-            else if (spanValue.Length < 1)
-                return true;
-            for (int i = 0; i < spanValue.Length; i++)
-            {
-                if (missingChars != null)
-                {
-                    if (missingChars.Contains(spanValue[i]))
-                        return true;
-                }
-                else if (_missingChars.Contains(spanValue[i]))
-                    return true;
-            }
-            return false;
-        }
-
-        private static ValueType IsNumeric(string spanValue)
-        {
-            int pointCounter = 0;
-            for (int i = 0; i < spanValue.Length; i++)
-            {
-                if (i == 0 && (spanValue[i] == '-' || spanValue[i] == '+'))
-                    continue;
-                if (spanValue[i] == '.')
-                {
-                    pointCounter++;
-                }
-                else if (!char.IsNumber(spanValue[i]))
-                {
-                    return 0;
-                }
-
-            }
-
-            if (pointCounter == 0)
-                return ValueType.Int;
-            else if (pointCounter == 1)
-                return ValueType.Float;
-            else
-                return ValueType.None;
-        }
-  
-#else
-        private static object parseValue(ReadOnlySpan<char> value, char[] missingValue, ColType colType, string dFormat = null)
-        {
-            //check the missing value
-            if (IsMissingValue(value, missingChars: missingValue))
-                return DataFrame.NAN;
-
-            switch (colType)
-            {
-                case ColType.I2:
-                    return bool.Parse(value);
-                case ColType.IN:
-                    return new string(value.ToArray());
-                case ColType.I32:
-                    return int.Parse(value);
-                case ColType.I64:
-                    return long.Parse(value);
-                case ColType.F32:
-                    return float.Parse(value);
-                case ColType.DD:
-                    return double.Parse(value);
-                case ColType.STR:
-                    return new string(value.ToArray());
-                case ColType.DT:
-                    {
-                        if (string.IsNullOrEmpty(dFormat))
-                            return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
-                        else
-                            return DateTime.ParseExact(value, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
-
-                    }
-                default:
-                    throw new Exception("column type is not known.");
-            }
-        }
-
-        private static object parseValue(ReadOnlySpan<char> value, char[] missingValue, bool parseDate = false, string dFormat = null)
+		private static object ParseValue(ReadOnlySpan<char> value, char[]? missingValue, bool parseDate = false, string? dFormat = null)
         {
             //check the missing value
             if (IsMissingValue(value, missingChars: missingValue))
@@ -603,68 +504,58 @@ namespace Daany
 
         }
 
-        private static bool IsMissingValue(ReadOnlySpan<char> spanValue, char[] missingChars)
-        {
-            if (spanValue.Length > 1)
-                return false;
-            else if (spanValue.Length < 1)
-                return true;
-            for (int i = 0; i < spanValue.Length; i++)
-            {
-                if (missingChars != null)
-                {
-                    if (missingChars.Contains(spanValue[i]))
-                        return true;
-                }
-                else if (_missingChars.Contains(spanValue[i]))
-                    return true;
-            }
-            return false;
-        }
+		internal static bool IsMissingValue(ReadOnlySpan<char> spanValue, char[]? missingChars)
+		{
+			if (spanValue.Length == 0)
+				return true;
 
-        private static ValueType IsNumeric(ReadOnlySpan<char> spanValue)
-        {
-            int pointCounter = 0;
-            for (int i = 0; i < spanValue.Length; i++)
-            {
-                if (i == 0 && (spanValue[i] == '-' || spanValue[i] == '+'))
-                    continue;
-                if (spanValue[i] == '.')
-                {
-                    pointCounter++;
-                }
-                else if (!char.IsNumber(spanValue[i]))
-                {
-                    return 0;
-                }
+			if (spanValue.Length > 1)
+				return false;
 
-            }
+			char character = spanValue[0];
+			return (missingChars?.Contains(character) ?? _missingChars.Contains(character));
+		}
 
-            if (pointCounter == 0)
-                return ValueType.Int;
-            else if (pointCounter == 1)
-                return ValueType.Float;
-            else
-                return ValueType.None;
-        }
+		internal static ValueType IsNumeric(ReadOnlySpan<char> spanValue)
+		{
+			int pointCounter = 0;
 
-#endif
+			for (int i = 0; i < spanValue.Length; i++)
+			{
+				char currentChar = spanValue[i];
 
-        private static object parseValue(object value, string dformat)
-        {
-            if (value is string)
-#if NETSTANDARD2_0
-                return parseValue(value.ToString(), null, true, dformat);
-#else
-                return parseValue(value.ToString().AsSpan(),null, true, dformat);
-#endif
-            else
-                return value;
-        }
+				// Handle sign at the beginning
+				if (i == 0 && (currentChar == '-' || currentChar == '+'))
+					continue;
 
+				// Count decimal points
+				if (currentChar == '.')
+				{
+					pointCounter++;
+					continue;
+				}
 
+				// Check if the character is not numeric
+				if (!char.IsDigit(currentChar))
+					return ValueType.None; // Explicitly returning 'None' for invalid input
+			}
 
+			// Determine numeric type based on decimal point count
+			return pointCounter switch
+			{
+				0 => ValueType.Int,
+				1 => ValueType.Float,
+				_ => ValueType.None, // More than one point is invalid
+			};
+		}
 
-       
-    }
+		private static object ParseValue(object value, string? dformat)
+		{
+			if (value is string stringValue)
+			{
+				return ParseValue(stringValue.AsSpan(), null, true, dformat);
+			}
+			return value;
+		}
+	}
 }

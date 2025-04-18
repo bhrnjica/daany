@@ -91,36 +91,148 @@ namespace Daany
         public bool ContainsKey(K1 key1, K2 key2, K3 key3) => ContainsKey(key1) && base[key1].ContainsKey(key2) && base[key1][key2].ContainsKey(key3);
     }
 
-    public class TwoKeysDictionary<K1, K2, T> : Dictionary<K1, Dictionary<K2, T>>
-    {
-        public T this[K1 key1, K2 key2]
-        {
-            get => base.ContainsKey(key1) && base[key1].ContainsKey(key2) ? base[key1][key2] : default;
-            set
-            {
-                if (ContainsKey(key1) && base[key1].ContainsKey(key2))
-                    base[key1][key2] = value;
-                else
-                    Add(key1, key2, value);
-            }
-        }
+	/// <summary>
+	/// A dictionary that uses two keys (primary and secondary) to store values
+	/// </summary>
+	/// <typeparam name="K1">Type of the primary key</typeparam>
+	/// <typeparam name="K2">Type of the secondary key</typeparam>
+	/// <typeparam name="T">Type of the stored values</typeparam>
+	public class TwoKeysDictionary<K1, K2, T> : Dictionary<K1, Dictionary<K2, T>>
+	{
+		/// <summary>
+		/// Gets or sets the value associated with the specified keys
+		/// </summary>
+		public T this[K1 key1, K2 key2]
+		{
+			get
+			{
+				if (TryGetValue(key1, key2, out T value))
+				{
+					return value;
+				}
+				return default;
+			}
+			set
+			{
+				if (ContainsKey(key1))
+			    {
+					base[key1][key2] = value;
+				}
+				else
+				{
+					Add(key1, key2, value);
+				}
+			}
+		}
 
-        public void Add(K1 key1, K2 key2, T value)
-        {
-            if (ContainsKey(key1))
-            {
-                if (base[key1].ContainsKey(key2))
-                    throw new Exception("Couple " + key1 + "/" + key2 + " already exists!");
-                base[key1].Add(key2, value);
-            }
-            else
-                Add(key1, new Dictionary<K2, T>() { { key2, value } });
-        }
+		/// <summary>
+		/// Adds a value with the specified keys
+		/// </summary>
+		/// <exception cref="ArgumentException">Thrown when the key pair already exists</exception>
+		public void Add(K1 key1, K2 key2, T value)
+		{
+			if (TryGetValue(key1, out var innerDict))
+			{
+				if (innerDict.ContainsKey(key2))
+				{
+					throw new ArgumentException($"Key pair ({key1}, {key2}) already exists");
+				}
+				innerDict.Add(key2, value);
+			}
+			else
+			{
+				Add(key1, new Dictionary<K2, T> { { key2, value } });
+			}
+		}
 
-        public bool ContainsKey(K1 key1, K2 key2) => ContainsKey(key1) && base[key1].ContainsKey(key2);
-    }
+		/// <summary>
+		/// Determines whether the dictionary contains the specified key pair
+		/// </summary>
+		public bool ContainsKey(K1 key1, K2 key2)
+		{
+			return TryGetValue(key1, out var innerDict) && innerDict.ContainsKey(key2);
+		}
 
-    public class GroupDataFrame
+		/// <summary>
+		/// Gets the value associated with the specified keys
+		/// </summary>
+		/// <returns>true if the dictionary contains the key pair; otherwise, false</returns>
+		public bool TryGetValue(K1 key1, K2 key2, out T value)
+		{
+			value = default;
+			return TryGetValue(key1, out var innerDict) && innerDict.TryGetValue(key2, out value);
+		}
+
+		/// <summary>
+		/// Removes the value with the specified keys
+		/// </summary>
+		/// <returns>true if the element was successfully removed; otherwise, false</returns>
+		public bool Remove(K1 key1, K2 key2)
+		{
+			if (TryGetValue(key1, out var innerDict))
+			{
+				bool removed = innerDict.Remove(key2);
+
+				// Clean up empty inner dictionaries
+				if (removed && innerDict.Count == 0)
+				{
+					Remove(key1);
+				}
+
+				return removed;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Gets all values stored in the dictionary
+		/// </summary>
+		public IEnumerable<T> Values
+		{
+			get
+			{
+				foreach (var innerDict in base.Values)
+				{
+					foreach (var value in innerDict.Values)
+					{
+						yield return value;
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets all key pairs in the dictionary
+		/// </summary>
+		public IEnumerable<(K1, K2)> Keys
+		{
+			get
+			{
+				foreach (var outerPair in this)
+				{
+					foreach (var innerKey in outerPair.Value.Keys)
+					{
+						yield return (outerPair.Key, innerKey);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets the number of value-key pairs in the dictionary
+		/// </summary>
+		public new int Count => this.Sum(kvp => kvp.Value.Count);
+
+		/// <summary>
+		/// Gets all values for a primary key
+		/// </summary>
+		public Dictionary<K2, T> GetValues(K1 key1)
+		{
+			return TryGetValue(key1, out var innerDict) ? innerDict : new Dictionary<K2, T>();
+		}
+	}
+
+	public class GroupDataFrame
     {
         internal GroupDataFrame(string colName, Dictionary<object, DataFrame> grp)
         {

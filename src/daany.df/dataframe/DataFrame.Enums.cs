@@ -85,7 +85,7 @@ namespace Daany
         None=1,
         [Description("(0,1)")] //binary encoding with 0 and 1
         Binary1,
-        [Description("(-1,1)")] //binary encoding with 0 and 1
+        [Description("(-1,1)")] //binary encoding with -1 and 1
         Binary2,
         [Description("N")]//for (4 classes, one column) =1,2,3,4 
         Ordinal,

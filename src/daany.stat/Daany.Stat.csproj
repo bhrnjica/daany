@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;net7.0</TargetFrameworks>
+		<TargetFrameworks>net9.0;net8.0;net7.0</TargetFrameworks>
 		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
 		<LangVersion>Latest</LangVersion>
 		<Platforms>AnyCPU;x64</Platforms>
@@ -48,8 +48,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OxyPlot.Core" Version="2.1.2" />
-		<PackageReference Include="XPlot.Plotly" Version="4.0.6" />
+		<PackageReference Include="OxyPlot.Core" Version="2.2.0" />
+		<PackageReference Include="XPlot.Plotly" Version="4.1.0" />
 	</ItemGroup>
 
 
