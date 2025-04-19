@@ -177,11 +177,16 @@ namespace Daany
 				yield return rowArray;
 			}
 		}
-        #endregion
+		#endregion
 
-        #region Index Related Members
+		#region Index Related Members
+		private List<object> GenerateDefaultIndex(int rowCount)
+		{
+			// Generate a default index (0, 1, 2, ..., rowCount - 1)
+			return Enumerable.Range(0, rowCount).Cast<object>().ToList();
+		}
 
-        public void SetIndex(List<object> ind, string name)
+		public void SetIndex(List<object> ind, string name)
         {
             if (ind == null)
                 throw new Exception("Index cannot be null.");
@@ -597,12 +602,6 @@ namespace Daany
         }
 
 
-		private List<object> GenerateDefaultIndex(int rowCount)
-		{
-			// Generate a default index (0, 1, 2, ..., rowCount - 1)
-			return Enumerable.Range(0, rowCount).Cast<object>().ToList();
-		}
-
 		private void ValidateData(object[] data, IList<string> columns)
 		{
 			if (data == null)
@@ -641,12 +640,29 @@ namespace Daany
 
 		}
 
-
 		/// <summary>
-		/// Create new data frame from the existing by changing column names  
+		/// Creates a new DataFrame from the specified columns, optionally renaming them.
 		/// </summary>
-		/// <param name="colNames">List of old and new column names.</param>
-		/// <returns>New data frame with renamed column names.</returns>
+		/// <param name="colNames">
+		/// A parameter array of tuples, where each tuple contains:
+		/// - <c>oldName</c>: The name of an existing column to include in the new DataFrame.
+		/// - <c>newName</c>: The new name for the column (optional). If not provided or null/empty,
+		/// the original name will be retained.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing the specified columns with updated column names.
+		/// </returns>
+		/// <remarks>
+		/// - If <c>colNames</c> contains an <c>oldName</c> that does not exist in the current DataFrame,
+		/// this method will throw an exception.
+		/// - Columns in the new DataFrame are arranged in the same order as they appear in <c>colNames</c>.
+		/// </remarks>
+		/// <example>
+		/// // Example usage:
+		/// var newDf = originalDf.Create(("Column1", "NewColumn1"), ("Column2", ""));
+		/// // Creates a DataFrame with "Column1" renamed to "NewColumn1" and "Column2" unchanged.
+		/// </example>
+
 		public DataFrame Create(params (string oldName, string newName)[] colNames)
         {
             var oldCols = colNames.Select(x => x.oldName).ToArray();
@@ -656,55 +672,98 @@ namespace Daany
                 var newName = colNames[i].oldName;
                 if (!string.IsNullOrEmpty(colNames[i].newName))
                     newName = colNames[i].newName;
-                //
+               
                 newDf._columns[i] = newName;
             }
-            //
+           
             return newDf;
         }
-
+		
         /// <summary>
-        /// Create empty data frame with specified column list.
-        /// </summary>
-        /// <param name="columns">Column name list.</param>
-        /// <returns></returns>
-        public static DataFrame CreateEmpty(List<string> columns)
-        {
-            var val = Array.Empty<object>();
-            var df = new DataFrame();
-            df._values = new List<object>();
-            df._index = new Index(new List<object>());
-            df._columns = columns;
-            return df;
-        }
+		/// Creates an empty DataFrame with the specified column names.
+		/// </summary>
+		/// <param name="columns">
+		/// A list of strings representing the names of the columns in the DataFrame.
+		/// </param>
+		/// <returns>
+		/// A new empty DataFrame with the specified column names.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when <c>columns</c> is null or empty.
+		/// </exception>
+		/// <example>
+		/// // Example usage:
+		/// var columns = new List<string> { "Column1", "Column2", "Column3" };
+		/// var emptyDf = DataFrame.CreateEmpty(columns);
+		/// </example>
+		public static DataFrame CreateEmpty(List<string> columns)
+		{
+			// Validate input
+			if (columns == null || columns.Count == 0)
+				throw new ArgumentException("Columns cannot be null or empty.", nameof(columns));
 
-        /// <summary>
-        /// Change the type for specified column
-        /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="colType"></param>
-        public void SetColumnType(string columnName, ColType colType)
-        {
-            if (!this.Columns.Contains(columnName))
-                throw new Exception($"The specified column name does not exist.");
+			// Create and initialize an empty DataFrame
+			var df = new DataFrame();
+			df._values = new List<object>();
+			df._index = new Index(new List<object>());
+			df._columns = new List<string>(columns); // Protect internal state
 
-            int index = getColumnIndex(columnName);
-            if (_colsType == null || _colsType == Array.Empty<ColType>())
-                _colsType = columnsTypes();
-            //
-            _colsType[index]= colType;
-        }
-        #endregion
+			return df;
+		}
 
-        #region Data Frame Operations
+		/// <summary>
+		/// Sets the data type for a specified column in the DataFrame.
+		/// </summary>
+		/// <param name="columnName">
+		/// The name of the column whose data type is to be set.
+		/// </param>
+		/// <param name="colType">
+		/// The new data type to assign to the specified column.
+		/// </param>
+		/// <exception cref="ArgumentException">
+		/// Thrown when:
+		/// - <c>columnName</c> is null, empty, or whitespace.
+		/// - The specified <c>columnName</c> does not exist in the DataFrame.
+		/// </exception>
+		/// <remarks>
+		/// Initializes the column types array (<c>_colsType</c>) if it is null.
+		/// </remarks>
+		/// <example>
+		/// // Example usage:
+		/// dataFrame.SetColumnType("Column1", ColType.Int);
+		/// </example>
+
+		public void SetColumnType(string columnName, ColType colType)
+		{
+			// Validate column existence
+			if (string.IsNullOrWhiteSpace(columnName))
+				throw new ArgumentException("Column name cannot be null or empty.", nameof(columnName));
+
+			if (!this.Columns.Contains(columnName))
+				throw new ArgumentException($"The specified column name '{columnName}' does not exist.", nameof(columnName));
+
+			// Get the column index
+			int index = getColumnIndex(columnName);
+
+			// Ensure _colsType is initialized
+			if (_colsType == null)
+				_colsType = columnsTypes();
+
+			// Set the column type
+			_colsType[index] = colType;
+		}
+
+		#endregion
+
+		#region Data Frame Operations
 
 
-        /// <summary>
-        /// Add one or more column into current data frame and returns new data frame with added columns.
-        /// </summary>
-        /// <param name="cols">list of columns</param>
-        /// <returns>New data frame with added columns.</returns>
-        public DataFrame AddColumns(Dictionary<string, List<object>> cols)
+		/// <summary>
+		/// Add one or more column into current data frame and returns new data frame with added columns.
+		/// </summary>
+		/// <param name="cols">list of columns</param>
+		/// <returns>New data frame with added columns.</returns>
+		public DataFrame AddColumns(Dictionary<string, List<object>> cols)
         {
             foreach(var c in cols)
             {
@@ -3419,7 +3478,7 @@ namespace Daany
                 }
             }
 
-            throw new Exception($"Column '{col}' does not exist in the Data Frame. Column names are case sensitive.");
+            throw new ArgumentException($"Column '{col}' does not exist in the Data Frame. Column names are case sensitive.");
         }
 
         internal void addRows(DataFrame df)

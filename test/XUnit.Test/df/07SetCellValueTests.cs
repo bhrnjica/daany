@@ -8,10 +8,75 @@ namespace Unit.Test.DF
 {
     public class SetCellValueTests
     {
-       
-      
 
-        [Fact]
+		[Fact]
+		public void SetColumnType_ShouldSetColumnTypeCorrectly()
+		{
+			// Arrange
+			var dataFrame = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<string> { "Column1", "Column2" },
+				null
+			);
+
+			// Act
+			dataFrame.SetColumnType("Column1", ColType.I32);
+
+			// Assert
+			Assert.Equal(ColType.I32, dataFrame.ColTypes[dataFrame.ColIndex("Column1")]);
+		}
+
+		[Fact]
+		public void SetColumnType_ShouldThrowForNonExistentColumn()
+		{
+			// Arrange
+			var dataFrame = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<string> { "Column1", "Column2" },
+				null
+			);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => dataFrame.SetColumnType("NonExistent", ColType.I32));
+		}
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData("")]
+		[InlineData(" ")]
+		public void SetColumnType_ShouldThrowForInvalidColumnName(string columnName)
+		{
+			// Arrange
+			var dataFrame = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<string> { "Column1", "Column2" },
+				null
+			);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => dataFrame.SetColumnType(columnName, ColType.STR));
+		}
+
+		[Fact]
+		public void SetColumnType_ShouldInitializeColumnTypesIfNull()
+		{
+			// Arrange
+			var dataFrame = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<string> { "Column1", "Column2" },
+				null
+			);
+
+			// Act
+			dataFrame.SetColumnType("Column1", ColType.STR);
+
+			// Assert
+			Assert.NotNull(dataFrame.ColTypes);
+			Assert.Equal(ColType.STR, dataFrame.ColTypes[dataFrame.ColIndex("Column1")]);
+		}
+
+
+		[Fact]
         public void SetCellValue_Test01()
         {
 

@@ -383,7 +383,76 @@ namespace Unit.Test.DF
             Assert.Equal(29, (int)cell);
         }
 
-        [Fact]
+		[Fact]
+		public void Create_ShouldRenameSpecifiedColumns()
+		{
+			// Arrange
+			var originalDf = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 3, "C" },
+				new List<string> { "Column1", "Column2" },
+				null
+			);
+
+			// Act
+			var newDf = originalDf.Create(("Column1", "NewColumn1"), ("Column2", "NewColumn2"));
+
+			// Assert
+			Assert.Equal("NewColumn1", newDf.Columns[0]);
+			Assert.Equal("NewColumn2", newDf.Columns[1]);
+		}
+
+		[Fact]
+		public void Create_ShouldKeepOriginalNamesIfNewNamesAreEmpty()
+		{
+			// Arrange
+			var originalDf = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 3, "C" },
+				new List<string> { "Column1", "Column2" },
+				null
+			);
+
+			// Act
+			var newDf = originalDf.Create(("Column1", ""), ("Column2", null));
+
+			// Assert
+			Assert.Equal("Column1", newDf.Columns[0]);
+			Assert.Equal("Column2", newDf.Columns[1]);
+		}
+
+		[Fact]
+		public void Create_ShouldThrowExceptionForInvalidOldName()
+		{
+			// Arrange
+			var originalDf = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 3, "C" },
+				new List<string> { "Column1", "Column2" },
+				null
+			);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => originalDf.Create(("NonExistentColumn", "NewColumn")));
+		}
+
+		[Fact]
+		public void Create_ShouldPreserveColumnOrderAsSpecified()
+		{
+			// Arrange
+			var originalDf = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 3, "C" },
+				new List<string> { "Column1", "Column2", "Column3" },
+				null
+			);
+
+			// Act
+			var newDf = originalDf.Create(("Column2", "RenamedColumn2"), ("Column1", "RenamedColumn1"));
+
+			// Assert
+			Assert.Equal("RenamedColumn2", newDf.Columns[0]);
+			Assert.Equal("RenamedColumn1", newDf.Columns[1]);
+		}
+
+
+		[Fact]
         public void CreateDataFrameFromExisted_Test()
         {
             var dict = new Dictionary<string, List<object>>
@@ -436,7 +505,40 @@ namespace Unit.Test.DF
             Assert.Equal(newdf.ColTypes, cT);
         }
 
+		[Fact]
+		public void CreateEmpty_ShouldInitializeEmptyDataFrameWithColumns()
+		{
+			// Arrange
+			var columns = new List<string> { "Column1", "Column2", "Column3" };
+
+			// Act
+			var emptyDf = DataFrame.CreateEmpty(columns);
+
+			// Assert
+			Assert.NotNull(emptyDf.Values);
+			Assert.Empty(emptyDf.Values); // Values should be empty
+			Assert.NotNull(emptyDf.Index);
+			Assert.Empty(emptyDf.Index.ToList()); // Index should be empty
+			Assert.Equal(columns, emptyDf.Columns); // Columns should match input
+		}
+
+		[Fact]
+		public void CreateEmpty_ShouldThrowForNullColumns()
+		{
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => DataFrame.CreateEmpty(null));
+		}
+
+		[Fact]
+		public void CreateEmpty_ShouldThrowForEmptyColumns()
+		{
+			// Arrange
+			var columns = new List<string>();
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => DataFrame.CreateEmpty(columns));
+		}
 
 
-    }
+	}
 }
