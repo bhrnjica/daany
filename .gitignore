@@ -39,3 +39,4 @@ bin-release/
 /.vs
 /nuget
 /src/daany-rust/target
+/src/daany-rust

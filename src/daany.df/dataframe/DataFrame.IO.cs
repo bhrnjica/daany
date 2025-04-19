@@ -394,42 +394,9 @@ namespace Daany
             return listValues;
         }
 
-		//private static object parseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
-		//{
-		//    //check the missing value
-		//    if (IsMissingValue(value, missingChars: missingValue))
-		//        return DataFrame.NAN;
+		
 
-		//    switch (colType)
-		//    {
-		//        case ColType.I2:
-		//            return bool.Parse(value);
-		//        case ColType.IN:
-		//            return new string(value.ToArray());
-		//        case ColType.I32:
-		//            return int.Parse(value);
-		//        case ColType.I64:
-		//            return long.Parse(value);
-		//        case ColType.F32:
-		//            return float.Parse(value);
-		//        case ColType.DD:
-		//            return double.Parse(value);
-		//        case ColType.STR:
-		//            return new string(value.ToArray());
-		//        case ColType.DT:
-		//            {
-		//                if (string.IsNullOrEmpty(dFormat))
-		//                    return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.None);
-		//                else
-		//                    return DateTime.ParseExact(value, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
-
-		//            }
-		//        default:
-		//            throw new Exception("column type is not known.");
-		//    }
-		//}
-
-		internal static object ParseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
+		internal static object? ParseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
 		{
 			// Check if the value is a missing value
 			if (IsMissingValue(value, missingChars: missingValue))

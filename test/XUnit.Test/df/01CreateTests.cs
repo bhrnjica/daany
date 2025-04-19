@@ -8,7 +8,168 @@ namespace Unit.Test.DF
 {
     public class CreateDataFrameTests
     {
-        [Fact]
+		// Test for: public DataFrame(IDictionary<string, List<object>> data, IList<object>? index = null)
+		[Fact]
+		public void Constructor_FromDictionary_ShouldInitializeCorrectly()
+		{
+			// Arrange
+			var data = new Dictionary<string, List<object>>
+		    {
+			    { "Column1", new List<object> { 1, 2, 3 } },
+			    { "Column2", new List<object> { "A", "B", "C" } }
+		    };
+			var index = new List<object> { "Row1", "Row2", "Row3" };
+
+			// Act
+			var dataFrame = new DataFrame(data, index);
+
+			// Assert
+			Assert.Equal(data.Count, dataFrame.ColCount()); // Columns should match
+			Assert.Equal(index, dataFrame.Index.ToList()); // Index should match
+			Assert.Equal(6, dataFrame.Values.Count); // Flattened data length should match
+		}
+
+		[Fact]
+		public void Constructor_FromDictionary_ShouldThrowForEmptyData()
+		{
+			// Arrange
+			var data = new Dictionary<string, List<object>>();
+			var index = new List<object> { "Row1", "Row2", "Row3" };
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => new DataFrame(data, index));
+		}
+
+		// Test for: public DataFrame(List<object> data, List<string> columns, ColType[]? colTypes = null)
+		[Fact]
+		public void Constructor_FromList_ShouldInitializeCorrectly()
+		{
+			// Arrange
+			var data = new List<object> { 1, "A", 2, "B", 3, "C" };
+			var columns = new List<string> { "Column1", "Column2" };
+			var colTypes = new ColType[] { ColType.I32, ColType.STR };
+
+			// Act
+			var dataFrame = new DataFrame(data, columns, colTypes);
+
+			// Assert
+			Assert.Equal(data, dataFrame.Values); // Data should match
+			Assert.Equal(columns, dataFrame.Columns); // Columns should match
+			Assert.Equal(colTypes, dataFrame.ColTypes); // Column types should match
+		}
+
+		[Fact]
+		public void Constructor_FromList_ShouldThrowForInvalidColumns()
+		{
+			// Arrange
+			var data = new List<object> { 1, "A", 2, "B", 3 };
+			var columns = new List<string> { "Column1", "Column2" };
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => new DataFrame(data, columns, null));
+		}
+
+		// Test for: public DataFrame(DataFrame dataFrame)
+		[Fact]
+		public void Constructor_FromExistingDataFrame_ShouldCloneCorrectly()
+		{
+			// Arrange
+			var originalDataFrame = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 3, "C" },
+				new List<string> { "Column1", "Column2" },
+				new ColType[] { ColType.I32, ColType.STR }
+			);
+
+			// Act
+			var clonedDataFrame = new DataFrame(originalDataFrame);
+
+			// Assert
+			Assert.Equal(originalDataFrame.Values, clonedDataFrame.Values); // Values should match
+			Assert.NotSame(originalDataFrame.Values, clonedDataFrame.Values); // Ensure deep copy
+			Assert.Equal(originalDataFrame.Columns, clonedDataFrame.Columns); // Columns should match
+			Assert.NotSame(originalDataFrame.Columns, clonedDataFrame.Columns); // Ensure deep copy
+		}
+
+		[Fact]
+		public void Constructor_FromExistingDataFrame_ShouldThrowForNullInput()
+		{
+			// Act & Assert
+			Assert.Throws<ArgumentNullException>(() => new DataFrame(null,null,null));
+		}
+
+		// Test for: internal DataFrame(List<object> data, Index index, List<string> cols, ColType[] colsType)
+		[Fact]
+		public void Constructor_InternalWithIndex_ShouldInitializeCorrectly()
+		{
+			// Arrange
+			var data = new List<object> { 1, "A", 2, "B", 3, "C" };
+			var index = new Daany.Index(new List<object> { "Row1", "Row2", "Row3" });
+			var columns = new List<string> { "Column1", "Column2" };
+			var colTypes = new ColType[] { ColType.I32, ColType.STR };
+
+			// Act
+			var dataFrame = new DataFrame(data, index, columns, colTypes);
+
+			// Assert
+			Assert.Equal(data, dataFrame.Values); // Values should match
+			Assert.Equal(index.ToList(), dataFrame.Index.ToList()); // Index should match
+			Assert.Equal(columns, dataFrame.Columns); // Columns should match
+			Assert.Equal(colTypes, dataFrame.ColTypes); // Column types should match
+		}
+
+		[Fact]
+		public void Constructor_InternalWithIndex_ShouldThrowForMismatchedColumnTypes()
+		{
+			// Arrange
+			var data = new List<object> { 1, "A", 2, "B", 3, "C" };
+			var index = new Daany.Index(new List<object> { "Row1", "Row2", "Row3" });
+			var columns = new List<string> { "Column1", "Column2" };
+			var colTypes = new ColType[] { ColType.I32 }; // Mismatched column type length
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => new DataFrame(data, index, columns, colTypes));
+		}
+
+		// Test for: internal DataFrame(TwoKeysDictionary<string, object, object> aggValues)
+		[Fact]
+		public void Constructor_FromTwoKeysDictionary_ShouldInitializeCorrectly()
+		{
+			// Arrange
+			var aggValues = new TwoKeysDictionary<string, object, object>
+		{
+			{ "Column1", "Row1", 1 },
+			{ "Column1", "Row2", 2 },
+			{ "Column2", "Row1", "A" },
+			{ "Column2", "Row2", "B" }
+		};
+
+			// Act
+			var dataFrame = new DataFrame(aggValues);
+
+			// Assert
+			Assert.Equal(4, dataFrame.Values.Count); // Data should match
+			Assert.Equal(new List<object> { "Row1", "Row2" }, dataFrame.Index.ToList()); // Index should match
+			Assert.Equal(new List<string> { "Column1", "Column2" }, dataFrame.Columns); // Columns should match
+		}
+
+		[Fact]
+		public void Constructor_FromTwoKeysDictionary_ShouldHandleMissingData()
+		{
+			// Arrange
+			var aggValues = new TwoKeysDictionary<string, object, object>
+		{
+			{ "Column1", "Row1", 1 },
+			{ "Column2", "Row2", "B" } // Missing "Row1" for Column2
+        };
+
+			// Act
+			var dataFrame = new DataFrame(aggValues);
+
+			// Assert
+			Assert.Equal(DataFrame.NAN, dataFrame.Values[1]); // Ensure missing data is NAN
+		}
+
+		[Fact]
         public void CreateFromList_Test01()
         {
             //list of object
@@ -34,7 +195,7 @@ namespace Unit.Test.DF
 
             //exception the number of list object is not divisible with column counts
             var exception = Assert.ThrowsAny<System.Exception>(() => new DataFrame(list, cols));
-            Assert.Equal("The Columns count must be divisible by data length.", exception.Message);
+            Assert.Equal("The number of columns must evenly divide the length of the data.", exception.Message);
         }
 
         [Fact]
@@ -80,7 +241,7 @@ namespace Unit.Test.DF
             
             //exception the number of list object must all be the same
             var exception = Assert.ThrowsAny<System.Exception>(() => new DataFrame(dict));
-            Assert.Equal("All lists within dictionary must be with same length.", exception.Message);
+            Assert.Equal("All lists within dictionary must be of the same length.", exception.Message);
         }
 
         [Fact]
@@ -94,7 +255,7 @@ namespace Unit.Test.DF
             Assert.Equal(27, df.RowCount());
             Assert.Equal(6, df.ColCount());
         }
-#if NETCOREAPP3_0_OR_GREATER
+
         [Fact]
         public void CreateFromCSVFile_Failed_Test01()
         {
@@ -107,7 +268,6 @@ namespace Unit.Test.DF
             
             Assert.Equal("filePath (Parameter 'File name does not exist.')", exception.Message);
         }
-#endif
 
         [Fact]
         public void CreateTest01()
