@@ -42,17 +42,17 @@ namespace Unit.Test.DF
 		[Fact]
 		public void ToCsv_WithData_WritesCorrectContent()
 		{
-			var values = new List<object> { 1, "test", 3.14, DateTime.Parse("2023-01-01") };
+			var values = new List<object> { 1, "test", 3.14, DateTime.ParseExact("2023-01-01", "yyyy-MM-dd", CultureInfo.InvariantCulture) };
 			var columns = new List<string> { "Int", "String", "Double", "Date" };
 			var colTypes = new ColType[] { ColType.I32, ColType.STR, ColType.DD, ColType.DT };
 			var df = new DataFrame(values, columns, colTypes);
 
-			DataFrame.ToCsv(TestCsvPath, df);
+			DataFrame.ToCsv(TestCsvPath, df, dateFormat: "dd/MM/yyyy");
 
 			var lines = File.ReadAllLines(TestCsvPath);
 			Assert.Equal(2, lines.Length);
 			Assert.Equal("Int,String,Double,Date", lines[0]);
-			Assert.Contains("1,test,3.14,01/01/2023 00:00:00", lines[1]);
+			Assert.Contains("1,test,3.14,01/01/2023", lines[1]);
 		}
 
 		[Fact]
