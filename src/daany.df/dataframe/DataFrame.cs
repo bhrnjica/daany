@@ -340,7 +340,7 @@ namespace Daany
 		/// var df = new DataFrame(data, index, cols, colsType);
 		/// </example>
 
-		internal DataFrame(List<object> data, Index index, List<string> cols, ColType[] colsType)
+		public DataFrame(List<object> data, Index index, List<string> cols, ColType[] colsType)
 		{
 			// Validate inputs
             ValidateData(data, cols);
@@ -369,7 +369,10 @@ namespace Daany
             }
 		}
 
-
+  //      public DataFrame(List<object> data, List<object> index, List<string> cols, ColType[] colsType)
+  //          :this(data, new Index(index), cols, colsType)
+  //      {
+		//}
 
 		/// <summary>
 		/// Initializes a new instance of the DataFrame class by copying the internal state 
@@ -711,6 +714,13 @@ namespace Daany
 			return df;
 		}
 
+		private DataFrame CreateNewDataFrame(List<object> clippedValues)
+		{
+			var ind = _index.ToList();
+			var cols = Columns.ToList();
+			return new DataFrame(clippedValues, ind, cols, _colsType);
+		}
+
 		/// <summary>
 		/// Sets the data type for a specified column in the DataFrame.
 		/// </summary>
@@ -751,6 +761,12 @@ namespace Daany
 
 			// Set the column type
 			_colsType[index] = colType;
+		}
+
+		private void EnsureColumnTypesInitialized()
+		{
+			if (_colsType == null || _colsType == Array.Empty<ColType>())
+				_colsType = columnsTypes();
 		}
 
 		#endregion
@@ -1287,418 +1303,454 @@ namespace Daany
 
 		#region Clip
 		/// <summary>
-		/// Clip all data frame values between the bounds
+		/// Clips the values in the entire DataFrame to a specified range.
+		/// Values below <paramref name="minValue"/> are replaced with <paramref name="minValue"/>,
+		/// and values above <paramref name="maxValue"/> are replaced with <paramref name="maxValue"/>.
+		/// Non-numeric values and NaN are left unchanged.
 		/// </summary>
-		/// <param name="minValue">min value</param>
-		/// <param name="maxValue">max value</param>
-		/// <returns></returns>
+		/// <param name="minValue">The minimum value of the range.</param>
+		/// <param name="maxValue">The maximum value of the range.</param>
+		/// <returns>A new DataFrame with clipped values.</returns>
+		/// <example>
+		/// // Example usage:
+		/// DataFrame df = new DataFrame(new List<object> { -10, 50, 200, "text", DataFrame.NAN }, 
+		///                              new List<string> { "row1", "row2", "row3" }, 
+		///                              new List<string> { "col1" }, 
+		///                              new ColType[] { ColType.I32 });
+		/// 
+		/// DataFrame clippedDf = df.Clip(0, 100);
+		/// // The clippedDf will contain values: { 0, 50, 100, "text", NAN }
 		public DataFrame Clip(float minValue, float maxValue)
-        {
-            //initialize column types
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
+		{
+			EnsureColumnTypesInitialized();
 
-            var lst = new List<object>();
-            int index = 0;
-            for (int j = 0; j < _index.Count; j++)
-            {
-                for (int i = 0; i < _columns.Count; i++)
+			var clippedValues = _values
+				.Select((value, index) => ClipValue(value, ColTypes[index % _columns.Count], minValue, maxValue))
+				.ToList();
+
+			// Return a new DataFrame
+			return CreateNewDataFrame(clippedValues);
+		}
+
+		/// <summary>
+		/// Clips the values in the specified columns of the DataFrame to a given range.
+		/// Values in specified columns below <paramref name="minValue"/> are replaced with <paramref name="minValue"/>,
+		/// and values above <paramref name="maxValue"/> are replaced with <paramref name="maxValue"/>.
+		/// Columns not specified, non-numeric values, and NaN are left unchanged.
+		/// </summary>
+		/// <param name="minValue">The minimum value of the range.</param>
+		/// <param name="maxValue">The maximum value of the range.</param>
+		/// <param name="columns">The names of the columns to clip. Other columns are not modified.</param>
+		/// <returns>A new DataFrame with clipped values in the specified columns.</returns>
+		/// <example>
+		/// // Example usage:
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 50, 150, "text", -20, DataFrame.NAN },
+		///     new List<string> { "row1", "row2" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.I32 });
+		///
+		/// DataFrame clippedDf = df.Clip(0, 100, "col1");
+		/// // The clippedDf will contain:
+		/// // col1: { 50, 100 }
+		/// // col2: { -20, NAN }
+		/// </example>
+		public DataFrame Clip(float minValue, float maxValue, params string[] columns)
+		{
+			EnsureColumnTypesInitialized();
+			var colIndices = getColumnIndex(columns);
+
+			var clippedValues = _values
+				.Select((value, index) =>
+				{
+					int colIndex = index % _columns.Count;
+					return colIndices.Contains(colIndex)
+						? ClipValue(value, ColTypes[colIndex], minValue, maxValue)
+						: value;
+				})
+				.ToList();
+
+			// Return a new DataFrame
+			return CreateNewDataFrame(clippedValues);
+		}
+
+		/// <summary>
+		/// Clips a single value to the specified range based on its column type.
+		/// Non-numeric values and NaN are returned unchanged.
+		/// </summary>
+		/// <param name="value">The value to be clipped.</param>
+		/// <param name="colType">The column type of the value.</param>
+		/// <param name="minValue">The minimum value of the range (float).</param>
+		/// <param name="maxValue">The maximum value of the range (float).</param>
+		/// <returns>The clipped value, or the original value if not applicable.</returns>
+		private object ClipValue(object value, ColType colType, float minValue, float maxValue)
+		{
+			// Convert minValue and maxValue to double for type compatibility
+			double minDouble = Convert.ToDouble(minValue);
+			double maxDouble = Convert.ToDouble(maxValue);
+
+			if (value == DataFrame.NAN || colType == ColType.STR || colType == ColType.IN || colType == ColType.DT)
+				return value;
+
+			return colType switch
+			{
+				ColType.I32 => ClipToRange(Convert.ToInt32(value), minDouble, maxDouble),
+				ColType.I64 => ClipToRange(Convert.ToInt64(value), minDouble, maxDouble),
+				ColType.F32 => ClipToRange(Convert.ToSingle(value), minDouble, maxDouble),
+				ColType.DD => ClipToRange(Convert.ToDouble(value), minDouble, maxDouble),
+				_ => value
+			};
+		}
+
+		/// <summary>
+		/// Clips a numeric value to a specified range.
+		/// </summary>
+		/// <typeparam name="T">The type of the numeric value (e.g., int, float, double).</typeparam>
+		/// <param name="value">The numeric value to be clipped.</param>
+		/// <param name="minValue">The minimum value of the range (double).</param>
+		/// <param name="maxValue">The maximum value of the range (double).</param>
+		/// <returns>The clipped value.</returns>
+		private T ClipToRange<T>(T value, double minValue, double maxValue) where T : IComparable
+		{
+			if (value.CompareTo((T)Convert.ChangeType(minValue, typeof(T))) < 0)
+				return (T)Convert.ChangeType(minValue, typeof(T));
+			if (value.CompareTo((T)Convert.ChangeType(maxValue, typeof(T))) > 0)
+				return (T)Convert.ChangeType(maxValue, typeof(T));
+			return value;
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Provides a summary of descriptive statistics for the columns in the DataFrame.
+		/// By default, only numeric columns are included, but this behavior can be overridden
+		/// with the <paramref name="numericOnly"/> parameter.
+		/// Specific columns can be included using the <paramref name="inclColumns"/> parameter.
+		/// </summary>
+		/// <param name="numericOnly">If true, includes only numeric columns. Defaults to true.</param>
+		/// <param name="inclColumns">An optional list of column names to include in the statistics.</param>
+		/// <returns>
+		/// A new DataFrame containing descriptive statistics, such as Count, Unique, Top, Frequency, 
+		/// Avg (Mean), Std (Standard Deviation), Min, Quartiles, Median, and Max.
+		/// </returns>
+		/// <example>
+		/// // Example 1: Describe only numeric columns in the DataFrame.
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { -10, 50, 200, "text", DataFrame.NAN },
+		///     new List<object> { "row1", "row2", "row3", "row4", "row5" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		/// 
+		/// DataFrame description = df.Describe(); // Defaults to numericOnly = true
+		/// 
+		/// // Example 2: Include all columns, numeric and non-numeric.
+		/// DataFrame descriptionAll = df.Describe(numericOnly: false);
+		/// 
+		/// // Example 3: Include specific columns for description.
+		/// DataFrame descriptionSpecific = df.Describe(numericOnly: false, "col1", "col2");
+		/// </example>
+		public DataFrame Describe(bool numericOnly = true, params string[] inclColumns)
+		{
+			// Initialize aggregation operations
+			var aggOps = new Aggregation[]
+			{
+		        Aggregation.Count, Aggregation.Unique, Aggregation.Top, Aggregation.Frequency, Aggregation.Avg,
+		        Aggregation.Std, Aggregation.Min, Aggregation.FirstQuartile, Aggregation.Median,
+		        Aggregation.ThirdQuartile, Aggregation.Max
+			};
+
+			// Ensure column types are initialized
+			EnsureColumnTypesInitialized();
+
+			// Get relevant columns (filtered by inclColumns and numericOnly)
+			var relevantColumns = GetRelevantColumns(inclColumns, numericOnly);
+
+			// Prepare final column aggregation mapping
+			var finalCols = relevantColumns.ToDictionary(col => col.cName, col => aggOps);
+
+			// Perform aggregation
+			return Aggragate(finalCols);
+		}
+
+
+		/// <summary>
+		/// Filters and retrieves relevant columns based on input criteria.
+		/// </summary>
+		/// <param name="inclColumns">Columns to include (optional).</param>
+		/// <param name="numericOnly">Whether to include only numeric columns.</param>
+		/// <returns>A list of column name and type tuples.</returns>
+		private List<(string cName, ColType cType)> GetRelevantColumns(string[] inclColumns, bool numericOnly)
+		{
+			var idxs = inclColumns.Length > 0 ? getColumnIndex(inclColumns) : Enumerable.Range(0, Columns.Count).ToArray();
+
+			return idxs
+				.Select(i => (Columns[i], ColTypes[i]))
+				.Where(col => !numericOnly || isNumeric(col.Item2))
+				.ToList();
+		}
+
+
+		#region Missing Values 
+
+		/// <summary>
+		/// Counts the number of missing values (DataFrame.NAN) in each column of the DataFrame.
+		/// Only includes columns with at least one missing value in the result.
+		/// </summary>
+		/// <returns>
+		/// A dictionary where the keys are column names and the values are the count of missing values in each column.
+		/// </returns>
+		/// <example>
+		/// // Example usage:
+		/// var missingValues = df.MissingValues();
+		/// // Result: { "col1": 3, "col3": 1 } (only columns with missing values are included)
+		/// </example>
+		public IDictionary<string, int> MissingValues()
+		{
+			return Columns
+				.Select((col, index) =>
+					(col, missingCount: this[col].Count(value => value == DataFrame.NAN)))
+				.Where(columnData => columnData.missingCount > 0) // Filter columns with missing values
+				.ToDictionary(columnData => columnData.col, columnData => columnData.missingCount);
+		}
+
+		/// <summary>
+		/// Drops specified columns from the DataFrame.
+		/// </summary>
+		/// <param name="colName">The names of the columns to drop.</param>
+		/// <returns>A new DataFrame without the specified columns.</returns>
+		/// <example>
+		/// // Example usage:
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, 2, 3, 4 },
+		///     new List<string> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.I32 });
+		///
+		/// DataFrame result = df.Drop("col1");
+		/// // Result will exclude "col1", keeping only "col2".
+		public DataFrame Drop(params string[] colName)
+		{
+			// Validate input
+			if (colName == null || colName.Length == 0)
+				throw new ArgumentException("No column names provided.", nameof(colName));
+            if(!Columns.Any(c=> colName.Contains(c)))
+				throw new ArgumentException("No column to drop.", nameof(colName));
+
+			// Filter out columns to drop
+			var remainingColumns = Columns
+				.Where(c => !colName.Contains(c))
+				.Select(c => (c, (string)null!))
+				.ToArray();
+
+			// Create and return a new DataFrame
+			return Create(remainingColumns);
+		}
+
+		/// <summary>
+		/// Removes rows containing missing values (DataFrame.NAN).
+		/// Optionally checks for missing values in specified columns only.
+		/// </summary>
+		/// <param name="cols">The columns to check for missing values. If omitted, all columns are checked.</param>
+		/// <returns>A new DataFrame without rows containing missing values.</returns>
+		/// <example>
+		/// // Example 1: Drop rows with missing values in any column.
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, DataFrame.NAN, 3, 4 },
+		///     new List<string> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1" },
+		///     new ColType[] { ColType.I32 });
+		///
+		/// DataFrame result = df.DropNA();
+		/// // Rows with missing values in "col1" will be removed.
+		///
+		/// // Example 2: Drop rows with missing values in specific columns.
+		/// DataFrame resultSpecific = df.DropNA("col1");
+		/// // Rows with missing values in "col1" will be removed.
+		/// </example>
+		public DataFrame DropNA(params string[] cols)
+		{
+			var colIndexes = cols.Length > 0 ? getColumnIndex(cols) : null;
+
+			return RemoveRows((row, rowIndex) =>
+			{
+				if (colIndexes == null) // If no specific columns are provided
+					return row.Any(value => value == DataFrame.NAN); // Check for any missing value in the row
+
+				// Check for missing values only in specified columns
+				return row.Select((value, colIndex) => new { value, colIndex })
+						  .Any(x => x.value == DataFrame.NAN && colIndexes.Contains(x.colIndex));
+			});
+		}
+
+
+		/// <summary>
+		/// Fills all missing values (DataFrame.NAN) in the DataFrame with a specified value.
+		/// </summary>
+		/// <param name="value">The value to replace missing values with.</param>
+		/// <example>
+		/// // Example usage:
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { DataFrame.NAN, 2, DataFrame.NAN, 4 },
+		///     new List<string> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1" },
+		///     new ColType[] { ColType.I32 });
+		///
+		/// df.FillNA(0);
+		/// // All missing values in "col1" will be replaced with 0.
+		/// </example>
+		public void FillNA(object value)
+		{
+			for (int i = 0; i < _values.Count; i++)
+			{
+				if (_values[i] == DataFrame.NAN)
+					_values[i] = value;
+			}
+		}
+
+		/// <summary>
+		/// Fills missing values (DataFrame.NAN) in a specific column with a specified value.
+		/// </summary>
+		/// <param name="col">The column to modify.</param>
+		/// <param name="replacedValue">The value to replace missing values with.</param>
+		/// <example>
+		/// // Example usage:
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { DataFrame.NAN, 2, DataFrame.NAN, 4 },
+		///     new List<string> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.I32 });
+		///
+		/// df.FillNAMultiple("col1", 0);
+		/// // All missing values in "col1" will be replaced with 0.
+		/// </example>
+		public void FillNAByValue(string col, object replacedValue)
+		{
+            if(replacedValue == null)
+                throw new ArgumentNullException(nameof(replacedValue));
+
+			var colIndex = getColumnIndex(col);
+
+			for (int i = 0; i < _index.Count; i++)
+			{
+				int valueIndex = i * Columns.Count + colIndex;
+				if (_values[valueIndex] == DataFrame.NAN)
                 {
-                    if (_values[index] == DataFrame.NAN)
-                    {
-                        lst.Add(_values[index]);
-                       
-                    }  
-                    else if (this._colsType[i] == ColType.STR || this._colsType[i] == ColType.IN || this._colsType[i] == ColType.F32 || this._colsType[i] == ColType.DT)
-                    {
-                        lst.Add(_values[index]);
-                       
-                    }
+					// Ensure the aggregated value is converted to the appropriate column type
+					var convertedValue = ConvertValueToColumnType(replacedValue, this.ColTypes[colIndex]);
+					if (convertedValue == null)
+						throw new ArgumentNullException(nameof(convertedValue));
 
-                    else if(this._colsType[i] == ColType.I32)
-                    {
-                        var v = Convert.ToInt32(_values[index]);
-
-                        if (v < minValue)
-                            v = Convert.ToInt32(minValue);
-                        else if(v > maxValue)
-                            v = Convert.ToInt32(maxValue);
-
-                        lst.Add(v);
-                    }
-                    else if (this._colsType[i] == ColType.I64)
-                    {
-                        var v = Convert.ToInt64(_values[index]);
-
-                        if (v < minValue)
-                            v = Convert.ToInt64(minValue);
-                        else if (v > maxValue)
-                            v = Convert.ToInt64(maxValue);
-
-                        lst.Add(v);
-                    }
-                    else if (this._colsType[i] == ColType.F32)
-                    {
-                        var v = Convert.ToSingle(_values[index]);
-
-                        if (v < minValue)
-                            v = Convert.ToSingle(minValue);
-                        else if (v > maxValue)
-                            v = Convert.ToSingle(maxValue);
-
-                        lst.Add(v);
-                    }
-                    else if (this._colsType[i] == ColType.DD)
-                    {
-                        var v = Convert.ToDouble(_values[index]);
-
-                        if (v < minValue)
-                            v = Convert.ToDouble(minValue);
-                        else if (v > maxValue)
-                            v = Convert.ToDouble(maxValue);
-
-                        lst.Add(v);
-                    }
-                    index++;
+					_values[valueIndex] = convertedValue;
                 }
-            }
-            //return new data frame
-            var ind = this._index.ToList();
-            var cols = this.Columns.ToList();
-            var types = this._colsType;
-            var df = new DataFrame(lst, ind, cols, types);
-            return df;
-        }
+			}
+		}
 
-        /// <summary>
-        /// Clip all values for specified columns between the bounds in the DataFrame
-        /// </summary>
-        /// <param name="minValue">min values</param>
-        /// <param name="maxValue">max values</param>
-        /// <param name="columns">list of columns</param>
-        /// <returns></returns>
-        public DataFrame Clip(float minValue, float maxValue, params string[] columns)
-        {
-            //initialize column types
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
-            var colInd = getColumnIndex(columns);
-            var lst = new List<object>();
-            int index = 0;
-            for (int j = 0; j < _index.Count; j++)
-            {
-                for (int i = 0; i < _columns.Count; i++)
-                {
-                    if (!colInd.Contains(i))
-                    {
-                        lst.Add(_values[index]);
-                       
-                    }
+		/// <summary>
+		/// Fills missing values (DataFrame.NAN) in a specific column with an aggregated value.
+		/// </summary>
+		/// <param name="col">The column to modify.</param>
+		/// <param name="aggValue">The aggregation method to calculate the replacement value.</param>
+		/// <example>
+		/// // Example usage:
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { DataFrame.NAN, 2, 4, 6 },
+		///     new List<string> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1" },
+		///     new ColType[] { ColType.I32 });
+		///
+		/// df.FillNA("col1", Aggregation.Avg);
+		/// // Missing values in "col1" will be replaced with the average of non-missing values.
+		/// </example>
+		public void FillNA(string col, Aggregation aggValue)
+		{
 
-                    else if (_values[index] == DataFrame.NAN)
-                    {
-                        lst.Add(_values[index]);
-                       
-                    }
-                    else if (this._colsType[i] == ColType.STR || this._colsType[i] == ColType.IN || this._colsType[i] == ColType.F32 || this._colsType[i] == ColType.DT)
-                    {
-                        lst.Add(_values[index]);
-                        
-                    }
+			EnsureColumnTypesInitialized();
 
-                    else if (this._colsType[i] == ColType.I32)
-                    {
-                        var v = Convert.ToInt32(_values[index]);
+			var colIndex = getColumnIndex(col);
 
-                        if (v < minValue)
-                            v = Convert.ToInt32(minValue);
-                        else if (v > maxValue)
-                            v = Convert.ToInt32(maxValue);
+			// Get non-missing values from the column
+			var nonMissingValues = this[col].Where(x => x != DataFrame.NAN);
 
-                        lst.Add(v);
-                    }
-                    else if (this._colsType[i] == ColType.I64)
-                    {
-                        var v = Convert.ToInt64(_values[index]);
+			// Calculate the aggregated value
+			var aggregatedValue = calculateAggregation(nonMissingValues, aggValue, this.ColTypes[colIndex]);
 
-                        if (v < minValue)
-                            v = Convert.ToInt64(minValue);
-                        else if (v > maxValue)
-                            v = Convert.ToInt64(maxValue);
+			// Ensure the aggregated value is converted to the appropriate column type
+			var convertedValue = ConvertValueToColumnType(aggregatedValue, this.ColTypes[colIndex]);
 
-                        lst.Add(v);
-                    }
-                    else if (this._colsType[i] == ColType.F32)
-                    {
-                        var v = Convert.ToSingle(_values[index]);
+			if (convertedValue == null)
+				throw new ArgumentNullException(nameof(convertedValue));
 
-                        if (v < minValue)
-                            v = Convert.ToSingle(minValue);
-                        else if (v > maxValue)
-                            v = Convert.ToSingle(maxValue);
+			// Fill missing values with the converted value
+			FillNAByValue(col, convertedValue);
+		}
 
-                        lst.Add(v);
-                    }
-                    else if (this._colsType[i] == ColType.DD)
-                    {
-                        var v = Convert.ToDouble(_values[index]);
+		/// <summary>
+		/// Converts a value to the appropriate type for a specific column.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <param name="colType">The data type of the column.</param>
+		/// <returns>The value converted to the column's type.</returns>
+		private object? ConvertValueToColumnType(object value, ColType colType)
+		{
+            if(value == null)
+                return DataFrame.NAN;
 
-                        if (v < minValue)
-                            v = Convert.ToDouble(minValue);
-                        else if (v > maxValue)
-                            v = Convert.ToDouble(maxValue);
+			return colType switch
+			{
+				ColType.I32 => Convert.ToInt32(value),
+				ColType.I64 => Convert.ToInt64(value),
+				ColType.F32 => Convert.ToSingle(value),
+				ColType.DD => Convert.ToDouble(value),
+				ColType.I2 => value.ToString(),
+				ColType.IN => value.ToString(),
+				ColType.DT => Convert.ToDateTime(value),
+				ColType.STR => value.ToString(),
+				_ => throw new InvalidOperationException($"Unsupported column type: {colType}")
+			};
+		}
 
-                        lst.Add(v);
-                    }
-                    index++;
-                }
-            }
-            //return new data frame
-            var ind = this._index.ToList();
-            var cols = this.Columns.ToList();
-            var types = this._colsType;
-            var df = new DataFrame(lst, ind, cols, types);
-            return df;
-        }
-        #endregion
+		/// <summary>
+		/// Fills missing values (DataFrame.NAN) in multiple specified columns with a given replacement value.
+		/// </summary>
+		/// <param name="cols">An array of column names to modify.</param>
+		/// <param name="replacedValue">The value to replace missing values with.</param>
+		/// <remarks>
+		/// This method iterates through all specified columns and applies the replacement value to any missing values.
+		/// If a column does not exist in the DataFrame, an exception will be thrown.
+		/// </remarks>
+		/// <example>
+		/// // Example usage:
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { DataFrame.NAN, 2, DataFrame.NAN, 4 },
+		///     new List<object> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1", "col2", "col3" },
+		///     new ColType[] { ColType.I32, ColType.I32, ColType.I32 });
+		///
+		/// df.FillNA(new string[] { "col1", "col2" }, 0);
+		/// // Missing values in "col1" and "col2" will be replaced with 0.
+		/// </example>
+		public void FillNA(string[] cols, object replacedValue)
+		{
+			var colIndexes = getColumnIndex(cols);
 
-        /// <summary>
-        /// Creates new data frame of basic descriptive statistics values of the data frame
-        /// </summary>
-        /// <param name="numericOnly"></param>
-        /// <param name="inclColumns"></param>
-        /// <returns></returns>
-        public DataFrame Describe(bool numericOnly = true, params string[] inclColumns)
-        {
-            var aggOp = new Aggregation[]
-            {
-                Aggregation.Count,Aggregation.Unique,Aggregation.Top, Aggregation.Frequency, Aggregation.Avg,
-                Aggregation.Std,Aggregation.Min, Aggregation.FirstQuartile,Aggregation.Median, Aggregation.ThirdQuartile, Aggregation.Max
-            };
-            
-            //initialize column types
-            if (_colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
-
-            var lstCols = new List<(string cName, ColType cType)>();
-            var idxs = getColumnIndex(inclColumns);
-
-            //include columns
-            if (inclColumns.Length == 0)
-            {
-                for (int i = 0; i < this.Columns.Count(); i++)
-                {
-                    lstCols.Add((this.Columns[i], this._colsType[i]));
-                }
-            }
-            else
-            {
-                foreach (var t in idxs)
-                {
-                    var c = this.Columns[t];
-                    lstCols.Add((c, this._colsType[t]));
-                }
-            }
-
-            //only numeric columns
-            var finalCols = new Dictionary<string, Aggregation[]>(); // new List<(string cName, ColType cType)>();
-            for (var i = 0; i < lstCols.Count(); i++)
-            {
-                if (numericOnly)
-                {
-                    if (isNumeric(lstCols[i].cType))
-                        finalCols.Add(lstCols[i].cName, aggOp);
-                }
-                else //if(!isNumeric(lstCols[i].cType) && !numericOnly)
-                    finalCols.Add(lstCols[i].cName, aggOp);
-            }
-
-            DataFrame dfDescr = Aggragate(finalCols);
-            //
-            return dfDescr;
-        }
+			foreach (var colIndex in colIndexes)
+			{
+				FillNAByValue(Columns[colIndex], replacedValue);
+			}
+		}
 
 
-        #region Missing Values 
+		#endregion
 
-        /// <summary>
-        /// Returns the dictionary containing missing values
-        /// </summary>
-        /// <returns>Dictionary with specified column and number of missing value in it.</returns>
-        public IDictionary<string, int> MissingValues()
-        {
-            var dc = new Dictionary<string, int>();
-            foreach (var col in Columns)
-            {
-                var mCount = this[col].Where(x => x == NAN).Count();
-                dc.Add(col, mCount);
-            }
-
-            return dc.Where(x => x.Value > 0).ToDictionary(x => x.Key, y => y.Value);
-        }
-
-
-
-        /// <summary>
-        /// Removes specified columns from the data frame.
-        /// </summary>
-        /// <param name="colName">List of column names to be removed.</param>
-        /// <returns></returns>
-        public DataFrame Drop(params string[] colName)
-        {
-            //
-            var cols = new List<(string oldName, string newName)>();
-            foreach (var c in this.Columns)
-            {
-                if (colName.Contains(c))
-                    continue;
-                cols.Add((c, null));
-            }
-
-            return Create(cols.ToArray());
-        }
-
-        /// <summary>
-        /// Removes rows with missing values for specified set of columns. In case cols is null, removed values 
-        /// will be applied to all columns.
-        /// </summary>
-        /// <param name="cols">List of columns</param>
-        /// <returns>New df with fixed NAN</returns>
-        public DataFrame DropNA(params string[] cols)
-        {
-            var colIndex = getColumnIndex(cols);
-            return RemoveRows((r, i) =>
-            {
-                for (int j = 0; j < r.Length; j++)
-                {
-                    if (colIndex == null && r[j] == NAN)
-                        return true;
-
-                    else if(colIndex != null && r[j] == NAN && colIndex.Contains(j))
-                        return true;
-                }
-                return false;
-            });
-
-        }
-
-        /// <summary>
-        /// Replace NAN values with specified value.
-        /// </summary>
-        /// <param name="value"></param>
-        public void FillNA(object value)
-        {
-            int index = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    if (_values[index] == DataFrame.NAN)
-                        _values[index] = value;
-                    index++;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Replaces the missing values from specified column with 'replacedValue'. 
-        /// </summary>
-        /// <param name="col">Column to replace the missing value</param>
-        /// <param name="replacedValue">Replaced value</param>
-        public void FillNA(string col, object replacedValue)
-        {
-            var colIndex = getColumnIndex(col);
-            int index = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    if (j == colIndex)
-                    {
-                        if (_values[index] == DataFrame.NAN)
-                            _values[index] = replacedValue;
-
-                    }
-                    index++;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Replaces the missing values from specified column with 'replacedValue'. 
-        /// </summary>
-        /// <param name="col">Column to replace the missing value</param>
-        /// <param name="aggValue">Aggregated Value of the column</param>
-        public void FillNA(string col, Aggregation aggValue)
-        {
-            var colIndex = getColumnIndex(col);
-            var vals = this[col].Where(x=>x!=DataFrame.NAN);
-            var value = calculateAggregation(vals, aggValue, this.ColTypes[colIndex]);
-            FillNA(col, value);
-        }
-
-        /// <summary>
-        /// Replaces the missing values from specified columns with 'replacedValue'. 
-        /// </summary>
-        /// <param name="col">Column to replace the missing value</param>
-        /// <param name="replacedValue">Replaced value</param>
-        public void FillNA(string[] cols, object replacedValue)
-        {
-            var colIndexes = getColumnIndex(cols);
-            int index = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    if (colIndexes.Contains(j))
-                    {
-                        if (_values[index] == DataFrame.NAN)
-                            _values[index] = replacedValue;
-                    }
-
-                    index++;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Replaces the missing values from specified column with replacedDelegate. 
-        /// </summary>
-        /// <param name="col">Column to replace the missing value</param>
-        /// <param name="replacedValue">Delegate for replaced value</param>
-        public void FillNA(string col, Func<int, object> replDelg)
-        {
-            if (string.IsNullOrEmpty(col))
-                throw new ArgumentException(nameof(col));
-
-            var colIndex = getColumnIndex(col);
-            int index = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j < Columns.Count; j++)
-                {
-                    if (j == colIndex)
-                    {
-                        if (_values[index] == DataFrame.NAN)
-                            _values[index] = replDelg(i);
-
-                    }
-                    index++;
-                }
-            }
-        }
-
-        #endregion
-
-        #region Filter
-        /// <summary>
-        /// Filter data frame based on selected columns and coresponded values and operators.
-        /// </summary>
-        /// <param name="cols">selected columns</param>
-        /// <param name="filteValues">filter values.</param>
-        /// <param name="fOpers">filter operators</param>
-        /// <returns>returns filtered df</returns>
-        public DataFrame Filter(string[] cols, object[] filteValues, FilterOperator[] fOpers)
+		#region Filter
+		/// <summary>
+		/// Filter data frame based on selected columns and coresponded values and operators.
+		/// </summary>
+		/// <param name="cols">selected columns</param>
+		/// <param name="filteValues">filter values.</param>
+		/// <param name="fOpers">filter operators</param>
+		/// <returns>returns filtered df</returns>
+		public DataFrame Filter(string[] cols, object[] filteValues, FilterOperator[] fOpers)
         {
             if (_index.Count == 0)
                 return new DataFrame(Array.Empty<object>(), Columns.ToList());

@@ -8,7 +8,119 @@ namespace Unit.Test.DF
 {
     public class MissingValuesTests
     {
-        [Fact]
+		[Fact]
+		public void MissingValues_ShouldReturnCountsForColumnsWithMissingValues()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, DataFrame.NAN, 3, 4 },
+				new List<string> { "col1" });
+
+			// Act
+			var result = df.MissingValues();
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Single(result);
+			Assert.True(result.ContainsKey("col1"));
+			Assert.Equal(1, result["col1"]);
+		}
+
+		[Fact]
+		public void MissingValues_ShouldReturnEmptyForDataFrameWithoutMissingValues()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4 },
+				new List<string> { "col1" });
+
+			// Act
+			var result = df.MissingValues();
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Empty(result);
+		}
+
+		[Fact]
+		public void Drop_ShouldRemoveSpecifiedColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4 },
+				new List<string> { "col1", "col2" });
+
+			// Act
+			var result = df.Drop("col1");
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Single(result.Columns);
+			Assert.DoesNotContain("col1", result.Columns);
+		}
+
+		[Fact]
+		public void Drop_ShouldThrowExceptionForNonExistentColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4 },
+				new List<string> { "col1" });
+
+			// Act & Assert
+			var exception = Assert.Throws<ArgumentException>(() => df.Drop("col2"));
+
+		}
+
+		[Fact]
+		public void DropNA_ShouldRemoveRowsWithMissingValues()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, DataFrame.NAN, 3, 4 },
+				new List<string> { "col1" });
+
+			// Act
+			var result = df.DropNA();
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Equal(3, result.Index.Count); // One row removed
+		}
+
+		[Fact]
+		public void DropNA_ShouldRemoveRowsWithMissingValuesInSpecificColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, DataFrame.NAN, 3, 4, DataFrame.NAN,6 },
+				new List<string> { "col1", "col2" });
+
+			// Act
+			var result = df.DropNA("col1");
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Equal(2, result.Index.Count); // One row removed
+		}
+
+		[Fact]
+		public void FillNA_ShouldReplaceAllMissingValuesWithSpecifiedValue()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { DataFrame.NAN, 2, DataFrame.NAN, 4 },
+				new List<string> { "col1" });
+
+			// Act
+			df.FillNA(0);
+
+			// Assert
+			Assert.Equal(new List<object> { 0, 2, 0, 4 }, df["col1"]);
+		}
+
+
+		[Fact]
         public void DetectMissingValue_Test01()
         {
             var dict = new Dictionary<string, List<object>>
@@ -37,11 +149,76 @@ namespace Unit.Test.DF
 
             for (int i = 0; i < c3.Length; i++)
                 Assert.Equal(c3[i], df["col5", i]);
-
-
-
         }
-        [Fact]
+
+		[Fact]
+		public void FillNA_ShouldReplaceMissingValuesInSpecificColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { DataFrame.NAN, 2, DataFrame.NAN, 4 },
+				new List<object> { "row1", "row2" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.I32 });
+
+			// Act
+			df.FillNAByValue("col1", 0);
+
+			// Assert
+			Assert.Equal(new List<object> { 0, 0 }, df["col1"]);
+			Assert.Equal(new List<object> { 2, 4 }, df["col2"]);
+		}
+
+		[Fact]
+		public void FillNA_ShouldThrowExceptionForNonExistentColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { DataFrame.NAN, 2, DataFrame.NAN, 4 },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act & Assert
+			var exception = Assert.Throws<ArgumentException>(() => df.FillNAByValue("col2", 0));
+			
+		}
+
+		[Fact]
+		public void FillNAAggregate_ShouldThrowExceptionForNonExistentColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { DataFrame.NAN, 2, DataFrame.NAN, 4 },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act & Assert
+			var exception = Assert.Throws<ArgumentException>(() => df.FillNA("col2", Aggregation.Min));
+
+		}
+
+		[Fact]
+		public void FillNA_ShouldReplaceMissingValuesWithAggregation()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { DataFrame.NAN, 2, 4, 6 },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act
+			df.FillNA("col1", Aggregation.Avg);
+
+			// Assert
+			Assert.Equal(new List<object> { 4, 2, 4, 6 }, df["col1"]); // Avg of 2, 4, 6 = 4
+		}
+
+
+
+		[Fact]
         public void RemoveMissingValue_Test01()
         {
             var dict = new Dictionary<string, List<object>>
@@ -121,8 +298,9 @@ namespace Unit.Test.DF
             };
             //
             var df = new DataFrame(dict);
-            var val = df["col1"].Where(x => x!=DataFrame.NAN).Average(x => (int)x);
-            df.FillNA("col1", val);
+
+            int val = (int)df["col1"].Where(x => x!=DataFrame.NAN).Average(x => (int)x);
+            df.FillNAByValue("col1", val);
             var col1 = df["col1"].ToList();
             Assert.Equal(col1[2], val);
             Assert.Equal(col1[2], val);
@@ -154,7 +332,7 @@ namespace Unit.Test.DF
             //
             var c1 = new object[] { 1, 11, 81, 31, 41, 51, 81, 71, 81, 81 };
             var c2 = new object[] { 2, 12, 22, 2, 42, 52, 62, 72, 82, 92 };
-            var c3 = new object[] { 3, 52d, 23, 33, 43, 53, 63, 73, 83, 94 };
+            var c3 = new object[] { 3, 52, 23, 33, 43, 53, 63, 73, 83, 94 };
 
 
             for (int i = 0; i < c1.Length; i++)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Xunit;
 using Daany;
 using System.Globalization;
+using System.IO;
 
 namespace Unit.Test.DF
 {
@@ -969,8 +970,8 @@ namespace Unit.Test.DF
             //drop rows with missing values
             string replValue = "Berlin";
             var replValue2 = "female";
-            df.FillNA("City",replValue);
-            df.FillNA("Gender", replValue2);
+            df.FillNAByValue("City",replValue);
+            df.FillNAByValue("Gender", replValue2);
 
             //check for values
             Assert.Equal(9, df.ColCount());
@@ -1005,14 +1006,14 @@ namespace Unit.Test.DF
 
             //drop rows with missing values
             int replValue = 40;
-            var replValue2 = 10115;
+            int replValue2 = 10115;
             df.FillNA(new string[] { "Age", "Values" }, replValue);
-            df.FillNA("Zip Code", replValue2);
+            df.FillNAByValue("Zip Code", replValue2);
 
             //check for values
             Assert.Equal(9, df.ColCount());
             Assert.Equal(3, df.RowCount());
-            Assert.Equal(new object[] { 1, "Sarajevo", 71000, "BiH", true, 40, date, 31, "male" }, df[0]);
+            Assert.Equal(new object[] { 1, "Sarajevo", 71000, "BiH", true, 40.0, date, 31, "male" }, df[0]);
             Assert.Equal(new object[] { 2, "Seattle", 98101, "USA", false, 3.21, date2, 25, "female" }, df[1]);
             Assert.Equal(new object[] { 3, "Berlin", 10115, "GER", false, 4.55, date, 40, "male" }, df[2]);
 
@@ -1196,10 +1197,114 @@ female              Sarajevo
             var expected = new List<object>() { 0.335232, -1.000000, -1.367855, 0.500000, 0.027753, -1.000000, 0.230930, -0.679613, 1.261967, 0.500000 };
             Assert.Equal(expected, clipedDf.Values);
         }
-        #endregion
 
-        #region Insert and rename
-        [Fact]
+		[Fact]
+		public void Clip_ShouldThrowExceptionForInvalidCells()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
+				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 }); // Column is declared as I32 but contains invalid value "text"
+
+			// Act & Assert
+			var exception = Assert.Throws<FormatException>(() => df.Clip(0, 100));
+			
+		}
+
+		[Fact]
+		public void Clip_ShouldHandleNonNumericValuesGracefully()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { "hello", -5, DataFrame.NAN, 150 },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.STR, ColType.I32 });
+
+			// Act
+			var result = df.Clip(0, 100);
+
+			// Assert
+			Assert.Equal(new List<object> { "hello", 0, DataFrame.NAN, 100 }, result.Values);
+		}
+
+		[Fact]
+		public void Clip_ShouldThrowExceptionForInvalidCellsInSpecificColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { -20, 120, "text", 200 },
+				new List<object> { "row1", "row2" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.I32 }); // Both columns declared as I32
+
+			// Act & Assert
+			var exception = Assert.Throws<FormatException>(() => df.Clip(0, 100, "col1"));
+			
+		}
+
+
+		[Fact]
+		public void Clip_ShouldNotModifyOriginalDataFrame()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4 },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act
+			var result = df.Clip(2, 3);
+
+			// Assert
+			Assert.NotSame(df, result);
+			Assert.Equal(new List<object> { 2, 2, 3, 3 }, result.Values);
+		}
+
+		[Fact]
+		public void Clip_ShouldThrowExceptionForInvalidColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 10, 20, 30 },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.Clip(0, 100, "nonexistent_col"));
+		}
+
+		[Fact]
+		public void Clip_ShouldHandleLargeDataFramesEfficiently()
+		{
+			// Arrange
+			var largeData = new List<object>(new object[1_000_000]); // Initialize large dataset
+			for (int i = 0; i < 1_000_000; i++)
+			{
+				largeData[i] = i % 200; // Populate with numbers
+			}
+
+			var df = new DataFrame(
+				largeData,
+				new List<object>(new string[1_000_000]),
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act
+			var result = df.Clip(50, 150);
+
+			// Assert
+			Assert.True(result.Values[0].Equals(50)); // Clipped first value
+			Assert.True(result.Values[199].Equals(150)); // Clipped last value within the range
+		}
+		#endregion
+
+		#region Insert and rename
+		[Fact]
         public void InserColumn()
         {
             //create data frame with 3 rows and 7 columns

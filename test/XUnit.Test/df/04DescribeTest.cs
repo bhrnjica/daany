@@ -9,8 +9,117 @@ namespace Unit.Test.DF
 {
     public class DataFrameDescribeTests
     {
-        
-        [Fact]
+
+		[Fact]
+		public void Describe_ShouldReturnSummaryForNumericColumnsOnly()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
+				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var result = df.Describe(numericOnly: true);
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Single(result.Columns); // Only numeric column "col1"
+			Assert.Equal(new string[] { "Count", "Unique", "Top", "Freq", "Mean", "Std", "Min",
+			"25%", "Median", "75%", "Max" }, result.Index); // Aggregations
+		}
+
+		[Fact]
+		public void Describe_ShouldReturnSummaryForAllColumns_WhenNumericOnlyIsFalse()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
+				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var result = df.Describe(numericOnly: false);
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Equal(2, result.Columns.Count); // Includes both "col1" and "col2"
+		}
+
+		[Fact]
+		public void Describe_ShouldReturnSummaryForSpecifiedColumnsOnly()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
+				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var result = df.Describe(numericOnly: false, "col1");
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Single(result.Columns); // Only "col1"
+		}
+
+		[Fact]
+		public void Describe_ShouldThrowExceptionForNonexistentColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
+				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act & Assert
+			var exception = Assert.Throws<ArgumentException>(() => df.Describe(numericOnly: false, "nonexistent_col"));
+		}
+
+		[Fact]
+		public void Describe_ShouldThrowArgumentExceptionForEmptyDataFrame()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object>(), // No values
+				new List<object>(), // No rows
+				new List<string>(), // No columns
+				new ColType[] { });  // No column types
+
+			// Act & Assert
+			var exception = Assert.Throws<ArgumentException>(() => df.Describe());
+		}
+
+
+		[Fact]
+		public void Describe_ShouldWorkEfficientlyForLargeDataFrames()
+		{
+			// Arrange
+			var largeData = new List<object>(new object[1_000_000]); // Large dataset
+			for (int i = 0; i < 1_000_000; i++)
+			{
+				largeData[i] = i % 200; // Populate with numbers
+			}
+
+			var df = new DataFrame(
+				largeData,
+				new List<object>(new object[1_000_000]),
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act
+			var result = df.Describe(numericOnly: true);
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Single(result.Columns); // Only numeric column "col1"
+		}
+
+		[Fact]
         public void Describe_Test01()
         {
             var dict = new Dictionary<string, List<object>>
