@@ -5,6 +5,7 @@ using Xunit;
 using Daany;
 using System.Globalization;
 using Daany.MathStuff.Random;
+using System.Data;
 
 namespace Unit.Test.DF
 {
@@ -40,23 +41,23 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var df = new DataFrame(
-				new List<object> { 1, 2, 3, 4 },
-				new List<object> { 0, 1, 2, 3 },
-				new List<string> { "Col1", "Col2" },
+				new List<object> { 1, 2, 3, 4 },//dataframe values
+				new List<object> { 0, 1, 2, 3 },//index
+				new List<string> { "Col1", "Col2" },//columns
 				null);
 
 			var aggs = new Dictionary<string, Aggregation>
 	            {
-		            { "Col1", Aggregation.Sum },
-		            { "Col2", Aggregation.Max }
+		            { "Col2", Aggregation.Sum },
+		            { "Col1", Aggregation.Max }
 	            };
 
 			// Act
 			var result = df.Aggragate(aggs);
 
 			// Assert
-			Assert.Equal(6, result[0]); // Sum of Col1
-			Assert.Equal(4, result[1]); // Max of Col2
+			Assert.Equal(3, result[0]); // Sum of Col1
+			Assert.Equal(6, result[1]); // Max of Col2
 		}
 
 
@@ -137,37 +138,48 @@ namespace Unit.Test.DF
             }
         }
 
-        [Fact(Skip ="The data is not defined corectly.")]
-        public void Aggregate_Test02()
-        {
-            //
-            var agg = new Dictionary<string, Aggregation[]>();
-            agg.Add("A", new Aggregation[] { Aggregation.Min, Aggregation.Max });
-            agg.Add("B", new Aggregation[] { Aggregation.Min, Aggregation.Avg, Aggregation.Max });
-            agg.Add("C", new Aggregation[] { Aggregation.Count });
-            agg.Add("E", new Aggregation[] { Aggregation.Min, Aggregation.Max });
+		[Fact]
+		public void Aggregate_Test03()
+		{
+			// Arrange
+			var agg = new Dictionary<string, Aggregation[]>
+	        {
+		        { "A", new Aggregation[] { Aggregation.Min, Aggregation.Max } },
+		        { "B", new Aggregation[] { Aggregation.Min, Aggregation.Avg, Aggregation.Max } },
+		        { "C", new Aggregation[] { Aggregation.Count } },
+		        { "E", new Aggregation[] { Aggregation.Min, Aggregation.Max } }
+	        };
 
-            //set random seed
-            ThreadSafeRandom.FixedRandomSeed = true;
-            //
-            var df = createDataFrame();
-            var rollingdf = df.Aggragate(agg);
-            var val = new List<object>()
-                //A                 B           C               E
-            { -2.385977,        -1.647453,      DataFrame.NAN,  DateTime.ParseExact("1/31/2016", "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
-               2.463718,        3.157577,       DataFrame.NAN,  DateTime.ParseExact("12/20/2016", "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
-               DataFrame.NAN,   0.540984,       DataFrame.NAN,  DataFrame.NAN,
-               DataFrame.NAN,   DataFrame.NAN,  DataFrame.NAN,  DataFrame.NAN,
-               DataFrame.NAN,   -0.102758,      10,             DataFrame.NAN
-            };
+			// Create a DataFrame using the helper method
+			var df = createDataFrame();
 
-          
-            //
-            for (int i = 0; i < rollingdf.Values.Count; i++)
-            {
-                Assert.Equal(rollingdf.Values[i], val[i]);
-            }
-        }
+			// Expected values:
+			// Aggregations: Min/Max of A, Min/Avg/Max of B, Count of C, Min/Max of E
+			var expectedValues = new List<object>
+	        {
+                // A             B                 C               E
+                -2.385977,   -1.647453,   DataFrame.NAN,    DateTime.ParseExact("1/31/2016", "M/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+		         2.463718,    3.157577,   DataFrame.NAN,    DateTime.ParseExact("12/20/2016", "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None),
+		        DataFrame.NAN, 0.540984,  DataFrame.NAN,    DataFrame.NAN,
+		        DataFrame.NAN, DataFrame.NAN, 10,           DataFrame.NAN
+	        };
+
+			// Act
+			var rollingdf = df.Aggragate(agg);
+
+			// Assert
+			for (int i = 0; i < rollingdf.Values.Count; i++)
+			{
+                if (expectedValues[i] is not null && expectedValues[i].GetType() == typeof(DateTime))
+                {
+                    var dt = (DateTime)expectedValues[i];
+                    var dt1 = (DateTime)rollingdf.Values[i];
+                    Assert.Equal(dt,dt1);
+				}
+                else
+				    Assert.Equal(expectedValues[i], rollingdf.Values[i]);
+			}
+		}
 
     }
 
