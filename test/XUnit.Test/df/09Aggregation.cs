@@ -35,7 +35,79 @@ namespace Unit.Test.DF
             return new DataFrame(dict);
         }
 
-        [Fact]
+		[Fact]
+		public void Aggragate_SpecifiedColumns_ShouldAggregateValues()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4 },
+				new List<object> { 0, 1, 2, 3 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			var aggs = new Dictionary<string, Aggregation>
+	            {
+		            { "Col1", Aggregation.Sum },
+		            { "Col2", Aggregation.Max }
+	            };
+
+			// Act
+			var result = df.Aggragate(aggs);
+
+			// Assert
+			Assert.Equal(6, result[0]); // Sum of Col1
+			Assert.Equal(4, result[1]); // Max of Col2
+		}
+
+
+		[Fact]
+		public void Aggragate_NullAggregation_ShouldThrowException()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4 },
+				new List<object> { 0, 1, 2, 3 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.Aggragate(null));
+		}
+
+
+		[Fact]
+		public void Aggragate_MultipleOperations_ShouldReturnDataFrame()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3 },
+				new List<object> { 0, 1, 2 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			var aggs = new Dictionary<string, Aggregation[]>
+	        {
+		        { "Col1", new[] { Aggregation.Sum, Aggregation.Count } },
+		        { "Col2", new[] { Aggregation.Avg} }
+	        };
+
+			// Act
+			var resultDf = df.Aggragate(aggs);
+
+			// Assert
+			Assert.Equal(2, resultDf.Columns.Count);
+            Assert.Equal("Sum", resultDf.Index[0]);
+            Assert.Equal("Count", resultDf.Index[1]);
+            Assert.Equal("Mean", resultDf.Index[2]);
+            Assert.Equal(4, resultDf[0, 0]);
+            Assert.Equal(2, resultDf[1, 0]);
+            Assert.Equal(2.0, resultDf[2, 1]);
+
+		}
+
+
+
+		[Fact]
         public void Aggregate_Test01()
         {
             //

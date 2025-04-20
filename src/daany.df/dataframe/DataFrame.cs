@@ -8,7 +8,7 @@
 // See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
 //                                                                                      //
 // Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //random
+// bhrnjica at hotmail.com                                                              //
 // Bihac, Bosnia and Herzegovina                                                        //
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -759,323 +759,540 @@ namespace Daany
 
 
 		/// <summary>
-		/// Add one or more column into current data frame and returns new data frame with added columns.
+		/// Adds new columns to the DataFrame while ensuring the row counts match and the column names are valid.
 		/// </summary>
-		/// <param name="cols">list of columns</param>
-		/// <returns>New data frame with added columns.</returns>
-		public DataFrame AddColumns(Dictionary<string, List<object>> cols)
-        {
-            foreach(var c in cols)
-            {
-                if(RowCount() != c.Value.Count)
-                    throw new Exception("Row counts must be equal.");
-            }
+		/// <param name="columnsToAdd">
+		/// A dictionary where keys are column names and values are lists representing column data.
+		/// Each list must match the row count of the DataFrame.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame instance with the combined columns.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the row count of a column in <paramref name="columnsToAdd"/> does not match the DataFrame row count, 
+		/// or when the input dictionary is null or empty.
+		/// </exception>
+		/// <example>
+		/// Example usage:
+		/// var dataFrame = new DataFrame(
+		///     new List<object> { 1, "A", 2, "B" }, // Existing data.
+		///     new List<object> { 0, 1 },          // Index.
+		///     new List<string> { "Col1", "Col2" }, // Existing column names.
+		///     null);
+		///
+		/// var newColumns = new Dictionary<string, List<object>>
+		/// {
+		///     { "Col3", new List<object> { 3, 4 } },
+		///     { "Col4", new List<object> { "C", "D" } }
+		/// };
+		///
+		/// var updatedDataFrame = dataFrame.AddColumns(newColumns);
+		/// // Result: DataFrame with columns "Col1", "Col2", "Col3", and "Col4"
+		/// </example>
+		public DataFrame AddColumns(Dictionary<string, List<object>> columnsToAdd)
+		{
+			// Check if the input dictionary is null or empty.
+			if (columnsToAdd == null || !columnsToAdd.Any())
+				throw new ArgumentException("The columns to add cannot be null or empty.");
 
-            //
-            checkColumnNames(this._columns, cols.Keys.ToArray());
+			// Validate that all new columns have the same row count as the DataFrame.
+			foreach (var column in columnsToAdd)
+			{
+				if (RowCount() != column.Value.Count)
+					throw new ArgumentException($"Row count mismatch for column '{column.Key}'. Expected {RowCount()}, but got {column.Value.Count}.");
+			}
 
-            //
-            var vals = new List<object>();
-            for (int i = 0; i < _index.Count; i++)
-            {
-                vals.AddRange(this[i]);
+			// Ensure no duplicate or invalid column names are introduced.
+			checkColumnNames(this._columns, columnsToAdd.Keys.ToArray());
 
-                foreach(var c in cols)
-                    vals.Add(c.Value[i]);
-            }
-            //
-            var newCols = Columns.Union(cols.Keys).ToList();
-            var index = this._index.ToList();
+			// Create a new list to hold the combined values for the updated DataFrame.
+			var updatedValues = new List<object>(_index.Count * (Columns.Count + columnsToAdd.Count));
+			for (int i = 0; i < _index.Count; i++)
+			{
+				// Add the existing row values to the list.
+				updatedValues.AddRange(this[i]);
 
-            return new DataFrame(vals, index, newCols, null);
-        }
+				// Append the values from the new columns for the current row.
+				foreach (var column in columnsToAdd)
+					updatedValues.Add(column.Value[i]);
+			}
+
+			// Generate the updated column names by combining the existing names with the new ones.
+			var newColumnNames = Columns.Union(columnsToAdd.Keys).ToList();
+
+			// Return a new DataFrame with updated values, column names, and index.
+			return new DataFrame(updatedValues, this._index.ToList(), newColumnNames, null);
+		}
 
 
-        /// <summary>
-        /// Append new data frame at the end of the data frame
-        /// </summary>
-        /// <param name="df">DataFrame to be appended. </param>
-        /// <param name="verticaly"> if true DataFrame will be added row by row, otherwise DataFrame will be added column by column </param>
-        public DataFrame Append(DataFrame df, bool verticaly = true)
-        {
-            if(verticaly)//add row by row including index
-            {
-                //for vertical append column count must be the same
-                if (this._columns.Count != df.Columns.Count)
-                    throw new Exception("Data frames are not compatible to be appended. Column count are not the same!");
+		/// <summary>
+		/// Appends another DataFrame either vertically (row-wise) or horizontally (column-wise).
+		/// </summary>
+		/// <param name="df">The DataFrame to append.</param>
+		/// <param name="verticaly">A boolean indicating whether to append vertically. If false, appends horizontally.</param>
+		/// <returns>A new DataFrame containing the combined data.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the input DataFrame is incompatible with the current DataFrame for appending.
+		/// </exception>
+		/// <example>
+		/// Example usage:
+		/// var df1 = new DataFrame(
+		///     new List<object> { 1, "A", 2, "B" },
+		///     new List<object> { 0, 1 },
+		///     new List<string> { "Col1", "Col2" },
+		///     null);
+		///
+		/// var df2 = new DataFrame(
+		///     new List<object> { 3, "C", 4, "D" },
+		///     new List<object> { 2, 3 },
+		///     new List<string> { "Col1", "Col2" },
+		///     null);
+		///
+		/// var appendedDf = df1.Append(df2, true);
+		/// // Result: Combined rows from df1 and df2.
+		/// </example>
+		public DataFrame Append(DataFrame df, bool verticaly = true)
+		{
+			if (df == null)
+				throw new ArgumentException("The input DataFrame cannot be null.");
 
-                var lst = new List<object>();
-                var ind = new List<object>();
-                var cols = this._columns.ToList();
-                var types = this._colsType != null && this._colsType != Array.Empty<ColType>() ? this._colsType.ToArray(): this._colsType;
+			if (verticaly) // Append rows
+			{
+				// Validate column compatibility for vertical append
+				if (this._columns.Count != df.Columns.Count)
+					throw new ArgumentException("Data frames are not compatible for appending. Column counts must match.");
 
-                // add values
-                lst.AddRange(this._values);
-                lst.AddRange(df._values);
-                ind.AddRange(this._index);
-                ind.AddRange(df._index);
+				// Combine values and index
+				var valuesToAppend = new List<object>(this._values);
+				valuesToAppend.AddRange(df._values);
 
-                //create new df
-                var newDf = new DataFrame(lst, ind, cols, types );
-                return newDf;
-            }
-            else //add columns
-            {
-                if(this._index.Count != df._index.Count)
-                    throw new Exception("Data frames are not compatible to be appended. Row counts are not equal!");
+				var updatedIndex = new List<object>(this._index);
+				updatedIndex.AddRange(df._index);
 
-                var dic = new Dictionary<string, List<object>>();
-                for(int i=0; i< df._columns.Count; i++)
-                {
-                    dic.Add(df._columns[i], df[df._columns[i]].ToList()) ;
-                }
-                //create new df
-                var newDf = this.AddColumns(dic);
-                return newDf;
-            }
-            
-        }
+				// Use existing column names and types
+				var columns = this._columns.ToList();
+				var columnTypes = this._colsType != null && this._colsType != Array.Empty<ColType>()
+					? this._colsType.ToArray()
+					: this._colsType;
 
-        /// <summary>
-        /// Add one row in the data frame
-        /// </summary>
-        /// <param name="row">List of row values</param>
-        public void AddRow(List<object> row, object index=null)
-        {
-            if (row == null || row.Count != Columns.Count)
-                throw new Exception("Inconsistent row, and cannot be inserted in the DataFrame");
-            InsertRow(-1, row, index);
-        }
+				// Create and return the new DataFrame
+				return new DataFrame(valuesToAppend, updatedIndex, columns, columnTypes!);
+			}
+			else // Append columns
+			{
+				// Validate row compatibility for horizontal append
+				if (this._index.Count != df._index.Count)
+					throw new ArgumentException("Data frames are not compatible for appending. Row counts must match.");
 
-        #region Calculated Column
-        /// <summary>
-        /// Add additional column into DataFrame. The values of the additional column is calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colName">New column names.</param>
-        /// <param name="callBack">delegate for the calculation</param>
-        /// <returns>True if column added successfully </returns>
-        public bool AddCalculatedColumn(string colName, Func<IDictionary<string, object>, int, object> callBack)
-        {
-            var cols = new string[] { colName };
-            var retVal = new object[1];
-            object[] callBack2(IDictionary<string, object> row, int i)
-            {
-                var v = callBack(row,i);
-                retVal[0] = v;
-                return retVal;
-            }
-            return AddCalculatedColumns(cols,callBack2);
-        }
+				// Prepare dictionary for new columns
+				var newColumns = new Dictionary<string, List<object>>();
+				for (int i = 0; i < df._columns.Count; i++)
+				{
+					newColumns.Add(df._columns[i], df[df._columns[i]].ToList());
+				}
 
-        /// <summary>
-        /// Add additional column into DataFrame. The values of the additional column is calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colName">New column names.</param>
-        /// <param name="callBack">delegate for the calculation</param>
-        /// <returns>True if column added successfully </returns>
-        public bool AddCalculatedColumn(string colName, Func<object[], int, object> callBack)
-        {
-            var cols = new string[] { colName };
-            var retVal = new object[1];
-            object[] callBack2(object[] row, int i)
-            {
-                var v = callBack(row, i);
-                retVal[0] = v;
-                return retVal;
-            }
-            return AddCalculatedColumns(cols, callBack2);
-        }
+				// Add columns to the current DataFrame
+				return this.AddColumns(newColumns);
+			}
+		}
 
-        /// <summary>
-        /// Add additional columns into DataFrame. The values of the columns are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colNames">New column names</param>
-        /// <param name="callBack">Callback for calculation new columns.</param>
-        /// <returns></returns>
-        public bool AddCalculatedColumns(string[] colNames, Func<IDictionary<string, object>, int, object[]> callBack)
-        {
-            if (colNames == null || colNames.Length == 0)
-                throw new Exception("column names are not defined properly.");
 
-            //chekc for duplicate column names
-            checkColumnNames(this._columns, colNames);
-            if (_colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
-            
-            //
-            var vals = new List<object>();
+		/// <summary>
+		/// Adds a new row to the DataFrame.
+		/// </summary>
+		/// <param name="row">
+		/// A list of values representing the row to be added.
+		/// Must match the number of columns in the DataFrame.
+		/// </param>
+		/// <param name="index">
+		/// The optional index value for the row.
+		/// If not provided, a default index will be generated.
+		/// </param>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the row is null or its length does not match the number of columns.
+		/// </exception>
+		/// <example>
+		/// Example usage:
+		/// var dataFrame = new DataFrame(
+		///     new List<object> { 1, "A", 2 },
+		///     new List<object> { 0, 1 },
+		///     new List<string> { "Col1", "Col2", "Col3" },
+		///     null);
+		///
+		/// dataFrame.AddRow(new List<object> { 3, "B", 4 });
+		/// </example>
+		public void AddRow(List<object> row, object index = null)
+		{
+			// Validate that the row is not null and matches the column count.
+			if (row == null)
+				throw new ArgumentException("The row cannot be null.");
+			if (row.Count != Columns.Count)
+				throw new ArgumentException($"Inconsistent row length. Expected {Columns.Count}, but got {row.Count}.");
 
-            //define processing row before adding columns
-            var processingRow = new Dictionary<string, object>();
-            for (int j = 0; j < this.Columns.Count; j++)
-                processingRow.Add(this.Columns[j], null);
+			// Insert the row into the DataFrame at the end (-1 indicates append).
+			InsertRow(-1, row, index);
+		}
 
-            int oldInd = 0;
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
+		#region Calculated Column
+		/// <summary>
+		/// Adds a calculated column to the DataFrame.
+		/// The values of the new column are calculated using a provided callback function.
+		/// </summary>
+		/// <param name="colName">The name of the new column.</param>
+		/// <param name="callBack">
+		/// A callback function to calculate values for each row.
+		/// The function takes a dictionary of existing column values (key-value pairs) and the row index,
+		/// and returns the value for the new column.
+		/// </param>
+		/// <returns>True if the column was successfully added.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the column name is null, empty, or duplicate.
+		/// </exception>
+		/// <example>
+		/// Example usage:
+		/// var df = new DataFrame(
+		///     new List<object> { 1, "A", 2, "B" },
+		///     new List<object> { 0, 1 },
+		///     new List<string> { "Col1", "Col2" },
+		///     null);
+		///
+		/// df.AddCalculatedColumn("NewCol", (row, index) => row["Col1"].ToString() + row["Col2"].ToString());
+		/// // Result: DataFrame now contains "NewCol" with values "1A" and "2B".
+		/// </example>
 
-                for (int j = 0; j <= this.Columns.Count; j++)
-                {
+		public bool AddCalculatedColumn(string colName, Func<IDictionary<string, object>, int, object> callBack)
+		{
+			if (string.IsNullOrWhiteSpace(colName))
+				throw new ArgumentException("Column name cannot be null or empty.");
 
-                    if (j >= Columns.Count)
-                    {
-                        var vs = callBack(processingRow, i);
+            if (callBack == null)
+                throw new ArgumentNullException(nameof(callBack));
 
-                        if (vs.Length != colNames.Length)
-                            throw new Exception("Defined and calculated columns are not consistent.");
+			// Wrap single-column callback into multi-column logic
+			var colNames = new string[] { colName };
+			return AddCalculatedColumns(colNames, (row, index) => new[] { callBack(row, index) });
+		}
 
-                        foreach (var v in vs)
-                            vals.Add(v);
-                    }
-                    else
-                    {
-                        var value = _values[oldInd++];
-                        processingRow[this.Columns[j]] = value;
-                        vals.Add(value);
-                    }
-                }
+		/// <summary>
+		/// Adds a calculated column to the DataFrame using an array of existing row values.
+		/// </summary>
+		/// <param name="colName">The name of the new column.</param>
+		/// <param name="callBack">
+		/// A callback function to calculate values for each row.
+		/// The function takes an array of existing column values and the row index,
+		/// and returns the value for the new column.
+		/// </param>
+		/// <returns>True if the column was successfully added.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the column name is null, empty, or duplicate.
+		/// </exception>
+		/// <example>
+		/// Example usage:
+		/// var df = new DataFrame(
+		///     new List<object> { 1, "A", 2, "B" },
+		///     new List<object> { 0, 1 },
+		///     new List<string> { "Col1", "Col2" },
+		///     null);
+		///
+		/// df.AddCalculatedColumn("NewCol", (row, index) => row[0].ToString() + row[1].ToString());
+		/// // Result: DataFrame now contains "NewCol" with values "1A" and "2B".
+		/// </example>
 
-            }
-            //add new columns
-            this._colsType = Array.Empty<ColType>();
-            this._columns.AddRange(colNames);
-           
+		public bool AddCalculatedColumn(string colName, Func<object[], int, object> callBack)
+		{
+			if (string.IsNullOrWhiteSpace(colName))
+				throw new ArgumentException("Column name cannot be null or empty.");
 
-            //apply new data frame values
-            this._values = vals;
-            return true;
-        }
-        
+			if (callBack == null)
+				throw new ArgumentNullException(nameof(callBack));
 
-        /// <summary>
-        /// Add additional columns into DataFrame. The values of the columns are 
-        /// calculated by calling Func delegate for each row.
-        /// </summary>
-        /// <param name="colNames">New column names</param>
-        /// <param name="callBack">Callback for calculation new columns.</param>
-        /// <returns></returns>
-        public bool AddCalculatedColumns(string[] colNames, Func<object[], int, object[]> callBack)
-        {
-            if (colNames == null || colNames.Length == 0)
-                throw new Exception("column names are not defined properly.");
+			// Wrap single-column callback into multi-column logic
+			var colNames = new string[] { colName };
+			return AddCalculatedColumns(colNames, (row, index) => new[] { callBack(row, index) });
+		}
 
-            //check if column exists
-            checkColumnNames(this._columns, colNames);
-            //
-            var vals = new List<object>();
+		/// <summary>
+		/// Adds calculated columns to the DataFrame.
+		/// The values of the columns are calculated for each row using a callback function.
+		/// </summary>
+		/// <param name="colNames">An array of names for the new columns.</param>
+		/// <param name="callBack">
+		/// A callback function to calculate values for each row.
+		/// The function takes an existing row as a dictionary of column name-value pairs and the row index,
+		/// and returns an array of values for the new columns.
+		/// </param>
+		/// <returns>True if the columns were successfully added.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when column names are null, empty, or duplicate existing columns.
+		/// </exception>
+		/// <example>
+		/// Example usage:
+		/// var df = new DataFrame(
+		///     new List<object> { 1, "A", 2, "B" },
+		///     new List<object> { 0, 1 },
+		///     new List<string> { "Col1", "Col2" },
+		///     null);
+		///
+		/// df.AddCalculatedColumns(
+		///     new[] { "Col3", "Col4" },
+		///     (row, index) => new object[] { (int)row["Col1"] * 2, row["Col2"].ToString().ToLower() });
+		/// // Result: DataFrame now contains "Col3" with values [2, 4] and "Col4" with values ["a", "b"].
+		/// </example>
+		/// <summary>
+		/// Adds calculated columns to the DataFrame.
+		/// The values of the new columns are calculated for each row using a callback function.
+		/// </summary>
+		/// <param name="colNames">An array of names for the new columns.</param>
+		/// <param name="callBack">
+		/// A callback function to calculate values for each row.
+		/// The function takes an existing row as a dictionary of column name-value pairs and the row index,
+		/// and returns an array of values for the new columns.
+		/// </param>
+		/// <returns>True if the columns were successfully added.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when column names are null, empty, or duplicate existing columns.
+		/// </exception>
+		public bool AddCalculatedColumns(string[] colNames, Func<IDictionary<string, object>, int, object[]> callBack)
+		{
+			if (colNames == null || colNames.Length == 0)
+				throw new ArgumentException("Column names must not be null or empty.");
 
-            //define processing row before adding column
-            var processingRow = new object[this.Columns.Count];
-            int oldInd = 0;
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
+			if (callBack == null)
+				throw new ArgumentNullException(nameof(callBack));
 
-                for (int j = 0; j <= this.Columns.Count; j++)
-                {
+			// Check for duplicate column names
+			checkColumnNames(this._columns, colNames);
 
-                    if (j >= Columns.Count)
-                    {
-                        var vs = callBack(processingRow, i);
-                        foreach (var v in vs)
-                            vals.Add(v);
-                    }
-                    else
-                    {
-                        var value = _values[oldInd++];
-                        processingRow[j] = value;
-                        vals.Add(value);
-                    }
-                }
+			// Initialize new values list
+			var updatedValues = new List<object>();
 
-            }
-            //add new column
-            this._colsType = Array.Empty<ColType>();
+			// Create a template for processing each row
+			var processingRow = new Dictionary<string, object>();
+			foreach (var column in this.Columns)
+				processingRow[column] = null;
+
+			// Iterate through each row and calculate values for new columns
+			for (int i = 0; i < _index.Count; i++)
+			{
+				int rowOffset = i * this.Columns.Count;
+
+				// Populate existing row data
+				for (int j = 0; j < this.Columns.Count; j++)
+				{
+					var value = _values[rowOffset + j];
+					processingRow[this.Columns[j]] = value;
+					updatedValues.Add(value); // Add existing values to updated list
+				}
+
+				// Calculate new column values for the current row
+				var calculatedRow = callBack(processingRow, i);
+				if (calculatedRow.Length != colNames.Length)
+					throw new ArgumentException("Number of calculated values does not match the number of column names.");
+
+				// Add calculated values for the current row
+				updatedValues.AddRange(calculatedRow);
+			}
+
+			// Add new columns to the DataFrame
 			this._columns.AddRange(colNames);
+			this._values = updatedValues;
 
-            this._values = vals;
-            return true;
-        }
-        #endregion
+			return true;
+		}
 
-        #region Aggregation
-        /// <summary>
-        /// Perform aggregate operation on the list of columns. For incomplete list, the rest of the column will be ommited
-        /// </summary>
-        /// <param name="indCols">indexes of the columns</param>
-        /// <param name="agg"></param>
-        /// <returns>List of aggregated values</returns>
-        public List<object> Aggragate(IDictionary<string, Aggregation> aggs, bool allColumns = false)
-        {
-            if (aggs == null)
-                throw new Exception("List of columns or list of aggregation cannot be null.");
 
-            //initialize column types
-            if(this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
-            //
-            var aggValues = new List<object>();
-            for (int i = 0; i < Columns.Count; i++)
-            {
-                if (!aggs.ContainsKey(Columns[i]) && allColumns)
-                    aggValues.Add(this[Columns[i]].Last());
-                else if(aggs.ContainsKey(Columns[i]))
-                {
-                    var ag = calculateAggregation(this[Columns[i]], aggs[Columns[i]], this._colsType[i]);
-                    aggValues.Add(ag);
-                }
-            }
-            return aggValues;
-        }
+		/// <summary>
+		/// Adds calculated columns to the DataFrame using an array of existing row values.
+		/// </summary>
+		/// <param name="colNames">An array of names for the new columns.</param>
+		/// <param name="callBack">
+		/// A callback function to calculate values for each row.
+		/// The function takes an existing row (as an array of column values) and the row index,
+		/// and returns an array of calculated values for the new columns.
+		/// </param>
+		/// <returns>True if the columns were successfully added.</returns>
+		/// <example>
+		/// Example usage:
+		/// var df = new DataFrame(
+		///     new List<object> { 1, "A", 2, "B" },
+		///     new List<object> { 0, 1 },
+		///     new List<string> { "Col1", "Col2" },
+		///     null);
+		///
+		/// df.AddCalculatedColumns(
+		///     new[] { "Col3", "Col4" },
+		///     (row, index) => new object[] { (int)row[0] * 2, row[1].ToString().ToLower() });
+		/// // Result:
+		/// // Col1 Col2 Col3 Col4
+		/// //  1    A    2    a
+		/// //  2    B    4    b
+		/// </example>
+		/// <exception cref="ArgumentException">
+		/// Thrown when column names are null, empty, or duplicate existing columns.
+		/// </exception>
+		public bool AddCalculatedColumns(string[] colNames, Func<object[], int, object[]> callBack)
+		{
+			if (colNames == null || colNames.Length == 0)
+				throw new ArgumentException("Column names must not be null or empty.");
 
-        /// <summary>
-        /// Perform aggregate operation on the list of columns. 
-        /// For one column it can be setup more than one aggregate operations
-        /// </summary>
-        /// <param name="indCols">indexes of the columns</param>
-        /// <param name="agg"></param>
-        /// <returns></returns>
-        public DataFrame Aggragate(IDictionary<string, Aggregation[]> aggs)
-        {
-            if (aggs == null)
-                throw new Exception("List of columns or list of aggregation cannot be null.");
+			if (callBack == null)
+				throw new ArgumentNullException(nameof(callBack));
 
-            //initialize column types
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
-            
-            //
-            var aggValues = new TwoKeysDictionary<string, object, object>();
-            for (int i = 0; i < Columns.Count; i++)
-            {
-                if (aggs.ContainsKey(Columns[i]))
-                {
-                    for (int j = 0; j < aggs[Columns[i]].Length; j++)
-                    {
-                        var column = Columns[i];
-                        var key = aggs[Columns[i]][j];
-                        var value = calculateAggregation(this[Columns[i]], key, this._colsType[i]);
-                        aggValues.Add(column, key.GetEnumDescription(), value);
-                    }
-                }
-            }
+			// Check for duplicate column names
+			checkColumnNames(this._columns, colNames);
 
-            //create dataframe
-            var df = new DataFrame(aggValues);
-            return df;
-        }
-        #endregion
+			// Create a new list to store updated values
+			var updatedValues = new List<object>();
 
-        #region Clip
-        /// <summary>
-        /// Clip all data frame values between the bounds
-        /// </summary>
-        /// <param name="minValue">min value</param>
-        /// <param name="maxValue">max value</param>
-        /// <returns></returns>
-        public DataFrame Clip(float minValue, float maxValue)
+			// Create a template for processing each row
+			var processingRow = new object[this.Columns.Count];
+
+			// Iterate through each row and calculate values for new columns
+			for (int i = 0; i < _index.Count; i++)
+			{
+				int rowOffset = i * this.Columns.Count;
+
+				// Populate existing row values
+				for (int j = 0; j < this.Columns.Count; j++)
+				{
+					var value = _values[rowOffset + j];
+					processingRow[j] = value;
+					updatedValues.Add(value); // Add existing value to the updated list
+				}
+
+				// Calculate new column values for the current row
+				var calculatedRow = callBack(processingRow, i);
+				if (calculatedRow.Length != colNames.Length)
+					throw new ArgumentException("Number of calculated values does not match the number of column names.");
+
+				// Add the calculated values for the new columns
+				updatedValues.AddRange(calculatedRow);
+			}
+
+			// Add new columns to the DataFrame
+			this._columns.AddRange(colNames);
+			this._values = updatedValues;
+
+			return true;
+		}
+
+		#endregion
+
+		#region Aggregation
+		/// <summary>
+		/// Aggregates values across specified columns, or optionally across all columns.
+		/// </summary>
+		/// <param name="aggs">Dictionary specifying columns and their aggregation type.</param>
+		/// <param name="allColumns">If true, aggregates all columns not specified in <paramref name="aggs"/>.</param>
+		/// <returns>List of aggregated values for the DataFrame.</returns>
+		/// <example>
+		/// Example usage:
+		/// var df = new DataFrame(
+		///     new List<object> { 1, 2, 3 },
+		///     new List<object> { 0, 1, 2 },
+		///     new List<string> { "Col1", "Col2" },
+		///     null);
+		///
+		/// var aggs = new Dictionary<string, Aggregation>
+		/// {
+		///     { "Col1", Aggregation.Sum },
+		///     { "Col2", Aggregation.Average }
+		/// };
+		///
+		/// var result = df.Aggragate(aggs, true);
+		/// // Output: [Sum of Col1, Average of Col2, Last value of Col3]
+		/// </example>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="aggs"/> is null.</exception>
+		public List<object> Aggragate(IDictionary<string, Aggregation> aggs, bool allColumns = false)
+		{
+			if (aggs == null)
+				throw new ArgumentException("The list of columns or aggregation types cannot be null.");
+
+			// Initialize column types if necessary
+			if (_colsType == null || _colsType == Array.Empty<ColType>())
+				_colsType = columnsTypes();
+
+			var aggregatedValues = new List<object>();
+
+			for (int i = 0; i < Columns.Count; i++)
+			{
+				var columnName = Columns[i];
+				if (aggs.ContainsKey(columnName))
+				{
+					var aggregation = aggs[columnName];
+					var value = calculateAggregation(this[columnName], aggregation, _colsType[i]);
+					aggregatedValues.Add(value);
+				}
+				else if (allColumns)
+				{
+					aggregatedValues.Add(this[columnName].Last());
+				}
+			}
+
+			return aggregatedValues;
+		}
+
+		/// <summary>
+		/// Performs multiple aggregation operations on specified columns.
+		/// Each column can have multiple aggregation operations.
+		/// </summary>
+		/// <param name="aggs">Dictionary specifying columns and their aggregation types.</param>
+		/// <returns>DataFrame containing the aggregated values.</returns>
+		/// /// <example>
+		/// Example usage:
+		/// var df = new DataFrame(
+		///     new List<object> { 1, 2, 3 },
+		///     new List<object> { 0, 1, 2 },
+		///     new List<string> { "Col1", "Col2" },
+		///     null);
+		///
+		/// var aggs = new Dictionary<string, Aggregation[]>
+		/// {
+		///     { "Col1", new[] { Aggregation.Sum, Aggregation.Count } },
+		///     { "Col2", new[] { Aggregation.Average } }
+		/// };
+		///
+		/// var resultDf = df.Aggragate(aggs);
+		/// // Output:
+		/// // Col1 - Sum: 6, Count: 3
+		/// // Col2 - Average: 2
+		/// </example>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="aggs"/> is null.</exception>
+		public DataFrame Aggragate(IDictionary<string, Aggregation[]> aggs)
+		{
+			if (aggs == null)
+				throw new ArgumentException("The list of columns or aggregation types cannot be null.");
+
+			// Initialize column types if necessary
+			if (_colsType == null || _colsType == Array.Empty<ColType>())
+				_colsType = columnsTypes();
+
+			var aggregatedValues = new TwoKeysDictionary<string, object, object>();
+
+			foreach (var columnName in Columns)
+			{
+				if (aggs.ContainsKey(columnName))
+				{
+					foreach (var aggregation in aggs[columnName])
+					{
+						var value = calculateAggregation(this[columnName], aggregation, _colsType[Columns.IndexOf(columnName)]);
+						aggregatedValues.Add(columnName, aggregation.GetEnumDescription(), value);
+					}
+				}
+			}
+
+			return new DataFrame(aggregatedValues);
+		}
+		#endregion
+
+		#region Clip
+		/// <summary>
+		/// Clip all data frame values between the bounds
+		/// </summary>
+		/// <param name="minValue">min value</param>
+		/// <param name="maxValue">max value</param>
+		/// <returns></returns>
+		public DataFrame Clip(float minValue, float maxValue)
         {
             //initialize column types
             if (this._colsType == null || _colsType == Array.Empty<ColType>())
@@ -3371,7 +3588,7 @@ namespace Daany
             if (sameCols.Length > 0)
             {
                 var str = string.Join(", ", sameCols);
-                throw new Exception($"Column(s) '{str}' already exist(s) in the data frame.");
+                throw new ArgumentException($"Column(s) '{str}' already exist(s) in the data frame.");
             }
         }
 

@@ -8,7 +8,96 @@ namespace Unit.Test.DF
 {
     public class CalculatedColumnsTests
     {
-        [Fact]
+		[Fact]
+		public void Append_Vertically_ValidInput_ShouldCombineRows()
+		{
+			// Arrange
+			var df1 = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			var df2 = new DataFrame(
+				new List<object> { 3, "C", 4, "D" },
+				new List<object> { 2, 3 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act
+			var appendedDf = df1.Append(df2, true);
+
+			// Assert
+			Assert.Equal(8, appendedDf.Values.Count);
+			Assert.Equal(4, appendedDf.Index.Count);
+		}
+
+		[Fact]
+		public void Append_Horizontally_ValidInput_ShouldCombineColumns()
+		{
+			// Arrange
+			var df1 = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			var df2 = new DataFrame(
+				new List<object> { 3, 4 },
+				new List<object> { 0, 1 },
+				new List<string> { "Col3" },
+				null);
+
+			// Act
+			var appendedDf = df1.Append(df2, false);
+
+			// Assert
+			Assert.Equal(3, appendedDf.Columns.Count);
+			Assert.Equal("Col3", appendedDf.Columns[2]);
+		}
+
+		[Fact]
+		public void Append_Vertically_ColumnCountMismatch_ShouldThrowException()
+		{
+			// Arrange
+			var df1 = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			var df2 = new DataFrame(
+				new List<object> { 3, "C" },
+				new List<object> { 2 },
+				new List<string> { "Col1" }, // Only 1 column.
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df1.Append(df2, true));
+		}
+
+		[Fact]
+		public void Append_Horizontally_RowCountMismatch_ShouldThrowException()
+		{
+			// Arrange
+			var df1 = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			var df2 = new DataFrame(
+				new List<object> { 3, "C", 4, "D", 5 },
+				new List<object> { 0, 1, 2 },
+				new List<string> { "Col3", "Col4" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df1.Append(df2, false));
+		}
+
+
+		[Fact]
         public void AddCalculatedColumn_Test01()
         {
             var dict = new Dictionary<string, List<object>>
@@ -145,9 +234,26 @@ namespace Unit.Test.DF
 
         }
 
+		[Fact]
+		public void AddColumns_MismatchedRowCount_ShouldThrowException()
+		{
+			// Arrange
+			var dataFrame = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
 
+			var invalidColumns = new Dictionary<string, List<object>>
+	        {
+		        { "Col3", new List<object> { 3 } } // Row count mismatch.
+            };
 
-        [Fact]
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => dataFrame.AddColumns(invalidColumns));
+		}
+
+		[Fact]
         public void AddColumns_Test01()
         {
             var dict = new Dictionary<string, List<object>>
@@ -322,6 +428,187 @@ namespace Unit.Test.DF
             Assert.Equal(df.Columns.Count, df.ColTypes.Count);
 
         }
-    }
+
+		[Fact]
+		public void AddCalculatedColumn_IDictionary_ValidInput_ShouldAddColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act
+			var success = df.AddCalculatedColumn("NewCol", (row, index) => row["Col1"].ToString() + row["Col2"].ToString());
+
+			// Assert
+			Assert.True(success);
+			Assert.Equal(3, df.Columns.Count);
+			Assert.Equal("1A", df["NewCol", 0]);
+			Assert.Equal("2B", df["NewCol", 1]);
+		}
+
+		[Fact]
+		public void AddCalculatedColumn_IDictionary_NullColumnName_ShouldThrowException()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() =>
+				df.AddCalculatedColumn(null, (row, index) => row["Col1"].ToString()));
+		}
+
+		[Fact]
+		public void AddCalculatedColumn_IDictionary_DuplicateColumnName_ShouldThrowException()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() =>
+				df.AddCalculatedColumn("Col1", (row, index) => row["Col2"].ToString()));
+		}
+
+		[Fact]
+		public void AddCalculatedColumn_Array_ValidInput_ShouldAddColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act
+			var success = df.AddCalculatedColumn("NewCol", (row, index) => row[0].ToString() + row[1].ToString());
+
+			// Assert
+			Assert.True(success);
+			Assert.Equal(3, df.Columns.Count);
+			Assert.Equal("1A", df["NewCol", 0]);
+			Assert.Equal("2B", df["NewCol", 1]);
+		}
+
+
+		[Fact]
+		public void AddCalculatedColumn_Array_NullCallback_ShouldThrowException()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentNullException>(() =>
+				df.AddCalculatedColumn("NewCol", (Func<IDictionary<string,object>, int, object>)null));
+		}
+
+		[Fact]
+		public void AddCalculatedColumns_IDictionary_ValidInput_ShouldAddColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act
+			var success = df.AddCalculatedColumns(
+				new[] { "Col3", "Col4" },
+				(row, index) => new object[] { (int)row["Col1"] * 2, row["Col2"].ToString().ToLower() });
+
+			// Assert
+			Assert.True(success);
+			Assert.Equal(4, df.Columns.Count);
+			Assert.Equal(2, df["Col3", 0]);
+			Assert.Equal("a", df["Col4", 0]);
+		}
+
+		[Fact]
+		public void AddCalculatedColumns_IDictionary_MismatchedValues_ShouldThrowException()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() =>
+				df.AddCalculatedColumns(
+					new[] { "Col3", "Col4" },
+					(row, index) => new object[] { (int)row["Col1"] * 2 })); // Only 1 value returned instead of 2
+		}
+
+		[Fact]
+		public void AddCalculatedColumns_Array_ValidInput_ShouldAddColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act
+			var success = df.AddCalculatedColumns(
+				new[] { "Col3", "Col4" },
+				(row, index) => new object[] { (int)row[0] * 2, row[1].ToString().ToLower() });
+
+			// Assert
+			Assert.True(success);
+			Assert.Equal(4, df.Columns.Count);
+			Assert.Equal(2, df["Col3", 0]);
+			Assert.Equal("a", df["Col4", 0]);
+		}
+
+		[Fact]
+		public void AddCalculatedColumns_Array_NullColumnNames_ShouldThrowException()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() =>
+				df.AddCalculatedColumns(null, (row, index) => new object[] { row[0] }));
+		}
+
+
+
+		[Fact]
+		public void AddCalculatedColumns_InconsistentCalculatedValues_ShouldThrowException()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B" },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.AddCalculatedColumns(
+				new[] { "Col3", "Col4" },
+				(row, index) => new object[] { row[0], row[1].ToString().ToLower(), "extra_value" })); // Too many values
+		}
+
+	}
 
 }

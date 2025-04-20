@@ -525,8 +525,8 @@ namespace Unit.Test.DF
                 //local function declaration
                 object[] calculate(IDictionary<string, object> row, int i)
                 {
-                    return new object[2] {  i * (row.Count() +2) + row.Count() + 1, 
-                                            i * (row.Count()+ 2) + row.Count() +2};
+                    return new object[2] {  i * (row.Count() + 2) + row.Count() + 1, 
+                                            i * (row.Count() + 2) + row.Count() + 2};
                 }
         }
 

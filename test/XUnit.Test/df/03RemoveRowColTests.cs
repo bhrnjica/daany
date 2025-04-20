@@ -9,8 +9,60 @@ namespace Unit.Test.DF
 {
     public class RemoveRowsColsTests
     {
-       
-        [Fact]
+
+		[Fact]
+		public void AddRow_ValidRow_ShouldAppendRow()
+		{
+			// Arrange
+			var dataFrame = new DataFrame(
+				new List<object> { 1, "A", 2 },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2", "Col3" },
+				null);
+
+			var newRow = new List<object> { 3, "B", 4 };
+
+			// Act
+			dataFrame.AddRow(newRow);
+
+			// Assert
+			Assert.Equal(6, dataFrame.Values.Count); // Ensure new row is added.
+			Assert.Equal(3, dataFrame.Index.Count); // Ensure index is updated.
+			Assert.Equal(4, dataFrame["Col3",1]); // Check value in the first column of the added row.
+		}
+
+		[Fact]
+		public void AddRow_NullRow_ShouldThrowArgumentException()
+		{
+			// Arrange
+			var dataFrame = new DataFrame(
+				new List<object> { 1, "A", 2 },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2", "Col3" },
+				null);
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => dataFrame.AddRow(null));
+		}
+
+		[Fact]
+		public void AddRow_InconsistentRowLength_ShouldThrowArgumentException()
+		{
+			// Arrange
+			var dataFrame = new DataFrame(
+				new List<object> { 1, "A", 2 },
+				new List<object> { 0, 1 },
+				new List<string> { "Col1", "Col2", "Col3" },
+				null);
+
+			var invalidRow = new List<object> { 3, "B" }; // Only 2 values instead of 3.
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => dataFrame.AddRow(invalidRow));
+		}
+
+
+		[Fact]
         public void RemoveColumns_Test()
         {
             var dict = new Dictionary<string, List<object>>
