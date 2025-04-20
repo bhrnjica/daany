@@ -8,6 +8,16 @@ namespace Unit.Test.DF
 {
     public class CalculatedColumnsTests
     {
+		private DataFrame CreateSampleDataFrame()
+		{
+			return new DataFrame(
+				new List<object> { 1, 2, 3, 4, 5, 6 },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.I32 });
+		}
+
+
 		[Fact]
 		public void Append_Vertically_ValidInput_ShouldCombineRows()
 		{
@@ -221,8 +231,6 @@ namespace Unit.Test.DF
             var df = new DataFrame(dict);
             var sCols = new string[] { "col10" };
 
-            //
-
             //exception the number of list object is not divisible with column counts
             var exception = Assert.ThrowsAny<System.Exception>(() => df.AddCalculatedColumns(sCols, (row, i) => calculate(row, i)));
             Assert.Equal("Column(s) 'col10' already exist(s) in the data frame.", exception.Message);
@@ -326,7 +334,85 @@ namespace Unit.Test.DF
         }
 
 
-        [Fact]
+		[Fact]
+		public void InsertColumn_ShouldAppendColumn_WhenPositionIsMinusOne()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+			var newColValues = new List<object> { 7, 8 ,9};
+
+			// Act
+			var newDf = df.InsertColumn("col3", newColValues, -1);
+
+			// Assert
+			Assert.Equal(new List<object> { 1, 2, 7, 3, 4, 8, 5, 6, 9 }, newDf.Values);
+			Assert.Equal(new List<string> { "col1", "col2", "col3" }, newDf.Columns);
+		}
+
+		[Fact]
+		public void InsertColumn_ShouldInsertColumn_WhenPositionIsZero()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+			var newColValues = new List<object> { 9, 10, 11 };
+
+			// Act
+			var newDf = df.InsertColumn("col0", newColValues, 0);
+
+			// Assert
+			Assert.Equal(new List<object> { 9, 1, 2, 10, 3, 4, 11, 5, 6 }, newDf.Values);
+			Assert.Equal(new List<string> { "col0", "col1", "col2" }, newDf.Columns);
+		}
+
+		[Fact]
+		public void InsertColumn_ShouldThrowException_WhenValueIsNull()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.InsertColumn("colNew", null, -1));
+		}
+
+		[Fact]
+		public void InsertColumn_ShouldThrowException_WhenRowCountsMismatch()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+			var invalidColValues = new List<object> { 7 }; // Mismatched row count
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.InsertColumn("colNew", invalidColValues, -1));
+		}
+
+		[Fact]
+		public void InsertColumn_ShouldInsertColumn_WhenPositionIsMiddle()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+			var newColValues = new List<object> { 7, 8, 9 };
+
+			// Act
+			var newDf = df.InsertColumn("colMiddle", newColValues, 1);
+
+			// Assert
+			Assert.Equal(new List<object> { 1, 7, 2, 3, 8, 4, 5, 9 ,6 }, newDf.Values);
+			Assert.Equal(new List<string> { "col1", "colMiddle", "col2" }, newDf.Columns);
+		}
+
+		[Fact]
+		public void InsertColumn_ShouldThrowArgumentException()
+		{
+			// Arrange
+			var df = new DataFrame(new List<object>(), new List<object>(), new List<string>(), new ColType[0]);
+			var newColValues = new List<object> { 1, 2 };
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() =>
+				 df.InsertColumn("col1", newColValues));
+		}
+
+		[Fact]
         public void InsertColumn_Test01()
         {
             var dict = new Dictionary<string, List<object>>
@@ -390,6 +476,7 @@ namespace Unit.Test.DF
             Assert.Equal("col2", df.Columns[1]);
             Assert.Equal("col5", df.Columns[4]);
             Assert.Equal("col6", df.Columns[5]);
+
             for (int i = 0; i < df.Values.Count; i++)
                 Assert.Equal(i + 1, df.Values[i]);
 

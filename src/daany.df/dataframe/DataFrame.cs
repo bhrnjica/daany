@@ -41,18 +41,26 @@ namespace Daany
         public List<string> Columns => _columns;
 
 
-        /// <summary>
-        /// Types of columns (names) in the data frame.
-        /// </summary>
-        /// 
-        public IList<ColType> ColTypes => this._colsType == null || _colsType == Array.Empty<ColType>() ? columnsTypes() : this._colsType;
-        
+		/// <summary>
+		/// Types of columns (names) in the data frame.
+		/// </summary>
+		/// 
+		public IList<ColType> ColTypes
+		{
+			get
+			{
 
-        /// <summary>
-        /// Index for rows in the data frame.
-        /// </summary>
-        /// 
-        public Daany.Index Index => _index;
+                EnsureColumnTypesInitialized();
+                return _colsType!;
+			}
+		}
+
+
+		/// <summary>
+		/// Index for rows in the data frame.
+		/// </summary>
+		/// 
+		public Daany.Index Index => _index;
 
 
         public (int rows, int cols) Shape => (RowCount(), ColCount());
@@ -369,10 +377,6 @@ namespace Daany
             }
 		}
 
-  //      public DataFrame(List<object> data, List<object> index, List<string> cols, ColType[] colsType)
-  //          :this(data, new Index(index), cols, colsType)
-  //      {
-		//}
 
 		/// <summary>
 		/// Initializes a new instance of the DataFrame class by copying the internal state 
@@ -755,12 +759,11 @@ namespace Daany
 			// Get the column index
 			int index = getColumnIndex(columnName);
 
-			// Ensure _colsType is initialized
-			if (_colsType == null)
-				_colsType = columnsTypes();
+            // Ensure _colsType is initialized
+            EnsureColumnTypesInitialized();
 
 			// Set the column type
-			_colsType[index] = colType;
+			_colsType![index] = colType;
 		}
 
 		private void EnsureColumnTypesInitialized()
@@ -1085,7 +1088,7 @@ namespace Daany
 			// Create a template for processing each row
 			var processingRow = new Dictionary<string, object>();
 			foreach (var column in this.Columns)
-				processingRow[column] = null;
+				processingRow[column] = null!;
 
 			// Iterate through each row and calculate values for new columns
 			for (int i = 0; i < _index.Count; i++)
@@ -1112,7 +1115,7 @@ namespace Daany
 			// Add new columns to the DataFrame
 			this._columns.AddRange(colNames);
 			this._values = updatedValues;
-
+            this._colsType = columnsTypes();
 			return true;
 		}
 
@@ -1224,9 +1227,8 @@ namespace Daany
 			if (aggs == null)
 				throw new ArgumentException("The list of columns or aggregation types cannot be null.");
 
-			// Initialize column types if necessary
-			if (_colsType == null || _colsType == Array.Empty<ColType>())
-				_colsType = columnsTypes();
+            // Initialize column types if necessary
+            EnsureColumnTypesInitialized();
 
 			var aggregatedValues = new List<object>();
 
@@ -1280,8 +1282,7 @@ namespace Daany
 				throw new ArgumentException("The list of columns or aggregation types cannot be null.");
 
 			// Initialize column types if necessary
-			if (_colsType == null || _colsType == Array.Empty<ColType>())
-				_colsType = columnsTypes();
+			EnsureColumnTypesInitialized();
 
 			var aggregatedValues = new TwoKeysDictionary<string, object, object>();
 
@@ -1419,37 +1420,39 @@ namespace Daany
 			return value;
 		}
 
-		#endregion
+        #endregion
 
-		/// <summary>
-		/// Provides a summary of descriptive statistics for the columns in the DataFrame.
-		/// By default, only numeric columns are included, but this behavior can be overridden
-		/// with the <paramref name="numericOnly"/> parameter.
-		/// Specific columns can be included using the <paramref name="inclColumns"/> parameter.
-		/// </summary>
-		/// <param name="numericOnly">If true, includes only numeric columns. Defaults to true.</param>
-		/// <param name="inclColumns">An optional list of column names to include in the statistics.</param>
-		/// <returns>
-		/// A new DataFrame containing descriptive statistics, such as Count, Unique, Top, Frequency, 
-		/// Avg (Mean), Std (Standard Deviation), Min, Quartiles, Median, and Max.
-		/// </returns>
-		/// <example>
-		/// // Example 1: Describe only numeric columns in the DataFrame.
-		/// DataFrame df = new DataFrame(
-		///     new List<object> { -10, 50, 200, "text", DataFrame.NAN },
-		///     new List<object> { "row1", "row2", "row3", "row4", "row5" },
-		///     new List<string> { "col1", "col2" },
-		///     new ColType[] { ColType.I32, ColType.STR });
-		/// 
-		/// DataFrame description = df.Describe(); // Defaults to numericOnly = true
-		/// 
-		/// // Example 2: Include all columns, numeric and non-numeric.
-		/// DataFrame descriptionAll = df.Describe(numericOnly: false);
-		/// 
-		/// // Example 3: Include specific columns for description.
-		/// DataFrame descriptionSpecific = df.Describe(numericOnly: false, "col1", "col2");
-		/// </example>
-		public DataFrame Describe(bool numericOnly = true, params string[] inclColumns)
+        #region Describe
+        
+        /// <summary>
+        /// Provides a summary of descriptive statistics for the columns in the DataFrame.
+        /// By default, only numeric columns are included, but this behavior can be overridden
+        /// with the <paramref name="numericOnly"/> parameter.
+        /// Specific columns can be included using the <paramref name="inclColumns"/> parameter.
+        /// </summary>
+        /// <param name="numericOnly">If true, includes only numeric columns. Defaults to true.</param>
+        /// <param name="inclColumns">An optional list of column names to include in the statistics.</param>
+        /// <returns>
+        /// A new DataFrame containing descriptive statistics, such as Count, Unique, Top, Frequency, 
+        /// Avg (Mean), Std (Standard Deviation), Min, Quartiles, Median, and Max.
+        /// </returns>
+        /// <example>
+        /// // Example 1: Describe only numeric columns in the DataFrame.
+        /// DataFrame df = new DataFrame(
+        ///     new List<object> { -10, 50, 200, "text", DataFrame.NAN },
+        ///     new List<object> { "row1", "row2", "row3", "row4", "row5" },
+        ///     new List<string> { "col1", "col2" },
+        ///     new ColType[] { ColType.I32, ColType.STR });
+        /// 
+        /// DataFrame description = df.Describe(); // Defaults to numericOnly = true
+        /// 
+        /// // Example 2: Include all columns, numeric and non-numeric.
+        /// DataFrame descriptionAll = df.Describe(numericOnly: false);
+        /// 
+        /// // Example 3: Include specific columns for description.
+        /// DataFrame descriptionSpecific = df.Describe(numericOnly: false, "col1", "col2");
+        /// </example>
+        public DataFrame Describe(bool numericOnly = true, params string[] inclColumns)
 		{
 			// Initialize aggregation operations
 			var aggOps = new Aggregation[]
@@ -1472,14 +1475,13 @@ namespace Daany
 			return Aggragate(finalCols);
 		}
 
-
-		/// <summary>
-		/// Filters and retrieves relevant columns based on input criteria.
-		/// </summary>
-		/// <param name="inclColumns">Columns to include (optional).</param>
-		/// <param name="numericOnly">Whether to include only numeric columns.</param>
-		/// <returns>A list of column name and type tuples.</returns>
-		private List<(string cName, ColType cType)> GetRelevantColumns(string[] inclColumns, bool numericOnly)
+        /// <summary>
+        /// Filters and retrieves relevant columns based on input criteria.
+        /// </summary>
+        /// <param name="inclColumns">Columns to include (optional).</param>
+        /// <param name="numericOnly">Whether to include only numeric columns.</param>
+        /// <returns>A list of column name and type tuples.</returns>
+        private List<(string cName, ColType cType)> GetRelevantColumns(string[] inclColumns, bool numericOnly)
 		{
 			var idxs = inclColumns.Length > 0 ? getColumnIndex(inclColumns) : Enumerable.Range(0, Columns.Count).ToArray();
 
@@ -1488,7 +1490,8 @@ namespace Daany
 				.Where(col => !numericOnly || isNumeric(col.Item2))
 				.ToList();
 		}
-
+		
+        #endregion
 
 		#region Missing Values 
 
@@ -1744,235 +1747,353 @@ namespace Daany
 
 		#region Filter
 		/// <summary>
-		/// Filter data frame based on selected columns and coresponded values and operators.
+		/// Filters rows in the DataFrame based on multiple column conditions.
 		/// </summary>
-		/// <param name="cols">selected columns</param>
-		/// <param name="filteValues">filter values.</param>
-		/// <param name="fOpers">filter operators</param>
-		/// <returns>returns filtered df</returns>
-		public DataFrame Filter(string[] cols, object[] filteValues, FilterOperator[] fOpers)
-        {
-            if (_index.Count == 0)
-                return new DataFrame(Array.Empty<object>(), Columns.ToList());
+		/// <param name="cols">An array of column names to filter.</param>
+		/// <param name="filterValues">An array of values to filter against.</param>
+		/// <param name="fOpers">An array of operators specifying how to filter values.</param>
+		/// <returns>A new DataFrame containing rows that satisfy the conditions.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when any of the input arrays (columns, filter values, or operators) is null, empty, or of inconsistent length.
+		/// </exception>
+		/// <example>
+		/// // Example DataFrame initialization
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, "A", 3, "B", DataFrame.NAN, "C", 2, "D" },
+		///     new List<object> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		///
+		/// // Filter rows where col1 == 1 and col2 == "A"
+		/// DataFrame filteredDf = df.Filter(
+		///     new[] { "col1", "col2" },
+		///     new object[] { 1, "A" },
+		///     new[] { FilterOperator.Equal, FilterOperator.Equal });
+		///
+		/// // Result: Rows matching the conditions
+		/// // Index: ["row1"]
+		/// // Values: [1, "A"]
+		/// </example>
+		public DataFrame Filter(string[] cols, object[] filterValues, FilterOperator[] fOpers)
+		{
+			if (_index.Count == 0)
+				return new DataFrame(Array.Empty<object>(), Columns.ToList());
 
-            //check for non-null arguments
-            if (cols == null || cols.Length == 0)
-                throw new ArgumentException($"'{nameof(cols)}' cannot be null or empty array.");
+			// Validate input arguments
+			ValidateFilterArguments(cols, filterValues, fOpers);
 
-            if (filteValues == null || filteValues.Length == 0)
-                throw new ArgumentException($"'{nameof(filteValues)}' cannot be null or empty array.");
+			// Get column indices
+			int[] columnIndices = getColumnIndex(cols);
 
-            if (fOpers == null || fOpers.Length == 0)
-                throw new ArgumentException($"'{nameof(fOpers)}' cannot be null or empty array.");
+			// Filter rows based on conditions
+			var filteredRows = Enumerable.Range(0, _index.Count)
+				.Where(rowIndex => FilterRow(rowIndex, columnIndices, filterValues, fOpers))
+				.ToList();
 
-            //check for the same length of the arguments
-            if (!(cols.Length == filteValues.Length && cols.Length == fOpers.Length))
-                throw new Exception("Inconsistent number of columns, filter values an doperators.");
+			// Construct filtered DataFrame
+			return CreateFilteredDataFrame(filteredRows);
+		}
 
-            //initialize column types
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
+		/// <summary>
+		/// Validates arguments for the Filter method.
+		/// </summary>
+		private void ValidateFilterArguments(string[] cols, object[] filterValues, FilterOperator[] fOpers)
+		{
+			if (cols == null || cols.Length == 0)
+				throw new ArgumentException($"'{nameof(cols)}' cannot be null or an empty array.");
+			if (filterValues == null || filterValues.Length == 0)
+				throw new ArgumentException($"'{nameof(filterValues)}' cannot be null or an empty array.");
+			if (fOpers == null || fOpers.Length == 0)
+				throw new ArgumentException($"'{nameof(fOpers)}' cannot be null or an empty array.");
+			if (cols.Length != filterValues.Length || cols.Length != fOpers.Length)
+				throw new ArgumentException("Inconsistent number of columns, filter values, and operators.");
+		}
 
-            int[] indCols = getColumnIndex(cols);
-            //
-            for (int i = 0; i < cols.Length; i++)
-            {
-                if (this._colsType[indCols[i]] == ColType.I2 && fOpers[indCols[i]] != FilterOperator.Equal)
-                {
-                    throw new Exception("Boolean column and filterValue  must be connected with only 'Equal' operator.");
-                }
-            }
+		/// <summary>
+		/// Determines if a row satisfies the filter conditions.
+		/// </summary>
+		private bool FilterRow(int rowIndex, int[] columnIndices, object[] filterValues, FilterOperator[] fOpers)
+		{
+			int baseIndex = rowIndex * Columns.Count;
 
-            //temp row values
-            int rowIndex = 0;
-            object[] rowValues = new object[cols.Length];
-            var dfIndex = new List<object>();
-            //filtered values
-            var lst = new List<object>();
-            for (int i = 0; i < _index.Count; i++)
-            {
-                rowIndex = i * Columns.Count;
+			for (int i = 0; i < columnIndices.Length; i++)
+			{
+				int colIndex = columnIndices[i];
+				object value = _values[baseIndex + colIndex];
 
-                //fill current row
-                for (int ix = 0; ix < indCols.Length; ix++)
-                    rowValues[ix] = _values[rowIndex + indCols[ix]];
+				// Skip rows with missing values
+				if (value == DataFrame.NAN)
+					return false;
 
-                //perform  filtering
-                if (rowValues.Any(x => x == DataFrame.NAN))
-                {
-                    continue;
-                }
-                else
-                {
-                    if (applyOperator(indCols, rowValues, filteValues, fOpers))
-                    {
-                        //fill index
-                        dfIndex.Add(this._index[i]);
-                        //fill row
-                        for (int j = 0; j < Columns.Count; j++)
-                            lst.Add(_values[rowIndex + j]);
-                    }
+				// Apply the filter operator
+				if (!applyOperator(value, filterValues[i], fOpers[i], ColTypes[colIndex]))
+					return false;
+			}
 
-                }
-            }
-            var df = new DataFrame(lst, dfIndex ,this.Columns, this._colsType);
-            return df;
-        }
+			return true;
+		}
 
-        /// <summary>
-        /// Perform data frame filtering 
-        /// </summary>
-        /// <param name="col"> column name to filter.</param>
-        /// <param name="value">filter values</param>
-        /// <param name="fOper">filter operator</param>
-        /// <returns></returns>
-        public DataFrame Filter(string col, object value, FilterOperator fOper)
-        {
-            return Filter(new string[] { col }, new object[] { value }, new FilterOperator[] { fOper });
-        }
+		/// <summary>
+		/// Constructs a new DataFrame using only the filtered rows.
+		/// </summary>
+		private DataFrame CreateFilteredDataFrame(List<int> filteredRows)
+		{
+			var filteredValues = filteredRows
+				.SelectMany(rowIndex => Enumerable.Range(0, Columns.Count)
+					.Select(colIndex => _values[rowIndex * Columns.Count + colIndex]))
+				.ToList();
 
-        /// <summary>
-        /// Return DataFrame where each row satisfied the condition delegate 
-        /// </summary>
-        /// <param name="condition">The condition delegate</param>
-        /// <returns></returns>
-        public DataFrame Filter(Func<IDictionary<string, object>, bool> condition)
-        {
-            bool cnd(IDictionary<string, object> row, int i)
-            {
-                return !condition(row);
-            }
+			var filteredIndex = filteredRows.Select(rowIndex => _index[rowIndex]).ToList();
 
-            return RemoveRows(cnd);
-        }
+			return new DataFrame(filteredValues, filteredIndex, Columns, _colsType!);
+		}
 
-        #endregion
+		/// <summary>
+		/// Filters rows in the DataFrame based on a single column condition.
+		/// </summary>
+		/// <param name="col">The name of the column to filter.</param>
+		/// <param name="value">The value to filter against.</param>
+		/// <param name="fOper">The operator specifying how to filter the value.</param>
+		/// <returns>A new DataFrame containing rows that satisfy the condition.</returns>
+		/// <example>
+		/// // Example DataFrame initialization
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, 2, 3, 4, 5 },
+		///     new List<object> { "row1", "row2", "row3", "row4", "row5" },
+		///     new List<string> { "col1" },
+		///     new ColType[] { ColType.I32 });
+		///
+		/// // Filter rows where col1 > 2
+		/// DataFrame result = df.Filter("col1", 2, FilterOperator.Greather);
+		///
+		/// // Result:
+		/// // Index: ["row3", "row4", "row5"]
+		/// // Values: [3, 4, 5]
+		/// </example>
+		public DataFrame Filter(string col, object value, FilterOperator fOper)
+		{
+			return Filter(new[] { col }, new[] { value }, new[] { fOper });
+		}
 
+		/// <summary>
+		/// Filters rows in the DataFrame based on a user-defined condition.
+		/// </summary>
+		/// <param name="condition">A function that takes a dictionary representing a row and returns true if the row should be included.</param>
+		/// <returns>A new DataFrame containing rows that satisfy the condition.</returns>
+		/// <example>
+		/// // Example DataFrame initialization
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, "A", 3, "B", 2, "C" },
+		///     new List<object> { "row1", "row2", "row3" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		///
+		/// // Filter rows where col1 > 2 and col2 == "C"
+		/// DataFrame filteredDf = df.Filter(row =>
+		/// {
+		///     return (int)row["col1"] > 2 && (string)row["col2"] == "C";
+		/// });
+		///
+		/// // Result:
+		/// // Index: ["row3"]
+		/// // Values: [3, "C"]
+		/// </example>
+		public DataFrame Filter(Func<IDictionary<string, object>, bool> condition)
+		{
+			var filteredRows = Enumerable.Range(0, _index.Count)
+				.Where(rowIndex =>
+				{
+					var rowDict = Columns.ToDictionary(
+						col => col,
+						col => _values[rowIndex * Columns.Count + getColumnIndex(col)]);
+					return condition(rowDict);
+				})
+				.ToList();
 
-        #region Insert
-        /// <summary>
-        /// Insert new columns at specific position
-        /// </summary>
-        /// <param name="cName">new Column name.</param>
-        /// <param name="nPos">Zero based index position of the new column. -1 insert the column at last position.</param>
-        /// <param name="value">column value</param>
-        public DataFrame InsertColumn(string cName, List<object> value, int nPos = -1)
-        {
-            if (value==null)
-                throw new Exception("value argument cannot be null");
-            if (nPos == -1)
-                nPos = this._columns.Count;
+			return CreateFilteredDataFrame(filteredRows);
+		}
 
-            //
-            checkColumnName(this._columns, cName);
+		/// <summary>
+		/// Applies a filter operation between two values based on their type.
+		/// </summary>
+		private bool applyOperator(object value, object filterValue, FilterOperator fOper, ColType colType)
+		{
+			return colType switch
+			{
+				ColType.I2 => Compare(Convert.ToBoolean(value), Convert.ToBoolean(filterValue), fOper),
+				ColType.I32 or ColType.I64 or ColType.F32 or ColType.DD =>
+					Compare(Convert.ToDouble(value), Convert.ToDouble(filterValue), fOper),
+				ColType.STR or ColType.IN =>
+					Compare(value.ToString()!, filterValue.ToString()!, fOper),
+				ColType.DT =>
+					Compare(Convert.ToDateTime(value), Convert.ToDateTime(filterValue), fOper),
+				_ => throw new Exception("Unsupported column type!")
+			};
+		}
 
-            if (nPos < -1 && nPos >= ColCount())
-                throw new Exception("Index position must be between 0 and ColCount.");
+		/// <summary>
+		/// Compares two values using a specified filter operator.
+		/// </summary>
+		private static bool Compare<T>(T val1, T val2, FilterOperator fOper) where T : IComparable
+		{
+			return fOper switch
+			{
+				FilterOperator.Equal => val1.CompareTo(val2) == 0,
+				FilterOperator.Notequal => val1.CompareTo(val2) != 0,
+				FilterOperator.Greather => val1.CompareTo(val2) > 0,
+				FilterOperator.Less => val1.CompareTo(val2) < 0,
+				FilterOperator.GreatherOrEqual => val1.CompareTo(val2) >= 0,
+				FilterOperator.LessOrEqual => val1.CompareTo(val2) <= 0,
+				FilterOperator.IsNUll => throw new Exception("Value cannot be null!"),
+				FilterOperator.NonNull => val1 != null,
+				_ => throw new Exception("Unknown operator!")
+			};
+		}
 
-            if (RowCount() != value.Count)
-                throw new Exception("Row counts must be equal.");
-            //
-            int index = 0;
-            var vals = new List<object>();
-            for (int i = 0; i < _index.Count; i++)
-            {
-                for (int j = 0; j <= this._columns.Count; j++)
-                {
-                    if (j == nPos && nPos < this._columns.Count)
-                    {
-                        vals.Add(value[i]);
-
-                    }
-                    else if (j == nPos && (nPos == this._columns.Count))
-                    {
-                        vals.Add(value[i]);
-                    }
-                    else
-                    {
-                        vals.Add(_values[index]);
-                        index++;
-                    }
-                }
-            }
-            //Create new Data Frame
-            var cols = this._columns.ToList();
-
-            ColType[] types = Array.Empty<ColType>(); 
-            if(this._colsType != null && _colsType != Array.Empty<ColType>())
-            {
-                var colType = GetValueType(value.FirstOrDefault()!);
-                var t = this._colsType.ToList();
-
-                if (t.Count==0 || nPos == t.Count)
-                    t.Add(colType);
-                else
-                    t.Insert(nPos, colType);
-                types = t.ToArray();
-            }
-           
-            if (nPos == this._columns.Count)
-                cols.Add(cName);
-            else
-                cols.Insert(nPos, cName);
-            //index
-            var ind = this._index.ToList();
-
-            //new data frame
-            var newDf = new DataFrame(vals, ind, cols, types);
-            return newDf;
-        }
-
-        /// <summary>
-        /// Inserts the row at specified position in the DataFrame
-        /// </summary>
-        /// <param name="nPos"></param>
-        /// <param name="row"></param>
-        public void InsertRow(int nPos, List<object> row, object index=null)
-        {
-            if(nPos== -1 )
-            {
-                _values.AddRange(row);
-                //add row index
-                if (index == null)
-                    _index.Add(_index.Count);
-                else
-                    _index.Add(index);
-            }
-            else
-            {
-                int ind = nPos * this.ColCount(); 
-                _values.InsertRange(ind, row);
-
-                if (index == null)
-                    _index.Insert(nPos, this.RowCount());
-                else
-                    _index.Insert(nPos, index);
-            }            
-        }
-        #endregion
+		#endregion
 
 
-        #region Join and Merge
-        /// <summary>
-        /// Join two data frames with Inner or Left join type,based on their index.
-        /// </summary>
-        /// <param name="df2">Right data frame</param>
-        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
-        /// <returns>New joined df.</returns>
-        public DataFrame Join(DataFrame df2, JoinType jType)
+		#region Insert
+		/// <summary>
+		/// Inserts a column into the DataFrame at the specified position.
+		/// If the position is -1, the column is appended to the end of the DataFrame.
+		/// </summary>
+		/// <param name="cName">The name of the column to insert.</param>
+		/// <param name="value">The list of values representing the column to insert.</param>
+		/// <param name="nPos">The position to insert the column. Use -1 to append the column to the end.</param>
+		/// <returns>A new DataFrame with the column inserted.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when the column name already exists or when the row counts do not match.
+		/// </exception>
+		/// <example>
+		/// // Example: Append a column to the DataFrame
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, 2, 3, 4, 5, 6 },
+		///     new List<object> { "row1", "row2" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.I32 });
+		///
+		/// DataFrame newDf = df.InsertColumn("col3", new List<object> { 7, 8 }, -1);
+		///
+		/// // Example: Insert a column at position 1
+		/// DataFrame newDf = df.InsertColumn("colMiddle", new List<object> { 9, 10 }, 1);
+		/// </example>
+		public DataFrame InsertColumn(string cName, List<object> value, int nPos = -1)
+		{
+			// Validate inputs
+			if (value == null)
+				throw new ArgumentException("Value argument cannot be null.");
+			if (RowCount() != value.Count)
+				throw new ArgumentException("Row counts must be equal.");
+
+			// Determine position for column insertion
+			if (nPos == -1)
+				nPos = this._columns.Count;
+			if (nPos < 0 || nPos > ColCount())
+				throw new ArgumentException("Index position must be between 0 and ColCount.");
+
+			// Ensure column name is unique
+			checkColumnName(this._columns, cName);
+
+			// Create new values array with the column inserted
+			var newValues = Enumerable.Range(0, _index.Count)
+				.SelectMany(i => Enumerable.Range(0, _columns.Count + 1)
+					.Select(j => j == nPos ? value[i] : _values[i * _columns.Count + (j < nPos ? j : j - 1)]))
+				.ToList();
+
+			// Create new column list with the column inserted
+			var newColumns = this._columns.ToList();
+			if (nPos == this._columns.Count)
+				newColumns.Add(cName);
+			else
+				newColumns.Insert(nPos, cName);
+
+			// Determine column types
+			var newTypes = ColTypes.ToList();
+			var colType = GetValueType(value.FirstOrDefault()!);
+			if (nPos == newTypes.Count)
+				newTypes.Add(colType);
+			else
+				newTypes.Insert(nPos, colType);
+
+			// Return new DataFrame
+			return new DataFrame(newValues, _index.ToList(), newColumns, newTypes.ToArray());
+		}
+
+
+		/// <summary>
+		/// Inserts a row into the DataFrame at the specified position.
+		/// If the position is -1, the row is appended to the end of the DataFrame.
+		/// </summary>
+		/// <param name="nPos">
+		/// The position to insert the row. Use -1 to append the row to the end.
+		/// </param>
+		/// <param name="row">
+		/// The list of values representing the row to insert.
+		/// </param>
+		/// <param name="index">
+		/// The index of the row. If null, an auto-increment index is generated.
+		/// </param>
+		/// <exception cref="ArgumentException">
+		/// Thrown if the row length does not match the number of columns.
+		/// </exception>
+		/// <example>
+		/// // Example: Append a row to the DataFrame
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, 2, 3 },
+		///     new List<object> { "row1" },
+		///     new List<string> { "col1", "col2", "col3" },
+		///     new ColType[] { ColType.I32, ColType.I32, ColType.I32 });
+		///
+		/// df.InsertRow(-1, new List<object> { 4, 5, 6 }, "row2");
+		///
+		/// // Example: Insert a row at position 0
+		/// df.InsertRow(0, new List<object> { 0, 0, 0 }, "row0");
+		/// </example>
+		public void InsertRow(int nPos, List<object> row, object? index = null)
+		{
+			// Validate the row size
+			if (row.Count != this.ColCount())
+				throw new ArgumentException("The row length must match the number of columns.");
+
+			// Calculate index and add values
+			if (nPos == -1)
+			{
+				// Append row
+				_values.AddRange(row);
+				_index.Add(index ?? _index.Count); // Add index (auto-increment if null)
+			}
+			else
+			{
+				// Insert row at the specified position
+				int insertIndex = nPos * this.ColCount();
+				_values.InsertRange(insertIndex, row);
+				_index.Insert(nPos, index ?? this.RowCount()); // Add index
+			}
+		}
+
+		#endregion
+
+
+		#region Join and Merge
+		/// <summary>
+		/// Join two data frames with Inner or Left join type,based on their index.
+		/// </summary>
+		/// <param name="df2">Right data frame</param>
+		/// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
+		/// <returns>New joined df.</returns>
+		public DataFrame Join(DataFrame df2, JoinType jType)
         {
             if (df2 == null)
                 throw new ArgumentException(nameof(df2));
 
-            //initialize column types
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = this.columnsTypes();
+			//initialize column types
+			EnsureColumnTypesInitialized();
 
-            if (df2._colsType == null || df2._colsType == Array.Empty<ColType>())
-                df2._colsType = df2.columnsTypes();
+            df2.EnsureColumnTypesInitialized();
 
-            //merge columns
-            var tot = Columns.ToList();
+			//merge columns
+			var tot = Columns.ToList();
             tot.AddRange(df2.Columns);
 
             //
@@ -2078,12 +2199,10 @@ namespace Daany
             if (leftOn.Length > 3)
                 throw new Exception("Three columns for join is exceeded.");
 
-            //initialize column types
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = this.columnsTypes();
+			//initialize column types
+			EnsureColumnTypesInitialized();
 
-            if (df2._colsType == null || df2._colsType == Array.Empty<ColType>())
-                df2._colsType = df2.columnsTypes();
+			df2.EnsureColumnTypesInitialized();
 
             //get column indexes
             var leftInd = getColumnIndex(leftOn);
@@ -2191,11 +2310,13 @@ namespace Daany
                 throw new Exception("Three columns for merge is exceeded.");
 
             //check type of columns
-            var typ1 = this._colsType == null ? this.columnsTypes():this._colsType;
-            var typ2 = df2._colsType == null ? df2.columnsTypes() : df2._colsType;
+            EnsureColumnTypesInitialized();
+            df2.EnsureColumnTypesInitialized();
+            var typ1 = this._colsType;
+            var typ2 = df2._colsType;
 
             //merge column names
-            (List<string> totCols, List<ColType> totType) = mergeColumns(this._columns, typ1, df2._columns, typ2, suffix);
+            (List<string> totCols, List<ColType> totType) = mergeColumns(this._columns, typ1!, df2._columns, typ2!, suffix);
 
             //create lookup table
             (ILookup<object, int> lookup1, 
@@ -2298,10 +2419,10 @@ namespace Daany
         {
 
             //initialize column types
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
+            EnsureColumnTypesInitialized();
 
-            var colInd = getColumnIndex(cols);
+
+			var colInd = getColumnIndex(cols);
             //save
             var sdf = new SortDataFrame(colInd, _colsType);
             List<object> val;
@@ -2490,9 +2611,8 @@ namespace Daany
             var rRolls = new Dictionary<string, Queue<object>>();
             var aggrValues = new Dictionary<string, List<object>>();
 
-            //initialize column types
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes();
+			//initialize column types
+			EnsureColumnTypesInitialized();
 
             //
             for (int i = 0; i < this._index.Count; i++)
@@ -3056,10 +3176,9 @@ namespace Daany
 
             //new column type
             var newType = ser.ColType;
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = this.columnsTypes();
+			EnsureColumnTypesInitialized();
 
-            var newcolTypes = this._colsType.ToList();
+            var newcolTypes = this._colsType!.ToList();
             newcolTypes.Add(newType);
             //
             var index = this._index.ToList();
@@ -3085,10 +3204,9 @@ namespace Daany
             //
             var newCols = Columns.Union(sers.Select(x => x.Name)).ToList();
 
-            if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                this._colsType = this.columnsTypes();
+            EnsureColumnTypesInitialized();
 
-            var newTypes = this._colsType.Union(sers.Select(x=>x.ColType)).ToArray();
+            var newTypes = ColTypes.Union(sers.Select(x=>x.ColType)).ToArray();
 
             //
             var index = this._index.ToList();
@@ -3511,11 +3629,10 @@ namespace Daany
         {
             for (int colIndex = 0; colIndex < rowValues.Length; colIndex++)
             {
-                if (this._colsType == null || _colsType == Array.Empty<ColType>())
-                    this._colsType = this.columnsTypes();
+                EnsureColumnTypesInitialized();
 
-                var fOper = fOpers[colIndex];
-                if (this._colsType[indCols[colIndex]] == ColType.I2)
+				 var fOper = fOpers[colIndex];
+                if (this._colsType![indCols[colIndex]] == ColType.I2)
                 {
                     var val1 = Convert.ToBoolean(rowValues[colIndex]);
                     var val2 = Convert.ToBoolean(filteValues[colIndex]);
@@ -3539,7 +3656,7 @@ namespace Daany
                     var val1 = rowValues[colIndex].ToString();
                     var val2 = filteValues[colIndex].ToString();
                     //
-                    if (!applyOperator(val1, val2, fOper))
+                    if (!applyOperator(val1!, val2!, fOper))
                         return false;
 
                 }
@@ -3653,35 +3770,42 @@ namespace Daany
             }
         }
 
-        private ColType[] columnsTypes()
-        {
-            int cc = ColCount();
-            var types = new ColType[cc];
-            var k = 0;
-            for (int i = 0; i < Columns.Count; i++)
-            {
+		/// <summary>
+		/// Determines the data type (ColType) for each column in the DataFrame by inspecting the first non-missing value.
+		/// If no non-missing value exists, assigns a default type of ColType.STR.
+		/// </summary>
+		/// <returns>An array of ColType representing the type of each column.</returns>
+		private ColType[] columnsTypes()
+		{
+			int columnCount = ColCount();
+			var types = new ColType[columnCount];
 
-                while (_values[(i + k * Columns.Count)] == NAN)
-                {
-                    k++;
-                    //if the type is not found put default type to the column
-                    if (_values.Count < i + k * Columns.Count)
-                    {
-                        types[i] = ColType.STR;
-                        k = 0;
-                        i++;
-                        break;
-                    }
-                    continue;
-                }
-                var ind = i + k * Columns.Count;
+			// Iterate through columns to determine their types
+			for (int colIndex = 0; colIndex < columnCount; colIndex++)
+			{
+				// Find the first non-missing value in the current column
+				object firstNonMissingValue = null!;
+				for (int rowIndex = 0; rowIndex < _index.Count; rowIndex++)
+				{
+					int valueIndex = rowIndex * columnCount + colIndex; // Calculate the index of the value in the flat array
+					if (_values[valueIndex] != DataFrame.NAN) // Check for non-missing value
+					{
+						firstNonMissingValue = _values[valueIndex];
+						break; // Stop once the first non-missing value is found
+					}
+				}
 
-                types[i] = GetValueType(_values[ind]);
-            }
-            return types;
-        }
+				// Determine the column type or assign default type
+				types[colIndex] = firstNonMissingValue != null
+					? GetValueType(firstNonMissingValue) // Resolve type
+					: ColType.STR; // Default type
+			}
 
-        internal static ColType GetValueType(object value)
+			return types;
+		}
+		
+
+		internal static ColType GetValueType(object value)
         {
             if(value == null)
                 throw new ArgumentNullException("The value cannot be null.");

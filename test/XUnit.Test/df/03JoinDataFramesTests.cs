@@ -269,7 +269,7 @@ namespace Unit.Test.DF
         }
 
 
-        [Fact(Skip = "Run only if files are existed on the machine")]
+        [Fact(Skip = "Run only if files exist on the machine")]
 
         public void MergeByTwoColumns_Test01()
         {
@@ -293,7 +293,7 @@ namespace Unit.Test.DF
             }
         }
 
-        [Fact(Skip = "Run only if files are existed on the machine")]
+        [Fact(Skip = "Run only if files exist on the machine")]
         public void MergeByOneColumns_Test02()
         {
             //datetime,machineID,volt,rotate,pressure,vibration

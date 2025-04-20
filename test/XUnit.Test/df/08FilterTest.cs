@@ -8,7 +8,26 @@ namespace Unit.Test.DF
 {
     public class DataFrameFilterTests
     {
-        private void CreateRowAndCol(int row, int col, ref List<int> indexs, ref List<string> columns)
+		private DataFrame CreateSampleDataFrame()
+		{
+			return new DataFrame(
+				new List<object> {
+				1, "A", 3, "B",
+				2, "C", DataFrame.NAN, "D",
+				3, "E", 4, DataFrame.NAN
+				},
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2", "col3", "col4" },
+				new ColType[] { ColType.I32, ColType.STR, ColType.I32, ColType.STR });
+		}
+
+		// Helper method to verify DataFrame structure
+		private void AssertDataFrameStructure(DataFrame df, List<object> expectedValues, List<object> expectedIndex)
+		{
+			Assert.Equal(expectedValues, df.Values);
+			Assert.Equal(expectedIndex, df.Index);
+		}
+		private void CreateRowAndCol(int row, int col, ref List<int> indexs, ref List<string> columns)
         {
             for (int r = 0; r < row; r++)
             {
@@ -123,5 +142,157 @@ namespace Unit.Test.DF
 
         }
 
-    }
+		[Fact]
+		public void Filter_ShouldThrowForNullColumns()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.Filter(null, new object[] { 1 }, new[] { FilterOperator.Equal }));
+		}
+
+		[Fact]
+		public void Filter_ShouldThrowForEmptyColumns()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.Filter(new string[0], new object[] { 1 }, new[] { FilterOperator.Equal }));
+		}
+
+		[Fact]
+		public void Filter_ShouldThrowForMismatchedArguments()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() =>
+				df.Filter(new[] { "col1" }, new object[] { 1, 2 }, new[] { FilterOperator.Equal }));
+		}
+
+		// Single Column Filtering
+		[Fact]
+		public void Filter_ShouldFilterRowsBySingleColumn_Equal()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act
+			var filteredDf = df.Filter("col1", 2, FilterOperator.Equal);
+
+			// Assert
+			AssertDataFrameStructure(filteredDf, new List<object> { 2, "C", DataFrame.NAN, "D" }, new List<object> { "row2" });
+		}
+
+		[Fact]
+		public void Filter_ShouldFilterRowsBySingleColumn_GreaterThan()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act
+			var filteredDf = df.Filter("col1", 2, FilterOperator.Greather);
+
+			// Assert
+			AssertDataFrameStructure(filteredDf, new List<object> { 3, "E", 4, DataFrame.NAN }, new List<object> { "row3" });
+		}
+
+		// Multiple Column Filtering
+		[Fact]
+		public void Filter_ShouldFilterRowsByMultipleColumns()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act
+			var filteredDf = df.Filter(
+				new[] { "col1", "col2" },
+				new object[] { 1, "A" },
+				new[] { FilterOperator.Equal, FilterOperator.Equal });
+
+			// Assert
+			AssertDataFrameStructure(filteredDf, new List<object> { 1, "A", 3, "B" }, new List<object> { "row1" });
+		}
+
+		[Fact]
+		public void Filter_ShouldSkipRowsWithMissingValues()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act
+			var filteredDf = df.Filter(
+				new[] { "col3", "col4" },
+				new object[] { 4, "D" },
+				new[] { FilterOperator.Greather, FilterOperator.Equal });
+
+			// Assert
+			Assert.Empty(filteredDf.Values);
+			Assert.Empty(filteredDf.Index);
+		}
+
+		// Conditional Filtering
+		[Fact]
+		public void Filter_ShouldFilterRowsWithCustomCondition()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act
+			var filteredDf = df.Filter(row => (int)row["col1"] > 2 && row["col4"] == null);
+
+			// Assert
+			AssertDataFrameStructure(filteredDf, new List<object> { 3, "E", 4, DataFrame.NAN }, new List<object> { "row3" });
+		}
+
+		// Edge Case Tests
+		[Fact]
+		public void Filter_ShouldReturnEmptyDataFrameForNoMatches()
+		{
+			// Arrange
+			var df = CreateSampleDataFrame();
+
+			// Act
+			var filteredDf = df.Filter("col1", 999, FilterOperator.Equal);
+
+			// Assert
+			Assert.Empty(filteredDf.Values);
+			Assert.Empty(filteredDf.Index);
+		}
+
+		[Fact]
+		public void Filter_ShouldShouldThrowArgumentException()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object>(),
+				new List<object>(),
+				new List<string>(),
+				new ColType[0]);
+
+			var exception = Assert.Throws<ArgumentException>(() => df.Filter("col1", 1, FilterOperator.Equal));
+
+		}
+
+		[Fact]
+		public void Filter_ShouldFilterBooleanColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { true, false, true, false },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I2 });
+
+			// Act
+			var filteredDf = df.Filter("col1", true, FilterOperator.Equal);
+
+			// Assert
+			AssertDataFrameStructure(filteredDf, new List<object> { true, true }, new List<object> { "row1", "row3" });
+		}
+
+	}
 }

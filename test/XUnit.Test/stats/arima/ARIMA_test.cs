@@ -42,6 +42,7 @@ namespace Unit.Test.DF
 			Assert.Equal(new List<object>() { DataFrame.NAN,DataFrame.NAN, DataFrame.NAN, 2, 4, 6 }, newDf["b"]);
 			Assert.Equal(new List<object>() { DataFrame.NAN, DataFrame.NAN, DataFrame.NAN, 15, 21,27 }, newDf["c"]);
 		}
+
 		[Fact(Skip = "test is not completed")]
 		public void ARIM_Diff_Recursive_Test()
 		{
@@ -86,10 +87,6 @@ namespace Unit.Test.DF
 			var args = arima.AR(ts, 3);
 
 			//MagmaSharp.LinAlg.Lss()
-
-
-
-
 
 		}
 
