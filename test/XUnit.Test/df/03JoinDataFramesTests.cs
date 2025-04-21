@@ -9,7 +9,310 @@ namespace Unit.Test.DF
 {
     public class JoinDataFramesTests
     {
-        [Fact]
+		private DataFrame CreateLeftDataFrame()
+		{
+			return new DataFrame(
+				new List<object> { 1, "A", 2, "B", 3, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+		}
+
+		private DataFrame CreateRightDataFrame()
+		{
+			return new DataFrame(
+				new List<object> { 2, "D", 3, "E", 4, "F" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+		}
+
+		private DataFrame CreateOneColumnLeftDataFrame()
+		{
+			return new DataFrame(
+				new List<object> { 1, 2, 3 },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+		}
+
+		private DataFrame CreateOneColumnRightDataFrame()
+		{
+			return new DataFrame(
+				new List<object> { "A", "B", "C" },
+				new List<object> { "row1", "row3", "row4" },
+				new List<string> { "col2" },
+				new ColType[] { ColType.STR });
+		}
+		[Fact]
+		public void Merge_ShouldPerformInnerMerge_SingleColumn()
+		{
+			// Arrange
+			var leftDf = new DataFrame(
+				new List<object> { 1, 2, 3, 4 },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			var rightDf = new DataFrame(
+				new List<object> { 2, 3, 5 },
+				new List<object> { "rowA", "rowB", "rowC" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act
+			var result = leftDf.Merge(rightDf, new[] { "col1" }, new[] { "col1" }, JoinType.Inner);
+
+			// Assert
+			// Values should reflect the intersection of col1 values in both DataFrames
+			Assert.Equal(new List<object> { 2, 2, 3, 3 }, result.Values);
+			// The index from leftDf for common values in col1
+			Assert.Equal(new List<object> { "row2", "row3" }, result.Index);
+			// Combined columns, with col1 from rightDf renamed using the default suffix "right"
+			Assert.Equal(new List<string> { "col1", "col1_right" }, result.Columns);
+		}
+
+
+		[Fact]
+		public void Merge_ShouldPerformInnerMerge_TwoColumns()
+		{
+			// Arrange
+			var leftDf = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 3, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			var rightDf = new DataFrame(
+				new List<object> { 2, "B", 3, "C", 4, "D" },
+				new List<object> { "rowA", "rowB", "rowC" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var result = leftDf.Merge(rightDf, new[] { "col1", "col2" }, new[] { "col1", "col2" }, JoinType.Inner);
+
+			// Assert
+			Assert.Equal(new List<object> { 2, "B", 2, "B", 3, "C", 3, "C" }, result.Values);
+			Assert.Equal(new List<object> { "row2", "row3" }, result.Index);
+			Assert.Equal(new List<string> { "col1", "col2", "col1_right", "col2_right" }, result.Columns);
+		}
+
+		[Fact]
+		public void Merge_ShouldPerformLeftMerge_WithMissingValues()
+		{
+			// Arrange
+			var leftDf = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 3, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			var rightDf = new DataFrame(
+				new List<object> { 2, "B", 3, "C", 4, "D" },
+				new List<object> { "rowA", "rowB", "rowC" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var result = leftDf.Merge(rightDf, new[] { "col1", "col2" }, new[] { "col1", "col2" }, JoinType.Left);
+
+			// Assert
+			Assert.Equal(new List<object> { 1, "A", DataFrame.NAN, DataFrame.NAN, 2, "B", 2, "B", 3, "C", 3, "C" }, result.Values);
+			Assert.Equal(new List<object> { "row1", "row2", "row3" }, result.Index);
+			Assert.Equal(new List<string> { "col1", "col2", "col1_right", "col2_right" }, result.Columns);
+		}
+
+		[Fact]
+		public void Merge_ShouldPerformInnerMerge_OnSingleColumn()
+		{
+			// Arrange
+			var leftDf = new DataFrame(
+				new List<object> { 1, 2, 3 },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			var rightDf = new DataFrame(
+				new List<object> { 1, 2, 3 },
+				new List<object> { "rowA", "rowB", "rowC" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act
+			var result = leftDf.Merge(rightDf, new[] { "col1" }, new[] { "col1" }, JoinType.Inner);
+
+			// Assert
+			Assert.Equal(new List<object> { 1, 1, 2, 2, 3, 3 }, result.Values);
+			Assert.Equal(new List<object> { "row1", "row2", "row3" }, result.Index);
+			Assert.Equal(new List<string> { "col1", "col1_right" }, result.Columns);
+		}
+
+
+		[Fact]
+		public void Merge_ShouldPerformLeftMerge_WhenNoMatchingRows()
+		{
+			//df1
+			// col1, col2
+			// 1,    A
+			// 2,    B
+			// 3,    C
+			//df2
+			// col1, col2
+			// 2,    D
+			// 3,    E
+			// 4,    F
+			//result
+			// col1, col2, col1_right, col2_right
+			// 1,       A, DataFrame.NAN, DataFrame.NAN
+			// 2,       B, DataFrame.NAN, DataFrame.NAN
+			// 3,       C, DataFrame.NAN, DataFrame.NAN
+
+
+			// Arrange
+			var leftDf = CreateLeftDataFrame();
+			var rightDf = CreateRightDataFrame();
+
+			// Act
+			var result = leftDf.Merge(rightDf, new[] { "col1" }, new[] { "col2" }, JoinType.Left);
+
+			// Assert
+			Assert.Equal(new List<object> { 1, "A", DataFrame.NAN, DataFrame.NAN, 
+                                            2, "B", DataFrame.NAN, DataFrame.NAN,
+                                            3, "C", DataFrame.NAN, DataFrame.NAN }, result.Values);
+
+			Assert.Equal(new List<object> { "row1", "row2", "row3" }, result.Index);
+			Assert.Equal(new List<string> { "col1", "col2", "col1_right", "col2_right" }, result.Columns);
+		}
+
+		[Fact]
+		public void Merge_ShouldPerformLeftMerge_WhenNoMatchingRows_INNER()
+		{
+			//df1
+			// col1, col2
+			// 1,    A
+			// 2,    B
+			// 3,    C
+			//df2
+			// col1, col2
+			// 2,    D
+			// 3,    E
+			// 4,    F
+			//result
+			// col1, col2, col1_right, col2_right
+
+
+			// Arrange
+			var leftDf = CreateLeftDataFrame();
+			var rightDf = CreateRightDataFrame();
+
+			// Act
+			var result = leftDf.Merge(rightDf, new[] { "col1" }, new[] { "col2" }, JoinType.Inner);
+
+			// Assert
+			Assert.Empty(result.Values);
+
+			Assert.Empty(result.Index);
+			Assert.Equal(new List<string> { "col1", "col2", "col1_right", "col2_right" }, result.Columns);
+		}
+
+		
+		[Fact]
+		public void Merge_ShouldThrowException_WhenJoinColumnsAreNull()
+		{
+			// Arrange
+			var leftDf = CreateLeftDataFrame();
+			var rightDf = CreateRightDataFrame();
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => leftDf.Merge(rightDf, null, new[] { "col1" }, JoinType.Inner));
+		}
+
+		[Fact]
+		public void Merge_ShouldThrowException_WhenJoinColumnsExceedLimit()
+		{
+			// Arrange
+			var leftDf = CreateLeftDataFrame();
+			var rightDf = CreateRightDataFrame();
+
+			// Act & Assert
+			Assert.Throws<Exception>(() =>
+				leftDf.Merge(rightDf, new[] { "col1", "col2", "col3", "col4" }, new[] { "col1", "col2", "col3", "col4" }, JoinType.Inner));
+		}
+
+		[Fact]
+		public void Merge_ShouldThrowArgumentExcaptionWithEmptyDataFrame()
+		{
+			// Arrange
+			var leftDf = new DataFrame(new List<object>(), new List<object>(), new List<string>(), new ColType[0]);
+			var rightDf = CreateRightDataFrame();
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() =>
+			    leftDf.Merge(rightDf, new[] { "col1" }, new[] { "col1" }, JoinType.Left));
+		}
+
+
+
+		[Fact]
+		public void Join_ShouldPerformInnerJoin()
+		{
+			// Arrange
+			var leftDf = CreateOneColumnLeftDataFrame();
+			var rightDf = CreateOneColumnRightDataFrame();
+
+			// Act
+			var result = leftDf.Join(rightDf, JoinType.Inner);
+
+			// Assert
+			Assert.Equal(new List<object> { 1, "A", 3, "B" }, result.Values);
+			Assert.Equal(new List<object> { "row1", "row3" }, result.Index);
+			Assert.Equal(new List<string> { "col1", "col2" }, result.Columns);
+		}
+
+		[Fact]
+		public void Join_ShouldPerformLeftJoin()
+		{
+			// Arrange
+			var leftDf = CreateOneColumnLeftDataFrame();
+			var rightDf = CreateOneColumnRightDataFrame();
+
+			// Act
+			var result = leftDf.Join(rightDf, JoinType.Left);
+
+			// Assert
+			Assert.Equal(new List<object> { 1, "A", 2, DataFrame.NAN, 3, "B" }, result.Values);
+			Assert.Equal(new List<object> { "row1", "row2", "row3" }, result.Index);
+			Assert.Equal(new List<string> { "col1", "col2" }, result.Columns);
+		}
+
+		[Fact]
+		public void Join_ShouldThrowException_WhenRightDataFrameIsNull()
+		{
+			// Arrange
+			var leftDf = CreateOneColumnLeftDataFrame();
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => leftDf.Join(null, JoinType.Inner));
+		}
+
+		[Fact]
+		public void Join_ShouldReturnEmptyDataFrame_WhenLeftDataFrameIsEmpty()
+		{
+			// Arrange
+			var leftDf = new DataFrame(new List<object>(), new List<object>(), new List<string>(), new ColType[0]);
+			var rightDf = CreateOneColumnRightDataFrame();
+
+			// Act
+			var result = leftDf.Join(rightDf, JoinType.Inner);
+
+			// Assert
+			Assert.Empty(result.Values);
+			Assert.Empty(result.Index);
+			Assert.Equal(new List<string> { "col2" }, result.Columns);
+		}
+
+		[Fact]
         public void JoinTwoDataFrameByIndex_Test1()
         {
             var dict = new Dictionary<string, List<object>>

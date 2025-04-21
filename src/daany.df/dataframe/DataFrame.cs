@@ -497,11 +497,51 @@ namespace Daany
 		/// </example>
 		public DataFrame(List<object> data, List<object> index, List<string> columns, ColType[] colTypes)
         {
+			ValidateDataAndIndex(data, index, columns);
             this._index = new Index(index);
             this._columns = columns;
             this._values = data;
             this._colsType = colTypes;
         }
+
+		/// <summary>
+		/// Validates the consistency between data, index, and columns within the DataFrame.
+		/// Ensures that:
+		/// - The number of rows in the data matches the number of entries in the index.
+		/// - The number of columns in the data matches the provided column list.
+		/// </summary>
+		/// <param name="data">The data list representing the values in the DataFrame.</param>
+		/// <param name="index">The index list representing row identifiers in the DataFrame.</param>
+		/// <param name="columns">The column list representing column names in the DataFrame.</param>
+		/// <exception cref="ArgumentException">
+		/// Thrown if data, index, or columns are inconsistent.
+		/// </exception>
+		private void ValidateDataAndIndex(List<object> data, List<object> index, List<string> columns)
+		{
+			// Ensure data is not null or empty
+			if (data == null)
+				throw new ArgumentException("The data list cannot be null or empty.");
+
+			// Ensure index is not null or empty
+			if (index == null )
+				throw new ArgumentException("The index list cannot be null or empty.");
+
+			// Ensure columns are not null or empty
+			if (columns == null)
+				throw new ArgumentException("The columns list cannot be null or empty.");
+
+			// Validate the number of rows
+			int expectedRowCount = index.Count;
+			int actualRowCount = 0;
+
+			if(columns.Count > 0)
+				actualRowCount = data.Count / columns.Count;
+
+			if (expectedRowCount != actualRowCount)
+				throw new ArgumentException($"Mismatch between index and data rows: Expected {expectedRowCount} rows, but found {actualRowCount} rows in the data.");
+
+		}
+
 
 
 
@@ -776,7 +816,7 @@ namespace Daany
 
 		#region Data Frame Operations
 
-
+		#region add-append
 		/// <summary>
 		/// Adds new columns to the DataFrame while ensuring the row counts match and the column names are valid.
 		/// </summary>
@@ -951,6 +991,8 @@ namespace Daany
 			// Insert the row into the DataFrame at the end (-1 indicates append).
 			InsertRow(-1, row, index);
 		}
+
+		#endregion
 
 		#region Calculated Column
 		/// <summary>
@@ -2076,101 +2118,6 @@ namespace Daany
 
 
 		#region Join and Merge
-		/// <summary>
-		/// Join two data frames with Inner or Left join type,based on their index.
-		/// </summary>
-		/// <param name="df2">Right data frame</param>
-		/// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
-		/// <returns>New joined df.</returns>
-		public DataFrame Join(DataFrame df2, JoinType jType)
-        {
-            if (df2 == null)
-                throw new ArgumentException(nameof(df2));
-
-			//initialize column types
-			EnsureColumnTypesInitialized();
-
-            df2.EnsureColumnTypesInitialized();
-
-			//merge columns
-			var tot = Columns.ToList();
-            tot.AddRange(df2.Columns);
-
-            //
-            (var totalColumns, var totTypes) = mergeColumns(this._columns, this._colsType, df2._columns, df2._colsType,"rightDf");
-
-            var lst = new List<object>();
-            var leftRCount = RowCount();
-            var leftCCount = ColCount();
-            var rightRCount = df2.RowCount();
-            var rightCCount = df2.ColCount();
-
-            //create right lookup 
-            var ind = Enumerable.Range(0, df2.RowCount()).ToList();
-            var rightIndex = df2.Index.Zip(ind, (key, value) => (key, value)).ToLookup(x => x.key, x => x.value);
-
-            //left df enumeration
-            var finIndex = new List<object>();
-            for (int i = 0; i < leftRCount; i++)
-            {
-                var leftKey = this._index[i];
-                if (rightIndex.Contains(leftKey))
-                {
-                    var rPos = rightIndex[leftKey].ToList();
-                    for (int k = 0; k < rPos.Count; k++)
-                    {
-                        int j = rPos[k];
-
-                        //fill the index
-                        finIndex.Add(leftKey);
-                        //fill left table
-                        int startL = i * leftCCount;
-                        for (int r = startL; r < startL + leftCCount; r++)
-                            lst.Add(_values[r]);
-                        //fill right table
-                        int startR = j * rightCCount;
-                        for (int r = startR; r < startR + rightCCount; r++)
-                            lst.Add(df2._values[r]);
-
-                    }
-                }
-                else
-                {
-                    //in case of Left join and no right data found
-                    // fill with NAN numbers
-                    if (jType == JoinType.Left)
-                    {
-                        //fill the index
-                        finIndex.Add(leftKey);
-
-                        int startL = i * leftCCount;
-                        for (int r = startL; r < startL + leftCCount; r++)
-                            lst.Add(_values[r]);
-
-                        for (int r = 0; r < rightCCount; r++)
-                            lst.Add(DataFrame.NAN);
-                    }
-                }
-            }
-            //Now construct the Data frame with index
-            var newDf = new DataFrame(lst, finIndex, totalColumns, totTypes.ToArray());
-            return newDf;
-        }
-
-
-        /// <summary>
-        /// Join two df with Inner or Left join type.
-        /// </summary>
-        /// <param name="df2">Right data frame</param>
-        /// <param name="leftOn">Join columns from the left df</param>
-        /// <param name="rightOn">Join columns from the right df.</param>
-        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
-        /// <returns>New joined df.</returns>
-        [Obsolete("This method will be deprecated. Please use 'Merge' with the same argument list.")]
-        public DataFrame Join(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType)
-        {
-            return Merge(df2, leftOn, rightOn, jType, "rightDf");
-        }
 
         /// <summary>
         /// Merge two dfs with Inner or Left join type, by specified leftOn and RightOn columns.
@@ -2278,144 +2225,313 @@ namespace Daany
             var newDf = new DataFrame(lst, finIndex, totalColumns,totalTypes.ToArray() );
             return newDf;
 
-        }
+		}
 
-         
-        /// <summary>
-        /// Merge two (left and right) data frames on specified leftOn and RightOn columns.
-        /// </summary>
-        /// <param name="df2">Second data frame.</param>
-        /// <param name="leftOn">The list of column names for left data frames.</param>
-        /// <param name="rightOn">The list of column names for right data frames.</param>
-        /// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
-        /// <param name="suffix">For same column names, use suffix to make different names during merging.</param>
-        /// <returns></returns>
-        public DataFrame Merge(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType, string suffix="right")
-        {
-            if (df2 == null)
-                throw new ArgumentException(nameof(df2));
+		/// <summary>
+		/// Joins two DataFrames based on their indices.
+		/// </summary>
+		/// <param name="df2">The right DataFrame to join.</param>
+		/// <param name="jType">The type of join (e.g., Left, Inner).</param>
+		/// <returns>A new DataFrame resulting from the join operation.</returns>
+		/// <exception cref="ArgumentException">Thrown if df2 is null.</exception>
+		/// <example>
+		/// // Example: Perform an inner join
+		/// DataFrame df1 = new DataFrame(
+		///     new List<object> { 1, 2, 3 },
+		///     new List<object> { "row1", "row2", "row3" },
+		///     new List<string> { "col1" },
+		///     new ColType[] { ColType.I32 });
+		///
+		/// DataFrame df2 = new DataFrame(
+		///     new List<object> { "A", "B", "C" },
+		///     new List<object> { "row1", "row3", "row4" },
+		///     new List<string> { "col2" },
+		///     new ColType[] { ColType.STR });
+		///
+		/// DataFrame result = df1.Join(df2, JoinType.Inner);
+		/// Result data:
+		/// Index   | col1  | col2
+		/// ----------------------
+		/// row1    | 1     | "A"
+		/// row3    | 3     | "B"
+		/// </example>
+		public DataFrame Join(DataFrame df2, JoinType jType)
+		{
+			if (df2 == null)
+				throw new ArgumentException(nameof(df2));
 
-            if (leftOn == null)
-                throw new ArgumentException(nameof(leftOn));
+			// Initialize column types
+			EnsureColumnTypesInitialized();
+			df2.EnsureColumnTypesInitialized();
+
+			// Merge column names and types
+			var totalColumns = Columns.Concat(df2.Columns).ToList();
+			var totalTypes = (_colsType ?? Array.Empty<ColType>())
+				.Concat(df2._colsType ?? Array.Empty<ColType>()).ToList();
+
+			// Create a lookup for the right DataFrame
+			var rightIndexLookup = df2.Index
+				.Select((key, value) => (key, value))
+				.GroupBy(x => x.key)
+				.ToDictionary(g => g.Key, g => g.Select(x => x.value).ToList());
+
+			// Process left DataFrame
+			var mergedValues = new List<object>();
+			var mergedIndex = new List<object>();
+			for (int i = 0; i < RowCount(); i++)
+			{
+				var leftKey = _index[i];
+				if (rightIndexLookup.TryGetValue(leftKey, out var rightRowIndices))
+				{
+					foreach (var j in rightRowIndices)
+					{
+						mergedIndex.Add(leftKey);
+						mergedValues.AddRange(GetRowValues(i));
+						mergedValues.AddRange(df2.GetRowValues(j));
+					}
+				}
+				else if (jType == JoinType.Left)
+				{
+					// Handle Left join with missing data
+					mergedIndex.Add(leftKey);
+					mergedValues.AddRange(GetRowValues(i));
+					mergedValues.AddRange(Enumerable.Repeat(DataFrame.NAN, df2.ColCount())!);
+				}
+			}
+
+			// Construct resulting DataFrame
+			return new DataFrame(mergedValues, mergedIndex, totalColumns, totalTypes.ToArray());
+		}
+
+		/// <summary>
+		/// Retrieves the values of a row by its index.
+		/// </summary>
+		/// <param name="rowIndex">The index of the row.</param>
+		/// <returns>A list of values in the row.</returns>
+		private IEnumerable<object> GetRowValues(int rowIndex)
+		{
+			int start = rowIndex * ColCount();
+			return _values.Skip(start).Take(ColCount());
+		}
+
+		/// <summary>
+		/// Merges two DataFrames based on specified column criteria.
+		/// </summary>
+		/// <param name="df2">The right DataFrame to merge.</param>
+		/// <param name="leftOn">Columns in the left DataFrame used for the join.</param>
+		/// <param name="rightOn">Columns in the right DataFrame used for the join.</param>
+		/// <param name="jType">The type of join (e.g., Left, Inner).</param>
+		/// <param name="suffix">The suffix to use for columns from the right DataFrame.</param>
+		/// <returns>A new DataFrame resulting from the merge operation.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if df2, leftOn, or rightOn are null, or if the number of join columns exceeds three.
+		/// </exception>
+		/// <example>
+		/// // Example: Perform an inner merge
+		/// DataFrame df1 = new DataFrame(
+		///     new List<object> { 1, "A", 2, "B", 3, "C" },
+		///     new List<object> { "row1", "row2", "row3" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		///
+		/// DataFrame df2 = new DataFrame(
+		///     new List<object> { 2, "D", 3, "E", 4, "F" },
+		///     new List<object> { "rowA", "rowB", "rowC" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		///
+		/// DataFrame result = df1.Merge(df2, new[] { "col1" }, new[] { "col1" }, JoinType.Inner, "right");
+		///
+		/// // Resulting DataFrame:
+		/// // Index   | col1 | col2   | col2_right
+		/// // -------------------------------
+		/// // row1    | 2    | "B"    | "D"
+		/// // row2    | 3    | "C"    | "E"
+		/// </example>
+		/// <summary>
+		/// Merge two (left and right) data frames on specified leftOn and RightOn columns.
+		/// </summary>
+		/// <param name="df2">Second data frame.</param>
+		/// <param name="leftOn">The list of column names for left data frames.</param>
+		/// <param name="rightOn">The list of column names for right data frames.</param>
+		/// <param name="jType">Join types. It can be Inner or Left. In case of right join call join from the second df.</param>
+		/// <param name="suffix">For same column names, use suffix to make different names during merging.</param>
+		/// <returns></returns>
+		public DataFrame Merge(DataFrame df2, string[] leftOn, string[] rightOn, JoinType jType, string suffix = "right")
+		{
+			if (df2 == null)
+				throw new ArgumentException(nameof(df2));
+
+			if (leftOn == null)
+				throw new ArgumentException(nameof(leftOn));
 
 
-            if (rightOn == null)
-                throw new ArgumentException(nameof(rightOn));
+			if (rightOn == null)
+				throw new ArgumentException(nameof(rightOn));
 
-            if (leftOn.Length != rightOn.Length)
-                throw new Exception("Join column numbers are different!");
+			if (leftOn.Length != rightOn.Length)
+				throw new Exception("Join column numbers are different!");
 
-            //we allow three column maximum to be criterion for join
-            if (leftOn.Length > 3)
-                throw new Exception("Three columns for merge is exceeded.");
+			//we allow three column maximum to be criterion for join
+			if (leftOn.Length > 3)
+				throw new Exception("Three columns for merge is exceeded.");
 
-            //check type of columns
-            EnsureColumnTypesInitialized();
-            df2.EnsureColumnTypesInitialized();
-            var typ1 = this._colsType;
-            var typ2 = df2._colsType;
+			//check type of columns
+			EnsureColumnTypesInitialized();
+			df2.EnsureColumnTypesInitialized();
+			var typ1 = this._colsType;
+			var typ2 = df2._colsType;
 
-            //merge column names
-            (List<string> totCols, List<ColType> totType) = mergeColumns(this._columns, typ1!, df2._columns, typ2!, suffix);
+			//merge column names
+			(List<string> totCols, List<ColType> totType) = mergeColumns(this._columns, typ1!, df2._columns, typ2!, suffix);
 
-            //create lookup table
-            (ILookup<object, int> lookup1, 
-             TwoKeyLookup<object, object, int> lookup2, 
-             ThreeKeyLookup<object, object, object, int> lookup3) = createLookup(df2, rightOn);
+			//create lookup table
+			(ILookup<object, int> lookup1,
+			 TwoKeyLookup<object, object, int> lookup2,
+			 ThreeKeyLookup<object, object, object, int> lookup3) = createLookup(df2, rightOn);
 
 
-            //mrging process
-            var leftInd = getColumnIndex(leftOn);
-            var lst = new List<object>();//values
-            var finIndex = new List<object>();//left df enumeration
-            var leftRCount = this.RowCount();
-            var leftCCount = this.ColCount();
-            var rightRCount = df2.RowCount();
-            var rightCCount = df2.ColCount();
+			//mrging process
+			var leftInd = getColumnIndex(leftOn);
+			var lst = new List<object>();//values
+			var finIndex = new List<object>();//left df enumeration
+			var leftRCount = this.RowCount();
+			var leftCCount = this.ColCount();
+			var rightRCount = df2.RowCount();
+			var rightCCount = df2.ColCount();
 
-            //
-            for (int i = 0; i <leftRCount ; i++)
-            {
-                var leftKey = this._index[i];
+			//
+			for (int i = 0; i < leftRCount; i++)
+			{
+				var leftKey = this._index[i];
 
-                //search for match
-                int[] rPos = findIndex(lookup1, lookup2, lookup3, leftInd, i); 
+				//search for match
+				int[] rPos = findIndex(lookup1, lookup2, lookup3, leftInd, i);
 
-                if (rPos.Length > 0)
-                {
-                    for (int k = 0; k < rPos.Length; k++)
-                    {
-                        int j = rPos[k];
+				if (rPos.Length > 0)
+				{
+					for (int k = 0; k < rPos.Length; k++)
+					{
+						int j = rPos[k];
 
-                        //fill the index
-                        finIndex.Add(leftKey);
+						//fill the index
+						finIndex.Add(leftKey);
 
-                        //fill left table
-                        int startL = i * leftCCount;
-                        for (int r = startL; r < startL + leftCCount; r++)
-                            lst.Add(this._values[r]);
+						//fill left table
+						int startL = i * leftCCount;
+						for (int r = startL; r < startL + leftCCount; r++)
+							lst.Add(this._values[r]);
 
-                        //fill right table
-                        int startR = j * rightCCount;
-                        //
-                        for (int r = startR; r < startR + rightCCount; r++)
-                            lst.Add(df2._values[r]);
-                    }
+						//fill right table
+						int startR = j * rightCCount;
+						//
+						for (int r = startR; r < startR + rightCCount; r++)
+							lst.Add(df2._values[r]);
+					}
 
-                }
-                else
-                {
-                    //in case of Left join and no right data found
-                    // fill with NAN numbers
-                    if (jType == JoinType.Left)
-                    {
-                        //fill the index
-                        finIndex.Add(leftKey);
+				}
+				else
+				{
+					//in case of Left join and no right data found
+					// fill with NAN numbers
+					if (jType == JoinType.Left)
+					{
+						//fill the index
+						finIndex.Add(leftKey);
 
-                        int startL = i * leftCCount;
-                        for (int r = startL; r < startL + leftCCount; r++)
-                            lst.Add(_values[r]);
+						int startL = i * leftCCount;
+						for (int r = startL; r < startL + leftCCount; r++)
+							lst.Add(_values[r]);
 
-                        for (int r = 0; r < rightCCount; r++)
-                            lst.Add(DataFrame.NAN);
-                    }
-                }
-            }
-            //Now construct the Data frame
-            var newDf = new DataFrame(lst, finIndex, totCols, totType.ToArray());
-            return newDf;
+						for (int r = 0; r < rightCCount; r++)
+							lst.Add(DataFrame.NAN);
+					}
+				}
+			}
+			//Now construct the Data frame
+			var newDf = new DataFrame(lst, finIndex, totCols, totType.ToArray());
+			return newDf;
 
-        }
+		}
+		#endregion
 
-        #endregion
+		#region Rename-column
 
-        /// <summary>
-        /// Rename column name within the data frame.
-        /// </summary>
-        /// <param name="colNames">Tuple of old and new name</param>
-        /// <returns></returns>
-        public bool Rename(params (string oldName, string newName)[] colNames)
-        {
-            foreach (var (oldName, newName) in colNames)
-            {
-                var index = Columns.IndexOf(oldName);
-                if (index == -1)
-                    throw new Exception($"The column name '{oldName}' does not exist!");
-                Columns[index] = newName;
-            }
-            
-            //
-            return true;
-        }
+		/// <summary>
+		/// Rename one or more column names within the DataFrame.
+		/// </summary>
+		/// <param name="colNames">Array of tuples where each tuple contains the old column name and the new column name.</param>
+		/// <returns>True if all columns are successfully renamed.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when a column does not exist, the new name is invalid, or duplicates are introduced.
+		/// </exception>
+		/// <example>
+		/// // Example: Rename columns in the DataFrame
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, 2, 3, 4 },
+		///     new List<object> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1", "col2", "col3" },
+		///     new ColType[] { ColType.I32, ColType.I32, ColType.I32 });
+		///
+		/// // Rename col1 to newCol1 and col2 to newCol2
+		/// bool result = df.Rename(("col1", "newCol1"), ("col2", "newCol2"));
+		///
+		/// // After renaming:
+		/// // Columns: ["newCol1", "newCol2", "col3"]
+		/// // Values: [1, 2, 3, 4]
+		/// // Index: ["row1", "row2", "row3", "row4"]
+		///
+		/// // Example: Attempt to rename a column that does not exist
+		/// try
+		/// {
+		///     df.Rename(("col4", "newCol4"));
+		/// }
+		/// catch (ArgumentException ex)
+		/// {
+		///     Console.WriteLine(ex.Message); 
+		///     // Output: "The column name 'col4' does not exist in the DataFrame."
+		/// }
+		/// </example>
+		public bool Rename(params (string oldName, string newName)[] colNames)
+		{
+			var renamedColumns = new HashSet<string>(Columns); // To check for duplicate names
 
-        #region Sorting
+			foreach (var (oldName, newName) in colNames)
+			{
+				// Ensure oldName exists
+				var index = Columns.IndexOf(oldName);
+				if (index == -1)
+					throw new ArgumentException($"The column name '{oldName}' does not exist in the DataFrame.");
 
-        /// <summary>
-        /// Sorts data-frame by specified column in ascending order
-        /// </summary>
-        /// <param name="cols">Sorting columns</param>
-        /// <returns>New ordered df.</returns>
-        public DataFrame SortBy(params string[] cols)
+				// Ensure the new name is valid
+				if (string.IsNullOrWhiteSpace(newName))
+					throw new ArgumentException("New column name cannot be null or empty.");
+
+				// Check for duplicate column names
+				if (renamedColumns.Contains(newName) && newName != oldName)
+					throw new ArgumentException($"The new column name '{newName}' would create a duplicate.");
+
+				// Rename the column
+				Columns[index] = newName;
+
+				// Update the set for duplicate checks
+				renamedColumns.Remove(oldName);
+				renamedColumns.Add(newName);
+			}
+
+			return true;
+		}
+
+		#endregion
+
+		#region Sorting
+
+		/// <summary>
+		/// Sorts data-frame by specified column in ascending order
+		/// </summary>
+		/// <param name="cols">Sorting columns</param>
+		/// <returns>New ordered df.</returns>
+		public DataFrame SortBy(params string[] cols)
         {
 
             //initialize column types

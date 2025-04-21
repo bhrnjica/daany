@@ -15,20 +15,18 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var dataFrame = new DataFrame(
-				new List<object> { 1, "A", 2 },
-				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2", "Col3" },
-				null);
+				new List<object> { 1, "A", 2 ,"B", 4, "D" },
+				new List<string> { "Col1", "Col2" });
 
-			var newRow = new List<object> { 3, "B", 4 };
+			var newRow = new List<object> { 3, "C"};
 
 			// Act
 			dataFrame.AddRow(newRow);
 
 			// Assert
-			Assert.Equal(6, dataFrame.Values.Count); // Ensure new row is added.
-			Assert.Equal(3, dataFrame.Index.Count); // Ensure index is updated.
-			Assert.Equal(4, dataFrame["Col3",1]); // Check value in the first column of the added row.
+			Assert.Equal(8, dataFrame.Values.Count); // Ensure new row is added.
+			Assert.Equal(4, dataFrame.Index.Count); // Ensure index is updated.
+			Assert.Equal("C", dataFrame["Col2",3]); // Check value in the first column of the added row.
 		}
 
 		[Fact]
@@ -36,10 +34,9 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var dataFrame = new DataFrame(
-				new List<object> { 1, "A", 2 },
-				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2", "Col3" },
-				null);
+				new List<object> { 1, "A", 2, "B" },
+				new List<string> { "Col1", "Col2" }
+				);
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() => dataFrame.AddRow(null));
@@ -50,12 +47,12 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var dataFrame = new DataFrame(
-				new List<object> { 1, "A", 2 },
+				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2", "Col3" },
+				new List<string> { "Col1", "Col2" },
 				null);
 
-			var invalidRow = new List<object> { 3, "B" }; // Only 2 values instead of 3.
+			var invalidRow = new List<object> { 3, "B", 4 }; // Only 2 values instead of 3.
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() => dataFrame.AddRow(invalidRow));
@@ -206,5 +203,53 @@ namespace Unit.Test.DF
             Assert.Equal("FL", Convert.ToString(df["state", 3]));
 
         }
-    }
+
+		[Fact]
+		public void Rename_ShouldRenameColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3},
+				new List<string> { "col1", "col2", "col3" },
+				new ColType[] { ColType.I32, ColType.I32, ColType.I32 });
+
+			// Act
+			var result = df.Rename(("col1", "newCol1"), ("col2", "newCol2"));
+
+			// Assert
+			Assert.True(result);
+			Assert.Equal(new List<string> { "newCol1", "newCol2", "col3" }, df.Columns);
+		}
+
+        
+
+		[Fact]
+		public void Rename_ShouldThrow_WhenColumnDoesNotExist()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4 , 5, 6},
+				new List<object> { "row1", "row2" },
+				new List<string> { "col1", "col2", "col3" },
+				new ColType[] { ColType.I32, ColType.I32, ColType.I32 });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.Rename(("col4", "newCol4")));
+		}
+
+		[Fact]
+		public void Rename_ShouldThrow_WhenNewNameCreatesDuplicate()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4 },
+				new List<object> { "row1", "row2" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.I32 });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.Rename(("col1", "col2")));
+		}
+
+	}
 }

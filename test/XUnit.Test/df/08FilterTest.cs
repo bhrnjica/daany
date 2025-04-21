@@ -12,9 +12,9 @@ namespace Unit.Test.DF
 		{
 			return new DataFrame(
 				new List<object> {
-				1, "A", 3, "B",
+				1, "A", 3		     ,"B",
 				2, "C", DataFrame.NAN, "D",
-				3, "E", 4, DataFrame.NAN
+				3, "E", 4			 , DataFrame.NAN
 				},
 				new List<object> { "row1", "row2", "row3" },
 				new List<string> { "col1", "col2", "col3", "col4" },

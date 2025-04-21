@@ -1219,7 +1219,7 @@ female              Sarajevo
 			// Arrange
 			var df = new DataFrame(
 				new List<object> { "hello", -5, DataFrame.NAN, 150 },
-				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<object> { "row1", "row2" },
 				new List<string> { "col1", "col2" },
 				new ColType[] { ColType.STR, ColType.I32 });
 

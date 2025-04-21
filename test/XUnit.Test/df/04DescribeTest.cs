@@ -15,8 +15,8 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var df = new DataFrame(
-				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
-				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN,DataFrame.NAN },
+				new List<object> { "row1", "row2", "row3"},
 				new List<string> { "col1", "col2" },
 				new ColType[] { ColType.I32, ColType.STR });
 
@@ -35,8 +35,8 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var df = new DataFrame(
-				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
-				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN, DataFrame.NAN },
+				new List<object> { "row1", "row2", "row3"},
 				new List<string> { "col1", "col2" },
 				new ColType[] { ColType.I32, ColType.STR });
 
@@ -53,8 +53,8 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var df = new DataFrame(
-				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
-				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN, DataFrame.NAN },
+				new List<object> { "row1", "row2", "row3",  },
 				new List<string> { "col1", "col2" },
 				new ColType[] { ColType.I32, ColType.STR });
 
@@ -71,8 +71,8 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var df = new DataFrame(
-				new List<object> { -10, 50, 200, "text", DataFrame.NAN },
-				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<object> { -10, 50, 200, "text", DataFrame.NAN, DataFrame.NAN},
+				new List<object> { "row1", "row2", "row3" },
 				new List<string> { "col1", "col2" },
 				new ColType[] { ColType.I32, ColType.STR });
 

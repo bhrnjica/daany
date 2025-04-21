@@ -42,7 +42,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var df = new DataFrame(
 				new List<object> { 1, 2, 3, 4 },//dataframe values
-				new List<object> { 0, 1, 2, 3 },//index
+				new List<object> { 0, 1},//index
 				new List<string> { "Col1", "Col2" },//columns
 				null);
 
@@ -67,7 +67,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var df = new DataFrame(
 				new List<object> { 1, 2, 3, 4 },
-				new List<object> { 0, 1, 2, 3 },
+				new List<object> { 0, 1 },
 				new List<string> { "Col1", "Col2" },
 				null);
 
@@ -81,8 +81,8 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var df = new DataFrame(
-				new List<object> { 1, 2, 3 },
-				new List<object> { 0, 1, 2 },
+				new List<object> { 1, 2, 3, 4 },
+				new List<object> { 0, 1 },
 				new List<string> { "Col1", "Col2" },
 				null);
 
@@ -102,7 +102,7 @@ namespace Unit.Test.DF
             Assert.Equal("Mean", resultDf.Index[2]);
             Assert.Equal(4, resultDf[0, 0]);
             Assert.Equal(2, resultDf[1, 0]);
-            Assert.Equal(2.0, resultDf[2, 1]);
+            Assert.Equal(3.0, resultDf[2, 1]);
 
 		}
 

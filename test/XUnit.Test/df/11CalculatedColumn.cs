@@ -78,7 +78,7 @@ namespace Unit.Test.DF
 
 			var df2 = new DataFrame(
 				new List<object> { 3, "C" },
-				new List<object> { 2 },
+				new List<object> { 2,3 },
 				new List<string> { "Col1" }, // Only 1 column.
 				null);
 
@@ -97,7 +97,7 @@ namespace Unit.Test.DF
 				null);
 
 			var df2 = new DataFrame(
-				new List<object> { 3, "C", 4, "D", 5 },
+				new List<object> { 3, "C", 4, "D", 5, "E" },
 				new List<object> { 0, 1, 2 },
 				new List<string> { "Col3", "Col4" },
 				null);
