@@ -3152,11 +3152,11 @@ namespace Daany
 
 			if (steps > 0)
 			{
-				shiftedValues = nanList.Concat(columnValues).Take(this.RowCount()).ToList();
+				shiftedValues = nanList.Concat(columnValues).Take(this.RowCount()).ToList()!;
 			}
 			else
 			{
-				shiftedValues = columnValues.Concat(nanList).Skip(Math.Abs(steps)).ToList();
+				shiftedValues = columnValues.Concat(nanList).Skip(Math.Abs(steps)).ToList()!;
 			}
 
 			return new Dictionary<string, List<object>> { { newColName, shiftedValues } };
