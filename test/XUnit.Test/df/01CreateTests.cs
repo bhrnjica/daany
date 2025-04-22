@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
+using Daany.Multikey;
+
 
 namespace Unit.Test.DF
 {

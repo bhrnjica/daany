@@ -34,7 +34,120 @@ namespace Unit.Test.DF
             return new DataFrame(dict);
         }
 
-        [Fact]
+		[Fact]
+		public void GroupBy_ShouldGroupBySingleColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 1, "C", 2, "D" },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var groupedDf = df.GroupBy("col1");
+
+			// Assert
+			Assert.Equal(2, groupedDf.Keys.Count);
+			Assert.Contains(1, groupedDf.Keys);
+			Assert.Contains(2, groupedDf.Keys);
+		}
+
+		[Fact]
+		public void GroupBy_ShouldThrowException_WhenColumnDoesNotExist()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 1, "C", 2, "D" },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.GroupBy("invalidColumn"));
+		}
+
+		[Fact]
+		public void GroupBy_ShouldThrowException_WhenGroupingByMoreThanThreeColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, "A", 2, "B", 1, "C", 2, "D" },
+				new List<object> { "row1", "row2" },
+				new List<string> { "col1", "col2", "col3", "col4" },
+				new ColType[] { ColType.I32, ColType.STR, ColType.I32, ColType.STR });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.GroupBy("col1", "col2", "col3", "col4"));
+		}
+
+		[Fact]
+		public void Rolling_ShouldComputeRollingMean()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 1, 2, 3, 4, 5 },
+				new List<object> { "row1", "row2", "row3", "row4", "row5" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
+
+			// Act
+			var rollingDf = df.Rolling(3, Aggregation.Avg);
+
+			// Assert
+			Assert.Null(rollingDf["col1", 0]); // First two rows should be NaN
+			Assert.Null(rollingDf["col1", 1]);
+			Assert.Equal(2.0, rollingDf["col1", 2]); // Mean(1,2,3)
+			Assert.Equal(3.0, rollingDf["col1", 3]); // Mean(2,3,4)
+			Assert.Equal(4.0, rollingDf["col1", 4]); // Mean(3,4,5)
+		}
+
+		[Fact]
+		public void Rolling_ShouldComputeRollingAggregations_PerColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+	            ("col1",[1, 2, 3, 4, 5 ]),
+	            ("col2",[10, 20, 30, 40, 50 ]));
+
+			var columnAggregations = new Dictionary<string, Aggregation>
+		        {
+			        { "col1", Aggregation.Avg },
+			        { "col2", Aggregation.Sum }
+		        };
+
+			// Act
+			var rollingDf = df.Rolling(3, columnAggregations);
+
+			// Assert
+			Assert.Null(rollingDf["col1", 0]); // First two rows should be NaN
+			Assert.Null(rollingDf["col1", 1]);
+			Assert.Equal(2.0, rollingDf["col1", 2]); // Mean(1,2,3)
+			Assert.Equal(3.0, rollingDf["col1", 3]); // Mean(2,3,4)
+			Assert.Equal(4.0, rollingDf["col1", 4]); // Mean(3,4,5)
+
+			Assert.Null(rollingDf["col2", 0]); // First two rows should be NaN
+			Assert.Null(rollingDf["col2", 1]);
+			Assert.Equal(60, rollingDf["col2", 2]); // Sum(10,20,30)
+			Assert.Equal(90, rollingDf["col2", 3]); // Sum(20,30,40)
+			Assert.Equal(120, rollingDf["col2", 4]); // Sum(30,40,50)
+		}
+
+		[Fact]
+		public void Rolling_ShouldThrowException_WhenWindowSizeIsInvalid()
+		{
+			// Arrange
+			var df = new DataFrame(
+				("col1", [1, 2, 3, 4, 5]));
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.Rolling(0, Aggregation.Avg)); // Window size cannot be zero
+			Assert.Throws<ArgumentException>(() => df.Rolling(-1, Aggregation.Avg)); // Window size cannot be negative
+		}
+
+
+
+		[Fact]
         public void GroupBy_Test01()
         {
             var dict = new Dictionary<string, List<object>>
@@ -138,9 +251,9 @@ namespace Unit.Test.DF
             var group = df.GroupBy("city", "state", "product_id");
 
             Assert.Equal(7, group.Keys3.Count);
-            Assert.Equal("SF", group.Keys3[0].key1);
-            Assert.Equal("CA", group.Keys3[0].key2);
-            Assert.Equal(1, group.Keys3[0].key3);
+            Assert.Equal("SF", group.Keys3[0].Item1);
+            Assert.Equal("CA", group.Keys3[0].Item2);
+            Assert.Equal(1, group.Keys3[0].Item3);
 
         }
 
@@ -344,7 +457,7 @@ namespace Unit.Test.DF
             };
 
             var df = telDf.GroupBy("machineID").Rolling(3, agg).TakeEvery(3);
-            var df1 = telDf.GroupBy("machineID").Rolling(3,3, agg);
+            var df1 = telDf.GroupBy("machineID").Rolling(3, 3, agg);
             for(int i =0; i< df.Values.Count; i++)
                 Assert.Equal(df.Values[i], df1.Values[i]);
 

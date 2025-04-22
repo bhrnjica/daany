@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net9.0;net8.0;net7.0</TargetFrameworks>
 		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
-		<LangVersion>10.0</LangVersion>
+		<LangVersion>Latest</LangVersion>
 		<IsPackable>false</IsPackable>
 		<RootNamespace>Daany.Unit.Test.DataFrame</RootNamespace>
 		<Platforms>AnyCPU;x64</Platforms>

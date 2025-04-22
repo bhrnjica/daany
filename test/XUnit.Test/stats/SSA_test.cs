@@ -546,8 +546,8 @@ namespace Unit.Test.DF
 
         }
 
-        [Fact]
-        public void SSAForecast_Test()
+		[Fact(Skip = "Use this tes only if you want to play with plotting capabilities.")]
+		public void SSAForecast_Test()
         {
             var _ts = getAirPassengersData(); // Monthly time-series data
             //DataFrame.ToCsv("usa_deaths.csv",df);

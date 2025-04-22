@@ -9,6 +9,161 @@ namespace Unit.Test.DF
 {
     public class RemoveRowsColsTests
     {
+		[Fact]
+		public void RemoveRows_ShouldRemoveMatchingRows1()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 5, "A", 15, "B", 25, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			Func<object[], int, bool> condition = (row, index) => (int)row[0] > 10;
+
+			// Act
+			var newDf = df.RemoveRows(condition);
+
+			// Assert
+			Assert.Equal(new List<object> { 5, "A" }, newDf.Values);
+			Assert.Equal(new List<object> { "row1" }, newDf.Index);
+			Assert.Equal(new List<string> { "col1", "col2" }, newDf.Columns);
+		}
+
+		[Fact]
+		public void RemoveRows_ShouldKeepAllRows_WhenNoneMatchCondition1()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 5, "A", 6, "B", 7, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			Func<object[], int, bool> condition = (row, index) => (int)row[0] > 10;
+
+			// Act
+			var newDf = df.RemoveRows(condition);
+
+			// Assert
+			Assert.Equal(df.Values, newDf.Values);
+			Assert.Equal(df.Index, newDf.Index);
+			Assert.Equal(df.Columns, newDf.Columns);
+		}
+
+		[Fact]
+		public void RemoveRows_ShouldRemoveAllRows_WhenAllMatchCondition1()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 15, "A", 25, "B", 35, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			Func<object[], int, bool> condition = (row, index) => (int)row[0] > 10;
+
+			// Act
+			var newDf = df.RemoveRows(condition);
+
+			// Assert
+			Assert.Empty(newDf.Values);
+			Assert.Empty(newDf.Index);
+			Assert.Equal(df.Columns, newDf.Columns);
+		}
+
+		[Fact]
+		public void RemoveRows_ShouldThrowException_WhenConditionIsNull1()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 5, "A", 15, "B", 25, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.RemoveRows((Func<IDictionary<string, object>, int, bool>)null));
+		}
+
+
+		[Fact]
+		public void RemoveRows_ShouldThrowException_WhenConditionIsNull()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 5, "A", 15, "B", 25, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.RemoveRows((Func<object[], int, bool>)null));
+		}
+
+		[Fact]
+		public void RemoveRows_ShouldRemoveAllRows_WhenAllMatchCondition()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 15, "A", 25, "B", 35, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			Func<IDictionary<string, object>, int, bool> condition = (row, index) => (int)row["col1"] > 10;
+
+			// Act
+			var newDf = df.RemoveRows(condition);
+
+			// Assert
+			Assert.Empty(newDf.Values);
+			Assert.Empty(newDf.Index);
+			Assert.Equal(df.Columns, newDf.Columns);
+		}
+
+		[Fact]
+		public void RemoveRows_ShouldKeepAllRows_WhenNoneMatchCondition()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 5, "A", 6, "B", 7, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			Func<IDictionary<string, object>, int, bool> condition = (row, index) => (int)row["col1"] > 10;
+
+			// Act
+			var newDf = df.RemoveRows(condition);
+
+			// Assert
+			Assert.Equal(df.Values, newDf.Values);
+			Assert.Equal(df.Index, newDf.Index);
+			Assert.Equal(df.Columns, newDf.Columns);
+		}
+
+		[Fact]
+		public void RemoveRows_ShouldRemoveMatchingRows()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 5, "A", 15, "B", 25, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			Func<IDictionary<string, object>, int, bool> condition = (row, index) => (int)row["col1"] > 10;
+
+			// Act
+			var newDf = df.RemoveRows(condition);
+
+			// Assert
+			Assert.Equal(new List<object> { 5, "A" }, newDf.Values);
+			Assert.Equal(new List<object> { "row1" }, newDf.Index);
+			Assert.Equal(new List<string> { "col1", "col2" }, newDf.Columns);
+		}
+
 
 		[Fact]
 		public void AddRow_ValidRow_ShouldAppendRow()

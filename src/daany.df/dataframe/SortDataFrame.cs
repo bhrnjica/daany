@@ -15,327 +15,205 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace Daany
 {
-    public class SortDataFrame
-    {
-        ColType[] m_dfTypes;
-        int m_ColCount;
-        public SortDataFrame(int[] indCols, ColType[] dfTypes)
-        {
-            m_dfTypes = dfTypes;
-            m_ColCount = dfTypes.Length;
-        }
+	public class SortDataFrame
+	{
+		private readonly ColType[] _dfTypes;
+		private readonly int _colCount;
 
-        internal (List<object> lst, List<object> ind) QuickSort(IList<object> array, List<object> dfIndex, int[] indCols)
-        {
-            if (array == null)
-                throw new Exception("data array cannot be null.");
+		public SortDataFrame(ColType[] dfTypes)
+		{
+			_dfTypes = dfTypes ?? throw new ArgumentNullException(nameof(dfTypes));
+			_colCount = dfTypes.Length;
+		}
 
-            int end = array.Count / m_ColCount - 1;
-            var sortedList = array.ToList();
-            var sortedIndex = dfIndex.ToList();
-            quickSort(sortedList, sortedIndex, 0, end, indCols);
-            return (sortedList, sortedIndex);
-        }
+		/// <summary>
+		/// Sorts the DataFrame using QuickSort algorithm.
+		/// </summary>
+		public (List<object> values, List<object> indices) QuickSort(IList<object> array, List<object> dfIndex, int[] sortCols)
+		{
+			ValidateInput(array, dfIndex);
 
-        internal (List<object> val, List<object> ind) MergeSort(object[] array, object[] index, int[] indCols)
-        {
-            (object[] val, object[] ind)= mergeSort(array, index, indCols);
+			int end = array.Count / _colCount - 1;
+			var sortedValues = array.ToList();
+			var sortedIndices = dfIndex.ToList();
 
-            return (val.ToList(), ind.ToList());
-        }
-        
-        #region QuickSort
-        /// <summary>
-        /// Classic QuickSort algorithm for sorting 
-        /// </summary>
-        /// <param name="init"></param>
-        /// <param name="end"></param>
-        /// <param name="cols"></param>
-        private void quickSort(List<object> sortedList, List<object> sortedIndex, int init, int end, int[] indCols)
-        {
-            if (init < end)
-            {
-                int pivot = partition(sortedList, sortedIndex, init, end, indCols);
-                quickSort(sortedList, sortedIndex, init, pivot - 1, indCols);
-                quickSort(sortedList, sortedIndex, pivot + 1, end, indCols);
-            }
-        }
+			QuickSortRecursive(sortedValues, sortedIndices, 0, end, sortCols);
+			return (sortedValues, sortedIndices);
+		}
 
-        //O(n)
-        private int partition(List<object> sortedList, List<object> sortedIndex, int init, int end, int[] indCols)
-        {
-            var last = getRowFromList(sortedList, end);
-            int i = init - 1;
-            for (int j = init; j < end; j++)
-            {
-                var row = getRowFromList(sortedList, j);
-                if (lessThanOrEqual(row, last, indCols))
-                {
-                    i++;
-                    swap(sortedList, sortedIndex, i, j);
-                }
-            }
-            swap(sortedList,sortedIndex, i + 1, end);
-            return i + 1;
-        }
+		/// <summary>
+		/// Sorts the DataFrame using MergeSort algorithm.
+		/// </summary>
+		public (List<object> values, List<object> indices) MergeSort(object[] array, object[] index, int[] sortCols)
+		{
+			ValidateInput(array, index);
 
-        private IEnumerable<object> getRowFromList(IList<object> list, int jthRow)
-        {
-            var start = jthRow * m_ColCount;
-            for (int i = start; i < start + m_ColCount; i++)
-                yield return list[i];
-        }
+			(object[] sortedValues, object[] sortedIndices) = MergeSortRecursive(array, index, sortCols);
+			return (sortedValues.ToList(), sortedIndices.ToList());
+		}
 
-        private void swap(List<object> sortedList, List<object> sortedIndex, int i1, int i2)
-        {
-            if (i1 == i2)
-                return;
-            //
-            for (int i = 0; i < m_ColCount; i++)
-            {
-                int lstIndex1 = i1 * m_ColCount + i;
-                int lstIndex2 = i2 * m_ColCount + i;
-                var temVal = sortedList[lstIndex1];
-                sortedList[lstIndex1] = sortedList[lstIndex2];
-                sortedList[lstIndex2] = temVal;
-            }
+		private void ValidateInput(IList<object> array, IList<object> index)
+		{
+			if (array == null || index == null)
+				throw new ArgumentException("Array or index cannot be null.");
 
-            var temp = sortedIndex[i1];
-            sortedIndex[i1] = sortedIndex[i2];
-            sortedIndex[i2] = temp;
-        }
+			if (array.Count % _colCount != 0)
+				throw new ArgumentException("Array length must be divisible by the column count.");
 
-        private bool lessThanOrEqual(IEnumerable<object> left, IEnumerable<object> right, int[] indCols, int leftIndex = 0, int rightIndex = 0)
-        {
-            bool prevEqual = true;
-            //
-            for (int i = 0; i < indCols.Length; i++)
-            {
-                if (!prevEqual)
-                    return true;
-                int colInd = indCols[i];
-                var l = left.ElementAt(leftIndex + colInd);
-                var r = right.ElementAt(rightIndex + colInd);
+			if (array.Count / _colCount != index.Count)
+				throw new ArgumentException("Row count in array and index must match.");
+		}
 
-                //
-                if (m_dfTypes[colInd] == ColType.STR)
-                {
-                   
-                    var retVal = string.Compare(l.ToString(), r.ToString());
+		#region QuickSort Implementation
+		private void QuickSortRecursive(List<object> values, List<object> indices, int start, int end, int[] sortCols)
+		{
+			if (start >= end)
+				return;
 
-                    if (retVal < 0)
-                        return false;
-                    else if (retVal > 0)
-                        return true;
-                    else 
-                        prevEqual = true;
-                }
-                //
-                else if (m_dfTypes[colInd] == ColType.I32 || m_dfTypes[colInd] == ColType.IN)
-                {
-                    var ll = Convert.ToInt32(l);
-                    var rr = Convert.ToInt32(r);
+			int pivot = Partition(values, indices, start, end, sortCols);
+			QuickSortRecursive(values, indices, start, pivot - 1, sortCols);
+			QuickSortRecursive(values, indices, pivot + 1, end, sortCols);
+		}
 
-                    if (ll > rr)
-                        return false;
-                    else if (ll < rr)
-                        return true;
-                    else 
-                        prevEqual = true;
+		private int Partition(List<object> values, List<object> indices, int start, int end, int[] sortCols)
+		{
+			var pivotRow = GetRow(values, end);
+			int i = start - 1;
 
-                }
-                else if (m_dfTypes[colInd] == ColType.I64)
-                {
-                    var ll = Convert.ToInt64(l);
-                    var rr = Convert.ToInt64(r);
+			for (int j = start; j < end; j++)
+			{
+				var currentRow = GetRow(values, j);
+				if (CompareRows(currentRow, pivotRow, sortCols) <= 0)
+				{
+					i++;
+					SwapRows(values, indices, i, j);
+				}
+			}
 
-                    if (ll > rr)
-                        return false;
-                    else if (ll < rr)
-                        return true;
-                    else
-                        prevEqual = true;
-                }
-                else if (m_dfTypes[colInd] == ColType.DD)
-                {
-                    var ll = Convert.ToDouble(l);
-                    var rr = Convert.ToDouble(r);
+			SwapRows(values, indices, i + 1, end);
+			return i + 1;
+		}
+		#endregion
 
-                    if (ll > rr)
-                        return false;
-                    else if (ll < rr)
-                        return true;
-                    else
-                        prevEqual = true;
-                }
-                else if (m_dfTypes[colInd] == ColType.F32)
-                {
-                    var ll = Convert.ToSingle(l);
-                    var rr = Convert.ToSingle(r);
+		#region MergeSort Implementation
+		private (object[] values, object[] indices) MergeSortRecursive(object[] values, object[] indices, int[] sortCols)
+		{
+			int rowCount = values.Length / _colCount;
+			if (rowCount <= 1)
+				return (values, indices);
 
-                    if (ll > rr)
-                        return false;
-                    else if (ll < rr)
-                        return true;
-                    else
-                        prevEqual = true;
-                }
-                else if (m_dfTypes[colInd] == ColType.DT)
-                {
-                    var ll = Convert.ToDateTime(l);
-                    var rr = Convert.ToDateTime(r);
+			int midPoint = rowCount / 2;
 
-                    if (ll > rr)
-                        return false;
-                    else if (ll < rr)
-                        return true;
-                    else
-                        prevEqual = true;
-                }
-                else
-                    throw new Exception("Sorting is not supported");
-            }
+			// Split into left and right arrays
+			var leftValues = values.Take(midPoint * _colCount).ToArray();
+			var rightValues = values.Skip(midPoint * _colCount).ToArray();
+			var leftIndices = indices.Take(midPoint).ToArray();
+			var rightIndices = indices.Skip(midPoint).ToArray();
 
-            return true;
-        }
+			// Recursively sort
+			(leftValues, leftIndices) = MergeSortRecursive(leftValues, leftIndices, sortCols);
+			(rightValues, rightIndices) = MergeSortRecursive(rightValues, rightIndices, sortCols);
 
-        #endregion
+			return Merge(leftValues, rightValues, leftIndices, rightIndices, sortCols);
+		}
 
-        #region MergeSort
-        private (object[] val, object[] ind) mergeSort(object[] array, object [] index,  int[] indCols)
-        {
-            object[] left, leftInd;
-            object[] right, rightInd;
+		private (object[] values, object[] indices) Merge(object[] leftValues, object[] rightValues, object[] leftIndices, object[] rightIndices, int[] sortCols)
+		{
+			int leftPointer = 0, rightPointer = 0, resultPointer = 0;
+			int leftCount = leftValues.Length, rightCount = rightValues.Length;
 
-            object[] result = new object[array.Length];
-            object[] resultInd = new object[index.Length];
+			var resultValues = new object[leftCount + rightCount];
+			var resultIndices = new object[leftIndices.Length + rightIndices.Length];
 
-            //As this is a recursive algorithm, we need to have a base case to 
-            //avoid an infinite recursion and therefore a stack overflow
-            if (array.Length <= m_ColCount)
-                return (array, index);
+			while (leftPointer < leftCount && rightPointer < rightCount)
+			{
+				if (CompareRows(GetRow(leftValues, leftPointer / _colCount), GetRow(rightValues, rightPointer / _colCount), sortCols) <= 0)
+				{
+					CopyRow(leftValues, resultValues, leftPointer, resultPointer);
+					resultIndices[resultPointer / _colCount] = leftIndices[leftPointer / _colCount];
+					leftPointer += _colCount;
+				}
+				else
+				{
+					CopyRow(rightValues, resultValues, rightPointer, resultPointer);
+					resultIndices[resultPointer / _colCount] = rightIndices[rightPointer / _colCount];
+					rightPointer += _colCount;
+				}
+				resultPointer += _colCount;
+			}
 
-            // The exact midpoint of our array 
-            int rowCount = array.Length / m_ColCount;
-            int midPoint = rowCount/ 2;
+			while (leftPointer < leftCount)
+			{
+				CopyRow(leftValues, resultValues, leftPointer, resultPointer);
+				resultIndices[resultPointer / _colCount] = leftIndices[leftPointer / _colCount];
+				leftPointer += _colCount;
+				resultPointer += _colCount;
+			}
 
-            //Will represent our 'left' array
-            left = new object[midPoint * m_ColCount];
-            leftInd = index.Take(midPoint).ToArray();
+			while (rightPointer < rightCount)
+			{
+				CopyRow(rightValues, resultValues, rightPointer, resultPointer);
+				resultIndices[resultPointer / _colCount] = rightIndices[rightPointer / _colCount];
+				rightPointer += _colCount;
+				resultPointer += _colCount;
+			}
 
-            //if array has an even number of elements, the left and right array will have the same number of 
-            //elements
-            if (rowCount % 2 == 0)
-                right = new object[midPoint * m_ColCount];
-            //if array has an odd number of elements, the right array will have one more element than left
-            else
-                right = new object[(midPoint +1) * m_ColCount];
-            
+			return (resultValues, resultIndices);
+		}
+		#endregion
 
-            //populate left array
-            for (int i = 0; i < midPoint * m_ColCount; i++)
-                left[i] = array[i];
+		#region Utility Methods
+		private IEnumerable<object> GetRow(IList<object> values, int rowIndex)
+		{
+			int start = rowIndex * _colCount;
+			for (int i = start; i < start + _colCount; i++)
+				yield return values[i];
+		}
 
-            //populate right index
-            rightInd = index.Skip(midPoint).ToArray();
+		private void SwapRows(List<object> values, List<object> indices, int i1, int i2)
+		{
+			if (i1 == i2)
+				return;
 
-            //We start our index from the midpoint, as we have already populated the left array from 0 to midpont
-            int k = 0;
-            for (int i = midPoint * m_ColCount; i < array.Length; i++)
-            {
-                right[k]= array[i];
-                k++;
-            }
+			for (int i = 0; i < _colCount; i++)
+			{
+				int index1 = i1 * _colCount + i;
+				int index2 = i2 * _colCount + i;
 
-            //Recursively sort the left array
-            (left, leftInd) = mergeSort(left, leftInd, indCols);
+				var temp = values[index1];
+				values[index1] = values[index2];
+				values[index2] = temp;
+			}
 
-            //Recursively sort the right array
-            (right, rightInd) = mergeSort(right,rightInd, indCols);
+			var tempIndex = indices[i1];
+			indices[i1] = indices[i2];
+			indices[i2] = tempIndex;
+		}
 
-            //Merge our two sorted arrays
-            (result, resultInd) = merge(left, right, leftInd, rightInd, indCols);
+		private void CopyRow(object[] source, object[] destination, int sourceIndex, int destinationIndex)
+		{
+			Array.Copy(source, sourceIndex, destination, destinationIndex, _colCount);
+		}
 
-            return (result, resultInd);
-        }
+		private int CompareRows(IEnumerable<object> leftRow, IEnumerable<object> rightRow, int[] sortCols)
+		{
+			foreach (var col in sortCols)
+			{
+				var leftValue = leftRow.ElementAt(col);
+				var rightValue = rightRow.ElementAt(col);
 
-        //This method will be responsible for combining our two sorted arrays into one giant array
-        private (object[] val, object[] ind) merge(object[] left, object[] right, object[] leftInd, object[] rightInd, int[] indCols)
-        {
-            int resultLength = right.Length + left.Length;
-            object[] result = new object[resultLength];
-            object[] resultInd = new object[leftInd.Length + rightInd.Length];
-            //
-            int indexLeft = 0, indexRight = 0, indexResult = 0;
-            int leftCount = left.Length; int rightCount = right.Length;
-            
-            //while either array still has an element
-            while (indexLeft < leftCount  || indexRight < rightCount)
-            {
-                //if both arrays have elements  
-                if (indexLeft < leftCount && indexRight < rightCount)
-                {
-                    //If item on left array is less than item on right array, add that item to the result array 
-                    if(lessThanOrEqual(left, right, indCols, indexLeft, indexRight))
-                    {
-                        //populate values
-                        for (int i = 0; i < m_ColCount; i++)
-                            result[indexResult + i] = left[indexLeft + i];
+				int comparison = Comparer.Default.Compare(leftValue, rightValue);
+				if (comparison != 0)
+					return comparison;
+			}
+			return 0;
+		}
+		#endregion
+	}
 
-                        //populate index
-                        resultInd[indexResult / m_ColCount] = leftInd[indexLeft / m_ColCount];
 
-                        indexLeft += m_ColCount;
-                        indexResult += m_ColCount;
-                    }
-                    // else the item in the right array will be added to the results array
-                    else
-                    {
-                        //populate values
-                        for (int i = 0; i < m_ColCount; i++)
-                            result[indexResult + i] = right[indexRight + i];
-
-                        //populate index
-                        resultInd[indexResult / m_ColCount] = rightInd[indexRight / m_ColCount];
-
-                        indexRight += m_ColCount;
-                        indexResult += m_ColCount;
-                    }
-                }
-                //if only the left array still has elements, add all its items to the results array
-                else if (indexLeft < left.Length)
-                {
-                    for (int i = 0; i < m_ColCount; i++)
-                        result[indexResult + i] = left[indexLeft + i];
-
-                    //populate index
-                    resultInd[indexResult / m_ColCount] = leftInd[indexLeft / m_ColCount];
-
-                    indexLeft += m_ColCount;
-                    indexResult += m_ColCount;
-                }
-                //if only the right array still has elements, add all its items to the results array
-                else if (indexRight < right.Length)
-                {
-                    for(int i=0; i< m_ColCount; i++)
-                        result[indexResult + i] = right[indexRight + i];
-
-                    //populate index
-                    resultInd[indexResult/m_ColCount] = rightInd[indexRight/m_ColCount];
-
-                    indexRight += m_ColCount;
-                    indexResult += m_ColCount;
-                }
-                //increase 
-
-            }
-            return (result, resultInd);
-        }
-
-        #endregion
-    }
-     
 }

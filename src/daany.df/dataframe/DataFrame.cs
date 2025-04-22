@@ -13,24 +13,22 @@
 // http://bhrnjica.wordpress.com                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 using System;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Collections;
-using System.Globalization;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using Daany.Grouping;
 using Daany.MathStuff.Random;
+using Daany.Multikey;
 
 namespace Daany
 {
-    /// <summary>
-    /// Class implementation for DataFrame. The DataFrame is going to be C# specific implementation
-    /// to handle data loading from files, grouping, sorting, filtering, handling with columns and rows
-    /// accessing data frame (df) elements etc.
-    /// </summary>
+	/// <summary>
+	/// Class implementation for DataFrame. The DataFrame is going to be C# specific implementation
+	/// to handle data loading from files, grouping, sorting, filtering, handling with columns and rows
+	/// accessing data frame (df) elements etc.
+	/// </summary>
 
-    public partial class DataFrame : IDataFrame
+	public partial class DataFrame : IDataFrame
     {
         #region Properties
 
@@ -242,6 +240,29 @@ namespace Daany
             _index = new Index(new List<object>());
             _columns = new List<string>();
 			_colsType = Array.Empty<ColType>();
+		}
+
+		public DataFrame(params (string columnName, object[] values)[] columnData)
+		{
+			if (columnData == null || columnData.Length == 0)
+				throw new ArgumentException("DataFrame must contain at least one column.");
+
+			// Initialize columns
+			this._columns = columnData.Select(c => c.columnName).ToList();
+
+			// Calculate row count
+			int rows = columnData.SelectMany(x=>x.values).Count() / this._columns.Count;
+
+			// Assign data
+			_values = new List<object>();
+			for (int i = 0; i < rows; i++)
+			{
+				var row = columnData.Select(c => c.values[i]).ToList();
+				_values.AddRange(row);
+			}
+
+			// Initialize index
+			this._index = new Index(GenerateDefaultIndex(rows));
 		}
 
 		/// <summary>
@@ -2525,271 +2546,562 @@ namespace Daany
 		#endregion
 
 		#region Sorting
-
 		/// <summary>
-		/// Sorts data-frame by specified column in ascending order
+		/// Sorts the DataFrame by one or more specified columns.
 		/// </summary>
-		/// <param name="cols">Sorting columns</param>
-		/// <returns>New ordered df.</returns>
+		/// <param name="cols">
+		/// The names of the columns to sort by. The sort is applied in the order the columns are specified.
+		/// For example, specifying "col1" and "col2" will sort primarily by "col1" and use "col2" for tie-breaking.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame instance with rows sorted by the specified columns.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if:
+		/// - No columns are provided.
+		/// - Columns provided do not exist in the DataFrame.
+		/// </exception>
+		/// <remarks>
+		/// This method determines the sorting algorithm to use based on the `qsAlgo` field:
+		/// - If `qsAlgo` is true, QuickSort is used.
+		/// - If `qsAlgo` is false, MergeSort is used.
+		/// 
+		/// The sorting respects the DataFrame's column types (`ColType`) for comparisons, including handling 
+		/// strings, integers, floating-point numbers, and dates appropriately.
+		/// </remarks>
+		/// <example>
+		/// // Example: Sort a DataFrame by a single column
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 3, "B", 1, "A", 2, "C" },
+		///     new List<object> { "row1", "row2", "row3" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		///
+		/// // Sort by col1
+		/// DataFrame sortedDf = df.SortBy("col1");
+		///
+		/// // Resulting sorted DataFrame:
+		/// // Index   | col1 | col2
+		/// // ---------------------
+		/// // row2    | 1    | "A"
+		/// // row3    | 2    | "C"
+		/// // row1    | 3    | "B"
+		///
+		/// // Example: Sort a DataFrame by multiple columns
+		/// sortedDf = df.SortBy("col1", "col2");
+		/// 
+		/// // Resulting sorted DataFrame (if tie-breaking by col2 applies):
+		/// // Index   | col1 | col2
+		/// // ---------------------
+		/// // row2    | 1    | "A"
+		/// // row3    | 2    | "C"
+		/// // row1    | 3    | "B"
+		/// </example>
 		public DataFrame SortBy(params string[] cols)
-        {
+		{
+			// Validate input
+			if (cols == null || cols.Length == 0)
+				throw new ArgumentException("At least one column name must be provided for sorting.");
 
-            //initialize column types
-            EnsureColumnTypesInitialized();
-
-
-			var colInd = getColumnIndex(cols);
-            //save
-            var sdf = new SortDataFrame(colInd, _colsType);
-            List<object> val;
-            List<object> ind;
-            //
-            if (qsAlgo)
-              (val, ind)  = sdf.QuickSort(this._values, this._index.ToList(), colInd);
-            else
-              (val, ind) = sdf.MergeSort(this._values.ToArray(), this._index.ToArray(), colInd);
-
-            //
-            var df = new DataFrame(val, ind, Columns.ToList(), this._colsType.ToArray());
-            return df;
-        }
-
-        /// <summary>
-        /// Sorts data-frame by specified column in descending order
-        /// </summary>
-        /// <param name="cols">Sorting columns.</param>
-        /// <returns></returns>
-        public DataFrame SortByDescending(params string[] cols)
-        {
-            var df = SortBy(cols);
-            DataFrame newDf = df.reverse();
-            return newDf;
-        }
-        #endregion
-
-        #region RemoveRows      
-        /// <summary>
-        /// Removes rows satisfying the callback condition.
-        /// </summary>
-        /// <param name="removeConditions"></param>
-        /// <returns></returns>
-        public DataFrame RemoveRows(Func<IDictionary<string, object>, int, bool> removeConditions)
-        {
-            //define processing row before apply condition
-            //define processing row before adding column
-            var processingRow = new Dictionary<string, object>();
-            for (int j = 0; j < this.Columns.Count; j++)
-                processingRow.Add(this.Columns[j], null);
-
-            //values in case of new data frame to be generated
-            var vals = new List<object>();
-            var indValues = new List<object>();
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {              
-                rowToDictionary(processingRow, i);
-                var isRemoved = removeConditions(processingRow, i);
-                if (!isRemoved)
-                {
-                    int iRow = calculateIndex(i, 0);
-                    for (int j = 0; j < this.Columns.Count; j++)
-                        vals.Add(_values[iRow + j]);
-
-                    //add index
-                    indValues.Add(_index[i]);
-                }
-            }
-            //create new df
-            var df = new DataFrame(vals, indValues, this._columns.ToList(), this._colsType);
-            return df;
-        }
-
-        /// <summary>
-        /// Removes rows satisfying the callback condition.
-        /// </summary>
-        /// <param name="removeConditions"></param>
-        /// <returns></returns>
-        public DataFrame RemoveRows(Func<object[], int, bool> removeConditions)
-        {
-            //define processing row before apply condition
-            var processingRow = new object[ColCount()];
-            
-            //values in case of new data frame to be generated
-            var vals = new List<object>();
-            var indValues = new List<object>();
-            var removedRows = new List<int>();
-            //
-            for (int i = 0; i < _index.Count; i++)
-            {
-                rowToArray(processingRow, i);
-                var isRemoved = removeConditions(processingRow, i);
-                if (!isRemoved)
-                {
-                    int iRow = calculateIndex(i, 0);
-                    for (int j = 0; j < this.Columns.Count; j++)
-                        vals.Add(_values[iRow + j]);
-
-                    //add index
-                    indValues.Add(_index[i]);
-                }
-            }
-            //create new df
-            var df = new DataFrame(vals, indValues, this._columns.ToList(), this._colsType);
-            return df;
-        }
-
-        #endregion 
-
-        #region Rolling
-
-        
-        /// <summary>
-        /// Grouping with one, two or three columns
-        /// </summary>
-        /// <param name="groupCols">List of grouped column names. If the list is bigger than three the exception will throw</param>
-        /// <returns>GroupedDataFrame</returns>
-        public GroupDataFrame GroupBy(params string[] groupCols)
-        {
-            if (groupCols == null || groupCols.Length == 0)
-                throw new Exception("Group columns cannot be null or empty.");
-            if (groupCols.Length > 3)
-                throw new Exception("Grouping with more than three group columns is not supported.");
-            //grouping
-            if (groupCols.Length == 1)
-            {
-                var Group = groupDFBy(groupCols[0]);
-                return new GroupDataFrame(groupCols[0], Group);
-            }
-            else if (groupCols.Length == 2)
-            {
-                var grp = new TwoKeysDictionary<object, object, DataFrame>();
-                //first group
-                var group1 = groupDFBy(groupCols[0]);
-                foreach (var g in group1)
-                {
-                    var group2 = group1[g.Key].groupDFBy(groupCols[1]);
-                    foreach (var g1 in group2)
-                        grp.Add(g.Key, g1.Key, g1.Value);
-                }
-
-                return new GroupDataFrame(groupCols[0], groupCols[1], grp);
-            }
-            else //if (groupCols.Length == 3)
-            {
-                var grp = new ThreeKeysDictionary<object, object, object, DataFrame>();
-                //two columns grouping 
-                var gp2 = GroupBy(groupCols[0], groupCols[1]);
-                foreach (var g in gp2.Keys2)
-                {
-                    var df2 = gp2.Group2[g.key1][g.key2];
-                    var group3 = df2.groupDFBy(groupCols[2]);
-                    foreach (var g1 in group3)
-                        grp.Add(g.key1, g.key2, g1.Key, g1.Value);
-                }
-
-                return new GroupDataFrame(groupCols[0], groupCols[1], groupCols[2], grp);
-            }
-
-        }
-
-
-        /// <summary>
-        /// Create new DataFrame containing rolling values of all column supported the aggregate operation. 
-        /// In case the aggregation is not support for certain columns the column is dropped
-        /// </summary>
-        /// <param name="window">Rolling size.</param>
-        /// <param name="agg">Aggregate operation.</param>
-        /// <returns></returns>
-        public DataFrame Rolling(int window, Aggregation agg)
-        {
-            //
-            var dic = new Dictionary<string, Aggregation>();
-            foreach (var c in this._columns)
-                dic.Add(c, agg);
-
-            return Rolling(window,dic);
-        }
-
-        /// <summary>
-        /// Create new dataFrame containing rolling values of specified columns of the data frame
-        /// </summary>
-        /// <param name="window">rolling width</param>
-        /// <param name="agg">key value pair of column and its aggregate operation.</param>
-        /// <returns></returns>
-        public DataFrame Rolling(int window, Dictionary<string, Aggregation> agg)
-        {
-            //
-            if (agg == null || agg.Count == 0)
-                throw new Exception($"Aggregation is empty.");
-
-            int index = 0;
-            int rolIndex = 1;
-            var rRolls = new Dictionary<string, Queue<object>>();
-            var aggrValues = new Dictionary<string, List<object>>();
-
-			//initialize column types
+			// Ensure column types are initialized
 			EnsureColumnTypesInitialized();
 
-            //
-            for (int i = 0; i < this._index.Count; i++)
-            {
-                for (int j = 0; j < ColCount(); j++)
-                {
-                    var colName = this._columns[j];
-                    if (agg.ContainsKey(colName) && isOperationSupported(this._colsType[j], agg[colName]))
-                    {
-                        if (i == 0)
-                        {
-                            //add coll used for rolling operation
-                            rRolls.Add(colName, new Queue<object>(window));
-                            //add calculated rolling column
-                            aggrValues.Add(colName, new List<object>());
-                        }
+			// Get the column indices for the specified columns
+			var colInd = getColumnIndex(cols);
+			if (colInd.Length == 0)
+				throw new ArgumentException("None of the specified columns exist in the DataFrame.");
 
-                        //add value to rolling list
-                        rRolls[colName].Enqueue(_values[index]);
+			// Delegate to the SortDataFrame class
+			var sorter = new SortDataFrame(_colsType!);
+			List<object> sortedValues;
+			List<object> sortedIndices;
 
-                        //rolling aggregation calculation
-                        if (i + 1 < window)
-                        {
-                            if (agg[colName] == Aggregation.Count)
-                                aggrValues[colName].Add(i + 1);
-                            else
-                                aggrValues[colName].Add(NAN);
-                        }
-                        else
-                        {
-                            var vals = rRolls[colName].Select(x => x);
-                            var value = calculateAggregation(vals, agg[colName], this._colsType[j]);
-                            aggrValues[colName].Add(value);
+			if (qsAlgo)
+			{
+				(sortedValues, sortedIndices) = sorter.QuickSort(this._values, this._index.ToList(), colInd);
+			}
+			else
+			{
+				(sortedValues, sortedIndices) = sorter.MergeSort(this._values.ToArray(), this._index.ToArray(), colInd);
+			}
 
-                            //remove the last one, so the next item can be add to the first position
-                            rRolls[colName].Dequeue();
-                        }
-                    }
+			// Create a new sorted DataFrame
+			return new DataFrame(sortedValues, sortedIndices, Columns.ToList(), _colsType.ToArray());
+		}
 
-                    //reset rolling index when exceed the window value
-                    if (rolIndex > window)
-                        rolIndex = 1;
-                    //
-                    index++;
-                }
-            }
 
-            return new DataFrame(aggrValues, this._index.ToList());
-        }
+		/// <summary>
+		/// Sorts the DataFrame by one or more specified columns in descending order.
+		/// </summary>
+		/// <param name="cols">
+		/// The names of the columns to sort by. Sorting is applied in descending order for all specified columns.
+		/// For example, specifying "col1" and "col2" will sort primarily by "col1" in descending order,
+		/// and use "col2" in descending order for tie-breaking.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame instance with rows sorted by the specified columns in descending order.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if:
+		/// - No columns are provided.
+		/// - Columns provided do not exist in the DataFrame.
+		/// </exception>
+		/// <remarks>
+		/// The method first sorts the DataFrame using the <see cref="SortBy"/> method in ascending order.
+		/// It then reverses the order of rows in the DataFrame to produce a descending sort.
+		/// 
+		/// The descending sort respects the DataFrame's column types (`ColType`) for comparisons, including handling 
+		/// strings, integers, floating-point numbers, and dates appropriately.
+		/// </remarks>
+		/// <example>
+		/// // Example: Sort a DataFrame by "col1" in descending order
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 3, "B", 1, "A", 2, "C" },
+		///     new List<object> { "row1", "row2", "row3" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
 
-        #endregion
+		/// // Sort by col1 in descending order
+		/// DataFrame sortedDf = df.SortByDescending("col1");
 
-        #region Shift
-        /// <summary>
-        /// Shifts the values of the column by the number of 'steps' rows. 
-        /// </summary>
-        /// <param name="columnName">existing column to be shifted</param>
-        /// <param name="newColName">new shifted column</param>
-        /// <param name="step"></param>
-        /// <returns></returns>
-        public Dictionary<string, List<object>> Shift(int steps, string columnName, string newColName)
+		/// // Resulting sorted DataFrame:
+		/// // Index   | col1 | col2
+		/// // ---------------------
+		/// // row1    | 3    | "B"
+		/// // row3    | 2    | "C"
+		/// // row2    | 1    | "A"
+		/// </example>
+		public DataFrame SortByDescending(params string[] cols)
+		{
+			// First sort the DataFrame in ascending order using SortBy
+			var df = SortBy(cols);
+
+			// Reverse the order of rows to achieve descending order
+			DataFrame newDf = df.reverse();
+			return newDf;
+		}
+
+		#endregion
+
+		#region RemoveRows      
+		/// <summary>
+		/// Removes rows from the DataFrame that satisfy the provided callback condition.
+		/// </summary>
+		/// <param name="removeConditions">
+		/// A callback function that takes two parameters:
+		/// 1. A dictionary representing a row (with column names as keys and row values as values).
+		/// 2. The row index.
+		/// The function should return true if the row satisfies the condition for removal, and false otherwise.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame instance with rows that do not satisfy the removal condition.
+		/// </returns>
+		/// <example>
+		/// // Example: Remove rows where "col1" is greater than 10
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 5, "A", 15, "B", 25, "C" },
+		///     new List<object> { "row1", "row2", "row3" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		/// // Define removal condition
+		/// Func<IDictionary<string, object>, int, bool> condition = (row, index) => (int)row["col1"] > 10;
+		/// // Apply removal
+		/// DataFrame newDf = df.RemoveRows(condition);
+		/// // Resulting DataFrame:
+		/// // Index   | col1 | col2
+		/// // ---------------------
+		/// // row1    | 5    | "A"
+		/// </example>
+		public DataFrame RemoveRows(Func<IDictionary<string, object>, int, bool> removeConditions)
+		{
+			if (removeConditions == null)
+				throw new ArgumentException("The removal condition callback cannot be null.");
+
+			// Define the dictionary to represent a row during processing
+			var rowDict = new Dictionary<string, object>();
+			foreach (var column in Columns)
+				rowDict[column] = null;
+
+			// Lists to hold new DataFrame values and indices
+			var newValues = new List<object>();
+			var newIndices = new List<object>();
+
+			// Iterate through rows
+			for (int i = 0; i < _index.Count; i++)
+			{
+				// Populate the row dictionary with values from the current row
+				PopulateRowDictionary(rowDict, i);
+
+				// Check the condition for removal
+				if (!removeConditions(rowDict, i))
+				{
+					// Add the row's values to the new data
+					int rowStart = calculateIndex(i, 0);
+					for (int j = 0; j < Columns.Count; j++)
+						newValues.Add(_values[rowStart + j]);
+
+					// Add the row's index to the new indices
+					newIndices.Add(_index[i]);
+				}
+			}
+
+			// Construct the new DataFrame
+			return new DataFrame(newValues, newIndices, Columns.ToList(), _colsType);
+		}
+
+		/// <summary>
+		/// Populates the row dictionary with values from a specific row in the DataFrame.
+		/// </summary>
+		/// <param name="rowDict">The dictionary to populate.</param>
+		/// <param name="rowIndex">The index of the row to process.</param>
+		private void PopulateRowDictionary(Dictionary<string, object> rowDict, int rowIndex)
+		{
+			int startIndex = calculateIndex(rowIndex, 0);
+			for (int j = 0; j < Columns.Count; j++)
+			{
+				rowDict[Columns[j]] = _values[startIndex + j];
+			}
+		}
+
+
+		/// <summary>
+		/// Removes rows from the DataFrame that satisfy the provided callback condition.
+		/// </summary>
+		/// <param name="removeConditions">
+		/// A callback function that takes two parameters:
+		/// 1. An array representing a row (with column values in order).
+		/// 2. The row index.
+		/// The function should return true if the row satisfies the condition for removal, and false otherwise.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame instance with rows that do not satisfy the removal condition.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if the removal condition callback is null.
+		/// </exception>
+		/// <example>
+		/// // Example: Remove rows where "col1" is greater than 10
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 5, "A", 15, "B", 25, "C" },
+		///     new List<object> { "row1", "row2", "row3" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		/// // Define removal condition
+		/// Func<object[], int, bool> condition = (row, index) => (int)row[0] > 10;
+		/// // Apply removal
+		/// DataFrame newDf = df.RemoveRows(condition);
+		/// // Resulting DataFrame:
+		/// // Index   | col1 | col2
+		/// // ---------------------
+		/// // row1    | 5    | "A"
+		/// </example>
+		public DataFrame RemoveRows(Func<object[], int, bool> removeConditions)
+		{
+			// Validate the callback
+			if (removeConditions == null)
+				throw new ArgumentException("The removal condition callback cannot be null.");
+
+			// Prepare row array for processing
+			var rowArray = new object[ColCount()];
+
+			// Prepare lists for values and indices in the resulting DataFrame
+			var newValues = new List<object>();
+			var newIndices = new List<object>();
+
+			// Iterate through rows
+			for (int i = 0; i < _index.Count; i++)
+			{
+				// Populate the row array with values from the current row
+				PopulateRowArray(rowArray, i);
+
+				// Check the condition for removal
+				if (!removeConditions(rowArray, i))
+				{
+					// Add the row's values to the new data
+					int rowStart = calculateIndex(i, 0);
+					for (int j = 0; j < Columns.Count; j++)
+						newValues.Add(_values[rowStart + j]);
+
+					// Add the row's index to the new indices
+					newIndices.Add(_index[i]);
+				}
+			}
+
+			// Construct the new DataFrame
+			return new DataFrame(newValues, newIndices, Columns.ToList(), _colsType);
+		}
+
+		/// <summary>
+		/// Populates the row array with values from a specific row in the DataFrame.
+		/// </summary>
+		/// <param name="rowArray">The array to populate.</param>
+		/// <param name="rowIndex">The index of the row to process.</param>
+		private void PopulateRowArray(object[] rowArray, int rowIndex)
+		{
+			int startIndex = calculateIndex(rowIndex, 0);
+			for (int j = 0; j < Columns.Count; j++)
+			{
+				rowArray[j] = _values[startIndex + j];
+			}
+		}
+
+
+		#endregion
+
+		#region Rolling
+
+
+		/// <summary>
+		/// Groups the DataFrame by one, two, or three columns.
+		/// </summary>
+		/// <param name="groupCols">
+		/// The names of columns to group by. A maximum of three columns is supported.
+		/// </param>
+		/// <returns>
+		/// A <see cref="GroupDataFrame"/> containing grouped data.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if:
+		/// - No columns are specified.
+		/// - More than three columns are specified.
+		/// - A specified column does not exist.
+		/// </exception>
+		/// <remarks>
+		/// This method supports grouping by up to three columns. Each group contains its own DataFrame.
+		/// </remarks>
+		/// <example>
+		/// // Example: Grouping by a single column ("col1")
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, "A", 2, "B", 1, "C", 2, "D" },
+		///     new List<object> { "row1", "row2", "row3", "row4" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.STR });
+		///
+		/// GroupDataFrame groupedDf = df.GroupBy("col1");
+		///
+		/// // Example: Grouping by two columns ("col1" and "col2")
+		/// GroupDataFrame groupedDf = df.GroupBy("col1", "col2");
+		///
+		/// // Example: Grouping by three columns ("col1", "col2", "col3")
+		/// GroupDataFrame groupedDf = df.GroupBy("col1", "col2", "col3");
+		/// </example>
+		public GroupDataFrame GroupBy(params string[] groupCols)
+		{
+			if (groupCols == null || groupCols.Length == 0)
+				throw new ArgumentException("At least one column name must be provided for grouping.");
+
+			if (groupCols.Length > 3)
+				throw new ArgumentException("Grouping by more than three columns is not supported.");
+
+			// Ensure the columns exist
+			foreach (var col in groupCols)
+			{
+				if (!Columns.Contains(col))
+					throw new ArgumentException($"Column '{col}' does not exist in the DataFrame.");
+			}
+
+			if (groupCols.Length == 1)
+			{
+				var groupedData = groupDFBy(groupCols[0]);
+				return new GroupDataFrame(groupCols[0], groupedData);
+			}
+			else if (groupCols.Length == 2)
+			{
+				var groupedData = new TwoKeysDictionary<object, object, DataFrame>();
+				var firstLevel = groupDFBy(groupCols[0]);
+
+				foreach (var firstKey in firstLevel.Keys)
+				{
+					var secondLevel = firstLevel[firstKey].groupDFBy(groupCols[1]);
+					foreach (var secondKey in secondLevel.Keys)
+					{
+						groupedData.Add(firstKey, secondKey, secondLevel[secondKey]);
+					}
+				}
+
+				return new GroupDataFrame(groupCols[0], groupCols[1], groupedData);
+			}
+			else
+			{
+				var groupedData = new ThreeKeysDictionary<object, object, object, DataFrame>();
+				var firstTwoGroups = GroupBy(groupCols[0], groupCols[1]);
+
+				foreach (var (firstKey, secondKey) in firstTwoGroups.Keys2)
+				{
+					var thirdLevelGroup = firstTwoGroups[firstKey, secondKey].GroupBy(groupCols[2]);
+					foreach (var thirdKey in thirdLevelGroup.Keys)
+					{
+						groupedData.Add(firstKey, secondKey, thirdKey, thirdLevelGroup[thirdKey]);
+					}
+				}
+
+				return new GroupDataFrame(groupCols[0], groupCols[1], groupCols[2], groupedData);
+			}
+		}
+
+
+		/// <summary>
+		/// Computes rolling aggregation over the DataFrame using the specified window size and a single aggregation operation.
+		/// </summary>
+		/// <param name="window">
+		/// The rolling window size, determining how many previous rows are considered for aggregation.
+		/// </param>
+		/// <param name="agg">
+		/// The aggregation operation to apply to all columns that support it.
+		/// Columns that do not support the specified aggregation will be excluded from the resulting DataFrame.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing computed rolling values for all eligible columns.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if the window size is less than 1.
+		/// </exception>
+		/// <remarks>
+		/// This method applies rolling aggregation across all columns that support the specified function.
+		/// If the column does not support the given aggregation (e.g., trying to compute a mean on a string column),
+		/// it will be automatically excluded.
+		/// 
+		/// The rolling computation considers a fixed-size window, aggregating values using the specified function.
+		/// If the number of available rows is smaller than the window size, missing values are represented accordingly.
+		/// </remarks>
+		/// <example>
+		/// // Example: Compute rolling mean over all numerical columns with a window of size 3.
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, 2, 3, 4, 5 },
+		///     new List<object> { "row1", "row2", "row3", "row4", "row5" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.I32 });
+		///
+		/// DataFrame rollingDf = df.Rolling(3, Aggregation.Mean);
+		///
+		/// // Resulting DataFrame:
+		/// // Index   | col1  | col2
+		/// // -----------------------
+		/// // row1    | NAN   | NAN
+		/// // row2    | NAN   | NAN
+		/// // row3    | 2.0   | 6
+		/// // row4    | 3.0   | 9
+		/// // row5    | 4.0   | 12
+		/// </example>
+		public DataFrame Rolling(int window, Aggregation agg)
+
+		{
+			if (window < 1)
+				throw new ArgumentException("Window size must be at least 1.");
+
+			var columnAggregations = Columns.ToDictionary(col => col, _ => agg);
+			return Rolling(window, columnAggregations);
+		}
+
+		/// <summary>
+		/// Computes rolling aggregation over the DataFrame using the specified window size and column-specific aggregation operations.
+		/// </summary>
+		/// <param name="window">
+		/// The rolling window size, determining how many previous rows are considered for aggregation.
+		/// </param>
+		/// <param name="agg">
+		/// A dictionary mapping column names to aggregation operations.
+		/// Only columns explicitly included in this dictionary will undergo rolling computations.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing computed rolling values for the specified columns.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if:
+		/// - The aggregation dictionary is null or empty.
+		/// - The window size is less than 1.
+		/// - None of the specified columns exist in the DataFrame.
+		/// </exception>
+		/// <remarks>
+		/// This method applies rolling aggregation only to columns that are explicitly listed in the <paramref name="agg"/> dictionary.
+		/// Unsupported columns will be ignored.
+		/// 
+		/// The rolling computation considers a fixed-size window, aggregating values using the specified function.
+		/// If the number of available rows is smaller than the window size, the method fills missing values accordingly.
+		/// </remarks>
+		/// <example>
+		/// // Example: Compute rolling mean for "col1" and rolling sum for "col2" over a window of size 3.
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, 2, 3, 4, 5 },
+		///     new List<object> { "row1", "row2", "row3", "row4", "row5" },
+		///     new List<string> { "col1", "col2" },
+		///     new ColType[] { ColType.I32, ColType.I32 });
+		/// var columnAggregations = new Dictionary<string, Aggregation>
+		/// {
+		///     { "col1", Aggregation.Mean },
+		///     { "col2", Aggregation.Sum }
+		/// };
+		/// DataFrame rollingDf = df.Rolling(3, columnAggregations);
+		///
+		/// // Resulting DataFrame:
+		/// // Index   | col1  | col2
+		/// // -----------------------
+		/// // row1    | NAN   | NAN
+		/// // row2    | NAN   | NAN
+		/// // row3    | 2.0   | 6
+		/// // row4    | 3.0   | 9
+		/// // row5    | 4.0   | 12
+		/// </example>
+		public DataFrame Rolling(int window, Dictionary<string, Aggregation> agg)
+
+		{
+			if (agg == null || agg.Count == 0)
+				throw new ArgumentException("Aggregation dictionary must contain at least one column.");
+
+			if (window < 1)
+				throw new ArgumentException("Window size must be at least 1.");
+
+			var rollingQueues = new Dictionary<string, Queue<object>>();
+			var aggregatedValues = new Dictionary<string, List<object>>();
+
+			EnsureColumnTypesInitialized();
+
+			for (int i = 0; i < _index.Count; i++)
+			{
+				for (int j = 0; j < ColCount(); j++)
+				{
+					var columnName = Columns[j];
+
+					if (!agg.ContainsKey(columnName) || !isOperationSupported(ColTypes[j], agg[columnName]))
+						continue;
+
+					if (!rollingQueues.ContainsKey(columnName))
+					{
+						rollingQueues[columnName] = new Queue<object>(window);
+						aggregatedValues[columnName] = new List<object>();
+					}
+
+					rollingQueues[columnName].Enqueue(_values[calculateIndex(i, j)]);
+
+					if (rollingQueues[columnName].Count < window)
+					{
+						var val = agg[columnName] == Aggregation.Count ? rollingQueues[columnName].Count : NAN;
+						aggregatedValues[columnName].Add(val!);
+					}
+					else
+					{
+						var val = calculateAggregation(rollingQueues[columnName], agg[columnName], ColTypes[j]);
+						aggregatedValues[columnName].Add(val);
+						rollingQueues[columnName].Dequeue();
+					}
+				}
+			}
+
+			return new DataFrame(aggregatedValues, _index.ToList());
+		}
+
+
+		#endregion
+
+		#region Shift
+		/// <summary>
+		/// Shifts the values of the column by the number of 'steps' rows. 
+		/// </summary>
+		/// <param name="columnName">existing column to be shifted</param>
+		/// <param name="newColName">new shifted column</param>
+		/// <param name="step"></param>
+		/// <returns></returns>
+		public Dictionary<string, List<object>> Shift(int steps, string columnName, string newColName)
         {
 
             if (steps == 0 )
@@ -2806,12 +3118,12 @@ namespace Daany
             var NANList = Enumerable.Range(0, (int)Math.Abs(steps)).Select(x=>DataFrame.NAN);
             if (steps > 0)
             {
-                shitedCol.InsertRange(0, NANList);
+                shitedCol.InsertRange(0, NANList!);
                 newValues = shitedCol.Take(this.RowCount()).ToList();
             }
             else
             {
-                shitedCol.AddRange(NANList);
+                shitedCol.AddRange(NANList!);
                 newValues = shitedCol.Skip((int)Math.Abs(steps)).ToList();
             }
 
@@ -2819,8 +3131,6 @@ namespace Daany
             var dir = new Dictionary<string, List<object>>() { { newColName, newValues } };
             return dir;
         }
-
-
 
         /// <summary>
         /// Shift specified columns and create new columns in data frame
@@ -2900,8 +3210,11 @@ namespace Daany
                 //
                 counter++;
             }
-            //
-            var df = new DataFrame(val, ind, this._columns.ToList(), this._colsType);
+			//
+			if (_colsType == null || _colsType == Array.Empty<ColType>())
+				EnsureColumnTypesInitialized();
+
+            var df = new DataFrame(val, ind, this._columns.ToList(), _colsType!);
             return df;
         }
 

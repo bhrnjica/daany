@@ -1125,7 +1125,7 @@ male                Sarajevo
         ID      City    Zip CodeState   IsHome  Values  Age     Gender  
 0       1       Sarajevo71000   BiH     True    3.14    31      male    
 
-Berlin              
+male                Berlin              
         ID      City    Zip CodeState   IsHome  Values  Age     Gender  
 2       3       Berlin  10115   GER     False   4.55    45      male    
 
@@ -1137,7 +1137,58 @@ female              Sarajevo
             Assert.Equal(str, swqs);
         }
 
-        [Fact]
+		[Fact]
+		public void GroupByThreeColumns()
+		{
+			// Define a dictionary of data
+			var dict = new Dictionary<string, List<object>>
+	{
+		{ "ID", new List<object>() { 1, 2, 3, 4, 5 } },
+		{ "City", new List<object>() { "Sarajevo", "Sarajevo", "Berlin", "Berlin", "Sarajevo" } },
+		{ "Zip Code", new List<object>() { 71000, 98101, 10115, 10115, 71000 } },
+		{ "State", new List<object>() { "BiH", "USA", "GER", "GER", "BiH" } },
+		{ "IsHome", new List<object>() { true, false, false, true, false } },
+		{ "Values", new List<object>() { 3.14, 3.21, 4.55, 4.20, 3.10 } },
+		{ "Age", new List<object>() { 31, 25, 45, 30, 28 } },
+		{ "Gender", new List<object>() { "male", "female", "male", "female", "male" } }
+	};
+
+			// Create dataframe
+			var df = new DataFrame(dict);
+
+			// Group by three columns
+			var gDf = df.GroupBy("Gender", "City", "IsHome");
+
+			// Get string representation
+			var result = gDf.ToStringBuilder();
+
+			// Expected output
+			var expected = @"Group By Column: Gender, City                , IsHome              
+male                Sarajevo            True                
+        ID      City    Zip CodeState   IsHome  Values  Age     Gender  
+0       1       Sarajevo71000   BiH     True    3.14    31      male    
+
+male                Sarajevo            False               
+        ID      City    Zip CodeState   IsHome  Values  Age     Gender  
+4       5       Sarajevo71000   BiH     False   3.1     28      male    
+
+male                Berlin              False               
+        ID      City    Zip CodeState   IsHome  Values  Age     Gender  
+2       3       Berlin  10115   GER     False   4.55    45      male    
+
+female              Sarajevo            False               
+        ID      City    Zip CodeState   IsHome  Values  Age     Gender  
+1       2       Sarajevo98101   USA     False   3.21    25      female  
+
+female              Berlin              True                
+        ID      City    Zip CodeState   IsHome  Values  Age     Gender  
+3       4       Berlin  10115   GER     True    4.2     30      female  
+
+";
+
+			Assert.Equal(expected, result);
+		}
+		[Fact]
         public void GroupByThenRolling()
         {
             var date1 = DateTime.Now.AddDays(-20);
@@ -1160,7 +1211,7 @@ female              Sarajevo
             //create df
             var df = new DataFrame(dict);
             //group df by gender
-            var gDf = df.GroupBy("Gender").Rolling(2,2, new Dictionary<string, Aggregation>() { { "Values", Aggregation.Sum }, 
+            var gDf = df.GroupBy("Gender").Rolling(2, 2, new Dictionary<string, Aggregation>() { { "Values", Aggregation.Sum }, 
                                                                                                  { "Age", Aggregation.Avg } });
             //check result
             Assert.Equal(7.69, gDf["Values", 0]);

@@ -9,9 +9,143 @@ namespace Unit.Test.DF
 {
     public class DataFrameSortTests
     {
-      
+		[Fact]
+		public void SortByDescending_ShouldSortBySingleColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 3, "B", 1, "A", 2, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
 
-        [Fact]
+			// Act
+			var sortedDf = df.SortByDescending("col1");
+
+			// Assert
+			Assert.Equal(new List<object> { 3, "B", 2, "C", 1, "A" }, sortedDf.Values);
+			Assert.Equal(new List<object> { "row1", "row3", "row2" }, sortedDf.Index);
+			Assert.Equal(new List<string> { "col1", "col2" }, sortedDf.Columns);
+		}
+
+
+		[Fact]
+		public void SortByDescending_ShouldSortByMultipleColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 3, "B", 1, "A", 2, "B", 2, "A" },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var sortedDf = df.SortByDescending("col1", "col2");
+
+			// Assert
+			Assert.Equal(new List<object> { 3, "B", 2, "B", 2, "A", 1, "A" }, sortedDf.Values);
+			Assert.Equal(new List<object> { "row1", "row3", "row4", "row2" }, sortedDf.Index);
+			Assert.Equal(new List<string> { "col1", "col2" }, sortedDf.Columns);
+		}
+
+
+		[Fact]
+		public void SortByDescending_ShouldThrow_WhenColumnIsInvalid()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 3, "B", 1, "A", 2, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.SortByDescending("invalidCol"));
+		}
+
+		[Fact]
+		public void SortByDescending_ShouldThrow_WhenColumnsAreNullOrEmpty()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 3, "B", 1, "A", 2, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.SortByDescending());
+			Assert.Throws<ArgumentException>(() => df.SortByDescending(null));
+		}
+
+		[Fact]
+		public void SortBy_ShouldSortBySingleColumn()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 3, "B", 1, "A", 2, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var sortedDf = df.SortBy("col1");
+
+			// Assert
+			Assert.Equal(new List<object> { 1, "A", 2, "C", 3, "B" }, sortedDf.Values);
+			Assert.Equal(new List<object> { "row2", "row3", "row1" }, sortedDf.Index);
+			Assert.Equal(new List<string> { "col1", "col2" }, sortedDf.Columns);
+		}
+
+		[Fact]
+		public void SortBy_ShouldSortByMultipleColumns()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 3, "B", 1, "A", 2, "B", 2, "A" },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act
+			var sortedDf = df.SortBy("col1", "col2");
+
+			// Assert
+			Assert.Equal(new List<object> { 1, "A", 2, "A", 2, "B", 3, "B" }, sortedDf.Values);
+			Assert.Equal(new List<object> { "row2", "row4", "row3", "row1" }, sortedDf.Index);
+			Assert.Equal(new List<string> { "col1", "col2" }, sortedDf.Columns);
+		}
+
+		[Fact]
+		public void SortBy_ShouldThrow_WhenColumnIsInvalid()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 3, "B", 1, "A", 2, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.SortBy("invalidCol"));
+		}
+
+		[Fact]
+		public void SortBy_ShouldThrow_WhenColumnsAreNullOrEmpty()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { 3, "B", 1, "A", 2, "C" },
+				new List<object> { "row1", "row2", "row3" },
+				new List<string> { "col1", "col2" },
+				new ColType[] { ColType.I32, ColType.STR });
+
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df.SortBy());
+			Assert.Throws<ArgumentException>(() => df.SortBy(null));
+		}
+
+		[Fact]
         public void SortBy_QuickSort_Test01()
         {
             var dict = new Dictionary<string, List<object>>
