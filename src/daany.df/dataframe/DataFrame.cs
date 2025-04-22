@@ -3095,96 +3095,154 @@ namespace Daany
 
 		#region Shift
 		/// <summary>
-		/// Shifts the values of the column by the number of 'steps' rows. 
+		/// Shifts the values of a specified column by a given number of rows.
 		/// </summary>
-		/// <param name="columnName">existing column to be shifted</param>
-		/// <param name="newColName">new shifted column</param>
-		/// <param name="step"></param>
-		/// <returns></returns>
+		/// <param name="steps">
+		/// The number of rows to shift.
+		/// - Positive values shift downward (insert missing values at the top).
+		/// - Negative values shift upward (insert missing values at the bottom).
+		/// </param>
+		/// <param name="columnName">
+		/// The name of the existing column to be shifted.
+		/// </param>
+		/// <param name="newColName">
+		/// The name of the new shifted column.
+		/// Must be different from existing column names.
+		/// </param>
+		/// <returns>
+		/// A dictionary containing the new column with shifted values.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if:
+		/// - `steps` is 0.
+		/// - `columnName` does not exist.
+		/// - `newColName` is already an existing column.
+		/// </exception>
+		/// <example>
+		/// // Example: Shift "col1" down by 2 rows and create "col1_shifted"
+		/// DataFrame df = new DataFrame(
+		///     ("col1", new object[] {1, 2, 3, 4, 5}),
+		///     ("col2", new object[] {10, 20, 30, 40, 50}));
+		///
+		/// var shiftedCol = df.Shift(2, "col1", "col1_shifted");
+		///
+		/// // Result:
+		/// // Index   | col1 | col1_shifted
+		/// // -------------------------------
+		/// // 1       | 1    | NAN
+		/// // 2       | 2    | NAN
+		/// // 3       | 3    | 1
+		/// // 4       | 4    | 2
+		/// // 5       | 5    | 3
+		/// </example>
 		public Dictionary<string, List<object>> Shift(int steps, string columnName, string newColName)
-        {
+		{
+			if (steps == 0)
+				throw new ArgumentException("'steps' must be nonzero.");
 
-            if (steps == 0 )
-                throw new Exception("'steps' must be nonzero and between ± row count number");
+			if (!this.Columns.Contains(columnName))
+				throw new ArgumentException($"Column '{columnName}' doesn't exist in the data frame.");
 
-            if (!this.Columns.Contains(columnName))
-                throw new Exception("'columnName' doesn't exist in the data frame.");
+			if (this.Columns.Contains(newColName))
+				throw new ArgumentException($"New column name '{newColName}' already exists.");
 
-            if (this.Columns.Contains(newColName))
-                throw new Exception("'newColName' cannot be the same of the existing column namess.");
+			var columnValues = this[columnName].ToList();
+			var nanList = Enumerable.Repeat(DataFrame.NAN, Math.Abs(steps)).ToList();
+			List<object> shiftedValues;
 
-            var newValues = new List<object>();
-            var shitedCol = this[columnName].ToList();
-            var NANList = Enumerable.Range(0, (int)Math.Abs(steps)).Select(x=>DataFrame.NAN);
-            if (steps > 0)
-            {
-                shitedCol.InsertRange(0, NANList!);
-                newValues = shitedCol.Take(this.RowCount()).ToList();
-            }
-            else
-            {
-                shitedCol.AddRange(NANList!);
-                newValues = shitedCol.Skip((int)Math.Abs(steps)).ToList();
-            }
+			if (steps > 0)
+			{
+				shiftedValues = nanList.Concat(columnValues).Take(this.RowCount()).ToList();
+			}
+			else
+			{
+				shiftedValues = columnValues.Concat(nanList).Skip(Math.Abs(steps)).ToList();
+			}
 
-            //create column and add to the df
-            var dir = new Dictionary<string, List<object>>() { { newColName, newValues } };
-            return dir;
-        }
+			return new Dictionary<string, List<object>> { { newColName, shiftedValues } };
+		}
 
-        /// <summary>
-        /// Shift specified columns and create new columns in data frame
-        /// </summary>
-        /// <param name="arg">tuple list of steps, columnName and newColName.</param>
-        /// <returns></returns>
-        public DataFrame Shift(params (string columnName, string newColName, int steps)[] arg)
-        {
+		/// <summary>
+		/// Shifts specified columns by given steps and adds them to the DataFrame.
+		/// </summary>
+		/// <param name="args">
+		/// A tuple list of steps, columnName, and newColName.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing the newly shifted columns.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if:
+		/// - No columns are provided.
+		/// - Any new column name is duplicated.
+		/// </exception>
+		/// <example>
+		/// // Example: Shift multiple columns
+		/// DataFrame df = new DataFrame(
+		///     ("col1", new object[] {1, 2, 3, 4, 5}),
+		///     ("col2", new object[] {10, 20, 30, 40, 50}));
+		///
+		/// var newDf = df.Shift(("col1", "col1_shifted", 2), ("col2", "col2_shifted", -1));
+		/// </example>
+		public DataFrame Shift(params (string columnName, string newColName, int steps)[] args)
+		{
+			if (args == null || args.Length == 0)
+				throw new ArgumentException("At least one column must be specified for shifting.");
 
-            if(arg==null || arg.Length==0)
-                throw new Exception("Method argument cannot be null.");
+			if (args.GroupBy(x => x.newColName).Any(g => g.Count() > 1))
+				throw new ArgumentException("New column names must be unique.");
 
-            if (arg.GroupBy(x => x.newColName).Any(g => g.Count() > 1))
-                throw new Exception("newColumnName must be all with different name.");
+			var shiftedColumns = args.ToDictionary(c => c.newColName, c => Shift(c.steps, c.columnName, c.newColName)[c.newColName]);
 
-            var dir = new Dictionary<string, List<object>>();
-
-            foreach (var c in arg)
-            {
-                var d = Shift(c.steps, c.columnName, c.newColName);
-                dir.Add(c.newColName , d[c.newColName]);
-            }
-
-            //
-            var df = this.AddColumns(dir);
-            return df;
-        }
-
-
-        /// <summary>
-        /// Calculates the difference of a Dataframe row compared with previous row.
-        /// </summary>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public DataFrame Diff(int step, DiffType type = DiffType.Seasonal)
-        {
-            if (type == DiffType.Seasonal)
-                return seasonalDiff(step);
-            else
-                return recursiveDiff(step);
-        }
-
-        #endregion
-
-        #region Selection
+			return this.AddColumns(shiftedColumns);
+		}
 
 
-        /// <summary>
-        /// Returns data frame consisted of every nth row
-        /// </summary>
-        /// <param name="nthRow"></param>
-        /// <param name="includeLast">For incomplete nthRow, select the last one</param>
-        /// <returns></returns>
-        public DataFrame TakeEvery(int nthRow, bool includeLast = false)
+		/// <summary>
+		/// Computes the difference between the current row and previous row.
+		/// </summary>
+		/// <param name="step">
+		/// The number of rows to compare for the difference.
+		/// </param>
+		/// <param name="type">
+		/// The type of difference calculation:
+		/// - `DiffType.Seasonal` performs seasonal differencing.
+		/// - `DiffType.Recursive` performs recursive differencing.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame with difference values.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if `step` is less than 1.
+		/// </exception>
+		/// <example>
+		/// // Example: Compute seasonal difference with step 1
+		/// DataFrame df = new DataFrame(
+		///     ("col1", new object[] {10, 20, 30, 40, 50}));
+		///
+		/// DataFrame diffDf = df.Diff(1, DiffType.Seasonal);
+		/// </example>
+		public DataFrame Diff(int step, DiffType type = DiffType.Seasonal)
+		{
+			if (step < 1)
+				throw new ArgumentException("'step' must be greater than zero.");
+
+			return type == DiffType.Seasonal ? seasonalDiff(step) : recursiveDiff(step);
+		}
+
+
+		#endregion
+
+		#region Selection
+
+
+		/// <summary>
+		/// Returns data frame consisted of every nth row
+		/// </summary>
+		/// <param name="nthRow"></param>
+		/// <param name="includeLast">For incomplete nthRow, select the last one</param>
+		/// <returns></returns>
+		public DataFrame TakeEvery(int nthRow, bool includeLast = false)
         {
             var val = new List<object>();
             var ind = new List<object>();
