@@ -9,8 +9,139 @@ namespace Unit.Test.DF
 {
     public class DataFrameSelectionTests
     {
-       
-        [Fact]
+		[Fact]
+		public void Except_ShouldExcludeRowsFromSecondDataFrame()
+		{
+			var df1 = new DataFrame(
+				("col1", new object[] { 1, 2, 3, 4, 5 }),
+				("col2", new object[] { 10, 20, 30, 40, 50 }));
+
+			var df2 = new DataFrame(
+				("col1", new object[] { 2, 3 }),
+				("col2", new object[] { 20, 30 }));
+
+			var resultDf = df1.Except(df2);
+
+			Assert.Equal(3, resultDf.RowCount());
+			Assert.Equal(1, resultDf["col1", 0]);
+			Assert.Equal(4, resultDf["col1", 1]);
+			Assert.Equal(5, resultDf["col1", 2]);
+		}
+
+		[Fact]
+		public void Head_ShouldReturnTopRows()
+		{
+			var df = new DataFrame(
+				("col1", new object[] { 1, 2, 3, 4, 5 }),
+				("col2", new object[] { 10, 20, 30, 40, 50 }));
+
+			var resultDf = df.Head(3);
+
+			Assert.Equal(3, resultDf.RowCount());
+			Assert.Equal(1, resultDf["col1", 0]);
+			Assert.Equal(2, resultDf["col1", 1]);
+			Assert.Equal(3, resultDf["col1", 2]);
+		}
+
+		[Fact]
+		public void Tail_ShouldReturnBottomRows()
+		{
+			var df = new DataFrame(
+				("col1", new object[] { 1, 2, 3, 4, 5 }),
+				("col2", new object[] { 10, 20, 30, 40, 50 }));
+
+			var resultDf = df.Tail(2);
+
+			Assert.Equal(2, resultDf.RowCount());
+			Assert.Equal(4, resultDf["col1", 0]);
+			Assert.Equal(5, resultDf["col1", 1]);
+		}
+
+		[Fact]
+		public void Take_ShouldReturnExactRows()
+		{
+			var df = new DataFrame(("col1", new object[] { 1, 2, 3, 4, 5 }));
+
+			var resultDf = df.Take(3);
+
+			Assert.Equal(3, resultDf.RowCount());
+			Assert.Equal(1, resultDf["col1", 0]);
+			Assert.Equal(3, resultDf["col1", 2]);
+		}
+
+		[Fact]
+		public void TakeEvery_ShouldSelectNthRows()
+		{
+			var df = new DataFrame(
+				("col1", new object[] { 1, 2, 3, 4, 5 }),
+				("col2", new object[] { 10, 20, 30, 40, 50 }));
+
+			var resultDf = df.TakeEvery(2);
+
+			Assert.Equal(2, resultDf.RowCount());
+			Assert.Equal(2, resultDf["col1", 0]); // First selected row
+			Assert.Equal(20, resultDf["col2", 0]);
+			Assert.Equal(4, resultDf["col1", 1]); // Second selected row
+			Assert.Equal(40, resultDf["col2", 1]);
+		}
+
+		[Fact]
+		public void TakeEvery_ShouldIncludeLastRow_WhenRequested()
+		{
+			var df = new DataFrame(
+				("col1", new object[] { 1, 2, 3, 4, 5 }),
+				("col2", new object[] { 10, 20, 30, 40, 50 }));
+
+			var resultDf = df.TakeEvery(2, includeLast: true);
+
+			Assert.Equal(3, resultDf.RowCount());
+			Assert.Equal(5, resultDf["col1", 2]); // Last row included
+			Assert.Equal(50, resultDf["col2", 2]);
+		}
+
+		[Fact]
+		public void TakeEvery_ShouldThrowException_WhenNthRowIsInvalid()
+		{
+			var df = new DataFrame(("col1", new object[] { 1, 2, 3 }));
+
+			Assert.Throws<ArgumentException>(() => df.TakeEvery(0)); // nthRow must be > 0
+			Assert.Throws<ArgumentException>(() => df.TakeEvery(-1));
+		}
+
+		[Fact]
+		public void TakeRandom_ShouldSelectRandomRows()
+		{
+			var df = new DataFrame(
+				("col1", new object[] { 1, 2, 3, 4, 5 }),
+				("col2", new object[] { 10, 20, 30, 40, 50 }));
+
+			var resultDf = df.TakeRandom(2);
+
+			Assert.Equal(2, resultDf.RowCount()); // Ensure only 2 rows are selected
+		}
+
+		[Fact]
+		public void TakeRandom_ShouldReturnOriginal_WhenRequestedRowsExceedRowCount()
+		{
+			var df = new DataFrame(
+				("col1", new object[] { 1, 2, 3 }),
+				("col2", new object[] { 10, 20, 30 }));
+
+			var resultDf = df.TakeRandom(3);
+
+			Assert.Equal(df.RowCount(), resultDf.RowCount()); // Should match original
+		}
+
+		[Fact]
+		public void TakeRandom_ShouldThrowException_WhenRowsIsInvalid()
+		{
+			var df = new DataFrame(("col1", new object[] { 1, 2, 3 }));
+
+			Assert.Throws<ArgumentException>(() => df.TakeRandom(0)); // rows must be > 0
+			Assert.Throws<ArgumentException>(() => df.TakeRandom(-1));
+		}
+
+		[Fact]
         public void TakeEveryNthRow_Test01()
         {
             var dict = new Dictionary<string, List<object>>

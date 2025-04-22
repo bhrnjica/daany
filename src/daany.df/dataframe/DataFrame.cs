@@ -2015,7 +2015,6 @@ namespace Daany
 
 		#endregion
 
-
 		#region Insert
 		/// <summary>
 		/// Inserts a column into the DataFrame at the specified position.
@@ -2136,7 +2135,6 @@ namespace Daany
 		}
 
 		#endregion
-
 
 		#region Join and Merge
 
@@ -3237,177 +3235,296 @@ namespace Daany
 
 
 		/// <summary>
-		/// Returns data frame consisted of every nth row
+		/// Returns a DataFrame consisting of every nth row.
 		/// </summary>
-		/// <param name="nthRow"></param>
-		/// <param name="includeLast">For incomplete nthRow, select the last one</param>
-		/// <returns></returns>
+		/// <param name="nthRow">
+		/// The interval of rows to select. Must be greater than zero.
+		/// </param>
+		/// <param name="includeLast">
+		/// If true, includes the last row even if it does not align perfectly with nthRow.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing every nth row.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if `nthRow` is less than 1.
+		/// </exception>
+		/// <example>
+		/// // Example: Select every 2nd row from a DataFrame
+		/// DataFrame df = new DataFrame(
+		///     ("col1", new object[] {1, 2, 3, 4, 5}),
+		///     ("col2", new object[] {10, 20, 30, 40, 50}));
+		///
+		/// DataFrame resultDf = df.TakeEvery(2);
+		///
+		/// // Result:
+		/// // Index   | col1 | col2
+		/// // ---------------------
+		/// // 2       | 2    | 20
+		/// // 4       | 4    | 40
+		/// </example>
 		public DataFrame TakeEvery(int nthRow, bool includeLast = false)
-        {
-            var val = new List<object>();
-            var ind = new List<object>();
+		{
+			if (nthRow < 1)
+				throw new ArgumentException("'nthRow' must be greater than zero.");
 
-            //go through all rows
-            int counter = 0;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                if ((i + 1) % nthRow == 0)
-                {
-                    val.AddRange(this[i]);
-                    ind.Add(this._index[i]);
-                    counter = 0;
-                }
-                if(i + 1 == _index.Count && includeLast)
-                {
-                    if(counter > 0)
-                    {
-                        val.AddRange(this[i]);
-                        ind.Add(this._index[i]);
-                    }
-                }
-                //
-                counter++;
-            }
-			//
-			if (_colsType == null || _colsType == Array.Empty<ColType>())
+			var selectedValues = new List<object>();
+			var selectedIndices = new List<object>();
+
+			for (int i = 0; i < _index.Count; i++)
+			{
+				if ((i + 1) % nthRow == 0)
+				{
+					selectedValues.AddRange(this[i]);
+					selectedIndices.Add(_index[i]);
+				}
+			}
+
+			// Include last row if requested
+			if (includeLast && _index.Count % nthRow != 0)
+			{
+				int lastIndex = _index.Count - 1;
+				selectedValues.AddRange(this[lastIndex]);
+				selectedIndices.Add(_index[lastIndex]);
+			}
+
+			// Ensure column types are initialized
+			if (_colsType == null || _colsType.Length == 0)
 				EnsureColumnTypesInitialized();
 
-            var df = new DataFrame(val, ind, this._columns.ToList(), _colsType!);
-            return df;
-        }
+			return new DataFrame(selectedValues, selectedIndices, _columns.ToList(), _colsType);
+		}
 
-        /// <summary>
-        /// Returns data frame consisted of randomly selected n rows.
-        /// </summary>
-        /// <param name="rows"></param>
-        /// <returns></returns>
-        public DataFrame TakeRandom(int rows)
-        {
-            if (rows >= this.RowCount())
-                return this;
+		/// <summary>
+		/// Returns a DataFrame consisting of a randomly selected subset of rows.
+		/// </summary>
+		/// <param name="rows">
+		/// The number of rows to randomly select.
+		/// If `rows` is greater than or equal to the total number of rows, returns the original DataFrame.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing randomly selected rows.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if `rows` is less than 1.
+		/// </exception>
+		/// <example>
+		/// // Example: Select 3 random rows from a DataFrame
+		/// DataFrame df = new DataFrame(
+		///     ("col1", new object[] {1, 2, 3, 4, 5}),
+		///     ("col2", new object[] {10, 20, 30, 40, 50}));
+		///
+		/// DataFrame resultDf = df.TakeRandom(3);
+		/// </example>
+		public DataFrame TakeRandom(int rows)
+		{
+			if (rows <= 0)
+				throw new ArgumentException(nameof(rows));
 
-            var selected = new List<int>();
-            double needed = rows;
-            double available = _index.Count;
+			if (rows >= this.RowCount() )
+				return this;
 
-            while (selected.Count < rows)
-            {
-                if (Constant.rand.NextDouble() < needed / available)
-                {
-                    selected.Add((int)available - 1);
-                   needed--;
-                }
-                available--;
-            }
+			var selected = new List<int>();
+			double needed = rows;
+			double available = _index.Count;
 
-            //
-            var df = getDataFramesRows(selected);
+			while (selected.Count < rows)
+			{
+				if (Constant.rand.NextDouble() < needed / available)
+				{
+					selected.Add((int)available - 1);
+					needed--;
+				}
+				available--;
+			}
 
-            //
-            return df;
-        }
+			//
+			var df = getDataFramesRows(selected);
 
-        /// <summary>
-        /// Returns data frame with index element not containing in the index of the second data frame.
-        /// Reset Index before call this method is recommended. 
-        /// Index of the second data frame must be less of equal than the main data frame
-        /// </summary>
-        /// <param name="data2">Second data frame</param>
-        /// <returns></returns>
-        public DataFrame Except(DataFrame data2)
-        {
-            //rest of data should be define training dataset
-            var resIndex = this._index.Select(x => Convert.ToInt32(x)).Except(data2.Index.Select(x => Convert.ToInt32(x))).ToList();
-            var finalDf = DataFrame.CreateEmpty(this._columns);
-            foreach (var i in resIndex)
-                finalDf.AddRow(this[i].ToList());
+			//
+			return df;
+		}
 
-            //reset index
-            return finalDf;
-        }
 
-        /// <summary>
-        /// Returns the formated string of the first  'count' rows of the data frame
-        /// Suitable for the Jupyter notebooks
-        /// </summary>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        public DataFrame Head(int count = 5)
-        {
-            //
-            int rows = this.RowCount();
-            int cols = this.ColCount();
-            //
-            var lst = new List<object>();
-            var ind = new List<object>();
-            long numR = Math.Min(rows, count);
-            for (int i = 0; i < numR; i++)
-            {
-                lst.AddRange(this[i]);
-                ind.Add(i);
-            }
-            return new DataFrame(lst, ind, this._columns, this._colsType);
-        }
+		/// <summary>
+		/// Returns a DataFrame containing rows from the main DataFrame that are **not** present in the second DataFrame.
+		/// </summary>
+		/// <param name="data2">
+		/// The second DataFrame. Only rows whose index does not exist in `data2` will be included.
+		/// The index in `data2` must be equal to or a subset of the main DataFrame.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing rows from the main DataFrame that are not in `data2`.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if `data2` contains index values that are greater than the main DataFrame’s index.
+		/// </exception>
+		/// <remarks>
+		/// Resetting the index in both DataFrames before calling this method is recommended for correctness.
+		/// </remarks>
+		/// <example>
+		/// // Example: Excluding rows present in another DataFrame
+		/// DataFrame df1 = new DataFrame(
+		///     ("col1", new object[] {1, 2, 3, 4, 5}),
+		///     ("col2", new object[] {10, 20, 30, 40, 50}));
+		///
+		/// DataFrame df2 = new DataFrame(
+		///     ("col1", new object[] {2, 3}),
+		///     ("col2", new object[] {20, 30}));
+		///
+		/// DataFrame resultDf = df1.Except(df2);
+		///
+		/// // Result:
+		/// // Index   | col1 | col2
+		/// // ---------------------
+		/// // 1       | 1    | 10
+		/// // 4       | 4    | 40
+		/// // 5       | 5    | 50
+		/// </example>
+		public DataFrame Except(DataFrame data2)
+		{
+			if (!this.Columns.SequenceEqual(data2.Columns))
+				throw new ArgumentException("Both DataFrames must have the same column names.");
 
-        /// <summary>
-        /// Returns the formated string of the last  'count' rows of the data frame
-        /// Suitable for the Jupyter notebooks
-        /// </summary>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        public DataFrame Tail(int count = 5)
-        {
-            int rows = this.RowCount();
-            int cols = this.ColCount();
-            //
-            var lst = new List<object>();
-            var ind = new List<object>();
+			var rowsToExclude = new HashSet<string>();
 
-            int numR = Math.Min(rows, count);
-            for (int i = rows - numR; i < rows; i++)
-            {
-                lst.AddRange(this[i]);
-                ind.Add(i);
-            }
-            //
-            return new DataFrame(lst, ind, this._columns, this._colsType);
-        }
+			// Convert all rows from data2 into string keys for fast lookup
+			for (int i = 0; i < data2.Index.Count; i++)
+			{
+				var rowValues = data2[i].Select(v => v?.ToString() ?? "NULL").ToList();
+				rowsToExclude.Add(string.Join(",", rowValues));
+			}
 
-        /// <summary>
-        /// Returns data frame consisted of first n rows.
-        /// </summary>
-        /// <param name="rows"></param>
-        /// <returns></returns>
-        public DataFrame Take(int rows)
-        {
-            var val = new List<object>();
-            var ind = new List<object>();
-            int counter = 1;
-            for (int i = 0; i < _index.Count; i++)
-            {
-                ind.Add(_index[i]);
-                val.AddRange(this[i]);
-                if (counter >= rows)
-                    break;
+			var filteredValues = new List<object>();
+			var filteredIndices = new List<object>();
 
-                counter++;
-            }
-            //
-            var df = new DataFrame(val, ind, this._columns.ToList(), this._colsType);
-            return df;
-        }
-        #endregion
+			// Iterate through main DataFrame and exclude matching rows
+			for (int i=0; i< this.Index.Count; i++)
+			{
+				var rowValues = this[i].Select(v => v?.ToString() ?? "NULL").ToList();
+				var rowKey = string.Join(",", rowValues);
 
-        #endregion
+				if (!rowsToExclude.Contains(rowKey))
+				{
+					filteredValues.AddRange(this[i]);
+					filteredIndices.Add(this.Index[i]);
+				}
+			}
 
-        #region Indexers
+			return new DataFrame(filteredValues, filteredIndices, this.Columns.ToList(), this._colsType);
+		}
 
-        /// <summary>
-        /// Returns zero based column index from the column name
-        /// </summary>
-        /// <param name="colName"></param>
-        /// <returns></returns>
-        public int ColIndex(string colName)
+		/// <summary>
+		/// Returns a DataFrame containing the first **N** rows.
+		/// </summary>
+		/// <param name="count">
+		/// The number of rows to retrieve. Defaults to 5.
+		/// If `count` exceeds the total row count, the entire DataFrame is returned.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing the top `count` rows.
+		/// </returns>
+		/// <example>
+		/// // Example: Get first 3 rows from a DataFrame
+		/// DataFrame df = new DataFrame(
+		///     ("col1", new object[] {1, 2, 3, 4, 5}),
+		///     ("col2", new object[] {10, 20, 30, 40, 50}));
+		///
+		/// DataFrame resultDf = df.Head(3);
+		/// </example>
+		public DataFrame Head(int count = 5)
+		{
+			int numRows = Math.Min(RowCount(), count);
+			var selectedValues = new List<object>();
+			var selectedIndices = new List<object>();
+
+			for (int i = 0; i < numRows; i++)
+			{
+				selectedValues.AddRange(this[i]);
+				selectedIndices.Add(_index[i]);
+			}
+
+			return new DataFrame(selectedValues, selectedIndices, _columns, _colsType);
+		}
+
+		/// <summary>
+		/// Returns a DataFrame containing the last **N** rows.
+		/// </summary>
+		/// <param name="count">
+		/// The number of rows to retrieve. Defaults to 5.
+		/// If `count` exceeds the total row count, the entire DataFrame is returned.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing the last `count` rows.
+		/// </returns>
+		/// <example>
+		/// // Example: Get last 3 rows from a DataFrame
+		/// DataFrame resultDf = df.Tail(3);
+		/// </example>
+		public DataFrame Tail(int count = 5)
+		{
+			int numRows = Math.Min(RowCount(), count);
+			var selectedValues = new List<object>();
+			var selectedIndices = new List<object>();
+
+			for (int i = RowCount() - numRows; i < RowCount(); i++)
+			{
+				selectedValues.AddRange(this[i]);
+				selectedIndices.Add(_index[i]);
+			}
+
+			return new DataFrame(selectedValues, selectedIndices, _columns, _colsType);
+		}
+
+		/// <summary>
+		/// Returns a DataFrame containing the first **N** rows.
+		/// </summary>
+		/// <param name="rows">
+		/// The number of rows to take.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame with the specified number of rows.
+		/// If `rows` exceeds the total row count, the entire DataFrame is returned.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if `rows` is less than 1.
+		/// </exception>
+		/// <example>
+		/// // Example: Take the first 3 rows
+		/// DataFrame resultDf = df.Take(3);
+		/// </example>
+		public DataFrame Take(int rows)
+		{
+			if (rows < 1)
+				throw new ArgumentException("Rows count must be greater than zero.");
+
+			var selectedValues = new List<object>();
+			var selectedIndices = new List<object>();
+
+			int numRows = Math.Min(rows, RowCount());
+
+			for (int i = 0; i < numRows; i++)
+			{
+				selectedIndices.Add(_index[i]);
+				selectedValues.AddRange(this[i]);
+			}
+
+			return new DataFrame(selectedValues, selectedIndices, _columns, _colsType);
+		}
+
+
+		#endregion
+
+		#endregion
+
+		#region Indexers
+
+		/// <summary>
+		/// Returns zero based column index from the column name
+		/// </summary>
+		/// <param name="colName"></param>
+		/// <returns></returns>
+		public int ColIndex(string colName)
         {
             return getColumnIndex(colName);
         }
