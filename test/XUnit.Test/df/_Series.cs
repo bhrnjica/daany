@@ -83,13 +83,13 @@ namespace Unit.Test.DF
         [Fact]
         public void Operation_Test01()
         {
-            var lst1 = nc.GenerateIntSeries(0, 100, 1);
-            var lst2 = nc.GenerateIntSeries(0, 200, 2);
+            var lst1 = nc.GenerateIntSeries(0, 100, 1).Select(x=>x).ToList();
+            var lst2 = nc.GenerateIntSeries(0, 200, 2).Select(x => x).ToList();
             var lst3 = nc.Zeros(2, 50);
 
             //create series from the list
-            var ser1 = new Series(lst1);
-            var ser2 = new Series(lst1);
+            var ser1 = new Series(lst1, type:ColType.I32);
+            var ser2 = new Series(lst1, type: ColType.I32);
 
             //addition
             var ser3 = ser1 + ser2;
@@ -146,7 +146,7 @@ namespace Unit.Test.DF
             var ser2 = new Series(lst2);
 
             //addition
-            var ser3 = ser1.AppendVerticaly(ser2);
+            var ser3 = ser1.AppendVertical(ser2);
 
             Assert.Equal(ser3.ToList(), lst3);
 
@@ -165,7 +165,7 @@ namespace Unit.Test.DF
             var ser2 = new Series(lst2,name:"Series2");
 
             //addition
-            var df = ser1.AppendHorizontaly(ser2);
+            var df = ser1.AppendHorizontal(ser2);
 
             Assert.Equal(df.Values, lst3);
 
@@ -186,8 +186,6 @@ namespace Unit.Test.DF
             //addition
           
             Assert.Equal(ser2.ToList(), lst3);
-
-
         }
 
         [Fact]

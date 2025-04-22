@@ -66,9 +66,9 @@ namespace Daany.Ext
             if (transformer == ColumnTransformer.MinMax)
             {
                
-                var minObj = s.Aggregate<float>(Aggregation.Min);
+                var minObj = s.Aggregate(Aggregation.Min);
                 param1 = Convert.ToSingle(minObj);
-                var maxObj = s.Aggregate<float>(Aggregation.Max);
+                var maxObj = s.Aggregate(Aggregation.Max);
                 param2 = Convert.ToSingle(maxObj);
 
                 df.AddCalculatedColumn(newColName, (IDictionary<string, object> row, int i) =>
@@ -81,9 +81,9 @@ namespace Daany.Ext
             else if (transformer == ColumnTransformer.MinMax || 
                     transformer == ColumnTransformer.Standardizer)
             {
-                var avgObj = s.Aggregate<float>(Aggregation.Avg);
+                var avgObj = s.Aggregate(Aggregation.Avg);
                 param1 = Convert.ToSingle(avgObj);
-                var stdObj = s.Aggregate<float>(Aggregation.Std);
+                var stdObj = s.Aggregate(Aggregation.Std);
                 param2 = Convert.ToSingle(stdObj);
 
                 df.AddCalculatedColumn(colName + "_scaled", (IDictionary<string, object> row, int i) =>

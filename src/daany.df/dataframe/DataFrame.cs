@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using Daany.Grouping;
 using Daany.MathStuff.Random;
 using Daany.Multikey;
+using System.Diagnostics.Metrics;
 
 namespace Daany
 {
@@ -1550,7 +1551,7 @@ namespace Daany
 
 			return idxs
 				.Select(i => (Columns[i], ColTypes[i]))
-				.Where(col => !numericOnly || isNumeric(col.Item2))
+				.Where(col => !numericOnly || IsNumeric(col.Item2))
 				.ToList();
 		}
 		
@@ -3531,120 +3532,182 @@ namespace Daany
 
 
 
-        /// <summary>
-        /// Returns specific value from Data Frame positioned at (rowIndex,colIndex )
-        /// </summary>
-        /// <param name="row">Zero based row index </param>
-        /// <param name="col">Zero based col index</param>
-        /// <returns>Object cell value</returns>
-        public object this[int row, int col]
-        {
-            get
-            {
-                int ind = calculateIndex(row, col);
-                return _values[ind];
-            }
-            set
-            {
-                int ind = calculateIndex(row, col);
-                _values[ind] = value;
-            }
-        }
+		/// <summary>
+		/// Gets or sets a specific value from the DataFrame positioned at (rowIndex, colIndex).
+		/// </summary>
+		/// <param name="row">Zero-based row index.</param>
+		/// <param name="col">Zero-based column index.</param>
+		/// <returns>Object representing the cell value.</returns>
+		/// <exception cref="IndexOutOfRangeException">
+		/// Thrown if `row` or `col` exceeds valid bounds.
+		/// </exception>
+		/// <example>
+		/// DataFrame df = new DataFrame(
+		///     ("col1", new object[] { 1, 2, 3 }),
+		///     ("col2", new object[] { "A", "B", "C" }));
+		///
+		/// object value = df[1, 0]; // Retrieves value at row index 1, column index 0.
+		/// df[2, 1] = "Modified"; // Modifies value at row index 2, column index 1.
+		/// </example>
+		public object this[int row, int col]
+		{
+			get
+			{
+				if (row < 0 || row >= RowCount() || col < 0 || col >= ColCount())
+					throw new IndexOutOfRangeException($"Index ({row}, {col}) is out of bounds.");
 
-        /// <summary>
-        /// Return specific value from Data Frame positioned at (rowIndex,colIndex )
-        /// </summary>
-        /// <param name="col">Column name</param>
-        /// <param name="row">Zero based row index</param>
-        /// <returns>Object cell value</returns>
-        public object this[string col, int row]
-        {
-            get
-            {
-                int ind = calculateIndex(col, row);
-                return _values[ind];
-            }
-            set
-            {
-                int ind = calculateIndex(col, row);
-                _values[ind] = value;
-            }
-        }
+				return _values[calculateIndex(row, col)];
+			}
+			set
+			{
+				if (row < 0 || row >= RowCount() || col < 0 || col >= ColCount())
+					throw new IndexOutOfRangeException($"Index ({row}, {col}) is out of bounds.");
 
-        
-        /// <summary>
-        /// Return DataFrame generated from list of columns.
-        /// </summary>
-        /// <param name="col"></param>
-        /// <returns>New Data Frame</returns>
-        public DataFrame this[params string[] cols]
-        {
-            get
-            {   //get indexes of the columns
-                var idxs = getColumnIndex(cols);
-                //reserve for space
-                var lst = new object[cols.Length * _index.Count];
-                var counter = 0;
-                var newCounter = 0;
-                for (int i = 0; i < _index.Count; i++)
-                {
-                    for (int j = 0; j < idxs.Length; j++)
-                    {
-                        lst[newCounter + j] = this._values[counter + idxs[j]];                   
-                    }
-                    //increase indexes
-                    newCounter += idxs.Length;
-                    counter +=_columns.Count;
-                }
+				_values[calculateIndex(row, col)] = value;
+			}
+		}
 
-                ColType[] colTypes= Array.Empty<ColType>();
-                if (_colsType != null && _colsType != Array.Empty<ColType>())
-                    colTypes = idxs.Select(j=>_colsType[j]).ToArray();
 
-                var df = new DataFrame(lst.ToList(),this._index.ToList(), cols.ToList(), colTypes);
-                return df;
-            }
-        }
+		/// <summary>
+		/// Gets or sets a specific value from the DataFrame based on column name and row index.
+		/// </summary>
+		/// <param name="col">Column name.</param>
+		/// <param name="row">Zero-based row index.</param>
+		/// <returns>Object representing the cell value.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if column does not exist.
+		/// </exception>
+		/// <example>
+		/// object value = df["col1", 2]; // Retrieve value in "col1" at row index 2.
+		/// df["col2", 1] = "Updated"; // Modify value in "col2" at row index 1.
+		/// </example>
+		public object this[string col, int row]
+		{
+			get
+			{
+				if (!Columns.Contains(col))
+					throw new ArgumentException($"Column '{col}' does not exist.");
 
-        /// <summary>
-        /// Return Specific Column  from Data Frame
-        /// </summary>
-        /// <param name="col">COlumn name</param>
-        /// <returns>Enumerated object list</returns>
-        public IEnumerable<object> this[string col]
-        {
-            get
-            {
-                var cols = ColCount();
-                var colIndex = getColumnIndex(col);
-                for (int i = colIndex; i < _values.Count; i += cols)
-                    yield return _values[i];
-            }
-        }
+				int ind = calculateIndex(col, row);
+				return _values[ind];
+			}
+			set
+			{
+				if (!Columns.Contains(col))
+					throw new ArgumentException($"Column '{col}' does not exist.");
 
-        /// <summary>
-        /// Return specific row from Data Frame
-        /// </summary>
-        /// <param name="row">Zero based row index</param>
-        /// <returns>Enumerated object list.</returns>
-        public IEnumerable<object> this[int row]
-        {
-            get
-            {
-                var cols = ColCount();
-                var start = calculateIndex(row, 0);// row * cols;
-                for (int i = start; i < start + cols; i++)
-                    yield return _values[i];
-            }
-        }
-        #endregion
+				int ind = calculateIndex(col, row);
+				_values[ind] = value;
+			}
+		}
 
-        #region Interface Implementation
-        /// <summary>
-        /// Returns the number of rows in the data frame
-        /// </summary>
-        /// <returns>Integer value</returns>
-        public int RowCount()
+
+
+		/// <summary>
+		/// Returns a new DataFrame generated from a subset of columns.
+		/// </summary>
+		/// <param name="cols">Column names.</param>
+		/// <returns>New DataFrame containing selected columns.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if any column does not exist.
+		/// </exception>
+		/// <example>
+		/// DataFrame subsetDf = df["col1", "col2"];
+		/// </example>
+		public DataFrame this[params string[] cols]
+		{
+			get
+			{
+				if (!cols.All(Columns.Contains))
+					throw new ArgumentException("One or more specified columns do not exist.");
+
+				EnsureColumnTypesInitialized();
+
+				//get indexes of the columns
+				var idxs = getColumnIndex(cols);
+
+				//reserve for space
+				var lst = new object[cols.Length * _index.Count];
+				var counter = 0;
+				var newCounter = 0;
+				for (int i = 0; i < _index.Count; i++)
+				{
+					for (int j = 0; j < idxs.Length; j++)
+					{
+						lst[newCounter + j] = this._values[counter + idxs[j]];
+					}
+					//increase indexes
+					newCounter += idxs.Length;
+					counter += _columns.Count;
+				}
+
+
+				return new DataFrame(lst.ToList(), Index.ToList(), cols.ToList(), idxs.Select(idx => ColTypes[idx]).ToArray());
+			}
+		}
+
+
+		/// <summary>
+		/// Returns all values from a specified column.
+		/// </summary>
+		/// <param name="col">Column name.</param>
+		/// <returns>Enumerable list of column values.</returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown if column does not exist.
+		/// </exception>
+		/// <example>
+		/// IEnumerable<object> columnData = df["col1"];
+		/// </example>
+		public IEnumerable<object> this[string col]
+		{
+			get
+			{
+				if (!Columns.Contains(col))
+					throw new ArgumentException($"Column '{col}' does not exist.");
+
+				int colIndex = getColumnIndex(col);
+				int cols = ColCount();
+
+				for (int i = colIndex; i < _values.Count; i += cols)
+					yield return _values[i];
+			}
+		}
+
+
+		/// <summary>
+		/// Returns all values from a specific row.
+		/// </summary>
+		/// <param name="row">Zero-based row index.</param>
+		/// <returns>Enumerable list of row values.</returns>
+		/// <exception cref="IndexOutOfRangeException">
+		/// Thrown if row index is out of range.
+		/// </exception>
+		/// <example>
+		/// IEnumerable<object> rowData = df[1];
+		/// </example>
+		public IEnumerable<object> this[int row]
+		{
+			get
+			{
+				if (row < 0 || row >= RowCount())
+					throw new IndexOutOfRangeException($"Row index '{row}' is out of range.");
+
+				int cols = ColCount();
+				int startIndex = calculateIndex(row, 0);
+
+				for (int i = startIndex; i < startIndex + cols; i++)
+					yield return _values[i];
+			}
+		}
+
+		#endregion
+
+		#region Interface Implementation
+		/// <summary>
+		/// Returns the number of rows in the data frame
+		/// </summary>
+		/// <returns>Integer value</returns>
+		public int RowCount()
         {
             return Index.Count;
         }
@@ -3657,58 +3720,86 @@ namespace Daany
             return Columns.Count;
         }
 
-        #endregion
+		#endregion
 
-        #region Print Helper
-        /// <summary>
-        /// Customization of the standard ToString method.
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            var str = $"({Index.Count},{Columns.Count})";
-            return str;
-        }
+		#region Print Helper
+		/// <summary>
+		/// Returns a concise string representation of the DataFrame dimensions.
+		/// </summary>
+		/// <returns>
+		/// A formatted string in the form `(rowCount, columnCount)`, where rowCount is the number of rows
+		/// and columnCount is the number of columns.
+		/// </returns>
+		/// <example>
+		/// DataFrame df = new DataFrame(("col1", new object[] {1, 2, 3}));
+		/// string result = df.ToString(); // Output: "(3,1)"
+		/// </example>
+		public override string ToString()
+		{
+			return $"({RowCount()},{ColCount()})";
+		}
 
-        public string ToStringBuilder(int rowCount=15)
-        {
-            StringBuilder sb = new StringBuilder();
-            int rows = this.RowCount();
-            int cols = this.ColCount();
-            int longestColumnName = 0;
-            for (int i = 0; i < cols; i++)
-            {
-                longestColumnName = Math.Max(longestColumnName, this.Columns[i].Length);
-            }
-            //add space for idnex
-            sb.Append(string.Format("".PadRight(longestColumnName)));
-            for (int i = 0; i < cols; i++)
-            {
-                // Left align by 10
-                sb.Append(string.Format(this.Columns[i].PadRight(longestColumnName)));
-            }
-            sb.AppendLine();
-            //
-            var rr = Math.Min(rowCount, rows);
-            for (int i = 0; i < rr; i++)
-            {
-                sb.Append((_index[i]).ToString().PadRight(longestColumnName));
-                IList<object> row = this[i].ToList();
-                foreach (object obj in row)
-                {
-                    sb.Append((obj ?? "null").ToString().PadRight(longestColumnName));
-                }
-                sb.AppendLine();
-            }
-            return sb.ToString();
-        }
 
-        public Array To1DArray()
+		/// <summary>
+		/// Constructs a tabular string representation of the DataFrame.
+		/// </summary>
+		/// <param name="rowCount">
+		/// The number of rows to display. Defaults to 15.
+		/// </param>
+		/// <returns>
+		/// A formatted string representation of the DataFrame.
+		/// </returns>
+		/// <example>
+		/// string tableView = df.ToStringBuilder(5); // Shows first 5 rows in tabular format.
+		/// </example>
+		public string ToStringBuilder(int rowCount = 15)
+		{
+			int rows = this.RowCount();
+			int cols = this.ColCount();
+			int longestColumnName = this.Columns.Max(c => c.Length);
+
+			StringBuilder sb = new StringBuilder();
+
+			// Header Row
+			sb.Append("".PadRight(longestColumnName));
+			foreach (var column in Columns)
+			{
+				sb.Append(column.PadRight(longestColumnName));
+			}
+			sb.AppendLine();
+
+			// Data Rows
+			int rr = Math.Min(rowCount, rows);
+			for (int i = 0; i < rr; i++)
+			{
+				sb.Append(Index[i].ToString().PadRight(longestColumnName));
+				foreach (var obj in this[i])
+				{
+					sb.Append((obj ?? "null").ToString().PadRight(longestColumnName));
+				}
+				sb.AppendLine();
+			}
+
+			return sb.ToString();
+		}
+
+
+		public Array To1DArray()
         {
             return this._values.ToArray();
         }
 
-        public string ToConsole(int rowCount = 15)
+		/// <summary>
+		/// Generates a tabular view suitable for console output.
+		/// </summary>
+		/// <param name="rowCount">Number of rows to display. Defaults to 15.</param>
+		/// <returns>
+		/// A formatted console-friendly representation of the DataFrame.
+		/// </returns>
+		/// <example>
+		/// string consoleView = df.ToConsole(10);
+		/// </example>
+		public string ToConsole(int rowCount = 15)
         {
             StringBuilder sb = new StringBuilder();
             int rows = this.RowCount();
@@ -4119,8 +4210,10 @@ namespace Daany
 
             return;
         }
-      
-        static private bool isNumeric(ColType cType)
+
+		
+
+		static private bool IsNumeric(ColType cType)
         {
             if (cType == ColType.I32 || cType == ColType.I64 || cType == ColType.F32 || cType == ColType.DD)
                 return true;
@@ -4128,7 +4221,7 @@ namespace Daany
                 return false;
         }
 
-        static private bool isCategorical(ColType cType)
+		static private bool isCategorical(ColType cType)
         {
             if (cType == ColType.I2 || cType == ColType.IN)
                 return true;

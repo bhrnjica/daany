@@ -59,5 +59,19 @@ namespace Daany
         {
             _index.AddRange(index._index);
         }
-    }
+
+		public int IndexOf(object value)
+		{
+			if (value == null)
+				throw new ArgumentNullException(nameof(value), "Value cannot be null.");
+
+			for (int i = 0; i < _index.Count; i++)
+			{
+				if (_index[i].Equals(value))
+					return i;
+			}
+
+			return -1; // Return -1 if the value is not found  
+		}
+	}
 }

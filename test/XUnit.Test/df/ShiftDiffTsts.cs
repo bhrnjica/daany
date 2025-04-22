@@ -49,15 +49,15 @@ namespace Unit.Test.DF
 		public void Diff_ShouldComputeRowDifferences()
 		{
 			var df = new DataFrame(
-				("col1", new object[] { 10, 20, 30, 40, 50 }));
+				("col1", new object[] { 10d, 20d, 30d, 40d, 50d }));
 
 			var diffDf = df.Diff(1, DiffType.Seasonal);
 
 			Assert.Equal(DataFrame.NAN, diffDf["col1", 0]);
-			Assert.Equal(10, diffDf["col1", 1]);
-			Assert.Equal(10, diffDf["col1", 2]);
-			Assert.Equal(10, diffDf["col1", 3]);
-			Assert.Equal(10, diffDf["col1", 4]);
+			Assert.Equal(10.0, diffDf["col1", 1]);
+			Assert.Equal(10.0, diffDf["col1", 2]);
+			Assert.Equal(10.0, diffDf["col1", 3]);
+			Assert.Equal(10.0, diffDf["col1", 4]);
 		}
 	}
 
