@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <LangVersion>Latest</LangVersion>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon />
     <StartupObject />
@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.1.0" />
   </ItemGroup>
 
@@ -25,6 +26,13 @@
     <None Update="AirPassengers.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="alarms.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /y &quot;$(SolutionDir)src\daany_rust\target\release\daany_rust_lib.dll&quot; &quot;$(TargetDir)&quot;" ContinueOnError="true" />
+  </Target>
 
 </Project>

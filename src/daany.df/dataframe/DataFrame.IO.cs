@@ -23,8 +23,10 @@ using System.Text.RegularExpressions;
 
 
 using Daany.MathStuff;
+using Daany.Binding;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Daany
 {
@@ -49,17 +51,75 @@ namespace Daany
         #endregion
 
         #region Static members
-        /// <summary>
-        ///  Saves data frame .NET object to csv file.
-        /// </summary>
-        /// <param name="filePath">Full or relative file path.</param>
-        /// <param name="dataFrame">Data frame to persist.</param>
-        /// <param name="delimiter">Use delimiter while writing.</param>
-        /// <param name="dateFormat">Use data time  format while writing.</param>
-        /// <param name="writHeader">Include heade in the file.</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static bool ToCsv(string filePath, DataFrame dataFrame, char delimiter = ',', string? dateFormat = null, bool writHeader = true)
+        public static bool ToCsvEx(string filePath, DataFrame dataFrame, char delimiter = ',', string? dateFormat = null, bool writHeader = true)
+        {
+            var columns = dataFrame.Columns;
+            var data = dataFrame.Values;
+
+			// Convert values to CellObject array
+			CellObject[] cellObjects = new CellObject[dataFrame.Values.Count];
+			
+			for (int i = 0; i < dataFrame.Values.Count; i++)
+			{
+				cellObjects[i] = dataFrame.Values[i] switch
+				{
+					int n => new CellObject { value = new CellValue { intValue = n }, typeId = 0 },
+					float n => new CellObject { value = new CellValue { floatValue = n }, typeId = 2 },
+					double n => new CellObject { value = new CellValue { doubleValue = n }, typeId = 3 },
+					long n => new CellObject { value = new CellValue { longValue = n }, typeId = 1 },
+					string s => new CellObject { value = new CellValue { stringValue = DaanyRust.AllocateString(s) }, typeId = 4 },
+					DateTime dt => new CellObject { value = new CellValue { datetimeValue = dt.ToUnixTimestampMilliseconds() }, typeId = 5 },
+					null => new CellObject { value = new CellValue { stringValue = DaanyRust.AllocateString("*") }, typeId = 4 },
+					_ => throw new Exception("Unsupported type")
+				};
+			}
+
+			// Convert headers to IntPtr array
+			IntPtr[] columnPointers = new IntPtr[dataFrame.Columns.Count];
+			for (int i = 0; i < dataFrame.Columns.Count; i++)
+				columnPointers[i] = DaanyRust.AllocateString(dataFrame.Columns[i]);
+
+            //converts data to IntPtr
+			IntPtr dataBuffer = Marshal.AllocHGlobal(Marshal.SizeOf<CellObject>() * dataFrame.Values.Count);
+			for (int i = 0; i < dataFrame.Values.Count; i++)
+				Marshal.StructureToPtr(cellObjects[i], dataBuffer + i * Marshal.SizeOf<CellObject>(), false);
+
+			IntPtr columnBuffer = Marshal.AllocHGlobal(IntPtr.Size * dataFrame.Columns.Count);
+			Marshal.Copy(columnPointers, 0, columnBuffer, dataFrame.Columns.Count);
+
+			IntPtr filePathPtr = DaanyRust.AllocateString(filePath);
+			IntPtr dateFormatPtr = DaanyRust.AllocateString("%Y-%m-%d");
+			IntPtr missingValuePtr = DaanyRust.AllocateString("*");
+
+			// Call Rust function
+			DaanyRust.to_csv(filePathPtr, dataBuffer, dataFrame.Values.Count, columnBuffer, dataFrame.ColCount(), delimiter, true, dateFormatPtr);
+
+			// Cleanup memory
+			Marshal.FreeHGlobal(filePathPtr);
+			Marshal.FreeHGlobal(dateFormatPtr);
+			Marshal.FreeHGlobal(dataBuffer);
+			Marshal.FreeHGlobal(columnBuffer);
+            foreach (var ptr in cellObjects)
+            {
+                if (ptr.typeId == 4)
+                    Marshal.FreeHGlobal(ptr.value.stringValue);
+            };
+			foreach (var ptr in columnPointers) Marshal.FreeHGlobal(ptr);
+
+			Console.WriteLine($"CSV file '{filePath}' has been created successfully!");
+            return true;
+		}
+		/// <summary>
+		///  Saves data frame .NET object to csv file.
+		/// </summary>
+		/// <param name="filePath">Full or relative file path.</param>
+		/// <param name="dataFrame">Data frame to persist.</param>
+		/// <param name="delimiter">Use delimiter while writing.</param>
+		/// <param name="dateFormat">Use data time  format while writing.</param>
+		/// <param name="writHeader">Include heade in the file.</param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentNullException"></exception>
+		public static bool ToCsv(string filePath, DataFrame dataFrame, char delimiter = ',', string? dateFormat = null, bool writHeader = true)
         {
             if (dataFrame == null)
                 throw new ArgumentNullException(nameof(dataFrame));
@@ -287,20 +347,35 @@ namespace Daany
                 }
             }
         }
+		public static DataFrame FromCsvEx(string filePath, char sep = ',', string[]? names = null, string? dformat = null, 
+                                            bool parseDate = true, ColType[]? colTypes = null, char[]? missingValues = null, 
+                                            int nRows = -1, int skipLines = 0)
+        {
+			IntPtr filePathPtr = DaanyRust.AllocateString(filePath);
+			string missingValue = "*";
+            bool hasHeader = true;
+			IntPtr columnsPtr, dataPtr;
+			ulong colCount, rowCount;
+			//// Call Rust function
+			DaanyRust.from_csv(filePath, sep, dformat, missingValue, hasHeader, out columnsPtr, out colCount, out dataPtr, out rowCount);
 
-       
+			string[] columns = DaanyRust.exctractColumns(columnsPtr, colCount);
+			object[] data = DaanyRust.exctractData(dataPtr, rowCount, colCount);
 
-        /// <summary>
-        /// Method for loading data from the file into data frame object.
-        /// </summary>
-        /// <param name="filePath">Full or relative path of the file.</param>
-        /// <param name="sep"> Separator character.</param>
-        /// <param name="names">Column names in case the columns are provided separately from the file.</param>
-        /// <param name="dformat">Date time format.</param>
-        /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
-        /// <param name="skipLines">Number of first lines to skip with parsing. This is handy in case we need to put description to data before actual data.</param>
-        /// <returns>Data Frame object.</returns>
-        public static DataFrame FromCsv(string filePath, char sep = ',', string[]? names = null, string? dformat = null, bool parseDate = true, ColType[]? colTypes = null, char[]? missingValues = null, int nRows = -1, int skipLines = 0)
+            return new DataFrame(data,columns);
+
+		}
+		/// <summary>
+		/// Method for loading data from the file into data frame object.
+		/// </summary>
+		/// <param name="filePath">Full or relative path of the file.</param>
+		/// <param name="sep"> Separator character.</param>
+		/// <param name="names">Column names in case the columns are provided separately from the file.</param>
+		/// <param name="dformat">Date time format.</param>
+		/// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
+		/// <param name="skipLines">Number of first lines to skip with parsing. This is handy in case we need to put description to data before actual data.</param>
+		/// <returns>Data Frame object.</returns>
+		public static DataFrame FromCsv(string filePath, char sep = ',', string[]? names = null, string? dformat = null, bool parseDate = true, ColType[]? colTypes = null, char[]? missingValues = null, int nRows = -1, int skipLines = 0)
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
@@ -394,8 +469,7 @@ namespace Daany
             return listValues;
         }
 
-		
-
+	
 		internal static object? ParseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
 		{
 			// Check if the value is a missing value
@@ -427,7 +501,6 @@ namespace Daany
 					? dateExactResult
 					: throw new FormatException("Invalid DateTime format.");
 		}
-
 
 		private static object ParseValue(ReadOnlySpan<char> value, char[]? missingValue, bool parseDate = false, string? dFormat = null)
         {

@@ -1,4 +1,9 @@
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.InProcess.Emit;
 using Daany.Plot;
+using Daany.Test.App.Binding;
 using DataFrame.Test.App;
 using ML.Net.App.TimeSeries;
 using System;
@@ -36,19 +41,26 @@ namespace Daany.Test.App
         //[STAThread]
         static void Main()
         {
+			var config = ManualConfig.Create(DefaultConfig.Instance)
+					 .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance));
+
+			var summary = BenchmarkRunner.Run<CsvBenchmark>(config);
+			Console.WriteLine(summary);
+
+			//Rust_Binding_Tests.Run();
+			return;
+
+			//  ARIMATest.ARIMA_Test01();
 
 
-          //  ARIMATest.ARIMA_Test01();
 
+			//Application.SetHighDpiMode(HighDpiMode.SystemAware);
+			//Application.EnableVisualStyles();
+			//Application.SetCompatibleTextRenderingDefault(false);
+			//Application.Run(new Form1());
 
-
-            //Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new Form1());
-
-            //OxyPlot
-            ExampleOXYPlot.Run();
+			//OxyPlot
+			ExampleOXYPlot.Run();
 
 
             //SSA test

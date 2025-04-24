@@ -40,3 +40,6 @@ bin-release/
 /nuget
 /src/daany-rust/target
 /src/daany-rust
+/src/daany_rust/target
+/src/daany_rust/.vscode
+/src/daany_rust/Cargo.lock

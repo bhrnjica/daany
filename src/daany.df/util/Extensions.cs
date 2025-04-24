@@ -23,8 +23,23 @@ namespace Daany
 {
     public static class ExtensionMethods
     {
-        
-        public static string GetEnumDescription(this Enum value)
+		/// <summary>
+		/// Converts a DateTime to Unix timestamp (seconds since 1970-01-01).
+		/// </summary>
+		public static long ToUnixTimestamp(this DateTime dateTime)
+		{
+			return new DateTimeOffset(dateTime.ToUniversalTime()).ToUnixTimeSeconds();
+		}
+
+		/// <summary>
+		/// Converts a DateTime to Unix timestamp in milliseconds.
+		/// </summary>
+		public static long ToUnixTimestampMilliseconds(this DateTime dateTime)
+		{
+			return new DateTimeOffset(dateTime.ToUniversalTime()).ToUnixTimeMilliseconds();
+		}
+
+		public static string GetEnumDescription(this Enum value)
         {
             
             FieldInfo fi = value.GetType().GetField(value.ToString());

@@ -484,6 +484,8 @@ namespace Daany
 
 			// Assign data
 			this._values = new List<object>(data);
+
+			EnsureColumnTypesInitialized();
 		}
 
 		/// <summary>

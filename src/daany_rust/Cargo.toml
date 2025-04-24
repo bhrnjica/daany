@@ -1,0 +1,25 @@
+[package]
+name = "daany_rust"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]  # Defines the executable
+name = "daany_rust_bin"
+path = "src/main.rs"
+
+[lib]
+name = "daany_rust_lib"
+crate-type = ["cdylib"]
+
+
+[dependencies]
+csv = "1.3.1"
+chrono = "0.4.40"
+
+
+[dev-dependencies]
+approx = "0.5"
+criterion = "0.4"
+rand = "0.8"
+tempfile = "3.3.0"
+
