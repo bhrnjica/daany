@@ -232,11 +232,11 @@ pub extern "C" fn free_columns(columns: *mut *const c_char, col_count: usize) {
         let slice = std::slice::from_raw_parts(columns, col_count);
         for &col_ptr in slice.iter() {
             if !col_ptr.is_null() {
-                let _ = CString::from_raw(col_ptr as *mut c_char); // ✅ Free individual strings
+                let _ = CString::from_raw(col_ptr as *mut c_char); // Free individual strings
             }
         }
 
-        // ✅ Only free the array if it was allocated using Box::into_raw()
+        //  Only free the array if it was allocated using Box::into_raw()
         drop(Box::from_raw(columns));
     }
 }
