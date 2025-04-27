@@ -20,6 +20,7 @@ using Daany.Grouping;
 using Daany.MathStuff.Random;
 using Daany.Multikey;
 using System.Diagnostics.Metrics;
+using Microsoft.VisualBasic;
 
 namespace Daany
 {
@@ -50,7 +51,7 @@ namespace Daany
 			{
 
                 EnsureColumnTypesInitialized();
-                return _colsType!;
+                return _colTypes!;
 			}
 		}
 
@@ -77,22 +78,13 @@ namespace Daany
         #endregion
 
         #region Private fields
-
-        /// <summary>
-        /// Data type for each data frame column.
-        /// </summary>
-        /// 
-        private ColType[]? _colsType;
-        /// <summary>
-        /// 1D element contains data frame values
-        /// </summary>
-        /// 
         private List<object> _values;
         private Daany.Index _index;
         private List<string> _columns;
+		private ColType[]? _colTypes;
 
-        //Quick Sort algorithm. In case of false, the Merge Sort will be used.
-        internal static bool qsAlgo = true;
+		//Quick Sort algorithm. In case of false, the Merge Sort will be used.
+		internal static bool qsAlgo = true;
 		#endregion
 
 		#region Enumerators
@@ -232,45 +224,39 @@ namespace Daany
                 newDf = newDf.InsertColumn(colName, colVal, 0);
             return newDf;
         }
-        #endregion
+		#endregion
 
-        #region Constructors
-        private DataFrame()
-        {
-            _values = new List<object>();
-            _index = new Index(new List<object>());
-            _columns = new List<string>();
-			_colsType = Array.Empty<ColType>();
+		#region Constructors
+		private DataFrame()
+		{
+			_values = new List<object>();
+			_index = new Index(new List<object>());
+			_columns = new List<string>();
+			_colTypes = Array.Empty<ColType>();
 		}
 
-		public DataFrame(params (string columnName, object[] values)[] columnData)
+		public DataFrame(params (string columnName, object[] values)[] data)
 		{
-			if (columnData == null || columnData.Length == 0)
+			if (data == null || data.Length == 0)
 				throw new ArgumentException("DataFrame must contain at least one column.");
 
-			// Initialize columns
-			this._columns = columnData.Select(c => c.columnName).ToList();
+			var columns = data.Select(c => c.columnName).ToList();
+			int rowCount = data.SelectMany(x => x.values).Count() / columns.Count;
+			var index = new Index(GenerateDefaultIndex(rowCount));
 
-			// Calculate row count
-			int rows = columnData.SelectMany(x=>x.values).Count() / this._columns.Count;
+			var values = Enumerable.Range(0, rowCount)
+								   .SelectMany(i => data.Select(column => column.values[i]))
+								   .ToList();
+			var colTypes = columnsTypes(values, rowCount, columns.Count);
 
-			// Assign data
-			_values = new List<object>();
-			for (int i = 0; i < rows; i++)
-			{
-				var row = columnData.Select(c => c.values[i]).ToList();
-				_values.AddRange(row);
-			}
-
-			// Initialize index
-			this._index = new Index(GenerateDefaultIndex(rows));
+			InitializeDataFrame(values, index, columns, colTypes);
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the DataFrame class using a dictionary with 
 		/// two keys to define columns and indexed rows.
 		/// </summary>
-		/// <param name="aggValues">
+		/// <param name="data">
 		/// A TwoKeysDictionary where:
 		/// - The first key represents column names.
 		/// - The second key represents row indices.
@@ -293,24 +279,21 @@ namespace Daany
 		/// var df = new DataFrame(aggValues);
 		/// </example>
 
-		internal DataFrame(TwoKeysDictionary<string, object, object> aggValues)
+		internal DataFrame(TwoKeysDictionary<string, object, object> data)
 		{
-			if (aggValues == null || aggValues.Count == 0)
-				throw new ArgumentException("The dictionary 'aggValues' cannot be null or empty.", nameof(aggValues));
+			if (data == null || data.Count == 0)
+				throw new ArgumentException("The dictionary 'data' cannot be null or empty.", nameof(data));
 
-			// Initialize columns and index lists
-			var indexSet = new HashSet<object>(); // Using HashSet for better performance
-			this._columns = new List<string>(aggValues.Select(c => c.Key));
+			var indexSet = new HashSet<object>();
+			var columns = new List<string>(data.Select(c => c.Key));
 
-			// Extract unique index values
-			foreach (var c in aggValues)
+			foreach (var c in data)
 			{
-				// Ensure 'c.Value' is enumerable
 				if (c.Value is IEnumerable<KeyValuePair<object, object>> keyValuePairs)
 				{
 					foreach (var kvp in keyValuePairs)
 					{
-						indexSet.Add(kvp.Key); // Add unique keys to index set
+						indexSet.Add(kvp.Key);
 					}
 				}
 				else
@@ -319,17 +302,17 @@ namespace Daany
 				}
 			}
 
-			// Convert HashSet index to list for ordering
 			var orderedIndex = indexSet.ToList();
-			this._index = new Index(orderedIndex);
-
-			// Fill _values list
-			this._values = orderedIndex
-				.SelectMany(rowIndex => this._columns
-					.Select(column => aggValues.ContainsKey(column, rowIndex)
-						? aggValues[column, rowIndex]
+			var values = orderedIndex
+				.SelectMany(rowIndex => columns
+					.Select(column => data.ContainsKey(column, rowIndex)
+						? data[column, rowIndex]
 						: DataFrame.NAN!))
 				.ToList();
+
+			var colTypes = columnsTypes(values, orderedIndex.Count, columns.Count);
+			
+			InitializeDataFrame(values, new Index(orderedIndex), columns, colTypes);
 		}
 
 
@@ -343,10 +326,10 @@ namespace Daany
 		/// <param name="index">
 		/// An Index instance representing the row indices of the data.
 		/// </param>
-		/// <param name="cols">
+		/// <param name="columns">
 		/// A list of strings representing the column names of the data.
 		/// </param>
-		/// <param name="colsType">
+		/// <param name="colTypes">
 		/// An array of ColType enumerations representing the data types of the columns. 
 		/// The length of this array must match the number of columns.
 		/// </param>
@@ -370,123 +353,11 @@ namespace Daany
 		/// var df = new DataFrame(data, index, cols, colsType);
 		/// </example>
 
-		public DataFrame(List<object> data, Index index, List<string> cols, ColType[] colsType)
+		public DataFrame(List<object> data, Index index, List<string> columns, ColType[] colTypes)
 		{
-			// Validate inputs
-            ValidateData(data, cols);
-
-			if (index == null || index.Count == 0)
-				throw new ArgumentException("Index cannot be null or empty.", nameof(index));
-
-			// Clone columns to ensure immutability
-			this._columns = new List<string>(cols);
-
-			// Clone index to ensure immutability
-			this._index = new Index(index.ToList());
-
-			// Clone and assign data
-			this._values = new List<object>(data);
-
-            // Clone column types to ensure immutability
-            if (colsType == null || colsType == Array.Empty<ColType>())
-                this._colsType = columnsTypes(); 
-            else
-            {
-                if (this._columns.Count != colsType.Length)
-                    throw new ArgumentException("Inconsistant number of col tye with the number of columns.");
-                else
-                    this._colsType = colsType;
-            }
+			InitializeDataFrame(data, index, columns, colTypes);
 		}
 
-
-		/// <summary>
-		/// Initializes a new instance of the DataFrame class by copying the internal state 
-		/// of an existing DataFrame instance.
-		/// </summary>
-		/// <param name="dataFrame">
-		/// The DataFrame instance to copy. Must not be null.
-		/// </param>
-		/// <exception cref="ArgumentNullException">
-		/// Thrown when the provided DataFrame instance is null.
-		/// </exception>
-		/// <remarks>
-		/// - Creates a deep copy of the provided DataFrame instance.
-		/// - Ensures that the new DataFrame instance is independent of the original, 
-		/// preserving immutability of both objects.
-		/// </remarks>
-		/// <example>
-		/// var originalDataFrame = new DataFrame(existingDataFrame);
-		/// var clonedDataFrame = new DataFrame(originalDataFrame);
-		/// </example>
-		public DataFrame(DataFrame dataFrame)
-		{
-			if (dataFrame == null)
-				throw new ArgumentNullException(nameof(dataFrame), "Argument 'dataFrame' cannot be null.");
-
-			// Clone values to protect internal state
-			this._values = new List<object>(dataFrame._values);
-
-			// Clone index to ensure immutability
-			this._index = new Index(dataFrame.Index.ToList());
-
-			// Clone columns to ensure immutability
-			this._columns = new List<string>(dataFrame.Columns);
-
-			// Clone column types (if applicable)
-			this._colsType = dataFrame._colsType != null
-				? (ColType[])dataFrame._colsType.Clone()
-				: null;
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the DataFrame class, organizing tabular data 
-		/// with named columns and automatically generated indexed rows.
-		/// </summary>
-		/// <param name="data">
-		/// An array of objects representing the flattened 2D data stored in row-major order.
-		/// </param>
-		/// <param name="columns">
-		/// A list of strings representing the column names of the data.
-		/// </param>
-		/// <exception cref="ArgumentException">
-		/// Thrown when:
-		/// - The data array is null or empty.
-		/// - The columns list is null or empty.
-		/// - The number of columns does not evenly divide the length of the data array.
-		/// </exception>
-		/// <remarks>
-		/// - Validates input data and columns to ensure consistency in dimensions.
-		/// - Automatically generates a default index for rows.
-		/// - Protects internal state by encapsulating data and columns in new List<T> objects.
-		/// </remarks>
-		/// <example>
-		/// // Example usage of the constructor:
-		/// var data = new object[] { 1, "A", 2, "B", 3, "C" };
-		/// var columns = new List<string> { "Column1", "Column2" };
-		/// var df = new DataFrame(data, columns);
-		/// </example>
-
-
-		public DataFrame(object[] data, IList<string> columns)
-		{
-			// Validate inputs using a dedicated validation method
-			ValidateData(data, columns);
-
-			// Calculate row count
-			int rows = data.Length / columns.Count;
-
-			// Initialize index
-			this._index = new Index(GenerateDefaultIndex(rows));
-
-			// Assign columns
-			this._columns = new List<string>(columns);
-
-			// Assign data
-			this._values = new List<object>(data);
-
-			EnsureColumnTypesInitialized();
-		}
 
 		/// <summary>
 		/// Initializes a new instance of the DataFrame class, organizing tabular data 
@@ -520,54 +391,151 @@ namespace Daany
 		/// var df = new DataFrame(data, index, columns, colTypes);
 		/// </example>
 		public DataFrame(List<object> data, List<object> index, List<string> columns, ColType[] colTypes)
-        {
-			ValidateDataAndIndex(data, index, columns);
-            this._index = new Index(index);
-            this._columns = columns;
-            this._values = data;
-            this._colsType = colTypes;
-        }
-
-		/// <summary>
-		/// Validates the consistency between data, index, and columns within the DataFrame.
-		/// Ensures that:
-		/// - The number of rows in the data matches the number of entries in the index.
-		/// - The number of columns in the data matches the provided column list.
-		/// </summary>
-		/// <param name="data">The data list representing the values in the DataFrame.</param>
-		/// <param name="index">The index list representing row identifiers in the DataFrame.</param>
-		/// <param name="columns">The column list representing column names in the DataFrame.</param>
-		/// <exception cref="ArgumentException">
-		/// Thrown if data, index, or columns are inconsistent.
-		/// </exception>
-		private void ValidateDataAndIndex(List<object> data, List<object> index, List<string> columns)
 		{
-			// Ensure data is not null or empty
-			if (data == null)
-				throw new ArgumentException("The data list cannot be null or empty.");
-
-			// Ensure index is not null or empty
-			if (index == null )
-				throw new ArgumentException("The index list cannot be null or empty.");
-
-			// Ensure columns are not null or empty
-			if (columns == null)
-				throw new ArgumentException("The columns list cannot be null or empty.");
-
-			// Validate the number of rows
-			int expectedRowCount = index.Count;
-			int actualRowCount = 0;
-
-			if(columns.Count > 0)
-				actualRowCount = data.Count / columns.Count;
-
-			if (expectedRowCount != actualRowCount)
-				throw new ArgumentException($"Mismatch between index and data rows: Expected {expectedRowCount} rows, but found {actualRowCount} rows in the data.");
-
+			InitializeDataFrame(data, new Index(index), columns, colTypes?? throw new ArgumentNullException(nameof(colTypes)));
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the DataFrame class, organizing tabular data 
+		/// with indexed rows, named columns, and corresponding data values.
+		/// </summary>
+		/// <param name="data">
+		/// A list of objects representing the flattened 2D data stored in row-major order.
+		/// </param>
+		/// <param name="index">
+		/// A list of objects representing row indices. These indices are used to uniquely 
+		/// identify each row in the data.
+		/// </param>
+		/// <param name="columns">
+		/// A list of strings representing the column names of the data.
+		/// </param>
+		/// <remarks>
+		/// - This constructor assumes that the data, index, columns, and column types 
+		/// are provided in full and consistent dimensions.
+		/// - Ensures that the internal representation of the DataFrame aligns with the 
+		/// provided inputs.
+		/// </remarks>
+		/// <example>
+		/// // Example usage of the constructor:
+		/// var data = new List<object> { 1, "A", 2, "B", 3, "C" };
+		/// var index = new List<object> { "Row1", "Row2", "Row3" };
+		/// var columns = new List<string> { "Column1", "Column2" };
+		/// var df = new DataFrame(data, index, columns);
+		/// </example>
+		public DataFrame(List<object> data, List<object> index, List<string> columns)
+		{
+			InitializeDataFrame(data, new Index(index), columns, columnsTypes(data, index.Count, columns.Count));
+		}
 
+		/// <summary>
+		/// Initializes a new instance of the DataFrame class by copying the internal state 
+		/// of an existing DataFrame instance.
+		/// </summary>
+		/// <param name="dataFrame">
+		/// The DataFrame instance to copy. Must not be null.
+		/// </param>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown when the provided DataFrame instance is null.
+		/// </exception>
+		/// <remarks>
+		/// - Creates a deep copy of the provided DataFrame instance.
+		/// - Ensures that the new DataFrame instance is independent of the original, 
+		/// preserving immutability of both objects.
+		/// </remarks>
+		/// <example>
+		/// var originalDataFrame = new DataFrame(existingDataFrame);
+		/// var clonedDataFrame = new DataFrame(originalDataFrame);
+		/// </example>
+		public DataFrame(DataFrame dataFrame)
+		{
+			if (dataFrame == null)
+				throw new ArgumentNullException(nameof(dataFrame), "Argument 'dataFrame' cannot be null.");
 
+			InitializeDataFrame(
+				new List<object>(dataFrame._values),
+				new Index(dataFrame.Index.ToList()),
+				new List<string>(dataFrame.Columns),
+				dataFrame.ColTypes.ToArray()
+			);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the DataFrame class, organizing tabular data 
+		/// with named columns and automatically generated indexed rows.
+		/// </summary>
+		/// <param name="data">
+		/// An array of objects representing the flattened 2D data stored in row-major order.
+		/// </param>
+		/// <param name="columns">
+		/// A list of strings representing the column names of the data.
+		/// </param>
+		/// <exception cref="ArgumentException">
+		/// Thrown when:
+		/// - The data array is null or empty.
+		/// - The columns list is null or empty.
+		/// - The number of columns does not evenly divide the length of the data array.
+		/// </exception>
+		/// <remarks>
+		/// - Validates input data and columns to ensure consistency in dimensions.
+		/// - Automatically generates a default index for rows.
+		/// - Protects internal state by encapsulating data and columns in new List<T> objects.
+		/// </remarks>
+		/// <example>
+		/// // Example usage of the constructor:
+		/// var data = new object[] { 1, "A", 2, "B", 3, "C" };
+		/// var columns = new List<string> { "Column1", "Column2" };
+		/// var df = new DataFrame(data, columns);
+		/// </example>
+
+		public DataFrame(object[] data, IList<string> columns)
+		{
+			ValidateData(data, columns);
+
+			int rowCount = data.Length / columns.Count;
+			
+			var colTypes = columnsTypes(new List<object>(data), rowCount, columns.Count);
+
+			InitializeDataFrame(new List<object>(data), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the DataFrame class, organizing tabular data 
+		/// with named columns and indexed rows.
+		/// </summary>
+		/// <param name="data">
+		/// A list of objects representing the flattened 2D data stored in row-major order.
+		/// </param>
+		/// <param name="columns">
+		/// A list of strings representing the column names of the data.
+		/// </param>
+		/// <exception cref="ArgumentException">
+		/// Thrown when:
+		/// - The data list is null or empty.
+		/// - The columns list is null or empty.
+		/// - The number of columns does not evenly divide the length of the data list.
+		/// </exception>
+		/// <remarks>
+		/// - Validates input data and columns to ensure consistency in dimensions and integrity.
+		/// - Automatically generates a default index for rows if no custom index is provided.
+		/// - Stores column names and data in internal structures to ensure immutability and maintainability.
+		/// - Converts data from flattened format into an indexed DataFrame structure.
+		/// </remarks>
+		/// <example>
+		/// // Example usage of the constructor:
+		/// var data = new List<object> { 1, "A", 2, "B", 3, "C" };
+		/// var columns = new List<string> { "Column1", "Column2" };
+		/// var df = new DataFrame(data, columns);
+		/// </example>
+		public DataFrame(List<object?> data, List<string> columns)
+		{
+			ValidateData(data, columns);
+
+			int rowCount = data.Count / columns.Count;
+
+			var colTypes = columnsTypes(new List<object>(data), rowCount, columns.Count);
+
+			InitializeDataFrame(new List<object>(data), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the DataFrame class, organizing tabular data 
@@ -580,7 +548,7 @@ namespace Daany
 		/// A list of strings representing the column names of the data.
 		/// </param>
 		/// <param name="colTypes">
-		/// An optional array of ColType enumerations representing the data types of the columns. 
+		/// An array of ColType enumerations representing the data types of the columns. 
 		/// If not provided, the column types will be null.
 		/// </param>
 		/// <exception cref="ArgumentException">
@@ -602,24 +570,15 @@ namespace Daany
 		/// var colTypes = new ColType[] { ColType.Int, ColType.String };
 		/// var df = new DataFrame(data, columns, colTypes);
 		/// </example>
-		public DataFrame(List<object> data, List<string> columns, ColType[]? colTypes = null)
+		public DataFrame(List<object?> data, List<string> columns, ColType[]? colTypes)
 		{
 			ValidateData(data, columns);
+			int rowCount = data.Count / columns.Count;
+			
+			if (colTypes != null && colTypes.Length != columns.Count)
+				throw new ArgumentException("The number of column types must match the number of columns.", nameof(colTypes));
 
-			// Calculate row count
-			int rows = data.Count / columns.Count;
-
-			// Initialize index
-			this._index = new Index(GenerateDefaultIndex(rows));
-
-			// Assign columns
-			this._columns = new List<string>(columns);
-
-			// Assign data
-			this._values = new List<object>(data);
-
-			// Assign column types (optional)
-			this._colsType = colTypes;
+			InitializeDataFrame(data.Cast<object>().ToList(), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
 		}
 
 
@@ -660,17 +619,159 @@ namespace Daany
 			ValidateData(data);
 
 			var firstColumnValues = data.Values.First();
-			this._index = index == null
+			var computedIndex = index == null
 				? new Index(Enumerable.Range(0, firstColumnValues.Count).Cast<object>().ToList())
 				: new Index(index.ToList());
 
-			this._columns = data.Keys.ToList();
+			var columns = data.Keys.ToList();
+			var values = Enumerable.Range(0, firstColumnValues.Count)
+				.SelectMany(row => data.Values.Select(column => ParseValue(column[row], null)))
+				.ToList();
 
-			this._values = Enumerable.Range(0, data.Values.First().Count) // Iterate through rows
-	            .SelectMany(row => data.Values.Select(column => ParseValue(column[row], null)))
-	            .ToList();
+			var colTypes = columnsTypes(values, computedIndex.Count, columns.Count);
 
-        }
+			InitializeDataFrame(values, computedIndex, columns, colTypes);
+		}
+
+		private void InitializeDataFrame(List<object> data, Index index, List<string> columns, ColType[] colTypes)
+		{
+			ValidateData(data, columns);
+
+			if (index == null || index.Count != data.Count/columns.Count)
+				throw new ArgumentException("Index cannot be null or empty.", nameof(index));
+
+			_columns = new List<string>(columns);
+			_index = new Index(index.ToList());
+			_values = new List<object>(data);
+
+			if (colTypes == null || colTypes.Length != _columns.Count)
+				throw new ArgumentException(nameof(colTypes));
+
+			_colTypes = new ColType[colTypes.Length];
+			Array.Copy(colTypes, _colTypes, colTypes.Length);
+		}
+
+		/// <summary>
+		/// Creates a new DataFrame from the specified columns, optionally renaming them.
+		/// </summary>
+		/// <param name="colNames">
+		/// A parameter array of tuples, where each tuple contains:
+		/// - <c>oldName</c>: The name of an existing column to include in the new DataFrame.
+		/// - <c>newName</c>: The new name for the column (optional). If not provided or null/empty,
+		/// the original name will be retained.
+		/// </param>
+		/// <returns>
+		/// A new DataFrame containing the specified columns with updated column names.
+		/// </returns>
+		/// <remarks>
+		/// - If <c>colNames</c> contains an <c>oldName</c> that does not exist in the current DataFrame,
+		/// this method will throw an exception.
+		/// - Columns in the new DataFrame are arranged in the same order as they appear in <c>colNames</c>.
+		/// </remarks>
+		/// <example>
+		/// // Example usage:
+		/// var newDf = originalDf.Create(("Column1", "NewColumn1"), ("Column2", ""));
+		/// // Creates a DataFrame with "Column1" renamed to "NewColumn1" and "Column2" unchanged.
+		/// </example>
+
+		public DataFrame Create(params (string oldName, string newName)[] colNames)
+		{
+			EnsureColumnTypesInitialized();
+
+			var dict = new Dictionary<string, List<object>>();
+
+			//define new name for columns
+			for (int i = 0; i < colNames.Length; i++)
+			{
+				//get th ecolumn
+				var colName = string.IsNullOrEmpty(colNames[i].newName) ? colNames[i].oldName : colNames[i].newName;
+				dict.Add(colName, this[colNames[i].oldName].ToList());
+			}
+			var newDf = new DataFrame(dict);
+			return newDf;
+		}
+
+		/// <summary>
+		/// Creates an empty DataFrame with the specified column names.
+		/// </summary>
+		/// <param name="columns">
+		/// A list of strings representing the names of the columns in the DataFrame.
+		/// </param>
+		/// <returns>
+		/// A new empty DataFrame with the specified column names.
+		/// </returns>
+		/// <exception cref="ArgumentException">
+		/// Thrown when <c>columns</c> is null or empty.
+		/// </exception>
+		/// <example>
+		/// // Example usage:
+		/// var columns = new List<string> { "Column1", "Column2", "Column3" };
+		/// var emptyDf = DataFrame.CreateEmpty(columns);
+		/// </example>
+		public static DataFrame CreateEmpty(List<string> columns)
+		{
+			// Validate input
+			if (columns == null || columns.Count == 0)
+				throw new ArgumentException("Columns cannot be null or empty.", nameof(columns));
+
+			// Create and initialize an empty DataFrame
+			var df = new DataFrame();
+			df._values = new List<object>();
+			df._index = new Index(new List<object>());
+			df._columns = new List<string>(columns);
+			return df;
+		}
+
+		private DataFrame CreateNewDataFrame(List<object> clippedValues)
+		{
+			// Create a new DataFrame with the same structure as the current one
+			var cols = Columns.ToList();
+			var types = ColTypes.ToArray();
+
+			//TODO: check if index should be clipped as well
+			var ind = _index.ToList();
+
+			return new DataFrame(clippedValues, ind, cols, types);
+		}
+
+
+		/// <summary>
+		/// Validates the consistency between data, index, and columns within the DataFrame.
+		/// Ensures that:
+		/// - The number of rows in the data matches the number of entries in the index.
+		/// - The number of columns in the data matches the provided column list.
+		/// </summary>
+		/// <param name="data">The data list representing the values in the DataFrame.</param>
+		/// <param name="index">The index list representing row identifiers in the DataFrame.</param>
+		/// <param name="columns">The column list representing column names in the DataFrame.</param>
+		/// <exception cref="ArgumentException">
+		/// Thrown if data, index, or columns are inconsistent.
+		/// </exception>
+		private void ValidateDataAndIndex(List<object> data, List<object> index, List<string> columns)
+		{
+			// Ensure data is not null or empty
+			if (data == null)
+				throw new ArgumentException("The data list cannot be null or empty.");
+
+			// Ensure index is not null or empty
+			if (index == null)
+				throw new ArgumentException("The index list cannot be null or empty.");
+
+			// Ensure columns are not null or empty
+			if (columns == null)
+				throw new ArgumentException("The columns list cannot be null or empty.");
+
+			// Validate the number of rows
+			int expectedRowCount = index.Count;
+			int actualRowCount = 0;
+
+			if (columns.Count > 0)
+				actualRowCount = data.Count / columns.Count;
+
+			if (expectedRowCount != actualRowCount)
+				throw new ArgumentException($"Mismatch between index and data rows: Expected {expectedRowCount} rows, but found {actualRowCount} rows in the data.");
+
+		}
 
 
 		private void ValidateData(object[] data, IList<string> columns)
@@ -711,83 +812,6 @@ namespace Daany
 
 		}
 
-		/// <summary>
-		/// Creates a new DataFrame from the specified columns, optionally renaming them.
-		/// </summary>
-		/// <param name="colNames">
-		/// A parameter array of tuples, where each tuple contains:
-		/// - <c>oldName</c>: The name of an existing column to include in the new DataFrame.
-		/// - <c>newName</c>: The new name for the column (optional). If not provided or null/empty,
-		/// the original name will be retained.
-		/// </param>
-		/// <returns>
-		/// A new DataFrame containing the specified columns with updated column names.
-		/// </returns>
-		/// <remarks>
-		/// - If <c>colNames</c> contains an <c>oldName</c> that does not exist in the current DataFrame,
-		/// this method will throw an exception.
-		/// - Columns in the new DataFrame are arranged in the same order as they appear in <c>colNames</c>.
-		/// </remarks>
-		/// <example>
-		/// // Example usage:
-		/// var newDf = originalDf.Create(("Column1", "NewColumn1"), ("Column2", ""));
-		/// // Creates a DataFrame with "Column1" renamed to "NewColumn1" and "Column2" unchanged.
-		/// </example>
-
-		public DataFrame Create(params (string oldName, string newName)[] colNames)
-        {
-            var oldCols = colNames.Select(x => x.oldName).ToArray();
-            var newDf = this[oldCols];
-            for (int i = 0; i < colNames.Length; i++)
-            {
-                var newName = colNames[i].oldName;
-                if (!string.IsNullOrEmpty(colNames[i].newName))
-                    newName = colNames[i].newName;
-               
-                newDf._columns[i] = newName;
-            }
-           
-            return newDf;
-        }
-		
-        /// <summary>
-		/// Creates an empty DataFrame with the specified column names.
-		/// </summary>
-		/// <param name="columns">
-		/// A list of strings representing the names of the columns in the DataFrame.
-		/// </param>
-		/// <returns>
-		/// A new empty DataFrame with the specified column names.
-		/// </returns>
-		/// <exception cref="ArgumentException">
-		/// Thrown when <c>columns</c> is null or empty.
-		/// </exception>
-		/// <example>
-		/// // Example usage:
-		/// var columns = new List<string> { "Column1", "Column2", "Column3" };
-		/// var emptyDf = DataFrame.CreateEmpty(columns);
-		/// </example>
-		public static DataFrame CreateEmpty(List<string> columns)
-		{
-			// Validate input
-			if (columns == null || columns.Count == 0)
-				throw new ArgumentException("Columns cannot be null or empty.", nameof(columns));
-
-			// Create and initialize an empty DataFrame
-			var df = new DataFrame();
-			df._values = new List<object>();
-			df._index = new Index(new List<object>());
-			df._columns = new List<string>(columns); // Protect internal state
-
-			return df;
-		}
-
-		private DataFrame CreateNewDataFrame(List<object> clippedValues)
-		{
-			var ind = _index.ToList();
-			var cols = Columns.ToList();
-			return new DataFrame(clippedValues, ind, cols, _colsType);
-		}
 
 		/// <summary>
 		/// Sets the data type for a specified column in the DataFrame.
@@ -827,13 +851,13 @@ namespace Daany
             EnsureColumnTypesInitialized();
 
 			// Set the column type
-			_colsType![index] = colType;
+			_colTypes![index] = colType;
 		}
 
 		private void EnsureColumnTypesInitialized()
 		{
-			if (_colsType == null || _colsType == Array.Empty<ColType>())
-				_colsType = columnsTypes();
+			if (_colTypes == null || _colTypes == Array.Empty<ColType>())
+				_colTypes = columnsTypes(_values, Index.Count, Columns.Count);
 		}
 
 		#endregion
@@ -903,8 +927,11 @@ namespace Daany
 			// Generate the updated column names by combining the existing names with the new ones.
 			var newColumnNames = Columns.Union(columnsToAdd.Keys).ToList();
 
+			//regenerate column types
+			var colTypes = columnsTypes(updatedValues, _index.Count, newColumnNames.Count);
+
 			// Return a new DataFrame with updated values, column names, and index.
-			return new DataFrame(updatedValues, this._index.ToList(), newColumnNames, null);
+			return new DataFrame(updatedValues, this._index.ToList(), newColumnNames, colTypes);
 		}
 
 
@@ -954,9 +981,9 @@ namespace Daany
 
 				// Use existing column names and types
 				var columns = this._columns.ToList();
-				var columnTypes = this._colsType != null && this._colsType != Array.Empty<ColType>()
-					? this._colsType.ToArray()
-					: this._colsType;
+				var columnTypes = this._colTypes != null && this._colTypes != Array.Empty<ColType>()
+					? this._colTypes.ToArray()
+					: this._colTypes;
 
 				// Create and return the new DataFrame
 				return new DataFrame(valuesToAppend, updatedIndex, columns, columnTypes!);
@@ -1181,7 +1208,7 @@ namespace Daany
 			// Add new columns to the DataFrame
 			this._columns.AddRange(colNames);
 			this._values = updatedValues;
-            this._colsType = columnsTypes();
+            this._colTypes = columnsTypes(_values, Index.Count, Columns.Count);
 			return true;
 		}
 
@@ -1258,6 +1285,11 @@ namespace Daany
 			this._columns.AddRange(colNames);
 			this._values = updatedValues;
 
+
+			//reset existing column types and regenerate new 
+			this._colTypes = columnsTypes(updatedValues, RowCount(), ColCount());
+			
+			
 			return true;
 		}
 
@@ -1304,7 +1336,7 @@ namespace Daany
 				if (aggs.ContainsKey(columnName))
 				{
 					var aggregation = aggs[columnName];
-					var value = calculateAggregation(this[columnName], aggregation, _colsType[i]);
+					var value = calculateAggregation(this[columnName], aggregation, _colTypes[i]);
 					aggregatedValues.Add(value);
 				}
 				else if (allColumns)
@@ -1358,7 +1390,7 @@ namespace Daany
 				{
 					foreach (var aggregation in aggs[columnName])
 					{
-						var value = calculateAggregation(this[columnName], aggregation, _colsType[Columns.IndexOf(columnName)]);
+						var value = calculateAggregation(this[columnName], aggregation, _colTypes[Columns.IndexOf(columnName)]);
 						aggregatedValues.Add(columnName, aggregation.GetEnumDescription(), value);
 					}
 				}
@@ -1842,11 +1874,11 @@ namespace Daany
 		/// </example>
 		public DataFrame Filter(string[] cols, object[] filterValues, FilterOperator[] fOpers)
 		{
-			if (_index.Count == 0)
-				return new DataFrame(Array.Empty<object>(), Columns.ToList());
-
 			// Validate input arguments
 			ValidateFilterArguments(cols, filterValues, fOpers);
+
+			if (_index.Count == 0)
+				return new DataFrame(Array.Empty<object>(), Columns.ToList());
 
 			// Get column indices
 			int[] columnIndices = getColumnIndex(cols);
@@ -1911,7 +1943,7 @@ namespace Daany
 
 			var filteredIndex = filteredRows.Select(rowIndex => _index[rowIndex]).ToList();
 
-			return new DataFrame(filteredValues, filteredIndex, Columns, _colsType!);
+			return new DataFrame(filteredValues, filteredIndex, Columns, _colTypes!);
 		}
 
 		/// <summary>
@@ -2181,7 +2213,7 @@ namespace Daany
             tot.AddRange(df2.Columns);
 
             //
-            (var totalColumns, var totalTypes) = mergeColumns(this._columns,this._colsType, df2._columns,df2._colsType, "rightDf");
+            (var totalColumns, var totalTypes) = mergeColumns(this._columns,this._colTypes, df2._columns,df2._colTypes, "rightDf");
             
             //create right lookup 
             var right = new List<ILookup<object, int>>();
@@ -2282,14 +2314,27 @@ namespace Daany
 			if (df2 == null)
 				throw new ArgumentException(nameof(df2));
 
+			//if left dataframe is empty just return it.
+			if (this.Values.Count == 0)
+				return this;
+
+			//if right dataframe is empty and joint type is left
+			if (jType == JoinType.Left && df2.Values.Count == 0)
+				return this;
+
+			//if right dataframe is empty and joint type is inner
+			if (jType == JoinType.Inner && df2.Values.Count == 0)
+				return df2;
+
+
 			// Initialize column types
 			EnsureColumnTypesInitialized();
 			df2.EnsureColumnTypesInitialized();
 
 			// Merge column names and types
 			var totalColumns = Columns.Concat(df2.Columns).ToList();
-			var totalTypes = (_colsType ?? Array.Empty<ColType>())
-				.Concat(df2._colsType ?? Array.Empty<ColType>()).ToList();
+			var totalTypes = (_colTypes ?? Array.Empty<ColType>())
+				.Concat(df2._colTypes ?? Array.Empty<ColType>()).ToList();
 
 			// Create a lookup for the right DataFrame
 			var rightIndexLookup = df2.Index
@@ -2401,8 +2446,8 @@ namespace Daany
 			//check type of columns
 			EnsureColumnTypesInitialized();
 			df2.EnsureColumnTypesInitialized();
-			var typ1 = this._colsType;
-			var typ2 = df2._colsType;
+			var typ1 = this._colTypes;
+			var typ2 = df2._colTypes;
 
 			//merge column names
 			(List<string> totCols, List<ColType> totType) = mergeColumns(this._columns, typ1!, df2._columns, typ2!, suffix);
@@ -2613,7 +2658,7 @@ namespace Daany
 				throw new ArgumentException("None of the specified columns exist in the DataFrame.");
 
 			// Delegate to the SortDataFrame class
-			var sorter = new SortDataFrame(_colsType!);
+			var sorter = new SortDataFrame(_colTypes!);
 			List<object> sortedValues;
 			List<object> sortedIndices;
 
@@ -2627,7 +2672,7 @@ namespace Daany
 			}
 
 			// Create a new sorted DataFrame
-			return new DataFrame(sortedValues, sortedIndices, Columns.ToList(), _colsType.ToArray());
+			return new DataFrame(sortedValues, sortedIndices, Columns.ToList(), _colTypes.ToArray());
 		}
 
 
@@ -2747,7 +2792,7 @@ namespace Daany
 			}
 
 			// Construct the new DataFrame
-			return new DataFrame(newValues, newIndices, Columns.ToList(), _colsType);
+			return new DataFrame(newValues, newIndices, Columns.ToList(), _colTypes);
 		}
 
 		/// <summary>
@@ -2829,7 +2874,7 @@ namespace Daany
 			}
 
 			// Construct the new DataFrame
-			return new DataFrame(newValues, newIndices, Columns.ToList(), _colsType);
+			return new DataFrame(newValues, newIndices, Columns.ToList(), _colTypes);
 		}
 
 		/// <summary>
@@ -3292,10 +3337,10 @@ namespace Daany
 			}
 
 			// Ensure column types are initialized
-			if (_colsType == null || _colsType.Length == 0)
+			if (_colTypes == null || _colTypes.Length == 0)
 				EnsureColumnTypesInitialized();
 
-			return new DataFrame(selectedValues, selectedIndices, _columns.ToList(), _colsType);
+			return new DataFrame(selectedValues, selectedIndices, _columns.ToList(), _colTypes);
 		}
 
 		/// <summary>
@@ -3414,7 +3459,7 @@ namespace Daany
 				}
 			}
 
-			return new DataFrame(filteredValues, filteredIndices, this.Columns.ToList(), this._colsType);
+			return new DataFrame(filteredValues, filteredIndices, this.Columns.ToList(), this._colTypes);
 		}
 
 		/// <summary>
@@ -3447,7 +3492,7 @@ namespace Daany
 				selectedIndices.Add(_index[i]);
 			}
 
-			return new DataFrame(selectedValues, selectedIndices, _columns, _colsType);
+			return new DataFrame(selectedValues, selectedIndices, _columns, _colTypes);
 		}
 
 		/// <summary>
@@ -3476,7 +3521,7 @@ namespace Daany
 				selectedIndices.Add(_index[i]);
 			}
 
-			return new DataFrame(selectedValues, selectedIndices, _columns, _colsType);
+			return new DataFrame(selectedValues, selectedIndices, _columns, _colTypes);
 		}
 
 		/// <summary>
@@ -3512,7 +3557,7 @@ namespace Daany
 				selectedValues.AddRange(this[i]);
 			}
 
-			return new DataFrame(selectedValues, selectedIndices, _columns, _colsType);
+			return new DataFrame(selectedValues, selectedIndices, _columns, _colTypes);
 		}
 
 
@@ -3626,25 +3671,30 @@ namespace Daany
 				EnsureColumnTypesInitialized();
 
 				//get indexes of the columns
-				var idxs = getColumnIndex(cols);
+				var colInd = getColumnIndex(cols);
 
-				//reserve for space
+				//reserve space
 				var lst = new object[cols.Length * _index.Count];
 				var counter = 0;
 				var newCounter = 0;
 				for (int i = 0; i < _index.Count; i++)
 				{
-					for (int j = 0; j < idxs.Length; j++)
+					for (int j = 0; j < colInd.Length; j++)
 					{
-						lst[newCounter + j] = this._values[counter + idxs[j]];
+						lst[newCounter + j] = this._values[counter + colInd[j]];
 					}
 					//increase indexes
-					newCounter += idxs.Length;
+					newCounter += colInd.Length;
 					counter += _columns.Count;
 				}
 
+				var newColTypes = new ColType[cols.Length];
+				for (int i=0; i< cols.Count(); i++)
+				{
+					newColTypes[i] = ColTypes[colInd[i]];
+				}
 
-				return new DataFrame(lst.ToList(), Index.ToList(), cols.ToList(), idxs.Select(idx => ColTypes[idx]).ToArray());
+				return new DataFrame(lst.ToList(), Index.ToList(), cols.ToList(), newColTypes);
 			}
 		}
 
@@ -3875,7 +3925,7 @@ namespace Daany
             var newType = ser.ColType;
 			EnsureColumnTypesInitialized();
 
-            var newcolTypes = this._colsType!.ToList();
+            var newcolTypes = this._colTypes!.ToList();
             newcolTypes.Add(newType);
             //
             var index = this._index.ToList();
@@ -4250,7 +4300,7 @@ namespace Daany
         private DataFrame reverse()
         {
             var cols = this.Columns;
-            var types = this._colsType;
+            var types = this._colTypes;
 
             //
             var lst = new List<object>();
@@ -4282,7 +4332,7 @@ namespace Daany
                 ind.Add(this._index[selected[i]]);
             }
             //
-            var df = new DataFrame(val, ind, this._columns.ToList(), this._colsType);
+            var df = new DataFrame(val, ind, this._columns.ToList(), this._colTypes);
             return df;
         }
 
@@ -4315,7 +4365,7 @@ namespace Daany
 
                 //add to group
                 if (!Group.ContainsKey(groupValue))
-                    Group.Add(groupValue, new DataFrame(row, new List<object>(){_index[i]}, this.Columns, this._colsType));
+                    Group.Add(groupValue, new DataFrame(row, new List<object>(){_index[i]}, this.Columns, this._colTypes));
                 else
                     Group[groupValue].AddRow(row, _index[i]);
             }
@@ -4331,7 +4381,7 @@ namespace Daany
                 EnsureColumnTypesInitialized();
 
 				 var fOper = fOpers[colIndex];
-                if (this._colsType![indCols[colIndex]] == ColType.I2)
+                if (this._colTypes![indCols[colIndex]] == ColType.I2)
                 {
                     var val1 = Convert.ToBoolean(rowValues[colIndex]);
                     var val2 = Convert.ToBoolean(filteValues[colIndex]);
@@ -4340,8 +4390,8 @@ namespace Daany
                     if (val1 != val2)
                         return false;
                 }
-                if (this._colsType[indCols[colIndex]] == ColType.I32 || this._colsType[indCols[colIndex]] == ColType.I64
-                    || this._colsType[indCols[colIndex]] == ColType.F32 || this._colsType[indCols[colIndex]] == ColType.DD)
+                if (this._colTypes[indCols[colIndex]] == ColType.I32 || this._colTypes[indCols[colIndex]] == ColType.I64
+                    || this._colTypes[indCols[colIndex]] == ColType.F32 || this._colTypes[indCols[colIndex]] == ColType.DD)
                 {
                     var val1 = Convert.ToDouble(rowValues[colIndex]);
                     var val2 = Convert.ToDouble(filteValues[colIndex]);
@@ -4350,7 +4400,7 @@ namespace Daany
                     if (!applyOperator(val1, val2, fOper))
                         return false;
                 }
-                else if (this._colsType[indCols[colIndex]] == ColType.STR || this._colsType[indCols[colIndex]] == ColType.IN)
+                else if (this._colTypes[indCols[colIndex]] == ColType.STR || this._colTypes[indCols[colIndex]] == ColType.IN)
                 {
                     var val1 = rowValues[colIndex].ToString();
                     var val2 = filteValues[colIndex].ToString();
@@ -4359,7 +4409,7 @@ namespace Daany
                         return false;
 
                 }
-                else if (this._colsType[indCols[colIndex]] == ColType.DT)
+                else if (this._colTypes[indCols[colIndex]] == ColType.DT)
                 {
                     var val1 = Convert.ToDateTime(rowValues[colIndex]);
                     var val2 = Convert.ToDateTime(filteValues[colIndex]);
@@ -4467,64 +4517,6 @@ namespace Daany
             {
                 throw new Exception($"Column '{colName}' already exists in the data frame.");
             }
-        }
-
-		/// <summary>
-		/// Determines the data type (ColType) for each column in the DataFrame by inspecting the first non-missing value.
-		/// If no non-missing value exists, assigns a default type of ColType.STR.
-		/// </summary>
-		/// <returns>An array of ColType representing the type of each column.</returns>
-		private ColType[] columnsTypes()
-		{
-			int columnCount = ColCount();
-			var types = new ColType[columnCount];
-
-			// Iterate through columns to determine their types
-			for (int colIndex = 0; colIndex < columnCount; colIndex++)
-			{
-				// Find the first non-missing value in the current column
-				object firstNonMissingValue = null!;
-				for (int rowIndex = 0; rowIndex < _index.Count; rowIndex++)
-				{
-					int valueIndex = rowIndex * columnCount + colIndex; // Calculate the index of the value in the flat array
-					if (_values[valueIndex] != DataFrame.NAN) // Check for non-missing value
-					{
-						firstNonMissingValue = _values[valueIndex];
-						break; // Stop once the first non-missing value is found
-					}
-				}
-
-				// Determine the column type or assign default type
-				types[colIndex] = firstNonMissingValue != null
-					? GetValueType(firstNonMissingValue) // Resolve type
-					: ColType.STR; // Default type
-			}
-
-			return types;
-		}
-		
-
-		internal static ColType GetValueType(object value)
-        {
-            if(value == null)
-                throw new ArgumentNullException("The value cannot be null.");
-
-            if (value.GetType() == typeof(bool))
-                return ColType.I2;
-            else if (value.GetType() == typeof(int))
-                return ColType.I32;
-            else if (value.GetType() == typeof(long))
-                return ColType.I64;
-            else if (value.GetType() == typeof(float))
-                return ColType.F32;
-            else if (value.GetType() == typeof(double))
-                return ColType.DD;
-            else if (value.GetType() == typeof(string))
-                return ColType.STR;
-            else if (value.GetType() == typeof(DateTime))
-                return ColType.DT;
-            else
-                throw new Exception("Unknown column type");
         }
 
         private int calculateIndex(string col, int row)

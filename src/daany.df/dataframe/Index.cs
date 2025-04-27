@@ -10,7 +10,7 @@ namespace Daany
         public Index(List<object> ind, string name="index")
         {
             if (ind == null)
-                throw new Exception("the list object cannot be null");
+                throw new ArgumentNullException("the list object cannot be null");
             //
             _index = new List<object>(ind);
             Name = name;

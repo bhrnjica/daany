@@ -41,14 +41,14 @@ namespace Daany.Test.App
         //[STAThread]
         static void Main()
         {
-			var config = ManualConfig.Create(DefaultConfig.Instance)
-					 .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance));
+            var config = ManualConfig.Create(DefaultConfig.Instance)
+                     .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance));
 
-			var summary = BenchmarkRunner.Run<CsvBenchmark>(config);
-			Console.WriteLine(summary);
+            var summary = BenchmarkRunner.Run<CsvBenchmark>(config);
+            Console.WriteLine(summary);
 
-			//Rust_Binding_Tests.Run();
-			return;
+            //Rust_Binding_Tests.Run();
+            return;
 
 			//  ARIMATest.ARIMA_Test01();
 

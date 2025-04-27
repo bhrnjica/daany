@@ -15,8 +15,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var dataFrame = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
-				new List<string> { "Column1", "Column2" },
-				null
+				new List<string> { "Column1", "Column2" }
 			);
 
 			// Act
@@ -32,8 +31,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var dataFrame = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
-				new List<string> { "Column1", "Column2" },
-				null
+				new List<string> { "Column1", "Column2" }
 			);
 
 			// Act & Assert
@@ -49,8 +47,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var dataFrame = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
-				new List<string> { "Column1", "Column2" },
-				null
+				new List<string> { "Column1", "Column2" }
 			);
 
 			// Act & Assert
@@ -63,8 +60,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var dataFrame = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
-				new List<string> { "Column1", "Column2" },
-				null
+				new List<string> { "Column1", "Column2" }
 			);
 
 			// Act

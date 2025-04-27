@@ -43,8 +43,8 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, 2, 3, 4 },//dataframe values
 				new List<object> { 0, 1},//index
-				new List<string> { "Col1", "Col2" },//columns
-				null);
+				new List<string> { "Col1", "Col2" }//columns
+				);
 
 			var aggs = new Dictionary<string, Aggregation>
 	            {
@@ -68,8 +68,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, 2, 3, 4 },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() => df.Aggragate(null));
@@ -83,8 +82,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, 2, 3, 4 },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			var aggs = new Dictionary<string, Aggregation[]>
 	        {

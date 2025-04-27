@@ -25,14 +25,12 @@ namespace Unit.Test.DF
 			var df1 = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			var df2 = new DataFrame(
 				new List<object> { 3, "C", 4, "D" },
 				new List<object> { 2, 3 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act
 			var appendedDf = df1.Append(df2, true);
@@ -49,14 +47,12 @@ namespace Unit.Test.DF
 			var df1 = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			var df2 = new DataFrame(
 				new List<object> { 3, 4 },
 				new List<object> { 0, 1 },
-				new List<string> { "Col3" },
-				null);
+				new List<string> { "Col3" });
 
 			// Act
 			var appendedDf = df1.Append(df2, false);
@@ -73,14 +69,12 @@ namespace Unit.Test.DF
 			var df1 = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			var df2 = new DataFrame(
 				new List<object> { 3, "C" },
 				new List<object> { 2,3 },
-				new List<string> { "Col1" }, // Only 1 column.
-				null);
+				new List<string> { "Col1" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() => df1.Append(df2, true));
@@ -93,14 +87,12 @@ namespace Unit.Test.DF
 			var df1 = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			var df2 = new DataFrame(
 				new List<object> { 3, "C", 4, "D", 5, "E" },
 				new List<object> { 0, 1, 2 },
-				new List<string> { "Col3", "Col4" },
-				null);
+				new List<string> { "Col3", "Col4" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() => df1.Append(df2, false));
@@ -249,8 +241,7 @@ namespace Unit.Test.DF
 			var dataFrame = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			var invalidColumns = new Dictionary<string, List<object>>
 	        {
@@ -404,7 +395,7 @@ namespace Unit.Test.DF
 		public void InsertColumn_ShouldThrowArgumentException()
 		{
 			// Arrange
-			var df = new DataFrame(new List<object>(), new List<object>(), new List<string>(), new ColType[0]);
+			var df = new DataFrame(new List<object>(), new List<object>(), new() {" " }, new ColType[1] { ColType.STR});
 			var newColValues = new List<object> { 1, 2 };
 
 			// Act & Assert
@@ -523,8 +514,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act
 			var success = df.AddCalculatedColumn("NewCol", (row, index) => row["Col1"].ToString() + row["Col2"].ToString());
@@ -543,8 +533,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() =>
@@ -558,8 +547,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() =>
@@ -573,8 +561,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act
 			var success = df.AddCalculatedColumn("NewCol", (row, index) => row[0].ToString() + row[1].ToString());
@@ -594,8 +581,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentNullException>(() =>
@@ -609,8 +595,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act
 			var success = df.AddCalculatedColumns(
@@ -631,8 +616,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() =>
@@ -648,8 +632,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act
 			var success = df.AddCalculatedColumns(
@@ -670,8 +653,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() =>
@@ -687,8 +669,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() => df.AddCalculatedColumns(

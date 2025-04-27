@@ -20,7 +20,7 @@ namespace Unit.Test.DF
             var columns = new List<string>() { "ID", "City", "Zip Code", "State","IsHome", "Values", "Date" };
 
             //create data frame with 3 rows and 7 columns
-            var df = new DataFrame(lst,columns, null);
+            var df = new DataFrame(lst,columns);
 
             //check the size of the data frame
             Assert.Equal((3,7), df.Shape);
@@ -41,8 +41,8 @@ namespace Unit.Test.DF
             var columns = new List<string>() { "ID", "City", "Zip Code", "State", "IsHome", "Values", "Date" };
 
             //create data frame with 3 rows and 7 columns
-            var df = new DataFrame(lst, columns, null);
-           var sd =  df.Filter((row) => Convert.ToInt32(row["ID"]) >= 2);
+            var df = new DataFrame(lst, columns);
+            var sd =  df.Filter((row) => Convert.ToInt32(row["ID"]) >= 2);
             //check the size of the data frame
             Assert.Equal((2, 7), sd.Shape);
             var sd1 = df.Filter((row) => Convert.ToString(row["City"]) == "Sarajevo");
@@ -63,7 +63,7 @@ namespace Unit.Test.DF
             var columns = new List<string>() { "ID", "City", "Zip Code", "State", "IsHome", "Values", "Date" };
 
             //create data frame with 3 rows and 7 columns
-            var df = new DataFrame(lst, columns, null);
+            var df = new DataFrame(lst, columns);
 
             //set Index
             var newDf = df.SetIndex("City");
@@ -90,7 +90,7 @@ namespace Unit.Test.DF
             var columns = new List<string>() { "ID", "City", "Zip Code", "State", "IsHome", "Values", "Date" };
 
             //create data frame with 3 rows and 7 columns
-            var df = new DataFrame(lst, columns, null);
+            var df = new DataFrame(lst, columns);
 
             //set Index
             var newDf = df.SetIndex("City");

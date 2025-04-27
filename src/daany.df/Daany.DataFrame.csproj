@@ -47,6 +47,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="NReco.Csv" Version="1.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
 	</ItemGroup>
 </Project>

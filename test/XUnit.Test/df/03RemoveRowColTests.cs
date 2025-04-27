@@ -204,8 +204,7 @@ namespace Unit.Test.DF
 			var dataFrame = new DataFrame(
 				new List<object> { 1, "A", 2, "B" },
 				new List<object> { 0, 1 },
-				new List<string> { "Col1", "Col2" },
-				null);
+				new List<string> { "Col1", "Col2" });
 
 			var invalidRow = new List<object> { 3, "B", 4 }; // Only 2 values instead of 3.
 

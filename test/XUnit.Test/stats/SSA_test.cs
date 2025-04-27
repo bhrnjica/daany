@@ -456,12 +456,12 @@ namespace Unit.Test.DF
             }
 
 
-                //PlotMatrix(em).Show();
-                ////
-                //var plt = new List<XPlot.Plotly.PlotlyChart>();
-                //foreach (var m in ssa.EM)
-                //    plt.Add(PlotMatrix(m.Value));
-                //Chart.ShowAll(plt);
+            //PlotMatrix(em).Show();
+            ////
+            //var plt = new List<XPlot.Plotly.PlotlyChart>();
+            //foreach (var m in ssa.EM)
+            //    plt.Add(PlotMatrix(m.Value));
+            //Chart.ShowAll(plt);
 
 
             ///test correlations
@@ -471,7 +471,7 @@ namespace Unit.Test.DF
             {
                 for (int j = 0; j < w.GetLength(0); j++)
                 {
-                    Assert.Equal(df[i, j], Convert.ToSingle(w[i, j]));
+                    Assert.Equal(df[i, j], w[i, j]);
                 }
             }
         }

@@ -28,7 +28,7 @@ namespace Daany
             }
 
             //
-            return new DataFrame(values, ind, cols, null);
+            return new DataFrame(values, ind, cols);
         }
 
         private static List<string> generateCols(List<string> columns, int pastSteps, int futureSteps)
@@ -59,12 +59,12 @@ namespace Daany
             return cols;
         }
 
-        private static Index generateIndex(Index ind, int pastSteps, int futureSteps)
+        private static List<object> generateIndex(Index ind, int pastSteps, int futureSteps)
         {
             int rows = ind.Count-pastSteps;
             var val = ind.Skip(pastSteps).Take(rows - futureSteps + 1).ToList();
             var newIndex = new Index(val, ind.Name);
-            return newIndex;
+            return val;
         }
 
 

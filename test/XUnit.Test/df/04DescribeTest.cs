@@ -87,8 +87,7 @@ namespace Unit.Test.DF
 			var df = new DataFrame(
 				new List<object>(), // No values
 				new List<object>(), // No rows
-				new List<string>(), // No columns
-				new ColType[] { });  // No column types
+				["col"]);  // No column types
 
 			// Act & Assert
 			var exception = Assert.Throws<ArgumentException>(() => df.Describe());

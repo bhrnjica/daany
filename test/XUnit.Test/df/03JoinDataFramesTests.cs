@@ -244,7 +244,7 @@ namespace Unit.Test.DF
 		public void Merge_ShouldThrowArgumentExcaptionWithEmptyDataFrame()
 		{
 			// Arrange
-			var leftDf = new DataFrame(new List<object>(), new List<object>(), new List<string>(), new ColType[0]);
+			var leftDf = new DataFrame(new List<object>(), new List<object>(), new() {" " }, new ColType[1] { ColType.STR });
 			var rightDf = CreateRightDataFrame();
 
 			// Act & Assert
@@ -299,8 +299,9 @@ namespace Unit.Test.DF
 		[Fact]
 		public void Join_ShouldReturnEmptyDataFrame_WhenLeftDataFrameIsEmpty()
 		{
-			// Arrange
-			var leftDf = new DataFrame(new List<object>(), new List<object>(), new List<string>(), new ColType[0]);
+            // Arrange
+            var emptyCol = " ";
+			var leftDf = new DataFrame(new List<object>(), new List<object>(), new() {emptyCol}, new ColType[1] { ColType.STR});
 			var rightDf = CreateOneColumnRightDataFrame();
 
 			// Act
@@ -309,8 +310,44 @@ namespace Unit.Test.DF
 			// Assert
 			Assert.Empty(result.Values);
 			Assert.Empty(result.Index);
+			Assert.Equal(new List<string> { emptyCol }, result.Columns);
+		}
+
+		[Fact]
+		public void Join_ShouldReturnLeftDataFrame_WhenRightDataFrameIsEmpty()
+		{
+			// Arrange
+			var emptyCol = " ";
+			var rightDf = new DataFrame(new List<object>(), new List<object>(), new() { emptyCol }, new ColType[1] { ColType.STR });
+			var leftDf = CreateOneColumnRightDataFrame();
+
+			// Act
+			var result = leftDf.Join(rightDf, JoinType.Left);
+
+			// Assert
+			Assert.Equal(new List<object> { "A", "B", "C" }, result.Values);
+			Assert.Equal(result.Index.Count, 3);
 			Assert.Equal(new List<string> { "col2" }, result.Columns);
 		}
+
+		[Fact]
+		public void Join_ShouldReturnLeftDataFrame_WhenRightDataFrameIsEmpty_WithJointype_Inner()
+		{
+			// Arrange
+			var emptyCol = " ";
+			var rightDf = new DataFrame(new List<object>(), new List<object>(), new() { emptyCol }, new ColType[1] { ColType.STR });
+			var leftDf = CreateOneColumnRightDataFrame();
+
+			// Act
+			var result = leftDf.Join(rightDf, JoinType.Inner);
+
+			// Assert
+			Assert.Empty(result.Values);
+			Assert.Empty(result.Index);
+			Assert.Equal(new List<string> { emptyCol }, result.Columns);
+		}
+
+
 
 		[Fact]
         public void JoinTwoDataFrameByIndex_Test1()

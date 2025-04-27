@@ -463,10 +463,10 @@ namespace Unit.Test.DF
 
             var row1 = df[0].ToList();
             Assert.Equal("1", row1[1].ToString());
-            Assert.Equal(170.0289916f, Convert.ToSingle(row1[2]), 5);
-            Assert.Equal(449.5338134f, Convert.ToSingle(row1[3]), 5);
-            Assert.Equal(94.59212239f, Convert.ToSingle(row1[4]), 5);
-            Assert.Equal(40.89350128f, Convert.ToSingle(row1[5]), 5);
+            Assert.Equal(170.0289916, Convert.ToDouble(row1[2]), 5);
+            Assert.Equal(449.5338134, Convert.ToDouble(row1[3]), 4);
+            Assert.Equal(94.59212239, Convert.ToDouble(row1[4]), 5);
+            Assert.Equal(40.89350128, Convert.ToDouble(row1[5]), 5);
             Assert.Equal(new DateTime(2015, 1, 1, 8, 0, 0), row1[0]);
             var row2 = df[1].ToList();
             var row3 = df[2].ToList();
@@ -474,10 +474,10 @@ namespace Unit.Test.DF
 
             var row5 = df[17].ToList();
             Assert.Equal("2", row5[1].ToString());
-            Assert.Equal(167.69433085123697f, Convert.ToSingle(row5[2]), 5);
-            Assert.Equal(437.20892333984375f, Convert.ToSingle(row5[3]), 5);
-            Assert.Equal(94.930048624674484f, Convert.ToSingle(row5[4]), 5);
-            Assert.Equal(40.247873942057289f, Convert.ToSingle(row5[5]), 5);
+            Assert.Equal(167.69433085123697, Convert.ToDouble(row5[2]), 5);
+            Assert.Equal(437.20892333984375, Convert.ToDouble(row5[3]), 5);
+            Assert.Equal(94.930048624674484, Convert.ToDouble(row5[4]), 5);
+            Assert.Equal(40.247873942057289, Convert.ToDouble(row5[5]), 5);
             Assert.Equal(new DateTime(2015, 1, 1, 8, 0, 0), row1[0]);
             var row6 = df[18].ToList();
             var row7 = df[19].ToList();

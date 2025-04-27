@@ -264,16 +264,19 @@ namespace Unit.Test.DF
 		}
 
 		[Fact]
-		public void Filter_ShouldShouldThrowArgumentException()
+		public void Filter_ShouldReturnEmptyDataFrame()
 		{
 			// Arrange
+			var emptyCol = " ";
 			var df = new DataFrame(
 				new List<object>(),
 				new List<object>(),
-				new List<string>(),
-				new ColType[0]);
+				new() { emptyCol },
+				new ColType[1] { ColType .STR});
 
-			var exception = Assert.Throws<ArgumentException>(() => df.Filter("col1", 1, FilterOperator.Equal));
+			var dff = df.Filter(emptyCol, 1, FilterOperator.Equal);
+
+			Assert.True(dff.RowCount()== 0);
 
 		}
 

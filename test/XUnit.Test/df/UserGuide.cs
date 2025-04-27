@@ -24,7 +24,7 @@ namespace Unit.Test.DF
             var columns = new List<string>() { "ID", "City", "Zip Code", "State","IsHome", "Values", "Date" };
 
             //create data frame with 3 rows and 7 columns
-            var df = new DataFrame(lst, columns, null);
+            var df = new DataFrame(lst, columns);
 
             //check the size of the data frame
             Assert.Equal(3, df.RowCount());
@@ -146,18 +146,15 @@ namespace Unit.Test.DF
         }
 
         [Fact]
-        public void CreateDataFrameFromExistingOne1()
+        public void CreateDataFrameFromExistingOne_WithDuplicatedColumn_ShouldTrowException()
         {
             //create data frame with 3 rows and 7 columns
             var df = DataFrame.FromCsv($"{rootfolder}/simple_data_frame.txt", sep: ',', names: null, dformat: "MM/dd/yyyy");
 
-            //now create a new data frame with only three columns
-            var newDf = df["City", "Zip Code", "State", "State"];
-
-            //check the size of the data frame
-            Assert.Equal(3, newDf.RowCount());
-            Assert.Equal(new string[] { "City", "Zip Code", "State", "State" }, newDf.Columns);
-            Assert.Equal(4, newDf.ColCount());
+			//you cannot create a new data frame with duplicated column names
+			// Act & Assert
+			Assert.Throws<ArgumentException>(() => df["City", "Zip Code", "State", "State"]);
+			
         }
 
         [Fact]
@@ -218,7 +215,7 @@ namespace Unit.Test.DF
             //check some data from the second row
             Assert.Equal("Seattle", row2["City"]);
             Assert.Equal("USA", row2["State"]);
-            Assert.Equal(3.21f, row2["Values"]);
+            Assert.Equal(3.21, row2["Values"]);
         }
 
         [Fact]
@@ -234,7 +231,7 @@ namespace Unit.Test.DF
             //check some data from the second row
             Assert.Equal("Sarajevo", row2[1]);
             Assert.Equal("BiH", row2[3]);
-            Assert.Equal(3.14f, row2[5]);
+            Assert.Equal(3.14, row2[5]);
         }
 
         [Fact]

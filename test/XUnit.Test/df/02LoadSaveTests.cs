@@ -93,7 +93,7 @@ namespace Unit.Test.DF
             //row test
             var r100 = df[100].ToList();
             //
-            Assert.Equal(new List<object> { 6.3f, 3.3f, 6f, 2.5f, "Iris-virginica" }, r100);
+            Assert.Equal(new List<object> { 6.3, 3.3, 6.0, 2.5, "Iris-virginica" }, r100);
 
         }
 
@@ -148,30 +148,41 @@ namespace Unit.Test.DF
             Assert.True(retVal);
         }
 
-        //[Fact(Skip = "SSL certificcate")]
-        [Fact]
+
+		[Fact]
+		public void Read_from_CSV_ColumnTypes_resolution()
+		{
+			string saveDfPath = $"testdata/savedcsv_{DateTime.Now.Ticks}.csv";
+
+			string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+			var nms = new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" };
+			var colTy = new ColType[] { ColType.F32, ColType.F32, ColType.F32, ColType.F32, ColType.STR };
+			var df = DataFrame.FromWeb(url, sep: ',', names: nms, colTypes: colTy); //
+																					//row test
+			var retVal = DataFrame.ToCsv(saveDfPath, df);
+			var dfsaved = DataFrame.FromCsv(saveDfPath, colTypes: colTy);
+			File.Delete(saveDfPath);
+			for (int i = 0; i < df.Values.Count; i++)
+				Assert.Equal(dfsaved.Values[i], df.Values[i]);
+			Assert.True(retVal);
+		}
+
+
+		[Fact]
         public async Task SaveToCSV_TestWithMissingValues()
         {
 
-            string saveDfPath = $"testdata/savedcsv_{DateTime.Now.Ticks}.csv";
+			string filePath = $"testdata/sample_data_with_missing_values.txt";
+			char separator = ',';
+			string dateFormat = "yyyy-MM-dd HH:mm:ss.fff"; // Ensure milliseconds are included
+			var missingValue = new char[1] { '*' };
+			bool hasHeader = true;
 
-            string url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
-            var nms = new string[] { "sepal_length", "sepal_width", "petal_length", "petal_width", "flower_type" };
-            var colTy = new ColType[] { ColType.F32, ColType.F32, ColType.F32, ColType.F32, ColType.STR };
-            var df = await DataFrame.FromWebAsync(url, sep: ',', names: nms, colTypes: colTy); //
 
-            df["sepal_length", 10] = DataFrame.NAN;
-            df["sepal_width", 11] = DataFrame.NAN;
-            df["petal_length", 12] = DataFrame.NAN;
-            df["petal_width", 13] = DataFrame.NAN;
-            df["flower_type", 14] = DataFrame.NAN;
-            //row test
-            var retVal = DataFrame.ToCsv(saveDfPath, df);
-            var dfsaved = DataFrame.FromCsv(saveDfPath, colTypes: colTy);
-            File.Delete(saveDfPath);
-            for (int i = 0; i < df.Values.Count; i++)
-                Assert.Equal(dfsaved.Values[i], df.Values[i]);
-            Assert.True(retVal);
-        }
+			var df = DataFrame.FromCsv(filePath, separator, null, dateFormat, hasHeader, null, missingValue, -1, 0);
+
+            //check column types
+
+		}
     }
 }

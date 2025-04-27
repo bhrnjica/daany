@@ -96,7 +96,7 @@ namespace Unit.Test.DF
 		public void Constructor_FromExistingDataFrame_ShouldThrowForNullInput()
 		{
 			// Act & Assert
-			Assert.Throws<ArgumentNullException>(() => new DataFrame(null,null,null));
+			Assert.Throws<ArgumentNullException>(() => new DataFrame(null,null, (List<string>)null));
 		}
 
 		// Test for: internal DataFrame(List<object> data, Index index, List<string> cols, ColType[] colsType)
@@ -159,10 +159,10 @@ namespace Unit.Test.DF
 		{
 			// Arrange
 			var aggValues = new TwoKeysDictionary<string, object, object>
-		{
-			{ "Column1", "Row1", 1 },
-			{ "Column2", "Row2", "B" } // Missing "Row1" for Column2
-        };
+		    {
+			    { "Column1", "Row1", 1 },
+			    { "Column2", "Row2", "B" } // Missing "Row1" for Column2
+            };
 
 			// Act
 			var dataFrame = new DataFrame(aggValues);
@@ -391,9 +391,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var originalDf = new DataFrame(
 				new List<object> { 1, "A", 2, "B", 3, "C" },
-				new List<string> { "Column1", "Column2" },
-				null
-			);
+				new List<string> { "Column1", "Column2" });
 
 			// Act
 			var newDf = originalDf.Create(("Column1", "NewColumn1"), ("Column2", "NewColumn2"));
@@ -409,9 +407,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var originalDf = new DataFrame(
 				new List<object> { 1, "A", 2, "B", 3, "C" },
-				new List<string> { "Column1", "Column2" },
-				null
-			);
+				new List<string> { "Column1", "Column2" });
 
 			// Act
 			var newDf = originalDf.Create(("Column1", ""), ("Column2", null));
@@ -427,9 +423,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var originalDf = new DataFrame(
 				new List<object> { 1, "A", 2, "B", 3, "C" },
-				new List<string> { "Column1", "Column2" },
-				null
-			);
+				new List<string> { "Column1", "Column2" });
 
 			// Act & Assert
 			Assert.Throws<ArgumentException>(() => originalDf.Create(("NonExistentColumn", "NewColumn")));
@@ -441,9 +435,7 @@ namespace Unit.Test.DF
 			// Arrange
 			var originalDf = new DataFrame(
 				new List<object> { 1, "A", 2, "B", 3, "C" },
-				new List<string> { "Column1", "Column2", "Column3" },
-				null
-			);
+				new List<string> { "Column1", "Column2", "Column3" });
 
 			// Act
 			var newDf = originalDf.Create(("Column2", "RenamedColumn2"), ("Column1", "RenamedColumn1"));

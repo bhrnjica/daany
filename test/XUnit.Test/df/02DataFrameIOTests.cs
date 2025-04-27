@@ -96,7 +96,7 @@ namespace Unit.Test.DF
 		{
 			var values = new List<object> { 1, "test" };
 			var columns = new List<string> { "Int", "String" };
-			var df = new DataFrame(values, columns, null);
+			var df = new DataFrame(values, columns);
 
 			await DataFrame.ToCsvAsync(TestCsvPath, df);
 
