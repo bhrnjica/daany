@@ -31,8 +31,8 @@
     </None>
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy /y &quot;$(SolutionDir)src\daany_rust\target\release\daany_rust_lib.dll&quot; &quot;$(TargetDir)&quot;" ContinueOnError="true" />
-  </Target>
+  </Target>-->
 
 </Project>
