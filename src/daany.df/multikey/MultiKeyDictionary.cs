@@ -154,7 +154,7 @@ namespace Daany.Multikey
 		public Dictionary<K2, T> GetValues(K1 key1)
 			=> _dictionary.TryGetValue(key1, out var innerDict) ? innerDict : new Dictionary<K2, T>();
 
-		public new List<(K1 key1, K2 key2)> Keys
+		public List<(K1 key1, K2 key2)> Keys
 		{
 			get
 			{
@@ -337,7 +337,7 @@ namespace Daany.Multikey
 				? innerDict
 				: new Dictionary<K3, T>();
 
-		public new List<(K1 key1, K2 key2, K3 key3)> Keys
+		public List<(K1 key1, K2 key2, K3 key3)> Keys
 		{
 			get
 			{

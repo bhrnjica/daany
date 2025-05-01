@@ -17,304 +17,330 @@ using System.Collections.Generic;
 using System;
 using System.Text;
 using Daany.Multikey;
+using System.Text.RegularExpressions;
 
 
 namespace Daany.Grouping
 {
+		/// <summary>
+		/// Represents a grouped collection of DataFrames with operations that can be performed on each group.
+		/// Supports grouping by 1, 2, or 3 columns.
+		/// </summary>
 	public class GroupDataFrame
 	{
-		internal GroupDataFrame(string colName, Dictionary<object, DataFrame> grp)
+		public string GroupedColumn { get; }
+		public string SecondGroupedColumn { get; }
+		public string ThirdGroupedColumn { get; }
+
+		internal Dictionary<object, DataFrame> Groups { get; }
+		internal TwoKeysDictionary<object, object, DataFrame> Groups2 { get; }
+		internal ThreeKeysDictionary<object, object, object, DataFrame> Groups3 { get; }
+
+		/// <summary>
+		/// Initializes a new instance of GroupDataFrame grouped by a single column
+		/// </summary>
+		/// <param name="groupedColumn">Name of the column used for grouping</param>
+		/// <param name="groups">Dictionary containing the grouped DataFrames</param>
+		internal GroupDataFrame(string groupedColumn, Dictionary<object, DataFrame> groups)
 		{
-			GroupedColumn = colName;
-			Group = grp;
+			GroupedColumn = groupedColumn;
+			SecondGroupedColumn = null!;
+			ThirdGroupedColumn = null!;
+
+			Groups = groups!;
+			Groups2 = null!;
+			Groups3 = null!;
 		}
 
-		internal GroupDataFrame(string firstGroupedColumn, string secondGroupedColumn, TwoKeysDictionary<object, object, DataFrame> grp)
+		/// <summary>
+		/// Initializes a new instance of GroupDataFrame grouped by two columns
+		/// </summary>
+		/// <param name="firstGroupedColumn">Name of the first column used for grouping</param>
+		/// <param name="secondGroupedColumn">Name of the second column used for grouping</param>
+		/// <param name="groups">Two-level dictionary containing the grouped DataFrames</param>
+		internal GroupDataFrame(string firstGroupedColumn, string secondGroupedColumn, TwoKeysDictionary<object, object, DataFrame> groups)
 		{
 			GroupedColumn = firstGroupedColumn;
 			SecondGroupedColumn = secondGroupedColumn;
-			Group2 = grp;
+			ThirdGroupedColumn = null!;
+
+			Groups = null!;
+			Groups2 = groups;
+			Groups3 = null!;
 		}
 
-		internal GroupDataFrame(string firstGroupedColumn, string secondGroupedColumn, string thirdGroupedColumn, ThreeKeysDictionary<object, object, object, DataFrame> grp)
+		/// <summary>
+		/// Initializes a new instance of GroupDataFrame grouped by three columns
+		/// </summary>
+		/// <param name="firstGroupedColumn">Name of the first column used for grouping</param>
+		/// <param name="secondGroupedColumn">Name of the second column used for grouping</param>
+		/// <param name="thirdGroupedColumn">Name of the third column used for grouping</param>
+		/// <param name="groups">Three-level dictionary containing the grouped DataFrames</param>
+		internal GroupDataFrame(string firstGroupedColumn, string secondGroupedColumn, string thirdGroupedColumn, ThreeKeysDictionary<object, object, object, DataFrame> groups)
 		{
 			GroupedColumn = firstGroupedColumn;
 			SecondGroupedColumn = secondGroupedColumn;
 			ThirdGroupedColumn = thirdGroupedColumn;
-			Group3 = grp;
+
+			Groups = null!;
+			Groups2 = null!;
+			Groups3 = groups;
 		}
 
-
-		public string GroupedColumn { get; set; }
-		public string SecondGroupedColumn { get; set; }
-		public string ThirdGroupedColumn { get; set; }
-
-		internal Dictionary<object, DataFrame> Group { get; }
-		internal TwoKeysDictionary<object, object, DataFrame> Group2 { get; }
-		internal ThreeKeysDictionary<object, object, object, DataFrame> Group3 { get; }
-
-		public DataFrame this[object Key]
+		/// <summary>
+		/// Gets the DataFrame associated with the specified single key
+		/// </summary>
+		/// <param name="key">The key of the DataFrame to get</param>
+		/// <returns>The DataFrame associated with the specified key</returns>
+		public DataFrame this[object key]
 		{
-			get
-			{
-				return Group[Key];
-			}
+			get => Groups[key];
 		}
 
-		public DataFrame this[object Key1, object Key2]
+		/// <summary>
+		/// Gets the DataFrame associated with the specified pair of keys
+		/// </summary>
+		/// <param name="key1">The first key of the DataFrame to get</param>
+		/// <param name="key2">The second key of the DataFrame to get</param>
+		/// <returns>The DataFrame associated with the specified keys</returns>
+		public DataFrame this[object key1, object key2]
 		{
-			get
-			{
-				return Group2[Key1, Key2];
-			}
+			get => Groups2[key1, key2];
 		}
 
-		public DataFrame this[object Key1, object Key2, object Key3]
+		/// <summary>
+		/// Gets the DataFrame associated with the specified triplet of keys
+		/// </summary>
+		/// <param name="key1">The first key of the DataFrame to get</param>
+		/// <param name="key2">The second key of the DataFrame to get</param>
+		/// <param name="key3">The third key of the DataFrame to get</param>
+		/// <returns>The DataFrame associated with the specified keys</returns>
+		public DataFrame this[object key1, object key2, object key3]
 		{
-			get
-			{
-				return Group3[Key1, Key2, Key3];
-			}
+			get => Groups3[key1, key2, key3];
 		}
 
+		/// <summary>
+		/// Gets a list of all keys in a single-column grouping
+		/// </summary>
 		public List<object> Keys
 		{
-			get
-			{
-				return Group.Keys.ToList();
-			}
+			get => new List<object>(Groups.Keys);
 		}
 
+		/// <summary>
+		/// Gets a list of all key pairs in a two-column grouping
+		/// </summary>
 		public List<(object key1, object key2)> Keys2
 		{
 			get
 			{
-				var lst = new List<(object key1, object key2)>();
-				foreach (var kk in Group2)
+				// Pre-allocate with estimated capacity
+				var list = new List<(object, object)>(Groups2.Count * 2); 
+
+				foreach (var outerPair in Groups2)
 				{
-					var k1 = kk.Key;
-					foreach (var kkk in kk.Value)
+					foreach (var innerPair in outerPair.Value)
 					{
-						var k2 = kkk.Key;
-						lst.Add((k1, k2));
+						list.Add((outerPair.Key, innerPair.Key));
 					}
 				}
 
-				return lst;
+				return list;
 			}
 		}
 
+		/// <summary>
+		/// Gets a list of all key triplets in a three-column grouping
+		/// </summary>
 		public List<(object key1, object key2, object key3)> Keys3
 		{
 			get
 			{
-				var lst = new List<(object key1, object key2, object key3)>();
-				foreach (var k in Group3)
+				// Pre-allocate with estimated capacity
+				var list = new List<(object, object, object)>(Groups3.Count * 3); 
+
+				foreach (var level1 in Groups3)
 				{
-					var k1 = k.Key;
-					foreach (var kk in k.Value)
+					foreach (var level2 in level1.Value)
 					{
-						var k2 = kk.Key;
-						foreach (var kkk in kk.Value)
+						foreach (var level3 in level2.Value)
 						{
-							var k3 = kkk.Key;
-							lst.Add((k1, k2, k3));
+							list.Add((level1.Key, level2.Key, level3.Key));
 						}
 					}
 				}
 
-				return lst;
+				return list;
 			}
-		}
-		public DataFrame Rolling(int rollingWindow, int window, Dictionary<string, Aggregation> agg)
-		{
-			//create columns and aggregation
-			var ag = new Dictionary<string, Aggregation>();
-			ag.Add(this.GroupedColumn, Daany.Aggregation.Last);
-			if (Group2 != null && Group2.Count > 0)
-				ag.Add(this.SecondGroupedColumn, Daany.Aggregation.Last);
-			if (Group3 != null && Group3.Count > 0)
-				ag.Add(this.ThirdGroupedColumn, Daany.Aggregation.Last);
-			foreach (var d in agg)
-				ag.Add(d.Key, d.Value);
-			//
-			DataFrame df = null;
-			if (Group != null && Group.Count > 0)
-			{
-				foreach (var gr in Group)
-				{
-					var df1 = gr.Value.Rolling(rollingWindow, ag).TakeEvery(window);
-					if (df == null)
-						df = new DataFrame(df1);
-					else
-						df.addRows(df1);
-				}
-			}
-			else if (Group2 != null && Group2.Count > 0)
-			{
-				foreach (var gr in Keys2)
-				{
-					var df1 = this.Group2[gr.key1][gr.key2].Rolling(rollingWindow, ag).TakeEvery(window);
-					if (df == null)
-						df = new DataFrame(df1);
-					else
-						df.addRows(df1);
-				}
-			}
-			else if (Group3 != null && Group3.Count > 0)
-			{
-				foreach (var gr in Keys3)
-				{
-					var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Rolling(rollingWindow, ag).TakeEvery(window);
-					if (df == null)
-						df = new DataFrame(df1);
-					else
-						df.addRows(df1);
-				}
-			}
-
-			return df;
 		}
 
 		/// <summary>
-		/// Each group data frame performed rolling operation, with aggregate operation on each column
+		/// Applies a rolling window operation to each grouped DataFrame, with optional downsampling
 		/// </summary>
-		/// <param name="rollingWindow">size of rolling</param>
-		/// <param name="agg"></param>
-		/// <returns></returns>
-		public DataFrame Rolling(int rollingWindow, Dictionary<string, Aggregation> agg)
+		/// <param name="rollingWindow">Size of the rolling window</param>
+		/// <param name="window">Take every Nth row (downsampling). Use 1 for no downsampling.</param>
+		/// <param name="aggregations">Dictionary specifying aggregations to apply to each column</param>
+		/// <returns>A new DataFrame containing the results of the rolling operation</returns>
+		public DataFrame Rolling(int rollingWindow, int window, Dictionary<string, Aggregation> aggregations)
 		{
-			//create columns and aggregation
-			var ag = new Dictionary<string, Aggregation>();
-			ag.Add(this.GroupedColumn, Daany.Aggregation.Last);
 
-			if (Group2 != null && Group2.Count > 0)
-				ag.Add(this.SecondGroupedColumn, Daany.Aggregation.Last);
+			if (rollingWindow <= 0)
+				throw new ArgumentException("Rolling window must be positive", nameof(rollingWindow));
+			if (window <= 0)
+				throw new ArgumentException("Window must be positive", nameof(window));
 
-			if (Group3 != null && Group3.Count > 0)
-				ag.Add(this.ThirdGroupedColumn, Daany.Aggregation.Last);
-
-			foreach (var d in agg)
-				ag.Add(d.Key, d.Value);
-
-			//
-			DataFrame df = null;
-			if (Group != null && Group.Count > 0)
+			// Initialize aggregations with grouping columns
+			var combinedAggregations = new Dictionary<string, Aggregation>(aggregations.Count + 3)
 			{
-				foreach (var gr in Group)
+				[GroupedColumn] = Aggregation.Last
+			};
+
+
+			if (Groups2 != null && Groups2.Count > 0)
+				combinedAggregations[SecondGroupedColumn] = Aggregation.Last;
+			if (Groups3 != null && Groups3.Count > 0)
+				combinedAggregations[ThirdGroupedColumn] = Aggregation.Last;
+
+			foreach (var agg in aggregations)
+				combinedAggregations[agg.Key] = agg.Value;
+
+			DataFrame result = null!;
+
+			if (Groups != null && Groups.Count > 0)
+			{
+				foreach (var group in Groups.Values)
 				{
-					var df1 = gr.Value.Rolling(rollingWindow, ag);
-					if (df == null)
-						df = new DataFrame(df1);
+					var rolled = group.Rolling(rollingWindow, combinedAggregations).TakeEvery(window);
+					if (rolled == null)
+						continue;
+
+					if (result == null)
+						result = new DataFrame(rolled);
 					else
-						df.addRows(df1);
+						result.AddRows(rolled);
 				}
 			}
-			else if (Group2 != null && Group2.Count > 0)
+			else if (Groups2 != null && Groups2.Count > 0)
 			{
-				foreach (var gr in Keys2)
+				foreach (var (key1, key2) in Keys2)
 				{
-					var df1 = this.Group2[gr.key1][gr.key2].Rolling(rollingWindow, ag);
-					if (df == null)
-						df = new DataFrame(df1);
+					var rolled = Groups2[key1][key2].Rolling(rollingWindow, combinedAggregations).TakeEvery(window);
+
+					if (result == null)
+						result = new DataFrame(rolled);
 					else
-						df.addRows(df1);
+						result.AddRows(rolled);
 				}
 			}
-			else if (Group3 != null && Group3.Count > 0)
+			else if (Groups3 != null && Groups3.Count > 0)
 			{
-				foreach (var gr in Keys3)
+				foreach (var (key1, key2, key3) in Keys3)
 				{
-					var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Rolling(rollingWindow, ag);
-					if (df == null)
-						df = new DataFrame(df1);
+					var rolled = Groups3[key1][key2][key3].Rolling(rollingWindow, combinedAggregations).TakeEvery(window);
+
+					if (result == null)
+						result = new DataFrame(rolled);
 					else
-						df.addRows(df1);
+						result.AddRows(rolled);
 				}
 			}
 
-			return df;
+			return result;
 		}
+
 		/// <summary>
-		/// Shifts the values of the columns by the number of 'steps' rows in every grouped data frame. 
+		/// Applies a rolling window operation to each grouped DataFrame
 		/// </summary>
-		/// <param name="columnName">existing column to be shifted</param>
-		/// <param name="newColName">new shifted column</param>
-		/// <param name="step"></param>
-		/// <returns></returns>
+		/// <param name="rollingWindow">Size of the rolling window</param>
+		/// <param name="aggregations">Dictionary specifying aggregations to apply to each column</param>
+		/// <returns>A new DataFrame containing the results of the rolling operation</returns>
+		public DataFrame Rolling(int rollingWindow, Dictionary<string, Aggregation> aggregations)
+		{
+			return Rolling(rollingWindow, 1, aggregations);
+		}
+
+		/// <summary>
+		/// Shifts column values in each grouped DataFrame by specified steps
+		/// </summary>
+		/// <param name="shifts">Array of tuples specifying:
+		///   - columnName: Name of column to shift
+		///   - newColName: Name for new shifted column
+		///   - steps: Number of rows to shift (positive or negative)</param>
+		/// <returns>A new DataFrame with shifted columns</returns>
 		public DataFrame Shift(params (string columnName, string newColName, int steps)[] arg)
 		{
 			//
-			DataFrame df = null;
-			if (Group != null && Group.Count > 0)
+			DataFrame result = null!;
+			if (Groups != null && Groups.Count > 0)
 			{
-				foreach (var gr in Group)
+				foreach (var gr in Groups)
 				{
 					var df1 = gr.Value.Shift(arg);
-					if (df == null)
-						df = new DataFrame(df1);
+					if (result == null)
+						result = new DataFrame(df1);
 					else
-						df.addRows(df1);
+						result.AddRows(df1);
 				}
 			}
-			else if (Group2 != null && Group2.Count > 0)
+			else if (Groups2 != null && Groups2.Count > 0)
 			{
 				foreach (var gr in Keys2)
 				{
-					var df1 = this.Group2[gr.key1][gr.key2].Shift(arg);
-					if (df == null)
-						df = new DataFrame(df1);
+					var df1 = this.Groups2[gr.key1][gr.key2].Shift(arg);
+					if (result == null)
+						result = new DataFrame(df1);
 					else
-						df.addRows(df1);
+						result.AddRows(df1);
 				}
 			}
-			else if (Group3 != null && Group3.Count > 0)
+			else if (Groups3 != null && Groups3.Count > 0)
 			{
 				foreach (var gr in Keys3)
 				{
-					var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Shift(arg);
-					if (df == null)
-						df = new DataFrame(df1);
+					var df1 = this.Groups3[gr.key1][gr.key2][gr.key3].Shift(arg);
+					if (result == null)
+						result = new DataFrame(df1);
 					else
-						df.addRows(df1);
+						result.AddRows(df1);
 				}
 			}
 
-			return df;
+			return result;
 		}
 
 		/// <summary>
-		/// Aggregate columns of each data fame in grups
+		/// Aggregates each grouped DataFrame using the specified operations
 		/// </summary>
-		/// <param name="agg">List of columns to aggregate. Grouped columns are excluded from aggregation.</param>
-		/// <returns></returns>
-		public DataFrame Aggregate(IDictionary<string, Aggregation> agg)
+		/// <param name="aggregations">Dictionary mapping column names to aggregation operations</param>
+		/// <returns>A new DataFrame with aggregated results</returns>
+		public DataFrame Aggregate(IDictionary<string, Aggregation> aggregations)
 		{
-			DataFrame df = null;
-			if (Group == null && Group2 == null && Group3 == null)
-				throw new Exception("Group is  empty.");
+			if (Groups == null && Groups2 == null && Groups3 == null)
+				throw new InvalidOperationException("No groups available for aggregation");
 
+			DataFrame result = null!;
 			//grouping with one column
-			if (Group != null && Group.Count > 0)
+			if (Groups != null && Groups.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Group.ElementAt(0).Value.Columns);
-				foreach (var gr in Group)
+				var df1 = DataFrame.CreateEmpty(Groups.ElementAt(0).Value.Columns);
+				foreach (var gr in Groups)
 				{
-					var row = gr.Value.Aggragate(agg, true);
+					var row = gr.Value.Aggragate(aggregations, true);
 					df1.AddRow(row);
 				}
 
 				return df1;
 			}
 			//grouping with two columns
-			else if (Group2 != null && Group2.Count > 0)
+			else if (Groups2 != null && Groups2.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Group2.ElementAt(0).Value.ElementAt(0).Value.Columns);
-				foreach (var gr in Group2)
+				var df1 = DataFrame.CreateEmpty(Groups2.ElementAt(0).Value.ElementAt(0).Value.Columns);
+				foreach (var gr in Groups2)
 				{
 					foreach (var g2 in gr.Value)
 					{
-						var row = g2.Value.Aggragate(agg, true);
+						var row = g2.Value.Aggragate(aggregations, true);
 						df1.AddRow(row);
 					}
 
@@ -322,16 +348,16 @@ namespace Daany.Grouping
 				return df1;
 			}
 			//grouping with three columns
-			else if (Group3 != null && Group3.Count > 0)
+			else if (Groups3 != null && Groups3.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Group3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
-				foreach (var gr in Group3)
+				var df1 = DataFrame.CreateEmpty(Groups3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
+				foreach (var gr in Groups3)
 				{
 					foreach (var g2 in gr.Value)
 					{
 						foreach (var g3 in g2.Value)
 						{
-							var row = g3.Value.Aggragate(agg, true);
+							var row = g3.Value.Aggragate(aggregations, true);
 							df1.AddRow(row);
 						}
 					}
@@ -339,94 +365,102 @@ namespace Daany.Grouping
 				}
 				return df1;
 			}
-			return df;
+			return result;
 		}
 
 		/// <summary>
-		/// Returns data frame of number of rows for each group
+		/// Returns a DataFrame with the count of rows in each group
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>DataFrame with columns: [grouped column(s), "count"]</returns>
 		public DataFrame GCount()
 		{
-			var cols = new string[] { GroupedColumn, "count" };
-			var lst = new List<object>();
-			foreach (var gr in Group.OrderByDescending(x => x.Value.RowCount()))
+			if (Groups == null)
+				throw new InvalidOperationException("Count is only supported for single-column grouping");
+
+			var values = new List<object?>(Groups.Count * 2);
+			foreach (var group in Groups.OrderByDescending(x => x.Value.RowCount()))
 			{
-				var cnt = gr.Value.RowCount();
-				lst.Add(gr.Key);
-				lst.Add(cnt);
+				values.Add(group.Key);
+				values.Add(group.Value.RowCount());
 			}
 
-			return new DataFrame(lst, cols.ToList(), null);
+			return new DataFrame(values, new List<string> { GroupedColumn, "count" }, null);
 		}
 
 		/// <summary>
-		/// Perform transformation on each grouped data frame.
+		/// Applies a transformation function to each grouped DataFrame
 		/// </summary>
-		/// <param name="callBack"></param>
-		/// <returns></returns>
-		public DataFrame Transform(Func<DataFrame, DataFrame> callBack)
+		/// <param name="transform">Function that takes a DataFrame and returns a transformed DataFrame</param>
+		/// <returns>A new DataFrame containing all transformed results</returns>
+		public DataFrame Transform(Func<DataFrame, DataFrame> trasnform)
 		{
-			DataFrame df = null;
-			if (Group == null && Group2 == null && Group3 == null)
+			DataFrame result = null!;
+
+			if (Groups == null && Groups2 == null && Groups3 == null)
 				throw new Exception("Group is  empty.");
 
 			//grouping with one column
-			if (Group != null && Group.Count > 0)
+			if (Groups != null && Groups.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Group.ElementAt(0).Value.Columns);
-				foreach (var gr in Group)
+				var df1 = DataFrame.CreateEmpty(Groups.ElementAt(0).Value.Columns);
+				foreach (var gr in Groups)
 				{
-					var rows = callBack(gr.Value);
+					var rows = trasnform(gr.Value);
 					if (rows != null && rows.RowCount() > 0)
-						df1.addRows(rows);
+						df1.AddRows(rows);
 				}
 
 				return df1;
 			}
 			//grouping with two columns
-			else if (Group2 != null && Group2.Count > 0)
+			else if (Groups2 != null && Groups2.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Group2.ElementAt(0).Value.ElementAt(0).Value.Columns);
-				foreach (var gr in Group2)
+				var df1 = DataFrame.CreateEmpty(Groups2.ElementAt(0).Value.ElementAt(0).Value.Columns);
+				foreach (var gr in Groups2)
 				{
 					foreach (var g2 in gr.Value)
 					{
-						var rows = callBack(g2.Value);
+						var rows = trasnform(g2.Value);
 						if (rows != null && rows.RowCount() > 0)
-							df1.addRows(rows);
+							df1.AddRows(rows);
 					}
 
 				}
 				return df1;
 			}
 			//grouping with three columns
-			else if (Group3 != null && Group3.Count > 0)
+			else if (Groups3 != null && Groups3.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Group3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
-				foreach (var gr in Group3)
+				var df1 = DataFrame.CreateEmpty(Groups3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
+				foreach (var gr in Groups3)
 				{
 					foreach (var g2 in gr.Value)
 					{
 						foreach (var g3 in g2.Value)
 						{
-							var rows = callBack(g3.Value);
+							var rows = trasnform(g3.Value);
 							if (rows != null && rows.RowCount() > 0)
-								df1.addRows(rows);
+								df1.AddRows(rows);
 						}
 					}
 
 				}
 				return df1;
 			}
-			return df;
+			return result;
 		}
+
+		/// <summary>
+		/// Returns a string representation of the grouped DataFrames
+		/// </summary>
+		/// <param name="maxRows">Maximum number of rows to display per group</param>
+		/// <returns>Formatted string representation</returns>
 		public string ToStringBuilder(int rowCount = 15)
 		{
 			StringBuilder sb = new StringBuilder();
-			int rows = this.Group != null ? this.Group.Count() :
-					   this.Group2 != null ? this.Group2.Count :
-					   this.Group3.Count;
+			int rows = this.Groups != null ? this.Groups.Count() :
+					   this.Groups2 != null ? this.Groups2.Count :
+					   this.Groups3.Count;
 
 			int longestColumnName = 20;
 
@@ -444,37 +478,37 @@ namespace Daany.Grouping
 			var rr = Math.Min(rowCount, rows);
 			for (int i = 0; i < rr; i++)
 			{
-				if (this.Group != null)
+				if (this.Groups != null)
 				{
-					var grp = this.Group.ElementAt(i);
-					sb.Append((grp.Key).ToString().PadRight(longestColumnName));
+					var grp = this.Groups.ElementAt(i);
+					sb.Append((grp.Key).ToString()!.PadRight(longestColumnName));
 					sb.AppendLine();
 					sb.Append(grp.Value.ToStringBuilder());
 					sb.AppendLine();
 				}
-				else if (this.Group2 != null)
+				else if (this.Groups2 != null)
 				{
-					var grp = this.Group2.ElementAt(i);
+					var grp = this.Groups2.ElementAt(i);
 					foreach (var k2 in grp.Value)
 					{
-						sb.Append((grp.Key).ToString().PadRight(longestColumnName));
-						sb.Append((k2.Key).ToString().PadRight(longestColumnName));
+						sb.Append((grp.Key).ToString()!.PadRight(longestColumnName));
+						sb.Append((k2.Key).ToString()!.PadRight(longestColumnName));
 						sb.AppendLine();
 						sb.Append(k2.Value.ToStringBuilder());
 						sb.AppendLine();
 					}
 
 				}
-				else if (this.Group3 != null)
+				else if (this.Groups3 != null)
 				{
-					var grp = this.Group3.ElementAt(i);
+					var grp = this.Groups3.ElementAt(i);
 					foreach (var k2 in grp.Value)
 					{
 						foreach (var k3 in k2.Value)
 						{
-							sb.Append((grp.Key).ToString().PadRight(longestColumnName));
-							sb.Append((k2.Key).ToString().PadRight(longestColumnName));
-							sb.Append((k3.Key).ToString().PadRight(longestColumnName));
+							sb.Append((grp.Key).ToString()!.PadRight(longestColumnName));
+							sb.Append((k2.Key).ToString()!.PadRight(longestColumnName));
+							sb.Append((k3.Key).ToString()!.PadRight(longestColumnName));
 							sb.AppendLine();
 							sb.Append(k3.Value.ToStringBuilder());
 							sb.AppendLine();

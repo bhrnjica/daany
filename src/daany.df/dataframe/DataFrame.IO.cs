@@ -15,27 +15,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Collections;
-using System.Globalization;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Threading.Tasks;
-using NReco.Csv;
-
-
-using Daany.MathStuff;
-using Daany.Binding;
 using System.Net.Http;
+using System.Globalization;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
+
+using Daany.Binding;
 
 namespace Daany
 {
@@ -317,7 +304,7 @@ namespace Daany
             {
                 using (var srdr = new StreamReader(csvStream))
                 {
-                    var csvReader = new NReco.Csv.CsvReader(srdr, sep.ToString());
+                    var csvReader = new CsvReader(srdr, sep.ToString());
 
                     var columns = names == null ? new List<string>() : names.ToList();
 
@@ -343,7 +330,7 @@ namespace Daany
             {
                 using (var srdr = new StreamReader(csvStream))
                 {
-                    var csvReader = new NReco.Csv.CsvReader(srdr, sep.ToString());
+                    var csvReader = new CsvReader(srdr, sep.ToString());
 
                     var columns = names == null ? new List<string>() : names.ToList();
                     var parsedate = dformat != null && dformat.Length > 0 ? true : false;
@@ -367,7 +354,7 @@ namespace Daany
 			IntPtr columnsPtr, dataPtr;
 			ulong colCount, rowCount;
 			//// Call Rust function
-			DaanyRust.from_csv(filePath, sep, dformat, missingValue, hasHeader, out columnsPtr, out colCount, out dataPtr, out rowCount);
+			DaanyRust.from_csv(filePath, sep, dformat!, missingValue, hasHeader, out columnsPtr, out colCount, out dataPtr, out rowCount);
 
 			string[] columns = DaanyRust.exctractColumns(columnsPtr, colCount);
 			object[] data = DaanyRust.exctractData(dataPtr, rowCount, colCount);
@@ -395,7 +382,7 @@ namespace Daany
 
             using (var srdr = new StreamReader(filePath))
             {
-                var csvReader = new NReco.Csv.CsvReader(srdr, sep.ToString());
+                var csvReader = new CsvReader(srdr, sep.ToString());
 
                 var columns = names == null ? new List<string>() : names.ToList();
 
@@ -412,7 +399,7 @@ namespace Daany
         }
 
         #endregion
-        private static List<object?> ParseReader(NReco.Csv.CsvReader csvReader, ref List<string> columns, ref ColType[]? colTypes, bool parseDateTime, string? dateFormats, int nRows, bool parseDate, char[]? missingValue, int skipLines)
+        private static List<object?> ParseReader(CsvReader csvReader, ref List<string> columns, ref ColType[]? colTypes, bool parseDateTime, string? dateFormats, int nRows, bool parseDate, char[]? missingValue, int skipLines)
         {
             //Define header
             int line = 0;
@@ -603,7 +590,7 @@ namespace Daany
 			};
 		}
 
-		private static object ParseValue(object value, string? dformat)
+		private static object? ParseValue(object value, string? dformat)
 		{
 			if (value is string stringValue)
 			{
@@ -617,7 +604,7 @@ namespace Daany
 		/// If no non-missing value exists, assigns a default type of ColType.STR.
 		/// </summary>
 		/// <returns>An array of ColType representing the type of each column.</returns>
-		private ColType[] columnsTypes(List<object> data, int rowCount, int columnCount)
+		private ColType[] columnsTypes(List<object?> data, int rowCount, int columnCount)
 		{
 			var types = new ColType[columnCount];
 

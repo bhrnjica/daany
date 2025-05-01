@@ -17,27 +17,34 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Daany {
+namespace Daany
+{
 
 	/// <summary>
 	/// Fast and efficient implementation of CSV writer.
 	/// </summary>
 	/// <remarks>API is similar to CSVHelper CsvWriter class</remarks>
-	internal class CsvWriter {
+	internal class CsvWriter
+	{
 
 		public string Delimiter { get; private set; }
 
-		public string QuoteString {
-			get {
+		public string QuoteString
+		{
+			get
+			{
 				return quoteString;
 			}
-			set {
+			set
+			{
 				quoteString = value;
 				doubleQuoteString = value + value;
 			}
 		}
 
 		public bool QuoteAllFields { get; set; } = false;
+
+		public bool QuoteIfTrimPossible { get; set; } = true;
 
 		public bool Trim { get; set; } = false;
 
@@ -49,54 +56,17 @@ namespace Daany {
 
 		public CsvWriter(TextWriter wr) : this(wr, ",") { }
 
-		public CsvWriter(TextWriter wr, string delimiter) {
+		public CsvWriter(TextWriter wr, string delimiter)
+		{
 			this.wr = wr;
 			Delimiter = delimiter;
 			checkDelimForQuote = delimiter.Length > 1;
-			quoteRequiredChars = checkDelimForQuote ?  new[] { '\r', '\n' } : new[] { '\r', '\n', delimiter[0] };
+			quoteRequiredChars = checkDelimForQuote ? new[] { '\r', '\n' } : new[] { '\r', '\n', delimiter[0] };
 		}
 
 		int recordFieldCount = 0;
 
-		public void WriteField(string field) {
-			var shouldQuote = QuoteAllFields;
-
-			field = field ?? String.Empty;
-
-			if (field.Length>0 && Trim) {
-				field = field.Trim();
-			}
-
-			if (field.Length>0) {
-				if (shouldQuote // Quote all fields
-					|| field.Contains(quoteString) // Contains quote
-					|| field[0] == ' ' // Starts with a space
-					|| field[field.Length - 1] == ' ' // Ends with a space
-					|| field.IndexOfAny(quoteRequiredChars) > -1 // Contains chars that require quotes
-					|| (checkDelimForQuote && field.Contains(Delimiter)) // Contains delimiter
-				)
-				{
-					shouldQuote = true;
-				}
-			}
-
-			// All quotes must be doubled.       
-			if (shouldQuote && field.Length>0) {
-				field = field.Replace(quoteString, doubleQuoteString);
-			}
-
-			if (shouldQuote) {
-				field = quoteString + field + quoteString;
-			}
-			if (recordFieldCount>0) {
-				wr.Write(Delimiter);
-			}
-			if (field.Length>0)
-				wr.Write(field);
-			recordFieldCount++;
-		}
-
-		public async Task WriteFieldAsync(string field)
+		public void WriteField(string field)
 		{
 			var shouldQuote = QuoteAllFields;
 
@@ -109,10 +79,12 @@ namespace Daany {
 
 			if (field.Length > 0)
 			{
+				if (QuoteIfTrimPossible && (field[0] == ' ' || field[field.Length - 1] == ' '))
+				{
+					shouldQuote = true;
+				}
 				if (shouldQuote // Quote all fields
 					|| field.Contains(quoteString) // Contains quote
-					|| field[0] == ' ' // Starts with a space
-					|| field[field.Length - 1] == ' ' // Ends with a space
 					|| field.IndexOfAny(quoteRequiredChars) > -1 // Contains chars that require quotes
 					|| (checkDelimForQuote && field.Contains(Delimiter)) // Contains delimiter
 				)
@@ -133,15 +105,59 @@ namespace Daany {
 			}
 			if (recordFieldCount > 0)
 			{
-				await wr.WriteAsync(Delimiter);
+				wr.Write(Delimiter);
 			}
 			if (field.Length > 0)
+				wr.Write(field);
+			recordFieldCount++;
+		}
+
+		public async Task WriteFieldAsync(string field)
+		{
+			var shouldQuote = QuoteAllFields;
+
+			field = field ?? String.Empty;
+
+			if (field.Length > 0 && Trim)
+			{
+				field = field.Trim();
+			}
+
+			if (field.Length > 0)
+			{
+				if (QuoteIfTrimPossible && (field[0] == ' ' || field[field.Length - 1] == ' '))
+				{
+					shouldQuote = true;
+				}
+				if (shouldQuote // Quote all fields
+					|| field.Contains(quoteString) // Contains quote
+					|| field.IndexOfAny(quoteRequiredChars) > -1 // Contains chars that require quotes
+					|| (checkDelimForQuote && field.Contains(Delimiter)) // Contains delimiter
+				)
+				{
+					shouldQuote = true;
+				}
+			}
+
+			// All quotes must be doubled.       
+			if (shouldQuote && field.Length > 0)
+				field = field.Replace(quoteString, doubleQuoteString);
+
+			if (shouldQuote)
+				field = quoteString + field + quoteString;
+
+			if (recordFieldCount > 0)
+				await wr.WriteAsync(Delimiter);
+
+			if (field.Length > 0)
 				await wr.WriteAsync(field);
+
 
 			recordFieldCount++;
 		}
 
-		public void NextRecord() {
+		public void NextRecord()
+		{
 			wr.WriteLine();
 			recordFieldCount = 0;
 		}

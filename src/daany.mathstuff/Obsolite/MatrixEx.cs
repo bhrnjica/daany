@@ -508,14 +508,15 @@ public static class MatrixEx
 
     public static bool IsEqual(this double[,] a, double[,] b, double atol = 0, double rtol = 0)
     {
-        if (a == b)
+		if (a == b)
             return true;
         if (a == null && b == null)
             return true;
         if (a == null ^ b == null)
             return false;
-        int[] la = new int[a.GetLength(1)];
-        int[] lb = new int[b.GetLength(1)];
+
+        int[] la = new int[a!.GetLength(1)];
+        int[] lb = new int[b!.GetLength(1)];
         if (la.Length != lb.Length)
             return false;
         for (int i = 0; i < la.Length; i++)

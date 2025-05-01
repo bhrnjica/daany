@@ -38,7 +38,7 @@ namespace Daany
         /// List of columns (names) in the data frame.
         /// </summary>
         /// 
-        public List<string> Columns => _columns;
+        public List<string> Columns => _columns ?? throw new ArgumentNullException(nameof(_columns));
 
 
 		/// <summary>
@@ -60,12 +60,12 @@ namespace Daany
 		/// Index for rows in the data frame.
 		/// </summary>
 		/// 
-		public Daany.Index Index => _index;
+		public Daany.Index Index => _index ?? throw new ArgumentNullException(nameof(_index));
 
 
-        public (int rows, int cols) Shape => (RowCount(), ColCount());
+		public (int rows, int cols) Shape => (RowCount(), ColCount());
 
-        public IList<object> Values => _values;
+        public IList<object?> Values => _values ?? throw new ArgumentNullException(nameof(_values));
 
 
 
@@ -75,12 +75,12 @@ namespace Daany
         /// 
         public static object? NAN => null;
 
-        #endregion
+		#endregion
 
-        #region Private fields
-        private List<object> _values;
-        private Daany.Index _index;
-        private List<string> _columns;
+		#region Private fields
+		private List<object?>? _values;
+        private Daany.Index? _index;
+        private List<string>? _columns;
 		private ColType[]? _colTypes;
 
 		//Quick Sort algorithm. In case of false, the Merge Sort will be used.
@@ -95,10 +95,10 @@ namespace Daany
 		/// <typeparam name="TRow">Result type for each row</typeparam>
 		/// <param name="callBack">Function to transform row data</param>
 		/// <returns>Enumerable sequence of processed rows</returns>
-		public IEnumerable<TRow> GetEnumerator<TRow>(Func<IDictionary<string, object>, TRow> callBack)
+		public IEnumerable<TRow> GetEnumerator<TRow>(Func<IDictionary<string, object?>, TRow> callBack)
 		{
 			// Reuse the same dictionary to avoid allocations
-			var rowDictionary = new Dictionary<string, object>(Columns.Count);
+			var rowDictionary = new Dictionary<string, object?>(Columns.Count);
 
 			// Pre-calculate counts
 			int columnCount = Columns.Count;
@@ -114,7 +114,7 @@ namespace Daany
 				{
 					// Calculate position in values array
 					int valueIndex = rowIndex * columnCount + colIndex;
-					rowDictionary[Columns[colIndex]] = _values[valueIndex];
+					rowDictionary[Columns[colIndex]] = Values[valueIndex] ?? NAN;
 				}
 
 				yield return callBack(rowDictionary);
@@ -125,13 +125,13 @@ namespace Daany
 		/// Return row enumerators by returning row as dictionary 
 		/// </summary>
 		/// <returns>dictionary</returns>
-		public IEnumerable<IDictionary<string, object>> GetEnumerator()
+		public IEnumerable<IDictionary<string, object?>> GetEnumerator()
 		{
-			var rowDictionary = new Dictionary<string, object>(Columns.Count);
+			var rowDictionary = new Dictionary<string, object?>(Columns.Count);
 
 			// Pre-calculate counts
 			int columnCount = Columns.Count;
-			int valueCount = _values.Count; 
+			int valueCount = Values.Count; 
 
 			// Calculate total rows based on values count
 			int rowCount = valueCount / columnCount;
@@ -146,7 +146,7 @@ namespace Daany
 				for (int colIndex = 0; colIndex < columnCount; colIndex++)
 				{
 					// Get value from internal storage
-					object value = _values[rowStart + colIndex];
+					object? value = Values[rowStart + colIndex];
 					rowDictionary[Columns[colIndex]] = value;
 				}
 
@@ -170,7 +170,7 @@ namespace Daany
 
 				for (int colIndex = 0; colIndex < columnCount; colIndex++)
 				{
-					rowArray[colIndex] = _values[rowStart + colIndex];
+					rowArray[colIndex] = Values[rowStart + colIndex]!;
 				}
 
 				yield return rowArray;
@@ -190,7 +190,7 @@ namespace Daany
             if (ind == null)
                 throw new Exception("Index cannot be null.");
 
-            if (ind.Count != _index.Count)
+            if (ind.Count != Index.Count)
                 throw new Exception("Wrong count of index list.");
 
             this._index = new Index(ind, name);
@@ -198,17 +198,17 @@ namespace Daany
 
         public DataFrame SetIndex(string colName)
         {
-            if (!this._columns.Contains(colName))
+            if (!Columns.Contains(colName))
                 throw new Exception($"{colName} does not exist.");
 
             //all cols except colName
-            var cols = this._columns.Where(x=>x!= colName).ToArray();
+            var cols = Columns.Where(x=>x!= colName).ToArray();
            
             //create new data frame
             var ind= this[colName].ToList();
             var df = this[cols];
             df._index = new Index(ind, colName);
-            //
+
             return df;
             
         }
@@ -217,7 +217,7 @@ namespace Daany
         {
             var colName = this.Index.Name;
             var colVal = this.Index.ToList();
-            var newDf = this[this._columns.ToArray()];
+            var newDf = this[Columns.ToArray()];
             newDf.Index.Reset();
             //drop index if required
             if(!drop)
@@ -229,7 +229,7 @@ namespace Daany
 		#region Constructors
 		private DataFrame()
 		{
-			_values = new List<object>();
+			_values = new List<object?>();
 			_index = new Index(new List<object>());
 			_columns = new List<string>();
 			_colTypes = Array.Empty<ColType>();
@@ -240,6 +240,7 @@ namespace Daany
 			if (data == null || data.Length == 0)
 				throw new ArgumentException("DataFrame must contain at least one column.");
 
+			
 			var columns = data.Select(c => c.columnName).ToList();
 			int rowCount = data.SelectMany(x => x.values).Count() / columns.Count;
 			var index = new Index(GenerateDefaultIndex(rowCount));
@@ -390,7 +391,7 @@ namespace Daany
 		/// var colTypes = new ColType[] { ColType.Int, ColType.String };
 		/// var df = new DataFrame(data, index, columns, colTypes);
 		/// </example>
-		public DataFrame(List<object> data, List<object> index, List<string> columns, ColType[] colTypes)
+		public DataFrame(List<object?> data, List<object> index, List<string> columns, ColType[] colTypes)
 		{
 			InitializeDataFrame(data, new Index(index), columns, colTypes?? throw new ArgumentNullException(nameof(colTypes)));
 		}
@@ -452,7 +453,7 @@ namespace Daany
 				throw new ArgumentNullException(nameof(dataFrame), "Argument 'dataFrame' cannot be null.");
 
 			InitializeDataFrame(
-				new List<object>(dataFrame._values),
+				new List<object?>(dataFrame.Values),
 				new Index(dataFrame.Index.ToList()),
 				new List<string>(dataFrame.Columns),
 				dataFrame.ColTypes.ToArray()
@@ -495,7 +496,7 @@ namespace Daany
 			
 			var colTypes = columnsTypes(new List<object>(data), rowCount, columns.Count);
 
-			InitializeDataFrame(new List<object>(data), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
+			InitializeDataFrame(new List<object?>(data), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
 		}
 
 		/// <summary>
@@ -532,9 +533,9 @@ namespace Daany
 
 			int rowCount = data.Count / columns.Count;
 
-			var colTypes = columnsTypes(new List<object>(data), rowCount, columns.Count);
+			var colTypes = columnsTypes(new List<object?>(data), rowCount, columns.Count);
 
-			InitializeDataFrame(new List<object>(data), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
+			InitializeDataFrame(new List<object?>(data), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
 		}
 
 		/// <summary>
@@ -578,7 +579,7 @@ namespace Daany
 			if (colTypes != null && colTypes.Length != columns.Count)
 				throw new ArgumentException("The number of column types must match the number of columns.", nameof(colTypes));
 
-			InitializeDataFrame(data.Cast<object>().ToList(), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
+			InitializeDataFrame(data.Cast<object?>().ToList(), new Index(GenerateDefaultIndex(rowCount)), new List<string>(columns), colTypes);
 		}
 
 
@@ -614,7 +615,7 @@ namespace Daany
 		/// var index = new List<object> { "Row1", "Row2", "Row3" };
 		/// var df = new DataFrame(data, index);
 		/// </example>
-		public DataFrame(IDictionary<string, List<object>> data, IList<object>? index = null)
+		public DataFrame(IDictionary<string, List<object?>> data, IList<object>? index = null)
 		{
 			ValidateData(data);
 
@@ -633,7 +634,7 @@ namespace Daany
 			InitializeDataFrame(values, computedIndex, columns, colTypes);
 		}
 
-		private void InitializeDataFrame(List<object> data, Index index, List<string> columns, ColType[] colTypes)
+		private void InitializeDataFrame(List<object?> data, Index index, List<string> columns, ColType[]? colTypes)
 		{
 			ValidateData(data, columns);
 
@@ -642,7 +643,7 @@ namespace Daany
 
 			_columns = new List<string>(columns);
 			_index = new Index(index.ToList());
-			_values = new List<object>(data);
+			_values = new List<object?>(data);
 
 			if (colTypes == null || colTypes.Length != _columns.Count)
 				throw new ArgumentException(nameof(colTypes));
@@ -716,63 +717,23 @@ namespace Daany
 
 			// Create and initialize an empty DataFrame
 			var df = new DataFrame();
-			df._values = new List<object>();
+			df._values = new List<object?>();
 			df._index = new Index(new List<object>());
 			df._columns = new List<string>(columns);
 			return df;
 		}
 
-		private DataFrame CreateNewDataFrame(List<object> clippedValues)
+		private DataFrame CreateNewDataFrame(List<object?> clippedValues)
 		{
 			// Create a new DataFrame with the same structure as the current one
 			var cols = Columns.ToList();
 			var types = ColTypes.ToArray();
 
 			//TODO: check if index should be clipped as well
-			var ind = _index.ToList();
+			var ind = Index.ToList();
 
 			return new DataFrame(clippedValues, ind, cols, types);
 		}
-
-
-		/// <summary>
-		/// Validates the consistency between data, index, and columns within the DataFrame.
-		/// Ensures that:
-		/// - The number of rows in the data matches the number of entries in the index.
-		/// - The number of columns in the data matches the provided column list.
-		/// </summary>
-		/// <param name="data">The data list representing the values in the DataFrame.</param>
-		/// <param name="index">The index list representing row identifiers in the DataFrame.</param>
-		/// <param name="columns">The column list representing column names in the DataFrame.</param>
-		/// <exception cref="ArgumentException">
-		/// Thrown if data, index, or columns are inconsistent.
-		/// </exception>
-		private void ValidateDataAndIndex(List<object> data, List<object> index, List<string> columns)
-		{
-			// Ensure data is not null or empty
-			if (data == null)
-				throw new ArgumentException("The data list cannot be null or empty.");
-
-			// Ensure index is not null or empty
-			if (index == null)
-				throw new ArgumentException("The index list cannot be null or empty.");
-
-			// Ensure columns are not null or empty
-			if (columns == null)
-				throw new ArgumentException("The columns list cannot be null or empty.");
-
-			// Validate the number of rows
-			int expectedRowCount = index.Count;
-			int actualRowCount = 0;
-
-			if (columns.Count > 0)
-				actualRowCount = data.Count / columns.Count;
-
-			if (expectedRowCount != actualRowCount)
-				throw new ArgumentException($"Mismatch between index and data rows: Expected {expectedRowCount} rows, but found {actualRowCount} rows in the data.");
-
-		}
-
 
 		private void ValidateData(object[] data, IList<string> columns)
 		{
@@ -786,7 +747,7 @@ namespace Daany
 				throw new ArgumentException("The number of columns must evenly divide the length of the data.");
 		}
 
-		private void ValidateData(List<object> data, List<string> columns)
+		private void ValidateData(List<object?> data, List<string> columns)
 		{
 			if (data == null)
 				throw new ArgumentNullException("Data cannot be null.", nameof(data));
@@ -857,7 +818,7 @@ namespace Daany
 		private void EnsureColumnTypesInitialized()
 		{
 			if (_colTypes == null || _colTypes == Array.Empty<ColType>())
-				_colTypes = columnsTypes(_values, Index.Count, Columns.Count);
+				_colTypes = columnsTypes(_values?? throw new ArgumentNullException(nameof(_values)), Index.Count, Columns.Count);
 		}
 
 		#endregion
@@ -910,11 +871,11 @@ namespace Daany
 			}
 
 			// Ensure no duplicate or invalid column names are introduced.
-			checkColumnNames(this._columns, columnsToAdd.Keys.ToArray());
+			checkColumnNames(Columns, columnsToAdd.Keys.ToArray());
 
 			// Create a new list to hold the combined values for the updated DataFrame.
-			var updatedValues = new List<object>(_index.Count * (Columns.Count + columnsToAdd.Count));
-			for (int i = 0; i < _index.Count; i++)
+			var updatedValues = new List<object?>(Index.Count * (Columns.Count + columnsToAdd.Count));
+			for (int i = 0; i < Index.Count; i++)
 			{
 				// Add the existing row values to the list.
 				updatedValues.AddRange(this[i]);
@@ -928,10 +889,10 @@ namespace Daany
 			var newColumnNames = Columns.Union(columnsToAdd.Keys).ToList();
 
 			//regenerate column types
-			var colTypes = columnsTypes(updatedValues, _index.Count, newColumnNames.Count);
+			var colTypes = columnsTypes(updatedValues, Index.Count, newColumnNames.Count);
 
 			// Return a new DataFrame with updated values, column names, and index.
-			return new DataFrame(updatedValues, this._index.ToList(), newColumnNames, colTypes);
+			return new DataFrame(updatedValues, Index.ToList(), newColumnNames, colTypes);
 		}
 
 
@@ -969,18 +930,18 @@ namespace Daany
 			if (verticaly) // Append rows
 			{
 				// Validate column compatibility for vertical append
-				if (this._columns.Count != df.Columns.Count)
+				if (Columns.Count != df.Columns.Count)
 					throw new ArgumentException("Data frames are not compatible for appending. Column counts must match.");
 
 				// Combine values and index
-				var valuesToAppend = new List<object>(this._values);
-				valuesToAppend.AddRange(df._values);
+				var valuesToAppend = new List<object?>(Values);
+				valuesToAppend.AddRange(df.Values);
 
-				var updatedIndex = new List<object>(this._index);
-				updatedIndex.AddRange(df._index);
+				var updatedIndex = new List<object>(Index);
+				updatedIndex.AddRange(df.Index);
 
 				// Use existing column names and types
-				var columns = this._columns.ToList();
+				var columns = Columns.ToList();
 				var columnTypes = this._colTypes != null && this._colTypes != Array.Empty<ColType>()
 					? this._colTypes.ToArray()
 					: this._colTypes;
@@ -991,14 +952,14 @@ namespace Daany
 			else // Append columns
 			{
 				// Validate row compatibility for horizontal append
-				if (this._index.Count != df._index.Count)
+				if (Index.Count != df.Index.Count)
 					throw new ArgumentException("Data frames are not compatible for appending. Row counts must match.");
 
 				// Prepare dictionary for new columns
 				var newColumns = new Dictionary<string, List<object>>();
-				for (int i = 0; i < df._columns.Count; i++)
+				for (int i = 0; i < df.Columns.Count; i++)
 				{
-					newColumns.Add(df._columns[i], df[df._columns[i]].ToList());
+					newColumns.Add(df.Columns[i], df[df.Columns[i]].ToList());
 				}
 
 				// Add columns to the current DataFrame
@@ -1031,7 +992,7 @@ namespace Daany
 		///
 		/// dataFrame.AddRow(new List<object> { 3, "B", 4 });
 		/// </example>
-		public void AddRow(List<object> row, object index = null)
+		public void AddRow(List<object?> row, object? index = null)
 		{
 			// Validate that the row is not null and matches the column count.
 			if (row == null)
@@ -1173,7 +1134,7 @@ namespace Daany
 				throw new ArgumentNullException(nameof(callBack));
 
 			// Check for duplicate column names
-			checkColumnNames(this._columns, colNames);
+			checkColumnNames(this.Columns, colNames);
 
 			// Initialize new values list
 			var updatedValues = new List<object>();
@@ -1206,7 +1167,7 @@ namespace Daany
 			}
 
 			// Add new columns to the DataFrame
-			this._columns.AddRange(colNames);
+			this.Columns.AddRange(colNames);
 			this._values = updatedValues;
             this._colTypes = columnsTypes(_values, Index.Count, Columns.Count);
 			return true;
@@ -1251,24 +1212,24 @@ namespace Daany
 				throw new ArgumentNullException(nameof(callBack));
 
 			// Check for duplicate column names
-			checkColumnNames(this._columns, colNames);
+			checkColumnNames(this.Columns, colNames);
 
 			// Create a new list to store updated values
-			var updatedValues = new List<object>();
+			var updatedValues = new List<object?>();
 
 			// Create a template for processing each row
 			var processingRow = new object[this.Columns.Count];
 
 			// Iterate through each row and calculate values for new columns
-			for (int i = 0; i < _index.Count; i++)
+			for (int i = 0; i < Index.Count; i++)
 			{
 				int rowOffset = i * this.Columns.Count;
 
 				// Populate existing row values
 				for (int j = 0; j < this.Columns.Count; j++)
 				{
-					var value = _values[rowOffset + j];
-					processingRow[j] = value;
+					var value = Values[rowOffset + j];
+					processingRow[j] = value!;
 					updatedValues.Add(value); // Add existing value to the updated list
 				}
 
@@ -1282,7 +1243,7 @@ namespace Daany
 			}
 
 			// Add new columns to the DataFrame
-			this._columns.AddRange(colNames);
+			this.Columns.AddRange(colNames);
 			this._values = updatedValues;
 
 
@@ -1336,7 +1297,7 @@ namespace Daany
 				if (aggs.ContainsKey(columnName))
 				{
 					var aggregation = aggs[columnName];
-					var value = calculateAggregation(this[columnName], aggregation, _colTypes[i]);
+					var value = calculateAggregation(this[columnName], aggregation, _colTypes![i]);
 					aggregatedValues.Add(value);
 				}
 				else if (allColumns)
@@ -1390,7 +1351,7 @@ namespace Daany
 				{
 					foreach (var aggregation in aggs[columnName])
 					{
-						var value = calculateAggregation(this[columnName], aggregation, _colTypes[Columns.IndexOf(columnName)]);
+						var value = calculateAggregation(this[columnName], aggregation, _colTypes![Columns.IndexOf(columnName)]);
 						aggregatedValues.Add(columnName, aggregation.GetEnumDescription(), value);
 					}
 				}
@@ -1423,8 +1384,8 @@ namespace Daany
 		{
 			EnsureColumnTypesInitialized();
 
-			var clippedValues = _values
-				.Select((value, index) => ClipValue(value, ColTypes[index % _columns.Count], minValue, maxValue))
+			var clippedValues = Values
+				.Select((value, index) => ClipValue(value, ColTypes[index % Columns.Count], minValue, maxValue))
 				.ToList();
 
 			// Return a new DataFrame
@@ -1459,10 +1420,10 @@ namespace Daany
 			EnsureColumnTypesInitialized();
 			var colIndices = getColumnIndex(columns);
 
-			var clippedValues = _values
+			var clippedValues = Values
 				.Select((value, index) =>
 				{
-					int colIndex = index % _columns.Count;
+					int colIndex = index % Columns.Count;
 					return colIndices.Contains(colIndex)
 						? ClipValue(value, ColTypes[colIndex], minValue, maxValue)
 						: value;
@@ -1482,7 +1443,7 @@ namespace Daany
 		/// <param name="minValue">The minimum value of the range (float).</param>
 		/// <param name="maxValue">The maximum value of the range (float).</param>
 		/// <returns>The clipped value, or the original value if not applicable.</returns>
-		private object ClipValue(object value, ColType colType, float minValue, float maxValue)
+		private object? ClipValue(object? value, ColType colType, float minValue, float maxValue)
 		{
 			// Convert minValue and maxValue to double for type compatibility
 			double minDouble = Convert.ToDouble(minValue);
@@ -1701,10 +1662,10 @@ namespace Daany
 		/// </example>
 		public void FillNA(object value)
 		{
-			for (int i = 0; i < _values.Count; i++)
+			for (int i = 0; i < Values.Count; i++)
 			{
-				if (_values[i] == DataFrame.NAN)
-					_values[i] = value;
+				if (Values[i] == DataFrame.NAN)
+					Values[i] = value;
 			}
 		}
 
@@ -1731,17 +1692,17 @@ namespace Daany
 
 			var colIndex = getColumnIndex(col);
 
-			for (int i = 0; i < _index.Count; i++)
+			for (int i = 0; i < Index.Count; i++)
 			{
 				int valueIndex = i * Columns.Count + colIndex;
-				if (_values[valueIndex] == DataFrame.NAN)
+				if (Values[valueIndex] == DataFrame.NAN)
                 {
 					// Ensure the aggregated value is converted to the appropriate column type
 					var convertedValue = ConvertValueToColumnType(replacedValue, this.ColTypes[colIndex]);
 					if (convertedValue == null)
 						throw new ArgumentNullException(nameof(convertedValue));
 
-					_values[valueIndex] = convertedValue;
+					Values[valueIndex] = convertedValue;
                 }
 			}
 		}
@@ -1877,14 +1838,14 @@ namespace Daany
 			// Validate input arguments
 			ValidateFilterArguments(cols, filterValues, fOpers);
 
-			if (_index.Count == 0)
+			if (Index.Count == 0)
 				return new DataFrame(Array.Empty<object>(), Columns.ToList());
 
 			// Get column indices
 			int[] columnIndices = getColumnIndex(cols);
 
 			// Filter rows based on conditions
-			var filteredRows = Enumerable.Range(0, _index.Count)
+			var filteredRows = Enumerable.Range(0, Index.Count)
 				.Where(rowIndex => FilterRow(rowIndex, columnIndices, filterValues, fOpers))
 				.ToList();
 
@@ -1917,14 +1878,14 @@ namespace Daany
 			for (int i = 0; i < columnIndices.Length; i++)
 			{
 				int colIndex = columnIndices[i];
-				object value = _values[baseIndex + colIndex];
+				object? value = Values[baseIndex + colIndex];
 
 				// Skip rows with missing values
 				if (value == DataFrame.NAN)
 					return false;
 
 				// Apply the filter operator
-				if (!applyOperator(value, filterValues[i], fOpers[i], ColTypes[colIndex]))
+				if (!applyOperator(value!, filterValues[i], fOpers[i], ColTypes[colIndex]))
 					return false;
 			}
 
@@ -1938,10 +1899,10 @@ namespace Daany
 		{
 			var filteredValues = filteredRows
 				.SelectMany(rowIndex => Enumerable.Range(0, Columns.Count)
-					.Select(colIndex => _values[rowIndex * Columns.Count + colIndex]))
+					.Select(colIndex => Values[rowIndex * Columns.Count + colIndex]))
 				.ToList();
 
-			var filteredIndex = filteredRows.Select(rowIndex => _index[rowIndex]).ToList();
+			var filteredIndex = filteredRows.Select(rowIndex => Index[rowIndex]).ToList();
 
 			return new DataFrame(filteredValues, filteredIndex, Columns, _colTypes!);
 		}
@@ -1998,13 +1959,13 @@ namespace Daany
 		/// </example>
 		public DataFrame Filter(Func<IDictionary<string, object>, bool> condition)
 		{
-			var filteredRows = Enumerable.Range(0, _index.Count)
+			var filteredRows = Enumerable.Range(0, Index.Count)
 				.Where(rowIndex =>
 				{
 					var rowDict = Columns.ToDictionary(
 						col => col,
-						col => _values[rowIndex * Columns.Count + getColumnIndex(col)]);
-					return condition(rowDict);
+						col => Values[rowIndex * Columns.Count + getColumnIndex(col)]);
+					return condition(rowDict!);
 				})
 				.ToList();
 
@@ -2085,22 +2046,22 @@ namespace Daany
 
 			// Determine position for column insertion
 			if (nPos == -1)
-				nPos = this._columns.Count;
+				nPos = this.Columns.Count;
 			if (nPos < 0 || nPos > ColCount())
 				throw new ArgumentException("Index position must be between 0 and ColCount.");
 
 			// Ensure column name is unique
-			checkColumnName(this._columns, cName);
+			checkColumnName(this.Columns, cName);
 
 			// Create new values array with the column inserted
-			var newValues = Enumerable.Range(0, _index.Count)
-				.SelectMany(i => Enumerable.Range(0, _columns.Count + 1)
-					.Select(j => j == nPos ? value[i] : _values[i * _columns.Count + (j < nPos ? j : j - 1)]))
+			var newValues = Enumerable.Range(0, Index.Count)
+				.SelectMany(i => Enumerable.Range(0, Columns.Count + 1)
+					.Select(j => j == nPos ? value[i] : Values[i * Columns.Count + (j < nPos ? j : j - 1)]))
 				.ToList();
 
 			// Create new column list with the column inserted
-			var newColumns = this._columns.ToList();
-			if (nPos == this._columns.Count)
+			var newColumns = this.Columns.ToList();
+			if (nPos == this.Columns.Count)
 				newColumns.Add(cName);
 			else
 				newColumns.Insert(nPos, cName);
@@ -2114,7 +2075,7 @@ namespace Daany
 				newTypes.Insert(nPos, colType);
 
 			// Return new DataFrame
-			return new DataFrame(newValues, _index.ToList(), newColumns, newTypes.ToArray());
+			return new DataFrame(newValues, Index.ToList(), newColumns, newTypes.ToArray());
 		}
 
 
@@ -2147,7 +2108,7 @@ namespace Daany
 		/// // Example: Insert a row at position 0
 		/// df.InsertRow(0, new List<object> { 0, 0, 0 }, "row0");
 		/// </example>
-		public void InsertRow(int nPos, List<object> row, object? index = null)
+		public void InsertRow(int nPos, List<object?> row, object? index = null)
 		{
 			// Validate the row size
 			if (row.Count != this.ColCount())
@@ -2157,15 +2118,15 @@ namespace Daany
 			if (nPos == -1)
 			{
 				// Append row
-				_values.AddRange(row);
-				_index.Add(index ?? _index.Count); // Add index (auto-increment if null)
+				_values?.AddRange(row);
+				_index?.Add(index ?? _index.Count); // Add index (auto-increment if null)
 			}
 			else
 			{
 				// Insert row at the specified position
 				int insertIndex = nPos * this.ColCount();
-				_values.InsertRange(insertIndex, row);
-				_index.Insert(nPos, index ?? this.RowCount()); // Add index
+				_values?.InsertRange(insertIndex, row);
+				_index?.Insert(nPos, index ?? this.RowCount()); // Add index
 			}
 		}
 
@@ -2213,7 +2174,7 @@ namespace Daany
             tot.AddRange(df2.Columns);
 
             //
-            (var totalColumns, var totalTypes) = mergeColumns(this._columns,this._colTypes, df2._columns,df2._colTypes, "rightDf");
+            (var totalColumns, var totalTypes) = mergeColumns(this.Columns, _colTypes!, df2.Columns,df2._colTypes!, "rightDf");
             
             //create right lookup 
             var right = new List<ILookup<object, int>>();
@@ -2224,7 +2185,7 @@ namespace Daany
                 right.Add(lo);
             }
 
-            var lst = new List<object>();//new values
+            var lst = new List<object?>();//new values
             var finIndex = new List<object>();//new index
             var leftRCount = RowCount();
             var leftCCount = ColCount();
@@ -2234,7 +2195,7 @@ namespace Daany
             //left df enumeration          
             for (int i = 0; i < leftRCount; i++)
             {
-                var leftKey = this._index[i];
+                var leftKey = Index[i];
                 var rPos = containsKey(i, leftInd, right);
                 if (rPos != null)
                 {
@@ -2248,11 +2209,11 @@ namespace Daany
                         //fill left table
                         int startL = i * leftCCount;
                         for (int r = startL; r < startL + leftCCount; r++)
-                            lst.Add(_values[r]);
+                            lst.Add(Values[r]);
                         //fill right table
                         int startR = j * rightCCount;
                         for (int r = startR; r < startR + rightCCount; r++)
-                            lst.Add(df2._values[r]);
+                            lst.Add(df2.Values[r]);
 
                     }
 
@@ -2268,7 +2229,7 @@ namespace Daany
 
                         int startL = i * leftCCount;
                         for (int r = startL; r < startL + leftCCount; r++)
-                            lst.Add(_values[r]);
+                            lst.Add(Values[r]);
 
                         for (int r = 0; r < rightCCount; r++)
                             lst.Add(DataFrame.NAN);
@@ -2343,11 +2304,11 @@ namespace Daany
 				.ToDictionary(g => g.Key, g => g.Select(x => x.value).ToList());
 
 			// Process left DataFrame
-			var mergedValues = new List<object>();
+			var mergedValues = new List<object?>();
 			var mergedIndex = new List<object>();
 			for (int i = 0; i < RowCount(); i++)
 			{
-				var leftKey = _index[i];
+				var leftKey = Index[i];
 				if (rightIndexLookup.TryGetValue(leftKey, out var rightRowIndices))
 				{
 					foreach (var j in rightRowIndices)
@@ -2375,10 +2336,10 @@ namespace Daany
 		/// </summary>
 		/// <param name="rowIndex">The index of the row.</param>
 		/// <returns>A list of values in the row.</returns>
-		private IEnumerable<object> GetRowValues(int rowIndex)
+		private IEnumerable<object?> GetRowValues(int rowIndex)
 		{
 			int start = rowIndex * ColCount();
-			return _values.Skip(start).Take(ColCount());
+			return Values.Skip(start).Take(ColCount());
 		}
 
 		/// <summary>
@@ -2450,7 +2411,7 @@ namespace Daany
 			var typ2 = df2._colTypes;
 
 			//merge column names
-			(List<string> totCols, List<ColType> totType) = mergeColumns(this._columns, typ1!, df2._columns, typ2!, suffix);
+			(List<string> totCols, List<ColType> totType) = mergeColumns(this.Columns, typ1!, df2._columns, typ2!, suffix);
 
 			//create lookup table
 			(ILookup<object, int> lookup1,
@@ -2460,7 +2421,7 @@ namespace Daany
 
 			//mrging process
 			var leftInd = getColumnIndex(leftOn);
-			var lst = new List<object>();//values
+			var lst = new List<object?>();//values
 			var finIndex = new List<object>();//left df enumeration
 			var leftRCount = this.RowCount();
 			var leftCCount = this.ColCount();
@@ -2470,7 +2431,7 @@ namespace Daany
 			//
 			for (int i = 0; i < leftRCount; i++)
 			{
-				var leftKey = this._index[i];
+				var leftKey = Index[i];
 
 				//search for match
 				int[] rPos = findIndex(lookup1, lookup2, lookup3, leftInd, i);
@@ -2487,13 +2448,13 @@ namespace Daany
 						//fill left table
 						int startL = i * leftCCount;
 						for (int r = startL; r < startL + leftCCount; r++)
-							lst.Add(this._values[r]);
+							lst.Add(Values[r]);
 
 						//fill right table
 						int startR = j * rightCCount;
 						//
 						for (int r = startR; r < startR + rightCCount; r++)
-							lst.Add(df2._values[r]);
+							lst.Add(df2.Values[r]);
 					}
 
 				}
@@ -2508,7 +2469,7 @@ namespace Daany
 
 						int startL = i * leftCCount;
 						for (int r = startL; r < startL + leftCCount; r++)
-							lst.Add(_values[r]);
+							lst.Add(Values[r]);
 
 						for (int r = 0; r < rightCCount; r++)
 							lst.Add(DataFrame.NAN);
@@ -2659,20 +2620,20 @@ namespace Daany
 
 			// Delegate to the SortDataFrame class
 			var sorter = new SortDataFrame(_colTypes!);
-			List<object> sortedValues;
+			List<object?> sortedValues;
 			List<object> sortedIndices;
 
 			if (qsAlgo)
 			{
-				(sortedValues, sortedIndices) = sorter.QuickSort(this._values, this._index.ToList(), colInd);
+				(sortedValues, sortedIndices) = sorter.QuickSort(Values, Index.ToList(), colInd);
 			}
 			else
 			{
-				(sortedValues, sortedIndices) = sorter.MergeSort(this._values.ToArray(), this._index.ToArray(), colInd);
+				(sortedValues, sortedIndices) = sorter.MergeSort(Values.ToArray()!, Index.ToArray(), colInd);
 			}
 
 			// Create a new sorted DataFrame
-			return new DataFrame(sortedValues, sortedIndices, Columns.ToList(), _colTypes.ToArray());
+			return new DataFrame(sortedValues, sortedIndices, Columns.ToList(), _colTypes!);
 		}
 
 
@@ -2769,11 +2730,11 @@ namespace Daany
 				rowDict[column] = null;
 
 			// Lists to hold new DataFrame values and indices
-			var newValues = new List<object>();
+			var newValues = new List<object?>();
 			var newIndices = new List<object>();
 
 			// Iterate through rows
-			for (int i = 0; i < _index.Count; i++)
+			for (int i = 0; i < Index.Count; i++)
 			{
 				// Populate the row dictionary with values from the current row
 				PopulateRowDictionary(rowDict, i);
@@ -2784,15 +2745,15 @@ namespace Daany
 					// Add the row's values to the new data
 					int rowStart = calculateIndex(i, 0);
 					for (int j = 0; j < Columns.Count; j++)
-						newValues.Add(_values[rowStart + j]);
+						newValues.Add(Values[rowStart + j]);
 
 					// Add the row's index to the new indices
-					newIndices.Add(_index[i]);
+					newIndices.Add(Index[i]);
 				}
 			}
 
 			// Construct the new DataFrame
-			return new DataFrame(newValues, newIndices, Columns.ToList(), _colTypes);
+			return new DataFrame(newValues, newIndices, Columns.ToList(), _colTypes!);
 		}
 
 		/// <summary>
@@ -2800,12 +2761,12 @@ namespace Daany
 		/// </summary>
 		/// <param name="rowDict">The dictionary to populate.</param>
 		/// <param name="rowIndex">The index of the row to process.</param>
-		private void PopulateRowDictionary(Dictionary<string, object> rowDict, int rowIndex)
+		private void PopulateRowDictionary(Dictionary<string, object?> rowDict, int rowIndex)
 		{
 			int startIndex = calculateIndex(rowIndex, 0);
 			for (int j = 0; j < Columns.Count; j++)
 			{
-				rowDict[Columns[j]] = _values[startIndex + j];
+				rowDict[Columns[j]] = Values[startIndex + j];
 			}
 		}
 
@@ -2851,11 +2812,11 @@ namespace Daany
 			var rowArray = new object[ColCount()];
 
 			// Prepare lists for values and indices in the resulting DataFrame
-			var newValues = new List<object>();
+			var newValues = new List<object?>();
 			var newIndices = new List<object>();
 
 			// Iterate through rows
-			for (int i = 0; i < _index.Count; i++)
+			for (int i = 0; i < Index.Count; i++)
 			{
 				// Populate the row array with values from the current row
 				PopulateRowArray(rowArray, i);
@@ -2866,15 +2827,15 @@ namespace Daany
 					// Add the row's values to the new data
 					int rowStart = calculateIndex(i, 0);
 					for (int j = 0; j < Columns.Count; j++)
-						newValues.Add(_values[rowStart + j]);
+						newValues.Add(Values[rowStart + j]);
 
 					// Add the row's index to the new indices
-					newIndices.Add(_index[i]);
+					newIndices.Add(Index[i]);
 				}
 			}
 
 			// Construct the new DataFrame
-			return new DataFrame(newValues, newIndices, Columns.ToList(), _colTypes);
+			return new DataFrame(newValues, newIndices, Columns.ToList(), _colTypes!);
 		}
 
 		/// <summary>
@@ -2887,7 +2848,7 @@ namespace Daany
 			int startIndex = calculateIndex(rowIndex, 0);
 			for (int j = 0; j < Columns.Count; j++)
 			{
-				rowArray[j] = _values[startIndex + j];
+				rowArray[j] = Values[startIndex + j]!;
 			}
 		}
 
@@ -3098,11 +3059,11 @@ namespace Daany
 				throw new ArgumentException("Window size must be at least 1.");
 
 			var rollingQueues = new Dictionary<string, Queue<object>>();
-			var aggregatedValues = new Dictionary<string, List<object>>();
+			var aggregatedValues = new Dictionary<string, List<object?>>();
 
 			EnsureColumnTypesInitialized();
 
-			for (int i = 0; i < _index.Count; i++)
+			for (int i = 0; i < Index.Count; i++)
 			{
 				for (int j = 0; j < ColCount(); j++)
 				{
@@ -3114,10 +3075,10 @@ namespace Daany
 					if (!rollingQueues.ContainsKey(columnName))
 					{
 						rollingQueues[columnName] = new Queue<object>(window);
-						aggregatedValues[columnName] = new List<object>();
+						aggregatedValues[columnName] = new List<object?>();
 					}
 
-					rollingQueues[columnName].Enqueue(_values[calculateIndex(i, j)]);
+					rollingQueues[columnName].Enqueue(Values[calculateIndex(i, j)]!);
 
 					if (rollingQueues[columnName].Count < window)
 					{
@@ -3133,7 +3094,7 @@ namespace Daany
 				}
 			}
 
-			return new DataFrame(aggregatedValues, _index.ToList());
+			return new DataFrame(aggregatedValues, Index.ToList());
 		}
 
 
@@ -3316,31 +3277,31 @@ namespace Daany
 			if (nthRow < 1)
 				throw new ArgumentException("'nthRow' must be greater than zero.");
 
-			var selectedValues = new List<object>();
+			var selectedValues = new List<object?>();
 			var selectedIndices = new List<object>();
 
-			for (int i = 0; i < _index.Count; i++)
+			for (int i = 0; i < Index.Count; i++)
 			{
 				if ((i + 1) % nthRow == 0)
 				{
 					selectedValues.AddRange(this[i]);
-					selectedIndices.Add(_index[i]);
+					selectedIndices.Add(Index[i]);
 				}
 			}
 
 			// Include last row if requested
-			if (includeLast && _index.Count % nthRow != 0)
+			if (includeLast && Index.Count % nthRow != 0)
 			{
-				int lastIndex = _index.Count - 1;
+				int lastIndex = Index.Count - 1;
 				selectedValues.AddRange(this[lastIndex]);
-				selectedIndices.Add(_index[lastIndex]);
+				selectedIndices.Add(Index[lastIndex]);
 			}
 
 			// Ensure column types are initialized
 			if (_colTypes == null || _colTypes.Length == 0)
 				EnsureColumnTypesInitialized();
 
-			return new DataFrame(selectedValues, selectedIndices, _columns.ToList(), _colTypes);
+			return new DataFrame(selectedValues, selectedIndices, Columns.ToList(), _colTypes!);
 		}
 
 		/// <summary>
@@ -3374,7 +3335,7 @@ namespace Daany
 
 			var selected = new List<int>();
 			double needed = rows;
-			double available = _index.Count;
+			double available = Index.Count;
 
 			while (selected.Count < rows)
 			{
@@ -3443,7 +3404,7 @@ namespace Daany
 				rowsToExclude.Add(string.Join(",", rowValues));
 			}
 
-			var filteredValues = new List<object>();
+			var filteredValues = new List<object?>();
 			var filteredIndices = new List<object>();
 
 			// Iterate through main DataFrame and exclude matching rows
@@ -3459,7 +3420,7 @@ namespace Daany
 				}
 			}
 
-			return new DataFrame(filteredValues, filteredIndices, this.Columns.ToList(), this._colTypes);
+			return new DataFrame(filteredValues, filteredIndices, this.Columns.ToList(), this._colTypes!);
 		}
 
 		/// <summary>
@@ -3483,16 +3444,16 @@ namespace Daany
 		public DataFrame Head(int count = 5)
 		{
 			int numRows = Math.Min(RowCount(), count);
-			var selectedValues = new List<object>();
+			var selectedValues = new List<object?>();
 			var selectedIndices = new List<object>();
 
 			for (int i = 0; i < numRows; i++)
 			{
 				selectedValues.AddRange(this[i]);
-				selectedIndices.Add(_index[i]);
+				selectedIndices.Add(Index[i]);
 			}
 
-			return new DataFrame(selectedValues, selectedIndices, _columns, _colTypes);
+			return new DataFrame(selectedValues, selectedIndices, Columns, _colTypes!);
 		}
 
 		/// <summary>
@@ -3512,16 +3473,16 @@ namespace Daany
 		public DataFrame Tail(int count = 5)
 		{
 			int numRows = Math.Min(RowCount(), count);
-			var selectedValues = new List<object>();
+			var selectedValues = new List<object?>();
 			var selectedIndices = new List<object>();
 
 			for (int i = RowCount() - numRows; i < RowCount(); i++)
 			{
 				selectedValues.AddRange(this[i]);
-				selectedIndices.Add(_index[i]);
+				selectedIndices.Add(Index[i]);
 			}
 
-			return new DataFrame(selectedValues, selectedIndices, _columns, _colTypes);
+			return new DataFrame(selectedValues, selectedIndices, Columns, _colTypes!);
 		}
 
 		/// <summary>
@@ -3546,18 +3507,18 @@ namespace Daany
 			if (rows < 1)
 				throw new ArgumentException("Rows count must be greater than zero.");
 
-			var selectedValues = new List<object>();
+			var selectedValues = new List<object?>();
 			var selectedIndices = new List<object>();
 
 			int numRows = Math.Min(rows, RowCount());
 
 			for (int i = 0; i < numRows; i++)
 			{
-				selectedIndices.Add(_index[i]);
+				selectedIndices.Add(Index[i]);
 				selectedValues.AddRange(this[i]);
 			}
 
-			return new DataFrame(selectedValues, selectedIndices, _columns, _colTypes);
+			return new DataFrame(selectedValues, selectedIndices, Columns, _colTypes!);
 		}
 
 
@@ -3596,21 +3557,21 @@ namespace Daany
 		/// object value = df[1, 0]; // Retrieves value at row index 1, column index 0.
 		/// df[2, 1] = "Modified"; // Modifies value at row index 2, column index 1.
 		/// </example>
-		public object this[int row, int col]
+		public object? this[int row, int col]
 		{
 			get
 			{
 				if (row < 0 || row >= RowCount() || col < 0 || col >= ColCount())
 					throw new IndexOutOfRangeException($"Index ({row}, {col}) is out of bounds.");
 
-				return _values[calculateIndex(row, col)];
+				return Values[calculateIndex(row, col)];
 			}
 			set
 			{
 				if (row < 0 || row >= RowCount() || col < 0 || col >= ColCount())
 					throw new IndexOutOfRangeException($"Index ({row}, {col}) is out of bounds.");
 
-				_values[calculateIndex(row, col)] = value;
+				Values[calculateIndex(row, col)] = value;
 			}
 		}
 
@@ -3628,7 +3589,7 @@ namespace Daany
 		/// object value = df["col1", 2]; // Retrieve value in "col1" at row index 2.
 		/// df["col2", 1] = "Updated"; // Modify value in "col2" at row index 1.
 		/// </example>
-		public object this[string col, int row]
+		public object? this[string col, int row]
 		{
 			get
 			{
@@ -3636,7 +3597,7 @@ namespace Daany
 					throw new ArgumentException($"Column '{col}' does not exist.");
 
 				int ind = calculateIndex(col, row);
-				return _values[ind];
+				return Values[ind];
 			}
 			set
 			{
@@ -3644,7 +3605,7 @@ namespace Daany
 					throw new ArgumentException($"Column '{col}' does not exist.");
 
 				int ind = calculateIndex(col, row);
-				_values[ind] = value;
+				Values[ind] = value;
 			}
 		}
 
@@ -3674,18 +3635,18 @@ namespace Daany
 				var colInd = getColumnIndex(cols);
 
 				//reserve space
-				var lst = new object[cols.Length * _index.Count];
+				var lst = new object[cols.Length * Index.Count];
 				var counter = 0;
 				var newCounter = 0;
-				for (int i = 0; i < _index.Count; i++)
+				for (int i = 0; i < Index.Count; i++)
 				{
 					for (int j = 0; j < colInd.Length; j++)
 					{
-						lst[newCounter + j] = this._values[counter + colInd[j]];
+						lst[newCounter + j] = Values[counter + colInd[j]]!;
 					}
 					//increase indexes
 					newCounter += colInd.Length;
-					counter += _columns.Count;
+					counter += Columns.Count;
 				}
 
 				var newColTypes = new ColType[cols.Length];
@@ -3694,7 +3655,7 @@ namespace Daany
 					newColTypes[i] = ColTypes[colInd[i]];
 				}
 
-				return new DataFrame(lst.ToList(), Index.ToList(), cols.ToList(), newColTypes);
+				return new DataFrame(lst.Select(x=>(object?)x).ToList(), Index.ToList(), cols.ToList(), newColTypes);
 			}
 		}
 
@@ -3710,7 +3671,7 @@ namespace Daany
 		/// <example>
 		/// IEnumerable<object> columnData = df["col1"];
 		/// </example>
-		public IEnumerable<object> this[string col]
+		public IEnumerable<object?> this[string col]
 		{
 			get
 			{
@@ -3720,8 +3681,8 @@ namespace Daany
 				int colIndex = getColumnIndex(col);
 				int cols = ColCount();
 
-				for (int i = colIndex; i < _values.Count; i += cols)
-					yield return _values[i];
+				for (int i = colIndex; i < Values.Count; i += cols)
+					yield return Values[i];
 			}
 		}
 
@@ -3737,7 +3698,7 @@ namespace Daany
 		/// <example>
 		/// IEnumerable<object> rowData = df[1];
 		/// </example>
-		public IEnumerable<object> this[int row]
+		public IEnumerable<object?> this[int row]
 		{
 			get
 			{
@@ -3748,7 +3709,7 @@ namespace Daany
 				int startIndex = calculateIndex(row, 0);
 
 				for (int i = startIndex; i < startIndex + cols; i++)
-					yield return _values[i];
+					yield return Values[i];
 			}
 		}
 
@@ -3824,10 +3785,10 @@ namespace Daany
 			int rr = Math.Min(rowCount, rows);
 			for (int i = 0; i < rr; i++)
 			{
-				sb.Append(Index[i].ToString().PadRight(longestColumnName));
+				sb.Append(Index[i].ToString()!.PadRight(longestColumnName));
 				foreach (var obj in this[i])
 				{
-					sb.Append((obj ?? "null").ToString().PadRight(longestColumnName));
+					sb.Append((obj ?? "null").ToString()!.PadRight(longestColumnName));
 				}
 				sb.AppendLine();
 			}
@@ -3838,7 +3799,7 @@ namespace Daany
 
 		public Array To1DArray()
         {
-            return this._values.ToArray();
+            return Values.ToArray();
         }
 
 		/// <summary>
@@ -3882,10 +3843,10 @@ namespace Daany
             {
                 IList<object> row = this[i].ToList();
 
-                sb.Append((Index[i] ?? "null").ToString().PadRight(longestColumnName));
+                sb.Append((Index[i] ?? "null").ToString()!.PadRight(longestColumnName));
                 foreach (object obj in row)
                 {
-                    sb.Append((obj ?? "null").ToString().PadRight(longestColumnName));
+                    sb.Append((obj ?? "null").ToString()!.PadRight(longestColumnName));
                 }
                 sb.AppendLine();
             }
@@ -3908,10 +3869,10 @@ namespace Daany
         public DataFrame AddColumn(Series ser)
         {
             //
-            checkColumnName(this._columns, ser.Name);
+            checkColumnName(this.Columns, ser.Name);
             //
-            var vals = new List<object>();
-            for (int i = 0; i < this._index.Count; i++)
+            var vals = new List<object?>();
+            for (int i = 0; i < Index.Count; i++)
             {
                 vals.AddRange(this[i]);
                 vals.Add(ser[i]);
@@ -3928,7 +3889,7 @@ namespace Daany
             var newcolTypes = this._colTypes!.ToList();
             newcolTypes.Add(newType);
             //
-            var index = this._index.ToList();
+            var index = Index.ToList();
             return new DataFrame(vals, index, newCols, newcolTypes.ToArray());
         }
 
@@ -3940,10 +3901,10 @@ namespace Daany
         public DataFrame AddColumns(params Series[] sers)
         {
             //
-            checkColumnNames(this._columns, sers.Select(x => x.Name).ToArray());
+            checkColumnNames(this.Columns, sers.Select(x => x.Name).ToArray());
             //
-            var vals = new List<object>();
-            for (int i = 0; i < this._index.Count; i++)
+            var vals = new List<object?>();
+            for (int i = 0; i < Index.Count; i++)
             {
                 vals.AddRange(this[i]);
                 vals.AddRange(sers.Select(x => x[i]));
@@ -3956,7 +3917,7 @@ namespace Daany
             var newTypes = ColTypes.Union(sers.Select(x=>x.ColType)).ToArray();
 
             //
-            var index = this._index.ToList();
+            var index = Index.ToList();
             return new DataFrame(vals, index, newCols, newTypes);
         }
 
@@ -3967,11 +3928,11 @@ namespace Daany
         /// <returns></returns>
         public Series ToSeries(string colName)
         {
-            if(!this._columns.Contains(colName))
+            if(!this.Columns.Contains(colName))
                 throw new Exception($"Column {colName} do not exist in the dataframe.");
 
             var data = this[colName].ToList();
-            var ind = this._index.ToList();
+            var ind = Index.ToList();
             var s = new Series(data, ind, colName);
             return s;
         }
@@ -3986,11 +3947,11 @@ namespace Daany
             var retVal = new List<Series>();
             foreach(var colName in colNames)
             {
-                if (!this._columns.Contains(colName))
+                if (!this.Columns.Contains(colName))
                     throw new Exception($"Column {colName} do not exist in the dataframe.");
 
                 var data = this[colName].ToList();
-                var ind = this._index.ToList();
+                var ind = Index.ToList();
                 var s = new Series(data, ind, colName);
                 retVal.Add(s);
             }
@@ -4002,7 +3963,8 @@ namespace Daany
         {
             if (this.Columns.Count != 1)
                 throw new Exception("DataFrame must have one column to be converted into Series.");
-            var ser = new Series(this._values, this._index, this._columns.First());
+
+            var ser = new Series(_values!, Index, this.Columns.First());
 
             return ser;
         }
@@ -4039,48 +4001,23 @@ namespace Daany
             for (int i = 0; i < period; i++)
             {
                 var nanrow = new object[ColCount()].ToList();
-                newDf.InsertRow(0, nanrow);
+                newDf.InsertRow(0, nanrow!);
             }
             //calculate differencing
             for (int i = period; i < RowCount(); i++ )
             {
                 var prevrow = new Series(this[i - period].ToList());
                 var row = new Series(this[i].ToList());
+
                 var diffs = row - prevrow;
-                newDf.InsertRow(i, diffs.ToList());
+                newDf.InsertRow(i, diffs.ToList()!);
             }
 
             return newDf;
         }
 
-        private List<string> mergeColumnNames(IList<string> cols1, IList<string> cols2, string sufix = null)
-        {
-            //merge columns
-            var totColumns = cols1.ToList();
-            //
-            for (int i = 0; i < cols2.Count; i++)
-            {
-                var colName = cols2[i];
-                //if the first list already contains the columnName
-                if (totColumns.Contains(colName) && !string.IsNullOrEmpty(sufix))
-                {
-                    var newColName = $"{colName}_{sufix}";
-                    //if the new column Names already occupied throw exception
-                    if (totColumns.Contains(newColName))
-                        throw new Exception($"Column suffix {sufix} produces duplicated column. Please change the column suffix for columns merge.");
-
-                    totColumns.Add(newColName);
-                }
-                else if (totColumns.Contains(colName) && string.IsNullOrEmpty(sufix))
-                    continue;
-                else
-                    totColumns.Add(colName);
-            }
-
-            return totColumns;
-        }
         private (List<string>, List<ColType>) mergeColumns(
-                IList<string> cols1, ColType[] typ1, IList<string> cols2, ColType[] typ2, string sufix = null)
+                IList<string> cols1, ColType[] typ1, IList<string> cols2, ColType[] typ2, string? sufix = null)
         {
             //merge columns
             var totColumns = cols1.ToList();
@@ -4115,42 +4052,42 @@ namespace Daany
         }
 
 
-        private (ILookup<object, int> lookup1, TwoKeyLookup<object, object, int> lookup2, ThreeKeyLookup<object, object, object, int> lookup3) createLookup(DataFrame df, string[] cols)
+        private (ILookup<object, int>? lookup1, TwoKeyLookup<object, object, int>? lookup2, ThreeKeyLookup<object, object, object, int>? lookup3) createLookup(DataFrame df, string[] cols)
         {
             var rightInd = df.getColumnIndex(cols);
             var rIndex = Enumerable.Range(0, df.RowCount()).ToArray();
 
             //create right lookup 
-            ILookup<object, int> lookup1 = null;
-            TwoKeyLookup<object, object, int> lookup2 = null;
-            ThreeKeyLookup<object, object, object, int> lookup3 = null;
+            ILookup<object?, int>? lookup1 = null;
+            TwoKeyLookup<object, object, int>? lookup2 = null;
+            ThreeKeyLookup<object, object, object, int>? lookup3 = null;
 
             //construct lookup table
             if (rightInd.Length == 1)
                 lookup1 = df[cols[0]].Zip(rIndex, (key, value) => (key, value)).ToLookup(x => x.key, x => x.value);
             else if (rightInd.Length == 2)
-                lookup2 = new TwoKeyLookup<object, object, int>(rIndex, item => (df[item, rightInd[0]], df[item, rightInd[1]]));
+                lookup2 = new TwoKeyLookup<object, object, int>(rIndex, item => (df[item, rightInd[0]]!, df[item, rightInd[1]]!));
             else if (rightInd.Length == 3)
-                lookup3 = new ThreeKeyLookup<object, object, object, int>(rIndex, item => (df[item, rightInd[0]], df[item, rightInd[1]], df[item, rightInd[2]]));
+                lookup3 = new ThreeKeyLookup<object, object, object, int>(rIndex, item => (df[item, rightInd[0]]!, df[item, rightInd[1]]!, df[item, rightInd[2]]!));
             else
                 throw new Exception("Unknown number of Key columns");
 
-            return (lookup1, lookup2, lookup3);
+            return (lookup1, lookup2, lookup3)!;
         }
 
         private int[] findIndex(ILookup<object, int> lookup1, TwoKeyLookup<object, object, int> lookup2, ThreeKeyLookup<object, object, object, int> lookup3, int[] colInd, int i)
         {
             if (lookup1 != null)
-                return lookup1[this[i, colInd[0]]].ToArray();
+                return lookup1[this[i, colInd[0]]!].ToArray();
             else if (lookup2 != null)
-                return lookup2[this[i, colInd[0]], this[i, colInd[1]]].ToArray();
+                return lookup2[this[i, colInd[0]]!, this[i, colInd[1]]!].ToArray();
             else if (lookup3 != null)
-                return lookup3[this[i, colInd[0]], this[i, colInd[1]], this[i, colInd[2]]].ToArray();
+                return lookup3[this[i, colInd[0]]!, this[i, colInd[1]]!, this[i, colInd[2]]!].ToArray();
             else
                 throw new Exception("Unknown number of key columns.");
         }
 
-        private int[] containsKey(int i, int[] leftInd, List<ILookup<object, int>> right)
+        private int[]? containsKey(int i, int[] leftInd, List<ILookup<object, int>> right)
         {
             if (leftInd.Length != right.Count)
                 throw new Exception("The number o elements must be equal.");
@@ -4159,7 +4096,7 @@ namespace Daany
 
             //try the first column
             var lftValue = this[i, leftInd[0]];
-            if (!right[0].Contains(lftValue))
+            if (lftValue== null || !right[0].Contains(lftValue))
                 return null;
 
             //in case one one joined column return
@@ -4169,8 +4106,9 @@ namespace Daany
 
             //check the second column
             var lftValue2 = this[i, leftInd[1]];
-            if (!right[1].Contains(lftValue2))
+            if (lftValue2 == null|| !right[1].Contains(lftValue2))
                 return null;
+
             var secondIndexes = right[1][lftValue2].ToArray();
             //intersect two arrays
             var firstSecondIndexes = firstIndexes.Intersect(secondIndexes).ToArray();
@@ -4184,7 +4122,7 @@ namespace Daany
 
             //check the third column
             var lftValue3 = this[i, leftInd[2]];
-            if (!right[2].Contains(lftValue3))
+            if (lftValue3 == null || !right[2].Contains(lftValue3))
                 return null;
             var thirdIndexes = right[2][lftValue3].ToArray();
 
@@ -4229,69 +4167,9 @@ namespace Daany
             }
         }
 
-        private void rowToArray(object[] processingRow, int rowIndex)
-        {
-            if (processingRow == null && processingRow.Length != ColCount())
-                throw new ArgumentException($"'{nameof(processingRow)}' cannot be null or with different length than columns count.");
-
-            //
-            var i = calculateIndex(rowIndex, 0);
-            //
-            for (int j = 0; j < this._columns.Count; j++)
-            {
-                var value = _values[i + j];
-                processingRow[j] = value;
-            }
-
-            return;
-        }
-
-        private void rowToDictionary(Dictionary<string, object> processingRow, int rowIndex)
-        {
-            if (processingRow == null)
-                throw new ArgumentException($"'{nameof(processingRow)}' cannot be null");
-
-            //
-            var i = calculateIndex(rowIndex, 0);
-            //
-            for (int j = 0; j < this._columns.Count; j++)
-            {
-                var value = _values[i + j];
-                processingRow[this._columns[j]] = value;
-            }
-
-            return;
-        }
-
-		
-
 		static private bool IsNumeric(ColType cType)
         {
             if (cType == ColType.I32 || cType == ColType.I64 || cType == ColType.F32 || cType == ColType.DD)
-                return true;
-            else
-                return false;
-        }
-
-		static private bool isCategorical(ColType cType)
-        {
-            if (cType == ColType.I2 || cType == ColType.IN)
-                return true;
-            else
-                return false;
-        }
-
-        static private bool isObject(ColType cType)
-        {
-            if (cType == ColType.STR)
-                return true;
-            else
-                return false;
-        }
-
-        static private bool isDateTime(ColType cType)
-        {
-            if (cType == ColType.DT)
                 return true;
             else
                 return false;
@@ -4313,7 +4191,7 @@ namespace Daany
                     lst.Add(v);
                 }
                 //
-                lstInd.Add(this._index[i]);
+                lstInd.Add(Index[i]);
             }
             //
             var dff = new DataFrame(lst, lstInd, cols, types);
@@ -4322,17 +4200,17 @@ namespace Daany
 
         private DataFrame getDataFramesRows(List<int> selected)
         {
-            var val = new List<object>();
+            var val = new List<object?>();
             var ind = new List<object>();
             //go through selected rows
             for (int i = 0; i < selected.Count; i++)
             {
                 var row = this[selected[i]];
                 val.AddRange(row);
-                ind.Add(this._index[selected[i]]);
+                ind.Add(Index[selected[i]]);
             }
             //
-            var df = new DataFrame(val, ind, this._columns.ToList(), this._colTypes);
+            var df = new DataFrame(val, ind, this.Columns.ToList(), this._colTypes!);
             return df;
         }
 
@@ -4347,81 +4225,32 @@ namespace Daany
             //
             for (int i = 0; i < rows; i++)
             {
-                var row = new List<object>();
-                object groupValue = null;
+                var row = new List<object?>();
+                object? groupValue = null;
                 var colCnt = ColCount();
                 var grpColIndex = getColumnIndex(groupCol);
 
                 //
                 for (int j = 0; j < colCnt; j++)
                 {
-                    row.Add(_values[pos]);
+                    row.Add(Values[pos]);
                     
                    // if (Columns[j].Equals(groupCol, StringComparison.InvariantCultureIgnoreCase))
                    if(grpColIndex==j)
-                        groupValue = _values[pos];
+                        groupValue = Values[pos];
                     pos++;
                 }
+				if (groupValue == null)
+					continue;
 
                 //add to group
                 if (!Group.ContainsKey(groupValue))
-                    Group.Add(groupValue, new DataFrame(row, new List<object>(){_index[i]}, this.Columns, this._colTypes));
+                    Group.Add(groupValue, new DataFrame(row, new List<object>(){Index[i]}, this.Columns, this._colTypes!));
                 else
-                    Group[groupValue].AddRow(row, _index[i]);
+                    Group[groupValue].AddRow(row, Index[i]);
             }
 
             return Group;
-        }
-
-
-        private bool applyOperator(int[] indCols, object[] rowValues, object[] filteValues, FilterOperator[] fOpers)
-        {
-            for (int colIndex = 0; colIndex < rowValues.Length; colIndex++)
-            {
-                EnsureColumnTypesInitialized();
-
-				 var fOper = fOpers[colIndex];
-                if (this._colTypes![indCols[colIndex]] == ColType.I2)
-                {
-                    var val1 = Convert.ToBoolean(rowValues[colIndex]);
-                    var val2 = Convert.ToBoolean(filteValues[colIndex]);
-                    if (fOper != FilterOperator.Equal)
-                        throw new Exception("Equal should be assign to boolean columns.");
-                    if (val1 != val2)
-                        return false;
-                }
-                if (this._colTypes[indCols[colIndex]] == ColType.I32 || this._colTypes[indCols[colIndex]] == ColType.I64
-                    || this._colTypes[indCols[colIndex]] == ColType.F32 || this._colTypes[indCols[colIndex]] == ColType.DD)
-                {
-                    var val1 = Convert.ToDouble(rowValues[colIndex]);
-                    var val2 = Convert.ToDouble(filteValues[colIndex]);
-
-                    //
-                    if (!applyOperator(val1, val2, fOper))
-                        return false;
-                }
-                else if (this._colTypes[indCols[colIndex]] == ColType.STR || this._colTypes[indCols[colIndex]] == ColType.IN)
-                {
-                    var val1 = rowValues[colIndex].ToString();
-                    var val2 = filteValues[colIndex].ToString();
-                    //
-                    if (!applyOperator(val1!, val2!, fOper))
-                        return false;
-
-                }
-                else if (this._colTypes[indCols[colIndex]] == ColType.DT)
-                {
-                    var val1 = Convert.ToDateTime(rowValues[colIndex]);
-                    var val2 = Convert.ToDateTime(filteValues[colIndex]);
-                    //
-                    if (!applyOperator(val1, val2, fOper))
-                        return false;
-                }
-                else
-                    throw new Exception("Unknown column type");
-            }
-
-            return true;
         }
 
         private static bool applyOperator(DateTime val1, DateTime val2, FilterOperator fOper)
@@ -4501,7 +4330,7 @@ namespace Daany
 
         private void checkColumnNames(List<string> columns, string[] colNames)
         {
-            var sameCols = this._columns.Intersect(colNames).ToArray();
+            var sameCols = this.Columns.Intersect(colNames).ToArray();
             //check if column exists
             if (sameCols.Length > 0)
             {
@@ -4565,10 +4394,13 @@ namespace Daany
             throw new ArgumentException($"Column '{col}' does not exist in the Data Frame. Column names are case sensitive.");
         }
 
-        internal void addRows(DataFrame df)
+        internal void AddRows(DataFrame df)
         {
-            this._values.AddRange(df._values);
-            this._index.AddRange(df._index);
+			if (_values == null || df._values == null)
+				return;
+
+            _values.AddRange(df._values);
+            Index.AddRange(df.Index);
         }
         #endregion
     }

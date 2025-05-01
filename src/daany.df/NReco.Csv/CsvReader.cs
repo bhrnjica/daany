@@ -12,18 +12,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
-namespace Daany {
+namespace Daany
+{
 
 	/// <summary>
 	/// Fast and memory efficient implementation of CSV reader (3x times faster than CsvHelper).
 	/// </summary>
 	/// <remarks>API is similar to CSVHelper CsvReader.</remarks>
-	internal class CsvReader {
+	internal class CsvReader
+	{
 
+		/// <summary>
+		/// Delimiter used in CSV file.
+		/// </summary>
 		public string Delimiter { get; private set; }
 		int delimLength;
 
@@ -40,10 +43,30 @@ namespace Daany {
 
 		TextReader rdr;
 
-		public CsvReader(TextReader rdr) : this(rdr, ",") {
+		/// <summary>
+		/// Create CSV reader from text reader.
+		/// </summary>
+		/// <param name="rdr">
+		/// Text reader that provides CSV data.
+		/// </param>
+		public CsvReader(TextReader rdr) : this(rdr, ",")
+		{
 		}
 
-		public CsvReader(TextReader rdr, string delimiter) {
+		/// <summary>
+		/// Create CSV reader from text reader with custom delimiter.
+		/// </summary>
+		/// <param name="rdr">
+		/// Text reader that provides CSV data.
+		/// </param>
+		/// <param name="delimiter">
+		/// Delimiter used in CSV file.
+		/// </param>
+		/// <exception cref="ArgumentException">
+		/// Thrown when delimiter is empty.
+		/// </exception>
+		public CsvReader(TextReader rdr, string delimiter)
+		{
 			this.rdr = rdr;
 			Delimiter = delimiter;
 			delimLength = delimiter.Length;
@@ -52,16 +75,18 @@ namespace Daany {
 				throw new ArgumentException("Delimiter cannot be empty.");
 		}
 
-		char[] buffer = null;
+		char[] buffer = null!;
 		int bufferLength;
 		int bufferLoadThreshold;
 		int lineStartPos = 0;
 		int actualBufferLen = 0;
-		List<Field> fields = null;
+		List<Field> fields = null!;
 		int fieldsCount = 0;
-		int linesRead = 0;
+		int readLinesCount = 0;
+		int skippedLinesCount = 0;
 
-		private int ReadBlockAndCheckEof(char[] buffer, int start, int len, ref bool eof) {
+		private int ReadBlockAndCheckEof(char[] buffer, int start, int len, ref bool eof)
+		{
 			if (len == 0)
 				return 0;
 			var read = rdr.ReadBlock(buffer, start, len);
@@ -70,131 +95,207 @@ namespace Daany {
 			return read;
 		}
 
-		private bool FillBuffer() {
+		private bool FillBuffer()
+		{
 			var eof = false;
 			var toRead = bufferLength - actualBufferLen;
-			if (toRead>=bufferLoadThreshold) {
+			if (toRead >= bufferLoadThreshold)
+			{
 				int freeStart = (lineStartPos + actualBufferLen) % buffer.Length;
-				if (freeStart>=lineStartPos) {
+				if (freeStart >= lineStartPos)
+				{
 					actualBufferLen += ReadBlockAndCheckEof(buffer, freeStart, buffer.Length - freeStart, ref eof);
-					if (lineStartPos>0)
+					if (lineStartPos > 0)
 						actualBufferLen += ReadBlockAndCheckEof(buffer, 0, lineStartPos, ref eof);
-				} else {
+				}
+				else
+				{
 					actualBufferLen += ReadBlockAndCheckEof(buffer, freeStart, toRead, ref eof);
 				}
 			}
 			return eof;
 		}
 
-		private string GetLineTooLongMsg() {
-			return String.Format("CSV line #{1} length exceedes buffer size ({0})", BufferSize, linesRead);
+		private string GetLineTooLongMsg()
+		{
+			return String.Format("CSV line #{1} length exceedes buffer size ({0})", BufferSize, readLinesCount);
 		}
 
-		private int ReadQuotedFieldToEnd(int start, int maxPos, bool eof, ref int escapedQuotesCount) {
+		private int ReadQuotedFieldToEnd(int start, int maxPos, bool eof, ref int escapedQuotesCount)
+		{
 			int pos = start;
 			int chIdx;
 			char ch;
-			for (; pos<maxPos; pos++) {
+			for (; pos < maxPos; pos++)
+			{
 				chIdx = pos < bufferLength ? pos : pos % bufferLength;
 				ch = buffer[chIdx];
-				if (ch=='\"') {
+				if (ch == '\"')
+				{
 					bool hasNextCh = (pos + 1) < maxPos;
-					if (hasNextCh && buffer[(pos + 1) % bufferLength] == '\"') {
+					if (hasNextCh && buffer[(pos + 1) % bufferLength] == '\"')
+					{
 						// double quote inside quote = just a content
 						pos++;
 						escapedQuotesCount++;
-					} else {
+					}
+					else
+					{
 						return pos;
 					}
 				}
 			}
-			if (eof) {
+			if (eof)
+			{
 				// this is incorrect CSV as quote is not closed
 				// but in case of EOF lets ignore that
-				return pos-1;
+				return pos - 1;
 			}
 			throw new InvalidDataException(GetLineTooLongMsg());
 		}
 
-		private bool ReadDelimTail(int start, int maxPos, ref int end) {
+		private bool ReadDelimTail(int start, int maxPos, ref int end)
+		{
 			int pos;
 			int idx;
 			int offset = 1;
-			for (; offset<delimLength; offset++) {
+			for (; offset < delimLength; offset++)
+			{
 				pos = start + offset;
 				idx = pos < bufferLength ? pos : pos % bufferLength;
 				if (pos >= maxPos || buffer[idx] != Delimiter[offset])
 					return false;
 			}
-			end = start + offset -1;
+			end = start + offset - 1;
 			return true;
 		}
 
-		private Field GetOrAddField(int startIdx) {
+		private Field GetOrAddField(int startIdx)
+		{
 			fieldsCount++;
 			while (fieldsCount > fields.Count)
 				fields.Add(new Field());
-			var f = fields[fieldsCount-1];
+			var f = fields[fieldsCount - 1];
 			f.Reset(startIdx);
 			return f;
 		}
 
-		public int FieldsCount {
-			get {
+		/// <summary>
+		/// Number of lines skipped by reader (empty lines).
+		/// </summary>
+		public int SkippedLinesCount
+		{
+			get
+			{
+				return skippedLinesCount;
+			}
+		}
+
+		/// <summary>
+		/// Number of lines read by reader.
+		/// </summary>
+		public int ReadLinesCount
+		{
+			get
+			{
+				return readLinesCount;
+			}
+		}
+
+		/// <summary>
+		/// Number of fields in current CSV line.
+		/// </summary>
+		public int FieldsCount
+		{
+			get
+			{
 				return fieldsCount;
 			}
 		}
 
-		public string this[int idx] {
-			get {
-				if (idx < fieldsCount) {
+		/// <summary>
+		/// Get field value by index.
+		/// </summary>
+		/// <param name="idx">
+		/// Field index (0-based).</param>
+		/// <returns></returns>
+		public string this[int idx]
+		{
+			get
+			{
+				if (idx < fieldsCount)
+				{
 					var f = fields[idx];
 					return fields[idx].GetValue(buffer);
 				}
-				return null;
+				return null!;
 			}
 		}
-#if !NETSTANDARD2_0
-		public ReadOnlySpan<char> AsSpan(int idx)
+
+		/// <summary>
+		/// Get field value length by index.
+		/// </summary>
+		/// <param name="idx">
+		/// Field index (0-based).
+		/// </param>
+		/// <returns></returns>
+		public int GetValueLength(int idx)
 		{
 			if (idx < fieldsCount)
 			{
 				var f = fields[idx];
-				return fields[idx].GetSpanValue(buffer);
-			}
-			return null;
-		}
-#endif
-
-		public int GetValueLength(int idx) {
-			if (idx < fieldsCount) {
-				var f = fields[idx];
-				return f.Quoted ? f.Length-f.EscapedQuotesCount : f.Length;
+				return f.Quoted ? f.Length - f.EscapedQuotesCount : f.Length;
 			}
 			return -1;
 		}
 
-		public void ProcessValueInBuffer(int idx, Action<char[],int,int> handler) {
-			if (idx < fieldsCount) {
+		/// <summary>
+		/// Process field value by index.
+		/// </summary>
+		/// <param name="idx">
+		/// Field index (0-based).
+		/// </param>
+		/// <param name="handler">
+		/// Action that processes field value (char array, start index, length).
+		/// </param>
+		public void ProcessValueInBuffer(int idx, Action<char[], int, int> handler)
+		{
+			if (idx < fieldsCount)
+			{
 				var f = fields[idx];
-				if ((f.Quoted && f.EscapedQuotesCount > 0) || f.End>=bufferLength) {
+				if ((f.Quoted && f.EscapedQuotesCount > 0) || f.End >= bufferLength)
+				{
 					var chArr = f.GetValue(buffer).ToCharArray();
 					handler(chArr, 0, chArr.Length);
-				} else if (f.Quoted) {
+				}
+				else if (f.Quoted)
+				{
 					handler(buffer, f.Start + 1, f.Length - 2);
-				} else { 
+				}
+				else
+				{
 					handler(buffer, f.Start, f.Length);
 				}
 			}
 		}
 
-		public bool Read() {
-			Start:
-			if (fields == null) {
+		/// <summary>
+		/// Read next CSV line.
+		/// </summary>
+		/// <returns>
+		/// <see langword="true"/> if line was read, <see langword="false"/> if no more data.
+		/// </returns>
+		/// <exception cref="InvalidDataException"></exception>
+		public bool Read()
+		{
+		Start:
+			if (fields == null)
+			{
 				fields = new List<Field>();
 				fieldsCount = 0;
 			}
-			if (buffer==null) {
+			if (buffer == null)
+			{
 				bufferLoadThreshold = Math.Min(BufferSize, 8192);
 				bufferLength = BufferSize + bufferLoadThreshold;
 				buffer = new char[bufferLength];
@@ -205,10 +306,11 @@ namespace Daany {
 			var eof = FillBuffer();
 
 			fieldsCount = 0;
-			if (actualBufferLen <= 0) {
+			if (actualBufferLen <= 0)
+			{
 				return false; // no more data
 			}
-			linesRead++;
+			readLinesCount++;
 
 			int maxPos = lineStartPos + actualBufferLen;
 			int charPos = lineStartPos;
@@ -220,19 +322,26 @@ namespace Daany {
 
 			int charBufIdx;
 			char ch;
-			for (; charPos < maxPos; charPos++) {
-				charBufIdx = charPos<bufferLength ? charPos : charPos % bufferLength;
+			for (; charPos < maxPos; charPos++)
+			{
+				charBufIdx = charPos < bufferLength ? charPos : charPos % bufferLength;
 				ch = buffer[charBufIdx];
-				switch (ch) {
+				switch (ch)
+				{
 					case '\"':
-						if (ignoreQuote) {
+						if (ignoreQuote)
+						{
 							currentField.End = charPos;
-						} else if (currentField.Quoted || currentField.Length>0) {
+						}
+						else if (currentField.Quoted || currentField.Length > 0)
+						{
 							// current field already is quoted = lets treat quotes as usual chars
 							currentField.End = charPos;
 							currentField.Quoted = false;
 							ignoreQuote = true;
-						} else { 
+						}
+						else
+						{
 							var endQuotePos = ReadQuotedFieldToEnd(charPos + 1, maxPos, eof, ref currentField.EscapedQuotesCount);
 							currentField.Start = charPos;
 							currentField.End = endQuotePos;
@@ -241,7 +350,8 @@ namespace Daany {
 						}
 						break;
 					case '\r':
-						if ((charPos + 1) < maxPos && buffer[(charPos + 1) % bufferLength] == '\n') {
+						if ((charPos + 1) < maxPos && buffer[(charPos + 1) % bufferLength] == '\n')
+						{
 							// \r\n handling
 							charPos++;
 						}
@@ -252,22 +362,26 @@ namespace Daany {
 						charPos++;
 						goto LineEnded;
 					default:
-						if (ch == delimFirstChar && (delimLength == 1 || ReadDelimTail(charPos, maxPos, ref charPos))) {
-							currentField = GetOrAddField(charPos+1);
+						if (ch == delimFirstChar && (delimLength == 1 || ReadDelimTail(charPos, maxPos, ref charPos)))
+						{
+							currentField = GetOrAddField(charPos + 1);
 							ignoreQuote = false;
 							continue;
 						}
 						// space
-						if (ch==' ' && trimFields) {
+						if (ch == ' ' && trimFields)
+						{
 							continue; // do nothing
 						}
 
 						// content char
-						if (currentField.Length==0) {
+						if (currentField.Length == 0)
+						{
 							currentField.Start = charPos;
 						}
 
-						if (currentField.Quoted) {
+						if (currentField.Quoted)
+						{
 							// non-space content after quote = treat quotes as part of content
 							currentField.Quoted = false;
 							ignoreQuote = true;
@@ -277,17 +391,19 @@ namespace Daany {
 				}
 
 			}
-			if (!eof) {
+			if (!eof)
+			{
 				// line is not finished, but whole buffer was processed and not EOF
 				throw new InvalidDataException(GetLineTooLongMsg());
 			}
 		LineEnded:
 			actualBufferLen -= charPos - lineStartPos;
-			lineStartPos = charPos%bufferLength;
+			lineStartPos = charPos % bufferLength;
 
-			if (fieldsCount==1 && fields[0].Length==0) {
+			if (fieldsCount == 1 && fields[0].Length == 0)
+			{
 				// skip empty lines
-				//return Read();
+				skippedLinesCount++;
 				goto Start;
 			}
 
@@ -295,115 +411,63 @@ namespace Daany {
 		}
 
 
-		internal sealed class Field {
+		internal sealed class Field
+		{
 			internal int Start;
 			internal int End;
-			internal int Length {
-				get { return End - Start +1; }
+			internal int Length
+			{
+				get { return End - Start + 1; }
 			}
 			internal bool Quoted;
 			internal int EscapedQuotesCount;
 			string cachedValue = null;
-			internal Field() {
+
+			internal Field()
+			{
 			}
 
-			internal Field Reset(int start) {
+			internal Field Reset(int start)
+			{
 				Start = start;
-				End = start-1;
+				End = start - 1;
 				Quoted = false;
 				EscapedQuotesCount = 0;
 				cachedValue = null;
 				return this;
 			}
-			
-			internal string GetValue(char[] buf) {
-				if (cachedValue==null) {
+
+			internal string GetValue(char[] buf)
+			{
+				if (cachedValue == null)
+				{
 					cachedValue = GetValueInternal(buf);
 				}
 				return cachedValue;
 			}
 
-#if !NETSTANDARD2_0
-			internal ReadOnlySpan<char> GetSpanValue(char[] buf)
-            {
-                if (cachedValue == null)
-                {
-                    cachedValue = GetValueInternal(buf);
-                }
-                return cachedValue.AsSpan();
-            }
+			string GetValueInternal(char[] buf)
+			{
+				if (Quoted)
+				{
+					var s = Start + 1;
+					var lenWithoutQuotes = Length - 2;
+					var val = lenWithoutQuotes > 0 ? GetString(buf, s, lenWithoutQuotes) : String.Empty;
+					if (EscapedQuotesCount > 0)
+						val = val.Replace("\"\"", "\"");
+					return val;
+				}
+				var len = Length;
+				return len > 0 ? GetString(buf, Start, len) : String.Empty;
+			}
 
-			Span<char> GetSpanInternal(char[] buf)
-            {
-                if (Quoted)
-                {
-                    var s = Start + 1;
-                    var lenWithoutQuotes = Length - 2;
-
-                    var val = lenWithoutQuotes > 0 ? GetSpan(buf, s, lenWithoutQuotes) : Span<char>.Empty;
-                    if (EscapedQuotesCount > 0)
-                    {
-                        var newVal = val.ToArray().ToList();
-                        for(int i=0; i< newVal.Count-1; i++)
-                        {
-                            if (newVal[i] == '"' && newVal[i + 1] == '"')
-                                newVal.RemoveAt(i+1);
-                                
-                        }
-                        //recreate new array
-                        val = newVal.ToArray().AsSpan();
-                       
-                    }
-                    //
-                    return val;
-                }
-                var len = Length;
-                return len > 0 ? GetSpan(buf, Start, len) : Span<char>.Empty;
-            }
-
-			private Span<char> GetSpan(char[] buf, int start, int len)
+			private string GetString(char[] buf, int start, int len)
 			{
 				var bufLen = buf.Length;
 				start = start < bufLen ? start : start % bufLen;
 				var endIdx = start + len - 1;
 				if (endIdx >= bufLen)
 				{
-					var prefixLen = buf.Length - start;
-					var prefix = SubArray(buf, start, prefixLen);
-					var suffix = SubArray(buf, 0, len - prefixLen);
-					var span = new Span<char>(new char[len]);
-					for (int i = 0; i < len; i++)
-					{
-						if (i < prefixLen)
-							span[i] = prefix[i];
-						else
-							span[i] = suffix[i - prefixLen];
-					}
-
-					return span;
-				}
-				return new Span<char>(SubArray(buf, start, len));
-			}
-
-#endif
-			string GetValueInternal(char[] buf) {
-				if (Quoted) {
-					var s = Start + 1;
-					var lenWithoutQuotes = Length - 2;
-					var val = lenWithoutQuotes > 0 ? GetString(buf, s, lenWithoutQuotes) : String.Empty;
-					if (EscapedQuotesCount>0)
-						val = val.Replace("\"\"", "\"");
-					return val;
-				}
-				var len = Length;
-				return len>0 ? GetString(buf, Start, len) : String.Empty;
-			}
-
-			private string GetString(char[] buf, int start, int len) {
-				var bufLen = buf.Length;
-				start = start<bufLen ? start : start % bufLen;
-				var endIdx = start + len -1;
-				if (endIdx>= bufLen) {
 					var prefixLen = buf.Length - start;
 					var prefix = new string(buf, start, prefixLen);
 					var suffix = new string(buf, 0, len - prefixLen);
@@ -412,18 +476,7 @@ namespace Daany {
 				return new string(buf, start, len);
 			}
 
-
-
-            public static T[] SubArray<T>(T[] data, int index, int length)
-            {
-                T[] result = new T[length];
-                Array.Copy(data, index, result, 0, length);
-                return result;
-            }
-
-
-            
-        }
+		}
 
 	}
 

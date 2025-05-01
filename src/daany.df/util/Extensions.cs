@@ -42,9 +42,9 @@ namespace Daany
 		public static string GetEnumDescription(this Enum value)
         {
             
-            FieldInfo fi = value.GetType().GetField(value.ToString());
+            FieldInfo fi = value.GetType().GetField(value.ToString())!;
 
-            DescriptionAttribute[] attributes = fi.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
+            DescriptionAttribute[]? attributes = fi.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
 
             if (attributes != null && attributes.Any())
             {

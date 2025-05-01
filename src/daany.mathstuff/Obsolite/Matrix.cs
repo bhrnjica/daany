@@ -269,17 +269,27 @@ internal class Matrix
     public double Det()                         // Function for determinant
     {
         if (L == null) MakeLU();
+
         double det = detOfP;
-        for (int i = 0; i < rows; i++) det *= U[i, i];
+		if (L == null || U == null) throw new MException("LU decomposition is not defined!");
+
+		for (int i = 0; i < rows; i++) 
+            det *= U[i, i];
+
         return det;
     }
 
     public Matrix GetP()                        // Function returns permutation matrix "P" due to permutation vector "pi"
     {
+        if(pi == null) throw new MException("Permutation vector is not defined!");
+		
         if (L == null) MakeLU();
 
         Matrix matrix = ZeroMatrix(rows, cols);
-        for (int i = 0; i < rows; i++) matrix[pi[i], i] = 1;
+
+        for (int i = 0; i < rows; i++) 
+            matrix[pi[i], i] = 1;
+
         return matrix;
     }
 

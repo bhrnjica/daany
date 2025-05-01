@@ -10,7 +10,6 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<Title>Daany - .NET DAta ANalYtics</Title>
-
 		<PackageId>Daany.DataFrame</PackageId>
 		<Version>2.1.0</Version>
 		<Description>Daany - .NET DAta ANalYtics .NET library with the implementation of DataFrame, Time series decompositions and Linear Algebra LAPACK and BLASS routines.</Description>
@@ -44,10 +43,6 @@
 			<PackagePath>\</PackagePath>
 		</None>
 
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Include="NReco.Csv" Version="1.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>

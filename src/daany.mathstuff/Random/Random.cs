@@ -117,8 +117,6 @@ public class ThreadSafeRandom : System.Random, IDisposable
             if (_local.Value != null)
                 nextValue = _local.Value.NextDouble();
 
-        throw new InvalidOperationException();
-
         return minValue + nextValue * (maxValue - minValue);
     }
 

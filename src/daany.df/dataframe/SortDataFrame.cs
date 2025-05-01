@@ -33,7 +33,7 @@ namespace Daany
 		/// <summary>
 		/// Sorts the DataFrame using QuickSort algorithm.
 		/// </summary>
-		public (List<object> values, List<object> indices) QuickSort(IList<object> array, List<object> dfIndex, int[] sortCols)
+		public (List<object?> values, List<object> indices) QuickSort(IList<object?> array, List<object> dfIndex, int[] sortCols)
 		{
 			ValidateInput(array, dfIndex);
 
@@ -48,15 +48,15 @@ namespace Daany
 		/// <summary>
 		/// Sorts the DataFrame using MergeSort algorithm.
 		/// </summary>
-		public (List<object> values, List<object> indices) MergeSort(object[] array, object[] index, int[] sortCols)
+		public (List<object?> values, List<object> indices) MergeSort(object[] array, object[] index, int[] sortCols)
 		{
 			ValidateInput(array, index);
 
 			(object[] sortedValues, object[] sortedIndices) = MergeSortRecursive(array, index, sortCols);
-			return (sortedValues.ToList(), sortedIndices.ToList());
+			return (sortedValues.Select(x=>(object?)x).ToList(), sortedIndices.ToList());
 		}
 
-		private void ValidateInput(IList<object> array, IList<object> index)
+		private void ValidateInput(IList<object?> array, IList<object> index)
 		{
 			if (array == null || index == null)
 				throw new ArgumentException("Array or index cannot be null.");
@@ -69,7 +69,7 @@ namespace Daany
 		}
 
 		#region QuickSort Implementation
-		private void QuickSortRecursive(List<object> values, List<object> indices, int start, int end, int[] sortCols)
+		private void QuickSortRecursive(List<object?> values, List<object> indices, int start, int end, int[] sortCols)
 		{
 			if (start >= end)
 				return;
@@ -79,7 +79,7 @@ namespace Daany
 			QuickSortRecursive(values, indices, pivot + 1, end, sortCols);
 		}
 
-		private int Partition(List<object> values, List<object> indices, int start, int end, int[] sortCols)
+		private int Partition(List<object?> values, List<object> indices, int start, int end, int[] sortCols)
 		{
 			var pivotRow = GetRow(values, end);
 			int i = start - 1;

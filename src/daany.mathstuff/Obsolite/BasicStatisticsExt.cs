@@ -41,8 +41,10 @@ public static class BasicStatistics
         if (colData == null || colData.Length < 2)
             throw new Exception("'coldData' cannot be null or empty!");
 
-        var counts = new Dictionary<T, int>();
-        foreach (var a in colData)
+#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+		var counts = new Dictionary<T, int>();
+#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+		foreach (var a in colData)
         {
             if (counts.ContainsKey(a))
                 counts[a] = counts[a] + 1;

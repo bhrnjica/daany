@@ -19,21 +19,23 @@ using System.Text;
 
 namespace Daany
 {
-    /// <summary>
-    /// Class implementation for generating various vector or matrix numbers and elements.
-    /// nc - stands for 
-    /// </summary>
-    [Obsolete("The class is obsolite. Use SpecialMatrix instead.")]
-    public class nc
-    {
-        /// <summary>
-        /// Create vector of randomly generated double values stored in 1D array. 
-        /// Vector.Length = row * col
-        /// </summary>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <returns></returns>
-        public static object[] Rand(int row, int col)
+	/// <summary>
+	/// Class implementation for generating various vector or matrix numbers and elements.
+	/// </summary>
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable CS8981 // Naming Styles
+	internal class nc
+#pragma warning restore CS8981 // Naming Styles
+#pragma warning restore IDE1006 // Naming Styles
+	{
+		/// <summary>
+		/// Create vector of randomly generated double values stored in 1D array. 
+		/// Vector.Length = row * col
+		/// </summary>
+		/// <param name="row"></param>
+		/// <param name="col"></param>
+		/// <returns></returns>
+		public static object[] Rand(int row, int col)
         {
             var size = row * col;
             var obj = new object[size];

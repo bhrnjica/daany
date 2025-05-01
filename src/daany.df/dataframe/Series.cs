@@ -10,7 +10,7 @@ namespace Daany
 	public class Series : IEnumerable<object>, ICloneable
 	{
 
-		private List<object> _data;
+		private List<object?> _data;
 		private Index _index;
 		private ColType _type;
 
@@ -40,7 +40,7 @@ namespace Daany
 		///     "MySeries");
 		/// </code>
 		/// </example>
-		public Series(List<object> data, List<object> ind = null, string name = "series", ColType type = ColType.STR)
+		public Series(List<object?> data, List<object>? ind = null, string name = "series", ColType type = ColType.STR)
 		{
 			_data = data ?? throw new ArgumentNullException("Data list cannot be null");
 			Name = name;
@@ -83,7 +83,7 @@ namespace Daany
 		///     "MySeries");
 		/// </code>
 		/// </example>
-		internal Series(List<object> data, Index index, string name = "series", ColType type = ColType.STR)
+		internal Series(List<object?> data, Index index, string name = "series", ColType type = ColType.STR)
 			: this(data, index?.ToList(), name, type) { }
 
 		/// <summary>
@@ -97,7 +97,7 @@ namespace Daany
 		/// </code>
 		/// </example>
 		public Series(Series ser) : this(
-			new List<object>(ser._data),
+			new List<object?>(ser._data),
 			new List<object>(ser._index),
 			ser.Name,
 			ser._type)
@@ -238,7 +238,7 @@ namespace Daany
 			if (ser.ColType != this.ColType)
 				throw new InvalidOperationException("Cannot append series of different types");
 
-			var newData = new List<object>(_data.Count + ser.Count);
+			var newData = new List<object?>(_data.Count + ser.Count);
 			newData.AddRange(_data);
 			newData.AddRange(ser._data);
 
@@ -284,7 +284,7 @@ namespace Daany
 			if (window <= 0 || window > Count)
 				throw new ArgumentOutOfRangeException(nameof(window), "Window size must be between 1 and the length of the series.");
 
-			var result = new List<object>();
+			var result = new List<object?>();
 			var resultIndex = new List<object>();
 
 			// Add `null` values at the beginning to match the window size
