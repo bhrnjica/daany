@@ -3,12 +3,9 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using System.Numerics;
-
-
-#if NET7_0_OR_GREATER
-
 using Daany.MathStuff.MatrixGeneric;
-namespace Unit.Test.Math.Stats;
+
+namespace Daany.MathStuff.Tests;
 
 public class Generic_Matrix_Test
 {
@@ -231,5 +228,3 @@ public class Generic_Matrix_Test
     }
 
 }
-
-#endif

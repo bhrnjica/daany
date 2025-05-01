@@ -15,10 +15,10 @@ The `MathStuff` projects is consisted of the following assets:
 
 - `Interpolation` - `linar`, `spline` and `polynomial` interpolation between points. See `Interpolation_Test` for how to use those classes.
 
-- `Matrix` - implementation of the `matrix` and `vector` operations, decompositions and special matrix. See `Matrix_test` ffor usage of the implementation.
+- `Matrix` - implementation of the `matrix` and `vector` operations, decompositions and special matrix. See `Matrix_test` for usage of the implementation.
 
 - `Norms` - implementation of different norms e.g. Euclidian, Mahhattan etc norms.
 
 - `Random` - implementation of the Random number generator.
 
-- `Stat-Metrics` - the implementation of various statistical metrics for the time series.
+- `Stat-Metrics` - the implementation of various statistical metrics including confusion matrix and related implementation for time series.

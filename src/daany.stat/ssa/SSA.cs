@@ -130,7 +130,7 @@ namespace Daany.Stat.SSA
             //calculation of K
             K = _ts.Count() - L + 1;
             //
-            var retVal = _ts.Hankel(L);
+            var retVal = _ts.Hankel(L).Transpose<double>();
             _XX = retVal;
             return retVal;
         }

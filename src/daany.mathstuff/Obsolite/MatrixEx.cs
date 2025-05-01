@@ -1,17 +1,19 @@
-﻿//////////////////////////////////////////////////////////////////////////////////////////
-// Daany - DAta ANalYtics Library                                                        //
-// https://github.com/bhrnjica/daany                                                    //
-//                                                                                      //
-// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
-//                                                                                      //
-// This code is free software under the MIT License                                     //
-// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
-//                                                                                      //
-// Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
-// Bihac, Bosnia and Herzegovina                                                        //
-// http://bhrnjica.wordpress.com                                                        //
-//////////////////////////////////////////////////////////////////////////////////////////
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  MathStuff:Linear Algebra, Statistics, Optimization, Machine Learning.  //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 2006-2025 Bahrudin Hrnjica                                 //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
 
 using System;
 
@@ -20,7 +22,7 @@ namespace Daany.MathStuff;
 /// <summary>
 /// Matrix implementation based on 2D array type
 /// </summary>
-[Obsolete("The class is obsolite. Use Daany.MathStuff.Matrix.Extensions instead.")]
+[Obsolete("The class is obsolite. Use Daany.MathStuff.MatrixGeneric instead.")]
 public static class MatrixEx
 {
     public static int Rows<T>(this T[] vector)
@@ -299,7 +301,7 @@ public static class MatrixEx
     public static double[] Dot(this double[,] m, double[] v)
     {
         if (m.GetLength(1) != v.Length)
-            throw new Exception("Wrong dimensions of matrix or vector!");
+            throw new ArgumentException("Wrong dimensions of matrix or vector!");
 
         double[] result = new double[m.GetLength(0)];
 
@@ -346,14 +348,16 @@ public static class MatrixEx
     //https://mathworld.wolfram.com/HankelMatrix.html
     public static double[,] Hankel(this double[] v, int colCount = -1)
     {
-        int N = v.Length;
-        int L = colCount == -1 ? N : colCount;
-        int K = colCount == -1 ? N : N - L + 1;
-        var result = new double[L, K];
+        if( v == null) throw new ArgumentNullException(nameof(v));
 
-        for (int i = 0; i < L; i++)
+        int N = v.Length;
+        int nCol = colCount == -1 ? N : colCount;
+        int nRow = colCount == -1 ? N : N - nCol + 1;
+        var result = new double[nRow, nCol];
+
+        for (int i = 0; i < nRow; i++)
         {
-            for (int j = 0; j < K; j++)
+            for (int j = 0; j < nCol ; j++)
             {
                 result[i, j] = i + j > N - 1 ? 0 : v[i + j];
             }
@@ -729,7 +733,10 @@ public static class MatrixEx
 
     public static double[,] Divide(this double[,] m, double s)
     {
-        var result = new double[m.GetLength(0), m.GetLength(1)];
+        if(s == 0)
+            throw new DivideByZeroException("Division by zero is not allowed.");
+
+		var result = new double[m.GetLength(0), m.GetLength(1)];
         for (int i = 0; i < result.GetLength(0); i++)
             for (int j = 0; j < result.GetLength(1); j++)
                 result[i, j] = m[i, j] / s;
@@ -748,7 +755,7 @@ public static class MatrixEx
     {
         var result = new double[v1.Length];
         for (int i = 0; i < v1.Length; i++)
-            result[i] = v1[i] / v2[i];
+            result[i] = v1[i] / (v2[i] != 0 ? v2[i] : throw new DivideByZeroException());
         return result;
     }
 

@@ -6,7 +6,7 @@ using Daany;
 using Daany.Stat.stl;
 using Daany.MathStuff;
 
-namespace Unit.Test.DF
+namespace Daany.MathStuff.Tests
 {
     public class Math_Metrics_Tests
     {

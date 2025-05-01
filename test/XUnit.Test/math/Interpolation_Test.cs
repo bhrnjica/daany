@@ -10,7 +10,7 @@ using Daany.Ext;
 using XPlot.Plotly;
 using Daany.MathStuff.Interpolation;
 
-namespace Unit.Test.DF
+namespace Daany.MathStuff.Tests
 {
     public class InterpolationTest
     {

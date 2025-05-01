@@ -1,31 +1,30 @@
-﻿//////////////////////////////////////////////////////////////////////////////////////////
-// Daany - DAta ANalYtics Library                                                        //
-// https://github.com/bhrnjica/daany                                                    //
-//                                                                                      //
-// Copyright 2006-2021 Bahrudin Hrnjica                                                 //
-//                                                                                      //
-// This code is free software under the MIT License                                     //
-// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
-//                                                                                      //
-// Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
-// Bihac, Bosnia and Herzegovina                                                        //
-// http://bhrnjica.wordpress.com                                                        //
-//////////////////////////////////////////////////////////////////////////////////////////
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  MathStuff:Linear Algebra, Statistics, Optimization, Machine Learning.  //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 2006-2025 Bahrudin Hrnjica                                 //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
 using System;
-using System.Collections.Generic;
-using System.Text;
-using static System.Math;
 
 namespace Daany.MathStuff.Interpolation
 {
-    /*
- * This implementation is based on the book:
- * Numerical Recipes 3rd Edition: The Art of Scientific Computing 3rd Edition
-    by William H. Press (Author).
-    https://www.amazon.com/Numerical-Recipes-3rd-Scientific-Computing/dp/0521880688
- */
-    public class Spline : InterpolationBase
+	/// <summary>
+	/// This implementation is based on the book:
+    /// Numerical Recipes 3rd Edition: The Art of Scientific Computing 3rd Edition
+    /// by William H.Press(Author).
+    /// https://www.amazon.com/Numerical-Recipes-3rd-Scientific-Computing/dp/0521880688
+    /// </summary>
+	public class Spline : InterpolationBase
     {
 
         double[] y2;

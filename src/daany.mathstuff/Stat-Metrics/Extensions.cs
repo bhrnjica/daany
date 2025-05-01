@@ -1,15 +1,44 @@
-﻿using System;
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  MathStuff:Linear Algebra, Statistics, Optimization, Machine Learning.  //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 2006-2025 Bahrudin Hrnjica                                 //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Daany.MathStuff.Stats;
 
 public static class Extensions
 {
-    public static IEnumerable<int[]> To2DList(this IList<int> flatList, int numCols)
+	public static decimal Sqrt(decimal x, decimal epsilon = 0.0M)
+	{
+		if (x < 0)
+			throw new ArgumentException("Cannot calculate square root of a negative number.");
+
+		decimal current = (decimal)Math.Sqrt((double)x); // Initial guess
+		decimal previous;
+
+		do
+		{
+			previous = current;
+			current = (previous + x / previous) / 2;
+		} while (Math.Abs(previous - current) > epsilon);
+
+		return current;
+	}
+	public static IEnumerable<int[]> To2DList(this IList<int> flatList, int numCols)
     {
         var numRows = flatList.Count / numCols;
 

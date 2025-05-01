@@ -296,7 +296,7 @@ namespace Daany
                 {
                     while (!reader.EndOfStream)
                     {
-                        string line = reader.ReadLine();
+                        string? line = await reader.ReadLineAsync();
                         if (!string.IsNullOrEmpty(line))
                             lines.Add(line);
                     }
@@ -375,7 +375,6 @@ namespace Daany
             return new DataFrame(data,columns);
 
 		}
-
 	/// <summary>
 	/// Method for loading data from the file into data frame object.
 	/// </summary>

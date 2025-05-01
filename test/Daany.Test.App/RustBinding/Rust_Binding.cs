@@ -1,15 +1,9 @@
-﻿using Daany.Binding;
+﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
 namespace Daany.Test.App.Binding
 {
 	public class CsvBenchmark
@@ -31,7 +25,6 @@ namespace Daany.Test.App.Binding
 			return DataFrame.FromCsv(filePath, separator, null, "yyyy-MM-dd HH:mm:ss.fff", true, null, new char[1] { '*' }, -1, 0);
 		}
 
-		
 	}
 
 	internal static class Rust_Binding_Tests
