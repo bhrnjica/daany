@@ -1,11 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  Daany.DataFrame:Implementation of DataFrame.                           //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 20019-2025 Bahrudin Hrnjica                                //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
+
 using System.Linq;
-using System.Text;
+using System.Collections.Generic;
+
+using Daany.Interfaces;
 
 namespace Daany
 {
-    public partial class DataFrame : IDataFrame
+	public partial class DataFrame : IDataFrame
     {
 
         public static DataFrame CreateTimeSeries(DataFrame df, int pastSteps, int futureSteps = 1)
@@ -15,7 +32,7 @@ namespace Daany
             var ind = generateIndex(df.Index, pastSteps, futureSteps);
 
             //data generation
-            var values = new List<object>();
+            var values = new List<object?>();
             for(int i=0; i< ind.Count; i++)
             {
                 for (int j = 0; j < df.Columns.Count; j++)

@@ -1,17 +1,19 @@
-﻿//////////////////////////////////////////////////////////////////////////////////////////
-// Daany - DAta ANalYtics Library                                                        //
-// https://github.com/bhrnjica/daany                                                    //
-//                                                                                      //
-// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
-//                                                                                      //
-// This code is free software under the MIT License                                     //
-// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
-//                                                                                      //
-// Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
-// Bihac, Bosnia and Herzegovina                                                        //
-// http://bhrnjica.wordpress.com                                                        //
-//////////////////////////////////////////////////////////////////////////////////////////
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  Daany.DataFrame:Implementation of DataFrame.                           //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 20019-2025 Bahrudin Hrnjica                                //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
 using System;
 using System.IO;
 using System.Linq;
@@ -38,7 +40,7 @@ namespace Daany
 	/// - CSV/JSON/web data source integration
 	/// - Common data operations (filter, sort, group, aggregate)
 	/// </remarks>
-	public partial class DataFrame : IDataFrame
+	public partial class DataFrame
     {
 
         #region Private fields
@@ -139,7 +141,7 @@ namespace Daany
                 {
                     for (int j = 0; j < dataFrame.ColCount(); j++)
                     {
-                        if (dataFrame._values[lstIndex] == DataFrame.NAN)
+                        if (dataFrame.Values[lstIndex] == DataFrame.NAN)
                         {
                             csvWriter.WriteField("");
                             lstIndex++;
@@ -148,7 +150,7 @@ namespace Daany
 
                         else if(dataFrame.ColTypes[j]  == ColType.DT)
                         {
-                            var dt = Convert.ToDateTime(dataFrame._values[lstIndex]);
+                            var dt = Convert.ToDateTime(dataFrame.Values[lstIndex]);
                             if (!string.IsNullOrEmpty(dateFormat))
                                 csvWriter.WriteField(dt.ToString(dateFormat));
                             else
@@ -156,7 +158,7 @@ namespace Daany
                         }
                         else
                         {
-                            if(Convert.ToString(dataFrame._values[lstIndex], CultureInfo.InvariantCulture) is string strValue)
+                            if(Convert.ToString(dataFrame.Values[lstIndex], CultureInfo.InvariantCulture) is string strValue)
                                 csvWriter.WriteField(strValue);
                         }
                         //
@@ -193,7 +195,7 @@ namespace Daany
                 {
                     for (int j = 0; j < dataFrame.ColCount(); j++)
                     {
-                        if (dataFrame._values[lstIndex] == DataFrame.NAN)
+                        if (dataFrame.Values[lstIndex] == DataFrame.NAN)
                         {
                             await csvWriter.WriteFieldAsync("");
                             lstIndex++;
@@ -202,7 +204,7 @@ namespace Daany
 
                         else if (dataFrame.ColTypes[j] == ColType.DT)
                         {
-                            var dt = Convert.ToDateTime(dataFrame._values[lstIndex]);
+                            var dt = Convert.ToDateTime(dataFrame.Values[lstIndex]);
                             if (!string.IsNullOrEmpty(dateFormat))
                                 await csvWriter.WriteFieldAsync(dt.ToString(dateFormat));
                             else
@@ -210,7 +212,7 @@ namespace Daany
                         }
                         else
                         {
-                            if(Convert.ToString(dataFrame._values[lstIndex], CultureInfo.InvariantCulture) is string strValue)
+                            if(Convert.ToString(dataFrame.Values[lstIndex], CultureInfo.InvariantCulture) is string strValue)
                                 await csvWriter.WriteFieldAsync(strValue);
                         }
                         //
@@ -257,7 +259,7 @@ namespace Daany
                 {
                     while(!reader.EndOfStream)
                     {
-                        string line = reader.ReadLine();
+                        string? line = reader.ReadLine();
                         if (!string.IsNullOrEmpty(line))
                             lines.Add(line);
                     }
@@ -473,7 +475,7 @@ namespace Daany
             return listValues;
         }
 
-		internal static object ParseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
+		internal static object? ParseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
 		{
 			// Check if the value is a missing value
 			if (IsMissingValue(value, missingChars: missingValue))
@@ -503,7 +505,7 @@ namespace Daany
 			return DateTime.TryParseExact(value, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
 		}
 
-		private static object ParseValue(ReadOnlySpan<char> value, char[]? missingValue, bool parseDate = false, string? dFormat = null)
+		private static object? ParseValue(ReadOnlySpan<char> value, char[]? missingValue, bool parseDate = false, string? dFormat = null)
         {
             //check the missing value
             if (IsMissingValue(value, missingChars: missingValue))
@@ -590,7 +592,7 @@ namespace Daany
 			};
 		}
 
-		private static object? ParseValue(object value, string? dformat)
+		private static object? ParseValue(object? value, string? dformat)
 		{
 			if (value is string stringValue)
 			{
@@ -618,7 +620,7 @@ namespace Daany
 					int valueIndex = rowIndex * columnCount + colIndex; // Calculate the index of the value in the flat array
 					if (data[valueIndex] != DataFrame.NAN) // Check for non-missing value
 					{
-						firstNonMissingValue = data[valueIndex];
+						firstNonMissingValue = data[valueIndex]!;
 						break; // Stop once the first non-missing value is found
 					}
 				}

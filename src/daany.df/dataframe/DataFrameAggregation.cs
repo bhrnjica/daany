@@ -1,17 +1,19 @@
-﻿//////////////////////////////////////////////////////////////////////////////////////////
-// Daany - DAta ANalYtics Library                                                        //
-// https://github.com/bhrnjica/daany                                                    //
-//                                                                                      //
-// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
-//                                                                                      //
-// This code is free software under the MIT License                                     //
-// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
-//                                                                                      //
-// Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
-// Bihac, Bosnia and Herzegovina                                                        //
-// http://bhrnjica.wordpress.com                                                        //
-//////////////////////////////////////////////////////////////////////////////////////////
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  Daany.DataFrame:Implementation of DataFrame.                           //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 20019-2025 Bahrudin Hrnjica                                //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
 using System;
 using System.IO;
 using System.Linq;
@@ -35,7 +37,7 @@ namespace Daany
     {
         #region Private
 
-        private static object calculateAggregation(IEnumerable<object> vals, Aggregation aggregation, ColType colType)
+        private static object? calculateAggregation(IEnumerable<object?> vals, Aggregation aggregation, ColType colType)
         {
             var value =  _calculateAggregation(vals, aggregation, colType);
             //
@@ -47,7 +49,7 @@ namespace Daany
 
             return value;
         }
-        internal static object? _calculateAggregation(IEnumerable<object> vals, Aggregation aggregation, ColType colType)
+        internal static object? _calculateAggregation(IEnumerable<object?> vals, Aggregation aggregation, ColType colType)
         {
             switch (aggregation)
             {
@@ -57,14 +59,14 @@ namespace Daany
                     return vals.Distinct().Count();
 
                 case Aggregation.Top:
-                    return vals.ToArray().FrequencyOf().First().Item1;
+                    return vals.ToArray()!.FrequencyOf().First().Item1;
 
                 case Aggregation.Random:
                     var ind = Constant.rand.Next(vals.Count());
                     return vals.ToArray().ElementAt(ind);
 
                 case Aggregation.Frequency:
-                    return vals.ToArray().FrequencyOf().First().Item2;
+                    return vals.ToArray()!.FrequencyOf().First().Item2;
 
                 case Aggregation.First:
                     return vals.First();
@@ -232,7 +234,7 @@ namespace Daany
                     }
 
                 case Aggregation.Mode:
-                    return vals.ToArray().ModeOf<object>();
+                    return vals.ToArray()!.ModeOf<object>();
 
                 case Aggregation.Median:
                     {

@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 using Daany;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Reflection;
 
 namespace Unit.Test.DF
 {
@@ -188,7 +190,21 @@ namespace Unit.Test.DF
             Assert.Equal(ser2.ToList(), lst3);
         }
 
-        [Fact]
+		[Fact]
+		public void Operation_Rolling_Test_Winth_Null_Values()
+		{
+			var lst1 = new List<object> { DataFrame.NAN,2.0,3.0, DataFrame.NAN, 5.0,6.0};
+			var lst3 = new List<object> { DataFrame.NAN, DataFrame.NAN, 2.5, 2.5, 4.0, 5.5 };
+
+			//create series from the list
+			var ser1 = new Series(lst1, type: ColType.I32);
+
+
+			Assert.Throws<FormatException>(() => ser1.Rolling(3, Aggregation.Avg));
+
+		}
+
+		[Fact]
         public void Operation_MissingValues_Test01()
         {
            

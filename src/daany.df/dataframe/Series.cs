@@ -1,15 +1,30 @@
-﻿using System;
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  Daany.DataFrame:Implementation of DataFrame.                           //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 20019-2025 Bahrudin Hrnjica                                //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+
 using System.Linq;
 
 namespace Daany
 {
 
-	public class Series : IEnumerable<object>, ICloneable
+	public class Series : IEnumerable<object?>, ICloneable
 	{
-
 		private List<object?> _data;
 		private Index _index;
 		private ColType _type;
@@ -18,6 +33,8 @@ namespace Daany
 		public int Count => _data.Count;
 		public Index Index => _index;
 		public ColType ColType => _type;
+
+		public IList<object?> Data => _data ?? throw new ArgumentNullException(nameof(_data));
 
 		#region Constructors
 
@@ -107,7 +124,7 @@ namespace Daany
 
 		#region Core Functionality
 
-		public IEnumerator<object> GetEnumerator() => _data.GetEnumerator();
+		public IEnumerator<object?> GetEnumerator() => _data.GetEnumerator();
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 		public object Clone() => new Series(this);
@@ -152,12 +169,12 @@ namespace Daany
 		{
 			get
 			{
-				var lst = new List<object>(indexes.Length);
+				var lst = new List<object?>(indexes.Length);
 				var ind = new List<object>(indexes.Length);
 
 				foreach (int i in indexes)
 				{
-					lst.Add(_data[i]);
+					lst.Add(Data[i]);
 					ind.Add(_index[i]);
 				}
 
@@ -178,7 +195,7 @@ namespace Daany
 		/// </code>
 		/// </example>
 
-		public object this[int i]
+		public object? this[int i]
 		{
 			get => _data[i];
 			set => _data[i] = value;
@@ -198,7 +215,7 @@ namespace Daany
 		/// series["C"] = 99; // Changes value for index "C" to 99
 		/// </code>
 		/// </example>
-		public object this[object indexLabel]
+		public object? this[object indexLabel]
 		{
 			get
 			{
@@ -297,14 +314,20 @@ namespace Daany
 			// Compute rolling aggregation for remaining values
 			for (int i = 0; i <= Count - window; i++)
 			{
-				var windowData = new List<object>();
+				var windowData = new List<object?>();
 
 				for (int j = 0; j < window; j++)
 				{
-					windowData.Add(_data[i + j]);
+					var value = _data[i + j];
+
+					//Be transparent and not allow null values in rolling calculation
+					if (value == null || value == DataFrame.NAN)
+						throw new FormatException("Tring to calculate rolling of null value");
+
+					windowData.Add(value);
 				}
 
-				result.Add(DataFrame._calculateAggregation(windowData, agg, _type));
+				result.Add(DataFrame._calculateAggregation(windowData!, agg, _type));
 				resultIndex.Add(_index[i + window - 1]);
 			}
 
@@ -399,7 +422,7 @@ namespace Daany
 		/// var list = series.ToList(); // Returns List<object> {1, 2, 3}
 		/// </code>
 		/// </example>
-		public List<object> ToList() => new List<object>(_data);
+		public List<object?> ToList() => _data;
 
 		/// <summary>
 		/// Counts the number of missing (NA) values in the series.
@@ -425,7 +448,7 @@ namespace Daany
 		/// </example>
 		public Series DropNA()
 		{
-			var data = new List<object>();
+			var data = new List<object?>();
 			var index = new List<object>();
 
 			for (int i = 0; i < _data.Count; i++)
@@ -453,7 +476,7 @@ namespace Daany
 		/// </example>
 		public Series FillNA(object replacedValue)
 		{
-			var data = new List<object>(_data);
+			var data = new List<object?>(_data);
 			for (int i = 0; i < data.Count; i++)
 			{
 				if (data[i] == null || data[i] == DataFrame.NAN)
@@ -482,8 +505,8 @@ namespace Daany
 			if (validValues.Count == 0)
 				return new Series(this); // No valid values to calculate aggregation
 
-			var replacedValue = DataFrame._calculateAggregation(validValues, aggValue, _type);
-			return FillNA(replacedValue);
+			var replacedValue = DataFrame._calculateAggregation(validValues!, aggValue, _type);
+			return FillNA(replacedValue!);
 		}
 
 		/// <summary>
@@ -501,7 +524,7 @@ namespace Daany
 		/// </example>
 		public Series FillNA(object replacedValue, Func<int, object> replacementDelegate)
 		{
-			var data = new List<object>(_data);
+			var data = new List<object?>(_data);
 			for (int i = 0; i < data.Count; i++)
 			{
 				if (data[i] == null || data[i] == DataFrame.NAN)
@@ -519,7 +542,7 @@ namespace Daany
 
 		public object Aggregate(Aggregation agg)
 		{
-			object? result = DataFrame._calculateAggregation(this._data, agg, _type);
+			object? result = DataFrame._calculateAggregation(_data!, agg, _type);
 			if (result == null || result == DataFrame.NAN)
 				return 0;
 			return result;
@@ -594,9 +617,9 @@ namespace Daany
 		/// var filtered = series.Filter(x => (int)x > 2); // Contains 3, 4
 		/// </code>
 		/// </example>
-		public Series Filter(Func<object, bool> predicate)
+		public Series Filter(Func<object?, bool> predicate)
 		{
-			var filteredData = new List<object>();
+			var filteredData = new List<object?>();
 			var filteredIndex = new List<object>();
 
 			for (int i = 0; i < _data.Count; i++)
@@ -614,7 +637,7 @@ namespace Daany
 		/// <summary>
 		/// Determines if an object is a numeric type that can be used in arithmetic operations
 		/// </summary>
-		private static bool IsNumeric(object value)
+		private static bool IsNumeric(object? value)
 		{
 			if (value == null || value == DataFrame.NAN)
 				return false;
@@ -992,7 +1015,7 @@ namespace Daany
 			columns.Add(Name); // Target column
 
 			int rows = Count - lags;
-			var values = new List<object>();
+			var values = new List<object?>();
 
 			for (int i = 0; i < rows; i++)
 			{
@@ -1002,7 +1025,7 @@ namespace Daany
 				}
 			}
 
-			return new DataFrame(values.ToArray(), columns);
+			return new DataFrame(values, columns);
 		}
 
 		#endregion

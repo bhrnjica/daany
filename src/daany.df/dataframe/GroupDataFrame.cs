@@ -1,31 +1,32 @@
-﻿//////////////////////////////////////////////////////////////////////////////////////////
-// Daany - DAta ANalYtics Library                                                        //
-// https://github.com/bhrnjica/daany                                                    //
-//                                                                                      //
-// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
-//                                                                                      //
-// This code is free software under the MIT License                                     //
-// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
-//                                                                                      //
-// Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
-// Bihac, Bosnia and Herzegovina                                                        //
-// http://bhrnjica.wordpress.com                                                        //
-//////////////////////////////////////////////////////////////////////////////////////////
-using System.Linq;
-using System.Collections.Generic;
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  Daany.DataFrame:Implementation of DataFrame.                           //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 20019-2025 Bahrudin Hrnjica                                //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using Daany.Multikey;
-using System.Text.RegularExpressions;
 
+using Daany.Multikey;
 
 namespace Daany.Grouping
 {
-		/// <summary>
-		/// Represents a grouped collection of DataFrames with operations that can be performed on each group.
-		/// Supports grouping by 1, 2, or 3 columns.
-		/// </summary>
+	/// <summary>
+	/// Represents a grouped collection of DataFrames with operations that can be performed on each group.
+	/// Supports grouping by 1, 2, or 3 columns.
+	/// </summary>
 	public class GroupDataFrame
 	{
 		public string GroupedColumn { get; }

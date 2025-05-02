@@ -1,17 +1,19 @@
-﻿//////////////////////////////////////////////////////////////////////////////////////////
-// Daany - DAta ANalYtics Library                                                        //
-// https://github.com/bhrnjica/daany                                                    //
-//                                                                                      //
-// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
-//                                                                                      //
-// This code is free software under the MIT License                                     //
-// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
-//                                                                                      //
-// Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
-// Bihac, Bosnia and Herzegovina                                                        //
-// http://bhrnjica.wordpress.com                                                        //
-//////////////////////////////////////////////////////////////////////////////////////////
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  Daany.DataFrame:Implementation of DataFrame.                           //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 20019-2025 Bahrudin Hrnjica                                //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -167,14 +169,14 @@ namespace Daany
 		#endregion
 
 		#region Utility Methods
-		private IEnumerable<object> GetRow(IList<object> values, int rowIndex)
+		private IEnumerable<object?> GetRow(IList<object?> values, int rowIndex)
 		{
 			int start = rowIndex * _colCount;
 			for (int i = start; i < start + _colCount; i++)
 				yield return values[i];
 		}
 
-		private void SwapRows(List<object> values, List<object> indices, int i1, int i2)
+		private void SwapRows(List<object?> values, List<object> indices, int i1, int i2)
 		{
 			if (i1 == i2)
 				return;
@@ -199,7 +201,7 @@ namespace Daany
 			Array.Copy(source, sourceIndex, destination, destinationIndex, _colCount);
 		}
 
-		private int CompareRows(IEnumerable<object> leftRow, IEnumerable<object> rightRow, int[] sortCols)
+		private int CompareRows(IEnumerable<object?> leftRow, IEnumerable<object?> rightRow, int[] sortCols)
 		{
 			foreach (var col in sortCols)
 			{

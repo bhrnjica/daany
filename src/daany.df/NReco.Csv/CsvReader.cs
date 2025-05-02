@@ -421,7 +421,7 @@ namespace Daany
 			}
 			internal bool Quoted;
 			internal int EscapedQuotesCount;
-			string cachedValue = null;
+			string cachedValue = null!;
 
 			internal Field()
 			{
@@ -433,7 +433,7 @@ namespace Daany
 				End = start - 1;
 				Quoted = false;
 				EscapedQuotesCount = 0;
-				cachedValue = null;
+				cachedValue = null!;
 				return this;
 			}
 
