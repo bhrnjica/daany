@@ -8,7 +8,7 @@ namespace Unit.Test.DF
 {
 	public class PLotlyTests
     {
-		[Fact]
+		[Fact(Skip = "Use this tes only if you want to play with plotting capabilities.")]
 		public async Task testPLot()
         {
             var url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";

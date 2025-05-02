@@ -15,7 +15,7 @@ namespace Daany.MathStuff.Tests
     public class InterpolationTest
     {
         
-        [Fact]
+        [Fact(Skip = "Use this tes only if you want to play with plotting capabilities.")]
         public void Spline_Test01()
         {
             var x = new double[] { 1, 2, 3};
