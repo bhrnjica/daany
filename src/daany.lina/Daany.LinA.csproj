@@ -10,7 +10,7 @@
 	<Product>daany - DAta ANalYtics on .NET</Product>
 	<Description>Daany.LinA - .NET wrapper for selected routines of MKL LAPACK and BLASS.</Description>
 	<Copyright>Copyright ©2019-2022 Bahrudin Hrnjica</Copyright>
-	<Version>2.1.0</Version>
+	<Version>2.5.0</Version>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageProjectUrl>https://bhrnjica.github.io/daany/</PackageProjectUrl>
 	<PackageIcon>daanyIcon.png</PackageIcon>  
