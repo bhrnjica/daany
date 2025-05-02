@@ -14,51 +14,8 @@
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
 		<PackageReference Include="OxyPlot.Core" Version="2.2.0" />
 		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-		<PackageReference Include="XPlot.Plotly" Version="4.1.0" />
 		<PackageReference Include="xunit" Version="2.9.3" />
-
-
-		<PackageReference Include="xunit.runner.utility" Version="2.4.1" Condition="'$(TargetFramework)' == 'netcoreapp2.1'" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.3.0" Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-		<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		
-		<PackageReference Include="xunit.runner.utility" Version="2.4.1" Condition="'$(TargetFramework)' == 'netcoreapp2.1'" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		
-		<PackageReference Include="xunit.runner.utility" Version="2.4.1" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		
-		<PackageReference Include="xunit.runner.utility" Version="2.4.1" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-					<PrivateAssets>all</PrivateAssets>
-					<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	
-		<PackageReference Include="xunit.runner.utility" Version="2.4.1" Condition="'$(TargetFramework)' == 'net5.0'" />	
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" Condition="'$(TargetFramework)' == 'net5.0'">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-
-		<PackageReference Include="xunit.runner.utility" Version="2.4.1" Condition="'$(TargetFramework)' == 'net6.0'" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" Condition="'$(TargetFramework)' == 'net6.0'">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-
-		<PackageReference Include="xunit.runner.utility" Version="2.9.3" Condition="'$(TargetFramework)' == 'net7.0'" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.1" Condition="'$(TargetFramework)' == 'net7.0'">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+		<PackageReference Include="xunit.runner.utility" Version="2.9.3" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -68,6 +25,12 @@
 		<ProjectReference Include="..\..\src\daany.ext\Daany.DataFrame.Ext.csproj" />
 		<ProjectReference Include="..\..\src\daany.lina\Daany.LinA.csproj" />
 		<ProjectReference Include="..\..\src\daany.stat\Daany.Stat.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="XPlot.Plotly">
+	    <HintPath>..\..\src\daany.ext\Plotly.Bin\XPlot.Plotly.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 	<ItemGroup>

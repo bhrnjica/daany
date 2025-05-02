@@ -51,8 +51,10 @@
 		<ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
 		<ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
 	</ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="XPlot.Plotly" Version="4.1.0" />
-  </ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="XPlot.Plotly">
+	    <HintPath>Plotly.Bin\XPlot.Plotly.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
 </Project>

@@ -1,18 +1,14 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using Xunit;
 using Daany;
-using System.Globalization;
-using XPlot.Plotly;
-using Daany.Stat.SSA;
+using System;
 using System.Threading.Tasks;
+using XPlot.Plotly;
+using Xunit;
 
 namespace Unit.Test.DF
 {
-    public class PLotlyTests
+	public class PLotlyTests
     {
-		[Fact(Skip = "Use this tes only if you want to play with plotting capabilities.")]
+		[Fact]
 		public async Task testPLot()
         {
             var url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";

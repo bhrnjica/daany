@@ -1,34 +1,29 @@
-﻿//////////////////////////////////////////////////////////////////////////////////////////
-// Daany - DAta ANalYtics Library                                                        //
-// https://github.com/bhrnjica/daany                                                    //
-//                                                                                      //
-// Copyright 2006-2018 Bahrudin Hrnjica                                                 //
-//                                                                                      //
-// This code is free software under the MIT License                                     //
-// See license section of  https://github.com/bhrnjica/daany/blob/master/LICENSE        //
-//                                                                                      //
-// Bahrudin Hrnjica                                                                     //
-// bhrnjica at hotmail.com                                                              //
-// Bihac, Bosnia and Herzegovina                                                        //
-// http://bhrnjica.wordpress.com                                                        //
-//////////////////////////////////////////////////////////////////////////////////////////
-using System;
-using System.IO;
+﻿//////////////////////////////////////////////////////////////////////////////
+//   ____    _    _   _   _   __  __                                       //
+//  |  _ \  / \  | \ | | | \ | |\ \/ /                                     //
+//  | | | |/ _ \ |  \| | |  \| | \  /                                      //
+//  | |_| / ___ \| |\  | | |\  | | |                                       //
+//  |____/_/   \_\_| \_| |_| \_| |_|                                       //
+//                                                                         //
+//  DAata ANalYtics Library                                                //
+//  Daany.DataFrame:Implementation of DataFrame.                           //
+//  https://github.com/bhrnjica/daany                                      //
+//                                                                         //
+//  Copyright © 20019-2025 Bahrudin Hrnjica                                //
+//                                                                         //
+//  Free. Open Source. MIT Licensed.                                       //
+//  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
+//////////////////////////////////////////////////////////////////////////////
 using System.Linq;
-using System.Globalization;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-using Daany;
 
 using XPlot.Plotly;
 
 namespace Daany.Ext
 {
-    /// <summary>
-    /// Set of extension methods for the Daany.DataFrame related to Machine Learning and Data Transformation.
-    /// </summary>
-    public static partial class DataFrameExt
+	/// <summary>
+	/// Set of extension methods for the Daany.DataFrame related to Machine Learning and Data Transformation.
+	/// </summary>
+	public static partial class DataFrameExt
     {
         public static PlotlyChart Plot(string xLabel, string yLabel, params Series[] series)
         {

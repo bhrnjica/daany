@@ -14,12 +14,18 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-    <PackageReference Include="OxyPlot.WindowsForms" Version="2.1.0" />
+    <PackageReference Include="OxyPlot.WindowsForms" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\daany.stat\Daany.Stat.csproj" />
     <ProjectReference Include="..\..\src\daany.util\daany.util.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="XPlot.Plotly">
+      <HintPath>..\..\src\daany.ext\Plotly.Bin\XPlot.Plotly.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

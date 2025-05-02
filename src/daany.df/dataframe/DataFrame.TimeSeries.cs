@@ -22,7 +22,7 @@ using Daany.Interfaces;
 
 namespace Daany
 {
-	public partial class DataFrame : IDataFrame
+	public partial class DataFrame
     {
 
         public static DataFrame CreateTimeSeries(DataFrame df, int pastSteps, int futureSteps = 1)

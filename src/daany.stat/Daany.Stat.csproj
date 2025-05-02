@@ -49,13 +49,19 @@
 
 	<ItemGroup>
 		<PackageReference Include="OxyPlot.Core" Version="2.2.0" />
-		<PackageReference Include="XPlot.Plotly" Version="4.1.0" />
 	</ItemGroup>
 
 
 	<ItemGroup>
 		<ProjectReference Include="..\daany.df\Daany.DataFrame.csproj" />
 		<ProjectReference Include="..\daany.lina\Daany.LinA.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Reference Include="XPlot.Plotly">
+	    <HintPath>..\daany.ext\Plotly.Bin\XPlot.Plotly.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

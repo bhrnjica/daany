@@ -546,7 +546,7 @@ namespace Unit.Test.DF
 
         }
 
-		[Fact(Skip = "Use this tes only if you want to play with plotting capabilities.")]
+		[Fact]
 		public void SSAForecast_Test()
         {
             var _ts = getAirPassengersData(); // Monthly time-series data

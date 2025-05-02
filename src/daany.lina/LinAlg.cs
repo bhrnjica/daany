@@ -7,15 +7,11 @@ namespace Daany.LinA
     unsafe public class LinA
     {
 
-#if LINUX
-        const string dllName = "libmkl_rt.so";
-#else
-        const string dllName = "mkl_rt.dll";  
-#endif
+		const string dllName = "mkl_rt";
 
-        #region Solver- solver of system of linear equations
-        // 
-        [DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
+		#region Solver- solver of system of linear equations
+		// 
+		[DllImport(dllName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int LAPACKE_sgesv(int matrix_layout, int n, int nrhs, float* a, int lda, int* ipiv, float* b, int ldb);
 
         //double
