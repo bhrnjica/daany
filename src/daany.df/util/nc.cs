@@ -26,7 +26,7 @@ namespace Daany
 	/// </summary>
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable CS8981 // Naming Styles
-	internal class nc
+	public class nc
 #pragma warning restore CS8981 // Naming Styles
 #pragma warning restore IDE1006 // Naming Styles
 	{

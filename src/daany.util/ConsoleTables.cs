@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace Daany.Util
 {
-    //this class take from https://github.com/khalidabuhakmeh/ConsoleTables
+    //this class is from https://github.com/khalidabuhakmeh/ConsoleTables
     public class ConsoleTable
     {
         public IList<object> Columns { get; set; }

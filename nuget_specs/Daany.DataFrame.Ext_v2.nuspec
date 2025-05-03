@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Daany.DataFrame.Ext</id>
-        <version>2.0.0</version>
+        <version>2.1.6</version>
         <authors>Bahrudin Hrnjica, bhrnjica</authors>
         <owners>bhrnjica</owners>
 		<icon>daanyIcon.png</icon>
@@ -14,16 +14,17 @@
 		<title>Daany.DataFrame.Ext</title>
         <description>Daany.DataFrame.Ext - A set of extensions for Daany.DataFrame.</description>
 		<summary>Daany.DataFrame.Ext - A set of extensions for Daany.DataFrame.</summary>
-        <copyright>Copyright ©2019-2023 Bahrudin Hrnjica</copyright>
+        <copyright>Copyright ©2019-2025 Bahrudin Hrnjica</copyright>
         <tags>ml.net, data preparation, data analytics</tags>
         <dependencies>
+		  <group targetFramework="net9.0" >
+
+		  </group>
 		  <group targetFramework="net8.0" >
-            <dependency id="FSharp.Core" version="5.0.2" />
-			<dependency id="XPlot.Plotly" version="4.0.3" />
+
 		  </group>
           <group targetFramework="net7.0" >
-            <dependency id="FSharp.Core" version="5.0.2" />
-			<dependency id="XPlot.Plotly" version="4.0.3" />
+           
 		  </group>
         </dependencies>
     </metadata>
@@ -32,14 +33,31 @@
         <file src="../README.MD"/>
 		<file src="../daanyIcon.png" />
 		<file src="../LICENSE"/>
+		<!-- net9.0 !-->
+		<file src="../src/daany.mathstuff/bin/Release/net9.0/Daany.MathStuff.dll" target="lib/net9.0" />
+		<file src="../src/daany.df/bin/Release/net9.0/Daany.DataFrame.dll" target="lib/net9.0" />
+		<file src="../src/daany.ext/bin/Release/net9.0/Daany.DataFrame.Ext.dll" target="lib/net9.0" />
+		<file src="../src/daany_rust/target/x86_64-pc-windows-msvc/release/daany_rust_lib.dll" target="lib/net9.0/runtimes/win-x64/native/" />
+		<file src="../src/daany_rust/target/x86_64-unknown-linux-gnu/release/libdaany_rust_lib.so" target="lib/net9.0/runtimes/linux-x64/native/" />
+		<file src="../src/daany.ext/Plotly.Bin/XPlot.Plotly.dll" target="lib/net9.0" />
+
+
         <!-- net8.0 !-->
 		<file src="../src/daany.mathstuff/bin/Release/net8.0/Daany.MathStuff.dll" target="lib/net8.0" />
 		<file src="../src/daany.df/bin/Release/net8.0/Daany.DataFrame.dll" target="lib/net8.0" />
 		<file src="../src/daany.ext/bin/Release/net8.0/Daany.DataFrame.Ext.dll" target="lib/net8.0" />
+		<file src="../src/daany_rust/target/x86_64-pc-windows-msvc/release/daany_rust_lib.dll" target="lib/net8.0/runtimes/win-x64/native/" />
+		<file src="../src/daany_rust/target/x86_64-unknown-linux-gnu/release/libdaany_rust_lib.so" target="lib/net8.0/runtimes/linux-x64/native/" />
+		<file src="../src/daany.ext/Plotly.Bin/XPlot.Plotly.dll" target="lib/net8.0" />
+
         <!-- net7.0 !-->
         <file src="../src/daany.mathstuff/bin/Release/net7.0/Daany.MathStuff.dll" target="lib/net7.0" />
 		<file src="../src/daany.df/bin/Release/net7.0/Daany.DataFrame.dll" target="lib/net7.0" />
 		<file src="../src/daany.ext/bin/Release/net7.0/Daany.DataFrame.Ext.dll" target="lib/net7.0" />
+		<file src="../src/daany_rust/target/x86_64-pc-windows-msvc/release/daany_rust_lib.dll" target="lib/net7.0/runtimes/win-x64/native/" />
+		<file src="../src/daany_rust/target/x86_64-unknown-linux-gnu/release/libdaany_rust_lib.so" target="lib/net7.0/runtimes/linux-x64/native/" />
+		<file src="../src/daany.ext/Plotly.Bin/XPlot.Plotly.dll" target="lib/net7.0" />
+
        
     </files>
 </package>

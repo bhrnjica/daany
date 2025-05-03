@@ -1,0 +1,1 @@
+C:\Users\bhrnjica\source\repos\daany\src\daany_rust\target\x86_64-pc-windows-msvc\release\daany_rust_lib.dll: C:\Users\bhrnjica\source\repos\daany\src\daany_rust\src\daany_csv.rs C:\Users\bhrnjica\source\repos\daany\src\daany_rust\src\lib.rs

@@ -29,7 +29,7 @@ namespace Daany.Multikey
 		public abstract bool ContainsKeys(params object[] keys);
 		public abstract bool TryGetValue(object[] keys, out TValue value);
 		public abstract void Add(object[] keys, TValue value);
-		public abstract TValue this[object[] keys] { get; set; }
+		public abstract TValue? this[object[] keys] { get; set; }
 	}
 
 	public class TwoKeysDictionary<K1, K2, T> : MultiKeyDictionaryBase<T>, IEnumerable<KeyValuePair<K1, Dictionary<K2, T>>>
@@ -40,23 +40,27 @@ namespace Daany.Multikey
 		private readonly Dictionary<K1, Dictionary<K2, T>> _dictionary = new();
 		public override int KeyCount => 2;
 
-		public T this[K1 key1, K2 key2]
+		public T? this[K1 key1, K2 key2]
 		{
-			get => _dictionary[key1][key2];
+			get => ContainsKey(key1, key2) ? _dictionary[key1][key2] : default;
 			set
 			{
+				if (value == null)
+					throw new ArgumentNullException(nameof(value), "Value cannot be null");	
+
 				if (!_dictionary.ContainsKey(key1))
 					_dictionary[key1] = new Dictionary<K2, T>();
 				_dictionary[key1][key2] = value;
 			}
 		}
 
-		public override T this[object[] keys]
+		public override T? this[object[] keys]
 		{
 			get
 			{
 				if (keys == null || keys.Length != 2)
 					throw new ArgumentException("Exactly 2 keys required");
+
 				return this[(K1)keys[0], (K2)keys[1]];
 			}
 			set
@@ -196,20 +200,25 @@ namespace Daany.Multikey
 		private readonly Dictionary<K1, Dictionary<K2, Dictionary<K3, T>>> _dictionary = new();
 		public override int KeyCount => 3;
 
-		public T this[K1 key1, K2 key2, K3 key3]
+		public T? this[K1 key1, K2 key2, K3 key3]
 		{
-			get => _dictionary[key1][key2][key3];
+			get => ContainsKey(key1, key2, key3) ? _dictionary[key1][key2][key3] : default;
 			set
 			{
+				if (value == null)
+					throw new ArgumentNullException(nameof(value), "Value cannot be null");
+
 				if (!_dictionary.ContainsKey(key1))
 					_dictionary[key1] = new Dictionary<K2, Dictionary<K3, T>>();
+
 				if (!_dictionary[key1].ContainsKey(key2))
 					_dictionary[key1][key2] = new Dictionary<K3, T>();
+
 				_dictionary[key1][key2][key3] = value;
 			}
 		}
 
-		public override T this[object[] keys]
+		public override T? this[object[] keys]
 		{
 			get
 			{

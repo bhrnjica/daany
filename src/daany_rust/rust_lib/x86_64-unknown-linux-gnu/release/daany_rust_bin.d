@@ -1,0 +1,1 @@
+/home/bhrnjica/projects/daany/src/daany_rust/target/x86_64-unknown-linux-gnu/release/daany_rust_bin: /home/bhrnjica/projects/daany/src/daany_rust/src/daany_csv.rs /home/bhrnjica/projects/daany/src/daany_rust/src/main.rs

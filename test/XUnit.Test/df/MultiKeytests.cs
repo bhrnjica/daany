@@ -91,8 +91,8 @@ namespace Unit.Test.DF
 			// Act & Assert - Duplicate key
 			Assert.Throws<ArgumentException>(() => dict.Add("Group1", 1, "Value2"));
 
-			// Nonexistent key access should throw KeyNotFoundException
-			Assert.Throws<KeyNotFoundException>(() => _ = dict["Nonexistent", 1]);
+			// Nonexistent key access should return null
+			Assert.Null(dict["Nonexistent", 1]);
 
 			// Safe access via TryGetValue for nonexistent key
 			Assert.False(dict.TryGetValue("Nonexistent", 1, out _));

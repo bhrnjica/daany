@@ -33,9 +33,9 @@ namespace Daany.Grouping
 		public string SecondGroupedColumn { get; }
 		public string ThirdGroupedColumn { get; }
 
-		internal Dictionary<object, DataFrame> Groups { get; }
-		internal TwoKeysDictionary<object, object, DataFrame> Groups2 { get; }
-		internal ThreeKeysDictionary<object, object, object, DataFrame> Groups3 { get; }
+		public Dictionary<object, DataFrame> Group { get; }
+		public TwoKeysDictionary<object, object, DataFrame> Group2 { get; }
+		public ThreeKeysDictionary<object, object, object, DataFrame> Group3 { get; }
 
 		/// <summary>
 		/// Initializes a new instance of GroupDataFrame grouped by a single column
@@ -48,9 +48,9 @@ namespace Daany.Grouping
 			SecondGroupedColumn = null!;
 			ThirdGroupedColumn = null!;
 
-			Groups = groups!;
-			Groups2 = null!;
-			Groups3 = null!;
+			Group = groups!;
+			Group2 = null!;
+			Group3 = null!;
 		}
 
 		/// <summary>
@@ -65,9 +65,9 @@ namespace Daany.Grouping
 			SecondGroupedColumn = secondGroupedColumn;
 			ThirdGroupedColumn = null!;
 
-			Groups = null!;
-			Groups2 = groups;
-			Groups3 = null!;
+			Group = null!;
+			Group2 = groups;
+			Group3 = null!;
 		}
 
 		/// <summary>
@@ -83,9 +83,9 @@ namespace Daany.Grouping
 			SecondGroupedColumn = secondGroupedColumn;
 			ThirdGroupedColumn = thirdGroupedColumn;
 
-			Groups = null!;
-			Groups2 = null!;
-			Groups3 = groups;
+			Group = null!;
+			Group2 = null!;
+			Group3 = groups;
 		}
 
 		/// <summary>
@@ -95,7 +95,7 @@ namespace Daany.Grouping
 		/// <returns>The DataFrame associated with the specified key</returns>
 		public DataFrame this[object key]
 		{
-			get => Groups[key];
+			get => Group[key];
 		}
 
 		/// <summary>
@@ -106,7 +106,7 @@ namespace Daany.Grouping
 		/// <returns>The DataFrame associated with the specified keys</returns>
 		public DataFrame this[object key1, object key2]
 		{
-			get => Groups2[key1, key2];
+			get => Group2[key1, key2];
 		}
 
 		/// <summary>
@@ -118,7 +118,7 @@ namespace Daany.Grouping
 		/// <returns>The DataFrame associated with the specified keys</returns>
 		public DataFrame this[object key1, object key2, object key3]
 		{
-			get => Groups3[key1, key2, key3];
+			get => Group3[key1, key2, key3];
 		}
 
 		/// <summary>
@@ -126,7 +126,7 @@ namespace Daany.Grouping
 		/// </summary>
 		public List<object> Keys
 		{
-			get => new List<object>(Groups.Keys);
+			get => new List<object>(Group.Keys);
 		}
 
 		/// <summary>
@@ -137,9 +137,9 @@ namespace Daany.Grouping
 			get
 			{
 				// Pre-allocate with estimated capacity
-				var list = new List<(object, object)>(Groups2.Count * 2); 
+				var list = new List<(object, object)>(Group2.Count * 2); 
 
-				foreach (var outerPair in Groups2)
+				foreach (var outerPair in Group2)
 				{
 					foreach (var innerPair in outerPair.Value)
 					{
@@ -159,9 +159,9 @@ namespace Daany.Grouping
 			get
 			{
 				// Pre-allocate with estimated capacity
-				var list = new List<(object, object, object)>(Groups3.Count * 3); 
+				var list = new List<(object, object, object)>(Group3.Count * 3); 
 
-				foreach (var level1 in Groups3)
+				foreach (var level1 in Group3)
 				{
 					foreach (var level2 in level1.Value)
 					{
@@ -198,9 +198,9 @@ namespace Daany.Grouping
 			};
 
 
-			if (Groups2 != null && Groups2.Count > 0)
+			if (Group2 != null && Group2.Count > 0)
 				combinedAggregations[SecondGroupedColumn] = Aggregation.Last;
-			if (Groups3 != null && Groups3.Count > 0)
+			if (Group3 != null && Group3.Count > 0)
 				combinedAggregations[ThirdGroupedColumn] = Aggregation.Last;
 
 			foreach (var agg in aggregations)
@@ -208,9 +208,9 @@ namespace Daany.Grouping
 
 			DataFrame result = null!;
 
-			if (Groups != null && Groups.Count > 0)
+			if (Group != null && Group.Count > 0)
 			{
-				foreach (var group in Groups.Values)
+				foreach (var group in Group.Values)
 				{
 					var rolled = group.Rolling(rollingWindow, combinedAggregations).TakeEvery(window);
 					if (rolled == null)
@@ -222,11 +222,11 @@ namespace Daany.Grouping
 						result.AddRows(rolled);
 				}
 			}
-			else if (Groups2 != null && Groups2.Count > 0)
+			else if (Group2 != null && Group2.Count > 0)
 			{
 				foreach (var (key1, key2) in Keys2)
 				{
-					var rolled = Groups2[key1][key2].Rolling(rollingWindow, combinedAggregations).TakeEvery(window);
+					var rolled = Group2[key1][key2].Rolling(rollingWindow, combinedAggregations).TakeEvery(window);
 
 					if (result == null)
 						result = new DataFrame(rolled);
@@ -234,11 +234,11 @@ namespace Daany.Grouping
 						result.AddRows(rolled);
 				}
 			}
-			else if (Groups3 != null && Groups3.Count > 0)
+			else if (Group3 != null && Group3.Count > 0)
 			{
 				foreach (var (key1, key2, key3) in Keys3)
 				{
-					var rolled = Groups3[key1][key2][key3].Rolling(rollingWindow, combinedAggregations).TakeEvery(window);
+					var rolled = Group3[key1][key2][key3].Rolling(rollingWindow, combinedAggregations).TakeEvery(window);
 
 					if (result == null)
 						result = new DataFrame(rolled);
@@ -273,9 +273,9 @@ namespace Daany.Grouping
 		{
 			//
 			DataFrame result = null!;
-			if (Groups != null && Groups.Count > 0)
+			if (Group != null && Group.Count > 0)
 			{
-				foreach (var gr in Groups)
+				foreach (var gr in Group)
 				{
 					var df1 = gr.Value.Shift(arg);
 					if (result == null)
@@ -284,22 +284,22 @@ namespace Daany.Grouping
 						result.AddRows(df1);
 				}
 			}
-			else if (Groups2 != null && Groups2.Count > 0)
+			else if (Group2 != null && Group2.Count > 0)
 			{
 				foreach (var gr in Keys2)
 				{
-					var df1 = this.Groups2[gr.key1][gr.key2].Shift(arg);
+					var df1 = this.Group2[gr.key1][gr.key2].Shift(arg);
 					if (result == null)
 						result = new DataFrame(df1);
 					else
 						result.AddRows(df1);
 				}
 			}
-			else if (Groups3 != null && Groups3.Count > 0)
+			else if (Group3 != null && Group3.Count > 0)
 			{
 				foreach (var gr in Keys3)
 				{
-					var df1 = this.Groups3[gr.key1][gr.key2][gr.key3].Shift(arg);
+					var df1 = this.Group3[gr.key1][gr.key2][gr.key3].Shift(arg);
 					if (result == null)
 						result = new DataFrame(df1);
 					else
@@ -317,15 +317,15 @@ namespace Daany.Grouping
 		/// <returns>A new DataFrame with aggregated results</returns>
 		public DataFrame Aggregate(IDictionary<string, Aggregation> aggregations)
 		{
-			if (Groups == null && Groups2 == null && Groups3 == null)
+			if (Group == null && Group2 == null && Group3 == null)
 				throw new InvalidOperationException("No groups available for aggregation");
 
 			DataFrame result = null!;
 			//grouping with one column
-			if (Groups != null && Groups.Count > 0)
+			if (Group != null && Group.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Groups.ElementAt(0).Value.Columns);
-				foreach (var gr in Groups)
+				var df1 = DataFrame.CreateEmpty(Group.ElementAt(0).Value.Columns);
+				foreach (var gr in Group)
 				{
 					var row = gr.Value.Aggragate(aggregations, true);
 					df1.AddRow(row);
@@ -334,10 +334,10 @@ namespace Daany.Grouping
 				return df1;
 			}
 			//grouping with two columns
-			else if (Groups2 != null && Groups2.Count > 0)
+			else if (Group2 != null && Group2.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Groups2.ElementAt(0).Value.ElementAt(0).Value.Columns);
-				foreach (var gr in Groups2)
+				var df1 = DataFrame.CreateEmpty(Group2.ElementAt(0).Value.ElementAt(0).Value.Columns);
+				foreach (var gr in Group2)
 				{
 					foreach (var g2 in gr.Value)
 					{
@@ -349,10 +349,10 @@ namespace Daany.Grouping
 				return df1;
 			}
 			//grouping with three columns
-			else if (Groups3 != null && Groups3.Count > 0)
+			else if (Group3 != null && Group3.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Groups3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
-				foreach (var gr in Groups3)
+				var df1 = DataFrame.CreateEmpty(Group3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
+				foreach (var gr in Group3)
 				{
 					foreach (var g2 in gr.Value)
 					{
@@ -375,11 +375,11 @@ namespace Daany.Grouping
 		/// <returns>DataFrame with columns: [grouped column(s), "count"]</returns>
 		public DataFrame GCount()
 		{
-			if (Groups == null)
+			if (Group == null)
 				throw new InvalidOperationException("Count is only supported for single-column grouping");
 
-			var values = new List<object?>(Groups.Count * 2);
-			foreach (var group in Groups.OrderByDescending(x => x.Value.RowCount()))
+			var values = new List<object?>(Group.Count * 2);
+			foreach (var group in Group.OrderByDescending(x => x.Value.RowCount()))
 			{
 				values.Add(group.Key);
 				values.Add(group.Value.RowCount());
@@ -397,14 +397,14 @@ namespace Daany.Grouping
 		{
 			DataFrame result = null!;
 
-			if (Groups == null && Groups2 == null && Groups3 == null)
+			if (Group == null && Group2 == null && Group3 == null)
 				throw new Exception("Group is  empty.");
 
 			//grouping with one column
-			if (Groups != null && Groups.Count > 0)
+			if (Group != null && Group.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Groups.ElementAt(0).Value.Columns);
-				foreach (var gr in Groups)
+				var df1 = DataFrame.CreateEmpty(Group.ElementAt(0).Value.Columns);
+				foreach (var gr in Group)
 				{
 					var rows = trasnform(gr.Value);
 					if (rows != null && rows.RowCount() > 0)
@@ -414,10 +414,10 @@ namespace Daany.Grouping
 				return df1;
 			}
 			//grouping with two columns
-			else if (Groups2 != null && Groups2.Count > 0)
+			else if (Group2 != null && Group2.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Groups2.ElementAt(0).Value.ElementAt(0).Value.Columns);
-				foreach (var gr in Groups2)
+				var df1 = DataFrame.CreateEmpty(Group2.ElementAt(0).Value.ElementAt(0).Value.Columns);
+				foreach (var gr in Group2)
 				{
 					foreach (var g2 in gr.Value)
 					{
@@ -430,10 +430,10 @@ namespace Daany.Grouping
 				return df1;
 			}
 			//grouping with three columns
-			else if (Groups3 != null && Groups3.Count > 0)
+			else if (Group3 != null && Group3.Count > 0)
 			{
-				var df1 = DataFrame.CreateEmpty(Groups3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
-				foreach (var gr in Groups3)
+				var df1 = DataFrame.CreateEmpty(Group3.ElementAt(0).Value.ElementAt(0).Value.ElementAt(0).Value.Columns);
+				foreach (var gr in Group3)
 				{
 					foreach (var g2 in gr.Value)
 					{
@@ -459,9 +459,9 @@ namespace Daany.Grouping
 		public string ToStringBuilder(int rowCount = 15)
 		{
 			StringBuilder sb = new StringBuilder();
-			int rows = this.Groups != null ? this.Groups.Count() :
-					   this.Groups2 != null ? this.Groups2.Count :
-					   this.Groups3.Count;
+			int rows = this.Group != null ? this.Group.Count() :
+					   this.Group2 != null ? this.Group2.Count :
+					   this.Group3.Count;
 
 			int longestColumnName = 20;
 
@@ -479,17 +479,17 @@ namespace Daany.Grouping
 			var rr = Math.Min(rowCount, rows);
 			for (int i = 0; i < rr; i++)
 			{
-				if (this.Groups != null)
+				if (this.Group != null)
 				{
-					var grp = this.Groups.ElementAt(i);
+					var grp = this.Group.ElementAt(i);
 					sb.Append((grp.Key).ToString()!.PadRight(longestColumnName));
 					sb.AppendLine();
 					sb.Append(grp.Value.ToStringBuilder());
 					sb.AppendLine();
 				}
-				else if (this.Groups2 != null)
+				else if (this.Group2 != null)
 				{
-					var grp = this.Groups2.ElementAt(i);
+					var grp = this.Group2.ElementAt(i);
 					foreach (var k2 in grp.Value)
 					{
 						sb.Append((grp.Key).ToString()!.PadRight(longestColumnName));
@@ -500,9 +500,9 @@ namespace Daany.Grouping
 					}
 
 				}
-				else if (this.Groups3 != null)
+				else if (this.Group3 != null)
 				{
-					var grp = this.Groups3.ElementAt(i);
+					var grp = this.Group3.ElementAt(i);
 					foreach (var k2 in grp.Value)
 					{
 						foreach (var k3 in k2.Value)

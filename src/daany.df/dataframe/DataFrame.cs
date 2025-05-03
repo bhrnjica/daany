@@ -1756,6 +1756,49 @@ namespace Daany
 		}
 
 		/// <summary>
+		/// Replaces missing values in the specified column using a delegate function.
+		/// </summary>
+		/// <param name="col">The name of the column where missing values should be replaced.</param>
+		/// <param name="replDelg">
+		/// A delegate function that takes the row index as an argument and returns the replacement value.
+		/// </param>
+		/// <exception cref="ArgumentException">
+		/// Thrown if the column name is null or empty.
+		/// </exception>
+		/// <remarks>
+		/// This method iterates through the column values and replaces missing entries (NaN) using the provided delegate.
+		/// The delegate allows dynamic replacement logic based on row index.
+		/// </remarks>
+		/// <example>
+		/// Example usage:
+		/// <code>
+		/// df.FillNA("Price", rowIdx => rowIdx % 2 == 0 ? 0.0 : 1.0);
+		/// </code>
+		/// This replaces missing values in the "Price" column with alternating values based on row index.
+		/// </example>
+		public void FillNA(string col, Func<int, object> replDelg)
+		{
+			if (string.IsNullOrEmpty(col))
+				throw new ArgumentException(nameof(col));
+
+			var colIndex = getColumnIndex(col);
+			int index = 0;
+			for (int i = 0; i < Index.Count; i++)
+			{
+				for (int j = 0; j < Columns.Count; j++)
+				{
+					if (j == colIndex)
+					{
+						if (Values[index] == DataFrame.NAN)
+							Values[index] = replDelg(i);
+
+					}
+					index++;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Converts a value to the appropriate type for a specific column.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
     <metadata>
         <id>Daany.LinA.linux-x64</id>
-        <version>2.0.0</version>
+        <version>2.1.6</version>
         <authors>Bahrudin Hrnjica, bhrnjica</authors>
         <owners>bhrnjica</owners>
 		<icon>daanyIcon.png</icon>
@@ -14,9 +14,12 @@
         <title>Daany.LinA</title>
         <description>Daany.LinA - .NET wrapper for selected routines of MKL LAPACK and BLASS.</description>
 		<summary>Daany.LinA - .NET wrapper for selected routines of MKL LAPACK and BLASS.</summary >
-        <copyright>Copyright ©2020-2023 Bahrudin Hrnjica</copyright>
+        <copyright>Copyright ©2020-2025 Bahrudin Hrnjica</copyright>
         <tags>linear algebra, math, matrix, lapack, blass, data preparation, data analytics</tags>
 		<dependencies>
+        <group targetFramework="net9.0">
+		   <dependency id="MKL.NET.linux-x64" version="2022.0.1.117" />	
+		</group>
 		<group targetFramework="net8.0">
 		   <dependency id="MKL.NET.linux-x64" version="2022.0.1.117" />	
 		</group>
@@ -30,9 +33,11 @@
         <file src="../README.MD"/>	
 		<file src="../daanyIcon.png"/>
 		<file src="../LICENSE"/>
+        <!-- net9.0 !-->
+        <file src="../src/daany.lina/bin/Linux/net9.0/Daany.LinA.dll" target="lib/net9.0" />
 		<!-- net8.0 !-->
-        <file src="../src/daany.lina/bin/Linux_Release/net8.0/Daany.LinA.dll" target="lib/net8.0" />
+        <file src="../src/daany.lina/bin/Linux/net8.0/Daany.LinA.dll" target="lib/net8.0" />
 		<!-- net7.0 !-->
-        <file src="../src/daany.lina/bin/Linux_Release/net7.0/Daany.LinA.dll" target="lib/net7.0" />
+        <file src="../src/daany.lina/bin/Linux/net7.0/Daany.LinA.dll" target="lib/net7.0" />
     </files>
 </package>

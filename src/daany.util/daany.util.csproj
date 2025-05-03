@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="9.0.202" />
     <PackageReference Include="Microsoft.ML" Version="4.0.2" />
   </ItemGroup>
 
