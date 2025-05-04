@@ -830,6 +830,27 @@ namespace Daany
 				_colTypes = columnsTypes(_values?? throw new ArgumentNullException(nameof(_values)), Index.Count, Columns.Count);
 		}
 
+		/// <summary>
+		/// Validate the data so that each column contains the data of the same type
+		/// </summary>
+		/// <returns></returns>
+		public bool ValidateDataTypes()
+		{
+			for(int i=0; i< Index.Count; i++)
+			{
+				for (int j = 0; j < Columns.Count; j++)
+				{
+					var colType = ColTypes[j];
+					var value = this[i, j];
+					if (value == null)
+						continue;
+					if (colType != GetValueType(value))
+						return false;
+				}
+			}
+			return true;
+		}
+
 		#endregion
 
 		#region Data Frame Operations
