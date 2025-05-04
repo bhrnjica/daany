@@ -8,7 +8,6 @@ Daany v2.0 - .NET **DA**ta **AN**al**Y**tics .NET library with the implementatio
 ![Nuget](https://img.shields.io/nuget/dt/Daany.DataFrame)
 
 [![Continuous Integration Windows](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet.yml/badge.svg)](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet.yml)
-[![Continuous Integration Linux](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet_Linux.yml/badge.svg)](https://github.com/bhrnjica/daany/actions/workflows/CI_dotnet_Linux.yml)
 
 
 
