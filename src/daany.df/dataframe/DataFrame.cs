@@ -2036,7 +2036,7 @@ namespace Daany
 					Compare(Convert.ToDouble(value), Convert.ToDouble(filterValue), fOper),
 				ColType.STR or ColType.IN =>
 					Compare(value.ToString()!, filterValue.ToString()!, fOper),
-				ColType.DT =>
+				ColType.DT => value is not DateTime ? throw new ArgumentException("DataFrmae value and filter values are not the same type.") :
 					Compare(Convert.ToDateTime(value), Convert.ToDateTime(filterValue), fOper),
 				_ => throw new Exception("Unsupported column type!")
 			};
@@ -4267,122 +4267,50 @@ namespace Daany
             var df = new DataFrame(val, ind, this.Columns.ToList(), this._colTypes!);
             return df;
         }
+		
+		
+		private Dictionary<object, DataFrame> groupDFBy(string groupCol)
+		{
+			var Group = new Dictionary<object, DataFrame>();
+			int rows = Index.Count;
+			int colCnt = ColCount();
+			int grpColIndex = getColumnIndex(groupCol);
 
+			object?[] rowBuffer = new object?[colCnt]; // Reusable row buffer
+			int pos = 0;
 
-        private Dictionary<object, DataFrame> groupDFBy(string groupCol)
-        {
-            var Group = new Dictionary<object, DataFrame>();
-            
-            //go through all data to group
-            var pos = 0;
-            var rows = Index.Count;
-            //
-            for (int i = 0; i < rows; i++)
-            {
-                var row = new List<object?>();
-                object? groupValue = null;
-                var colCnt = ColCount();
-                var grpColIndex = getColumnIndex(groupCol);
+			for (int i = 0; i < rows; i++)
+			{
+				object? groupValue = null;
 
-                //
-                for (int j = 0; j < colCnt; j++)
-                {
-                    row.Add(Values[pos]);
-                    
-                   // if (Columns[j].Equals(groupCol, StringComparison.InvariantCultureIgnoreCase))
-                   if(grpColIndex==j)
-                        groupValue = Values[pos];
-                    pos++;
-                }
+				for (int j = 0; j < colCnt; j++)
+				{
+					rowBuffer[j] = Values[pos];
+
+					if (grpColIndex == j)
+						groupValue = Values[pos];
+
+					pos++;
+				}
+
 				if (groupValue == null)
 					continue;
 
-                //add to group
-                if (!Group.ContainsKey(groupValue))
-                    Group.Add(groupValue, new DataFrame(row, new List<object>(){Index[i]}, this.Columns, this._colTypes!));
-                else
-                    Group[groupValue].AddRow(row, Index[i]);
-            }
+				if (!Group.TryGetValue(groupValue, out var dataFrame))
+				{
+					dataFrame = new DataFrame(rowBuffer.ToList(), new List<object> { Index[i] }, Columns, _colTypes!);
+					Group[groupValue] = dataFrame;
+				}
+				else
+				{
+					dataFrame.AddRow(rowBuffer.ToList(), Index[i]);
+				}
+			}
 
-            return Group;
-        }
+			return Group;
+		}
 
-        private static bool applyOperator(DateTime val1, DateTime val2, FilterOperator fOper)
-        {
-            switch (fOper)
-            {
-                case FilterOperator.Equal:
-                    return val1 == val2;
-                case FilterOperator.Notequal:
-                    return val1 != val2;
-                case FilterOperator.Greather:
-                    return val1 > val2;
-                case FilterOperator.Less:
-                    return val1 < val2;
-                case FilterOperator.GreatherOrEqual:
-                    return val1 >= val2;
-                case FilterOperator.LessOrEqual:
-                    return val1 <= val2;
-                case FilterOperator.IsNUll:
-                    throw new Exception("value cannot be null");
-                case FilterOperator.NonNull:
-                    return true;
-                default:
-                    throw new Exception("Unknown operator!");
-            }
-        }
-
-        private static bool applyOperator(string val1, string val2, FilterOperator fOper)
-        {
-            switch (fOper)
-            {
-                case FilterOperator.Equal:
-                    return val1 == val2;
-                case FilterOperator.Notequal:
-                    return val1 != val2;
-                case FilterOperator.Greather:
-                    throw new Exception("Operator for string is not supported!");
-                case FilterOperator.Less:
-                    throw new Exception("Operator for string is not supported!");
-                case FilterOperator.GreatherOrEqual:
-                    throw new Exception("Operator for string is not supported!");
-                case FilterOperator.LessOrEqual:
-                    throw new Exception("Operator for string is not supported!");
-                case FilterOperator.IsNUll:
-                    throw new Exception("value cannot be null");
-                case FilterOperator.NonNull:
-                    return true;
-                default:
-                    throw new Exception("Unknown operator!");
-            }
-        }
-
-        private static bool applyOperator(double val1, double val2, FilterOperator fOper)
-        {
-            switch (fOper)
-            {
-                case FilterOperator.Equal:
-                    return val1 == val2;
-                case FilterOperator.Notequal:
-                    return val1 != val2;
-                case FilterOperator.Greather:
-                    return val1 > val2;
-                case FilterOperator.Less:
-                    return val1 < val2;
-                case FilterOperator.GreatherOrEqual:
-                    return val1 >= val2;
-                case FilterOperator.LessOrEqual:
-                    return val1 <= val2;
-                case FilterOperator.IsNUll:
-                    throw new Exception("value cannot be null");
-                case FilterOperator.NonNull:
-                    return true;
-                default:
-                    throw new Exception("Unknown operator!");
-            }
-        }
-
-        private void checkColumnNames(List<string> columns, string[] colNames)
+		private void checkColumnNames(List<string> columns, string[] colNames)
         {
             var sameCols = this.Columns.Intersect(colNames).ToArray();
             //check if column exists
