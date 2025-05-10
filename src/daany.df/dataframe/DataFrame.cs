@@ -642,6 +642,19 @@ namespace Daany
 
 			InitializeDataFrame(values, computedIndex, columns, colTypes);
 		}
+		public DataFrame(IDictionary<string, List<object?>> data, Index index, ColType[] colTypes)
+		{
+			ValidateData(data);
+
+			var firstColumnValues = data.Values.First();
+			
+			var columns = data.Keys.ToList();
+			var values = Enumerable.Range(0, firstColumnValues.Count)
+				.SelectMany(row => data.Values.Select(column => ParseValue(column[row], null)))
+				.ToList();
+
+			InitializeDataFrame(values, index, columns, colTypes);
+		}
 
 		private void InitializeDataFrame(List<object?> data, Index index, List<string> columns, ColType[]? colTypes)
 		{
@@ -689,15 +702,17 @@ namespace Daany
 			EnsureColumnTypesInitialized();
 
 			var dict = new Dictionary<string, List<object?>>();
-
+			var colTypes = new List<ColType>();
 			//define new name for columns
 			for (int i = 0; i < colNames.Length; i++)
 			{
 				//get th ecolumn
 				var colName = string.IsNullOrEmpty(colNames[i].newName) ? colNames[i].oldName : colNames[i].newName;
 				dict.Add(colName, this[colNames[i].oldName].ToList());
+				//get column type
+				colTypes.Add(ColTypes[getColumnIndex(colNames[i].oldName)]);
 			}
-			var newDf = new DataFrame(dict);
+			var newDf = new DataFrame(dict, Index, colTypes.ToArray());
 			return newDf;
 		}
 

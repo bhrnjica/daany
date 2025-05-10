@@ -160,9 +160,9 @@ public class ColumnTransformationTests
 	private DataFrame CreateBinaryMockDataFrame()
 	{
 		var data = new Dictionary<string, List<object>>
-	{
-		{ "Category", [ "A", "B", "A", "B", "A" ]}, // Only two unique categories
-    };
+			{
+				{ "Category", [ "A", "B", "A", "B", "A" ]}, // Only two unique categories
+			};
 		return new DataFrame(data);
 	}
 
