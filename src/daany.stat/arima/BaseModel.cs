@@ -7,10 +7,10 @@ namespace Daany.Stat.Arima
     ///this implementation is based on: https://github.com/jsphLim/ARIMA
     internal class BaseModel
     {
-        protected double[] data;
+        protected double[]? data;
         protected int param;
 
-        public virtual double[] Fit()
+        public virtual double[]? Fit()
         {
             return null;
         }

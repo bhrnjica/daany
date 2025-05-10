@@ -28,9 +28,9 @@ namespace Daany.Stat.SSA
     public class EigenTriple
     {
         public double Li { get; set; }
-        public double[] Ui { get; set; }
-        public double[] Vi { get; set; }
-        public float LiContrb { get; set; }//contribution 
+        public double[] Ui { get; set; } = null!;
+        public double[] Vi { get; set; } = null!;
+		public float LiContrb { get; set; }//contribution 
 
     }
     /// <summary>
@@ -40,10 +40,10 @@ namespace Daany.Stat.SSA
     /// 1. Embedding  - the time series by forming a Hankel matrix of lagged window(length K) vectors.
     /// 2. Decompose - the embedded time series via Singular Value Decomposition
     /// 3. Eigen-tripple Grouping - is the process of identifying eigenvalue-eigenvector pairs as trend, seasonal and noise                         
-    ///4. Reconstruct the time series -  from the eigenvalue-eigenvector pairs identified as trend and seasonal.
+    /// 4. Reconstruct the time series -  from the eigenvalue-eigenvector pairs identified as trend and seasonal.
     ///                              This is done through a process called diagonal averaging.
-    ///5. Forecasting - originally defined there are two methods of forecasting: rForecast and VForecast.                              
-    ///Description of SSA (from Wikipedia)
+    /// 5. Forecasting - originally defined there are two methods of forecasting: rForecast and VForecast.                              
+    /// Description of SSA (from Wikipedia)
     ///
     ///SSA can be used as a model-free technique so that it can be applied to arbitrary time series including 
     ///non-stationary time series. The basic aim of SSA is to decompose the time series into the sum of interpretable 
@@ -285,7 +285,7 @@ namespace Daany.Stat.SSA
         /// Calculates the correlation between components
         /// </summary>
         /// <returns>Matrix of Correlation values</returns>
-        public double[,] WCorrelation(int[] group =null)
+        public double[,] WCorrelation(int[] group = null!)
         {
             int[] grp = group;
             if (group != null && group.Length < 2)

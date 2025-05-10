@@ -138,8 +138,8 @@ public static class DataFrameColumnTransformer
 		var colVector = df[colName] ?? throw new ArgumentException($"Column '{colName}' not found");
 
 		var classValues = colVector
-			.Where(x => DataFrame.NAN != x)
-			.Select(x => x.ToString()!)
+			.Where(x => x is not null)
+			.Select(x => x!.ToString() ?? string.Empty) 
 			.Distinct()
 			.ToArray();
 
@@ -148,20 +148,23 @@ public static class DataFrameColumnTransformer
 		// Initialize lists with capacity to avoid resizing
 		foreach (var c in classValues)
 		{
-			dict[c] = new List<object?>(colVector.Count());
+			dict[c!] = new List<object?>(colVector.Count());
 		}
 
 		// Encode values
 		foreach (var cValue in colVector)
 		{
-			var strValue = cValue.ToString();
+			var strValue = cValue!.ToString();
+
 			foreach (var cls in classValues)
 			{
+
 				dict[cls].Add(strValue == cls ? 1 : 0);
 			}
 		}
 
 		var newDf = encodedOnly ? new DataFrame(dict) : df.AddColumns(dict);
+
 		return (newDf, classValues);
 
 	}
@@ -189,7 +192,7 @@ public static class DataFrameColumnTransformer
 		// Initialize lists with capacity
 		foreach (var c in dummyClasses)
 		{
-			dict[c] = new List<object?>(colVector.Count());
+			dict[c!] = new List<object?>(colVector.Count());
 		}
 
 		// Encode values
@@ -221,7 +224,7 @@ public static class DataFrameColumnTransformer
     {
         var colVector = df[colName];
 
-        var classValues = colVector.Where(x => x != null).Select(x => x.ToString()).Distinct().ToList();
+        var classValues = colVector.Where(x => x != null).Select(x => x!.ToString()).Distinct().ToList();
 
         //define encoded columns
         var dict = new Dictionary<string, List<object?>>();
@@ -263,7 +266,7 @@ public static class DataFrameColumnTransformer
     {
         var colVector = df[colName];
 
-        var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x.ToString()).Distinct().ToList();
+        var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x!.ToString()).Distinct().ToList();
 
         //define encoded columns
         var dict = new Dictionary<string, List<object?>>();
@@ -288,7 +291,7 @@ public static class DataFrameColumnTransformer
         var newDf = df.AddColumns(dict);
 
         if (encodedOnly)
-            return (newDf[new string[] { newClumn }], classValues.Select(x=>x.ToString()).ToArray());
+            return (newDf[new string[] { newClumn }], classValues.Select(x=>x!.ToString()).ToArray());
         else
             return (newDf, classValues.Select(x => x!.ToString()).ToArray());
 
@@ -305,7 +308,7 @@ public static class DataFrameColumnTransformer
     {
         var colVector = df[colName];
 
-        var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x.ToString()).Distinct().ToList();
+        var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x!.ToString()).Distinct().ToList();
 
         //define encoded columns
         var dict = new Dictionary<string, List<object?>>();
@@ -321,7 +324,7 @@ public static class DataFrameColumnTransformer
             }
             else
             {
-                int ordinalValue = classValues.IndexOf(value.ToString());
+                int ordinalValue = classValues.IndexOf(value!.ToString());
                 if (ordinalValue == 0)
                     ordinalValue = -1;
                 encodedValues.Add(ordinalValue);
@@ -333,9 +336,9 @@ public static class DataFrameColumnTransformer
         var newDf = df.AddColumns(dict);
 
         if (encodedOnly)
-            return (newDf[new string[] { newClumn }], classValues.Select(x => x.ToString()).ToArray());
+            return (newDf[new string[] { newClumn }], classValues.Select(x => x!.ToString()).ToArray());
         else
-            return (newDf, classValues.Select(x => x.ToString()).ToArray());
+            return (newDf, classValues.Select(x => x!.ToString()).ToArray());
 
     }
 

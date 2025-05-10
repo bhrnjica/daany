@@ -106,7 +106,7 @@ namespace Daany.Grouping
 		/// <returns>The DataFrame associated with the specified keys</returns>
 		public DataFrame this[object key1, object key2]
 		{
-			get => Group2[key1, key2];
+			get => Group2[key1, key2]!;
 		}
 
 		/// <summary>
@@ -118,7 +118,7 @@ namespace Daany.Grouping
 		/// <returns>The DataFrame associated with the specified keys</returns>
 		public DataFrame this[object key1, object key2, object key3]
 		{
-			get => Group3[key1, key2, key3];
+			get => Group3[key1, key2, key3]!;
 		}
 
 		/// <summary>
