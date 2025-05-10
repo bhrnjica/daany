@@ -268,8 +268,11 @@ public static class DataFrameColumnTransformer
 
         var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x!.ToString()).Distinct().ToList();
 
-        //define encoded columns
-        var dict = new Dictionary<string, List<object?>>();
+		if (classValues.Count != 2)
+			throw new FormatException("The DataFrame column contains more than two categories");
+
+		//define encoded columns
+		var dict = new Dictionary<string, List<object?>>();
         var encodedValues = new List<object?>();
         foreach (var value in colVector)
         {
@@ -309,7 +312,8 @@ public static class DataFrameColumnTransformer
         var colVector = df[colName];
 
         var classValues = colVector.Where(x => DataFrame.NAN != x).Select(x => x!.ToString()).Distinct().ToList();
-
+		if (classValues.Count != 2)
+			throw new FormatException("The DataFrame column contains more than two categories");
         //define encoded columns
         var dict = new Dictionary<string, List<object?>>();
         var encodedValues = new List<object?>();

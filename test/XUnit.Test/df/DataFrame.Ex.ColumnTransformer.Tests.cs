@@ -20,32 +20,21 @@ public class ColumnTransformationTests
 	}
 
 	[Fact]
-	public void TransformColumn_Binary1_ShouldReturnEncodedLabels_Binary1()
+	public void TransformColumn_Binary1_ShouldThrowFormatException_WhenMoreThanTwoCategories()
 	{
 		var df = CreateMockDataFrame();
-		var (resultDf, scaledValues, labels) = df.TransformColumn("Category", ColumnTransformer.Binary1);
-		int[] expected = [0,1,2,0,1];
 
-		Assert.NotNull(resultDf);
-		Assert.Null(scaledValues);
-		Assert.NotNull(labels);
-		Assert.True(labels.Length > 0);
-		Assert.Equal(expected, resultDf["Category_cvalues"].Select(x=>(int)x));
+		Assert.Throws<FormatException>(() => df.TransformColumn("Category", ColumnTransformer.Binary1));
 	}
 
 	[Fact]
-	public void TransformColumn_Binary1_ShouldReturnEncodedLabels_Binary2()
+	public void TransformColumn_Binary2_ShouldThrowFormatException_WhenMoreThanTwoCategories()
 	{
 		var df = CreateMockDataFrame();
-		var (resultDf, scaledValues, labels) = df.TransformColumn("Category", ColumnTransformer.Binary2);
-		int[] expected = [-1, 1, 2, -1, 1];
 
-		Assert.NotNull(resultDf);
-		Assert.Null(scaledValues);
-		Assert.NotNull(labels);
-		Assert.True(labels.Length > 0);
-		Assert.Equal(expected, resultDf["Category_cvalues"].Select(x => (int)x));
+		Assert.Throws<FormatException>(() => df.TransformColumn("Category", ColumnTransformer.Binary2));
 	}
+
 
 	[Fact]
 	public void TransformColumn_Binary1_ShouldReturnEncodedLabels_Dummy()
@@ -82,6 +71,19 @@ public class ColumnTransformationTests
 		Assert.Equal(expectedC, resultDf["C"].Select(x => (int)x));
 	}
 
+	[Fact]
+	public void TransformColumn_Binary1_ShouldReturnEncodedLabels_Ordinal()
+	{
+		var df = CreateMockDataFrame();
+		var (resultDf, scaledValues, labels) = df.TransformColumn("Category", ColumnTransformer.Ordinal);
+		int[] expected = [0, 1, 2, 0, 1];
+
+		Assert.NotNull(resultDf);
+		Assert.Null(scaledValues);
+		Assert.NotNull(labels);
+		Assert.True(labels.Length > 0);
+		Assert.Equal(expected, resultDf["Category_cvalues"].Select(x => (int)x));
+	}
 
 	[Fact]
 	public void TransformColumn_MinMax_ShouldReturnMinMaxScaledValues()
@@ -154,5 +156,46 @@ public class ColumnTransformationTests
 		};
 		return new DataFrame(data);
 	}
+
+	private DataFrame CreateBinaryMockDataFrame()
+	{
+		var data = new Dictionary<string, List<object>>
+	{
+		{ "Category", [ "A", "B", "A", "B", "A" ]}, // Only two unique categories
+    };
+		return new DataFrame(data);
+	}
+
+
+	[Fact]
+	public void TransformColumn_Binary1_ShouldEncodeCorrectly_WithBinaryData()
+	{
+		var df = CreateBinaryMockDataFrame();
+		var (resultDf, scaledValues, labels) = df.TransformColumn("Category", ColumnTransformer.Binary1);
+
+		int[] expected = [0, 1, 0, 1, 0];
+
+		Assert.NotNull(resultDf);
+		Assert.Null(scaledValues);
+		Assert.NotNull(labels);
+		Assert.Equal(2, labels.Length); // Must contain exactly two labels
+		Assert.Equal(expected, resultDf["Category_cvalues"].Select(x => (int)x));
+	}
+
+	[Fact]
+	public void TransformColumn_Binary2_ShouldEncodeCorrectly_WithBinaryData()
+	{
+		var df = CreateBinaryMockDataFrame();
+		var (resultDf, scaledValues, labels) = df.TransformColumn("Category", ColumnTransformer.Binary2);
+
+		int[] expected = [-1, 1, -1, 1, -1];
+
+		Assert.NotNull(resultDf);
+		Assert.Null(scaledValues);
+		Assert.NotNull(labels);
+		Assert.Equal(2, labels.Length); // Must contain exactly two labels
+		Assert.Equal(expected, resultDf["Category_cvalues"].Select(x => (int)x));
+	}
+
 }
 
