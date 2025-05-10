@@ -169,7 +169,7 @@ namespace Unit.Test.DF
 
 
 		[Fact]
-        public async Task SaveToCSV_TestWithMissingValues()
+        public void SaveToCSV_TestWithMissingValues()
         {
 
 			string filePath = $"testdata/sample_data_with_missing_values.txt";

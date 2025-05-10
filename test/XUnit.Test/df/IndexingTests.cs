@@ -1,11 +1,9 @@
 using Daany;
 using System;
+using Xunit;
 
 namespace Unit.Test.DF
 {
-	using Xunit;
-
-	using Xunit;
 
 	public class DataFrameIndexingTests
 	{

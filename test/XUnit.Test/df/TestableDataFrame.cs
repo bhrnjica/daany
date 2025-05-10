@@ -18,7 +18,7 @@ namespace Unit.Test.DF
 		{
 			_lastUrl = url;
 			_responses[url] = new HttpResponseMessage();
-			return this; // Return self to enable method chaining
+			return this; 
 		}
 
 		public MockHttpMessageHandler Respond(string mediaType, string content)
@@ -54,8 +54,8 @@ namespace Unit.Test.DF
 			_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 		}
 
-		public new async Task<DataFrame> FromWebAsync(string urlPath, char sep = ',', string[]? names = null,
-			string? dformat = null, ColType[]? colTypes = null, int nRows = -1)
+		public new async Task<DataFrame> FromWebAsync(string urlPath, char sep = ',', string[] names = null,
+			string dformat = null, ColType[] colTypes = null, int nRows = -1)
 		{
 			if (string.IsNullOrEmpty(urlPath))
 				throw new ArgumentNullException(nameof(urlPath), "Argument should not be null.");
