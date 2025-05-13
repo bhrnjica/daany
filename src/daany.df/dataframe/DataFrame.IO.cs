@@ -312,7 +312,7 @@ namespace Daany
 
                     var parsedate = dformat != null && dformat.Length > 0 ? true : false;
 
-					var retVal = ParseReader(csvReader, columns: ref columns, colTypes: ref colTypes, parseDateTime:parsedate, dateFormats: dformat, nRows: nRows, parseDate: true, missingValue:missingValues, skipLines: skipLines);
+					var retVal = ParseReader(csvReader, columns: ref columns, colTypes: ref colTypes, parseDateTime:parsedate, dformat: dformat, nRows: nRows, parseDate: true, missingValue:missingValues, skipLines: skipLines);
 
                     var df = new DataFrame(retVal, columns, colTypes);
 
@@ -337,7 +337,7 @@ namespace Daany
                     var columns = names == null ? new List<string>() : names.ToList();
                     var parsedate = dformat != null && dformat.Length > 0 ? true : false;
 
-					var retVal = ParseReader(csvReader, columns: ref columns, colTypes:ref colTypes, parseDateTime: parsedate, dateFormats: dformat, nRows: nRows, parseDate: true, missingValue: missingValues, skipLines: skipLines);
+					var retVal = ParseReader(csvReader, columns: ref columns, colTypes:ref colTypes, parseDateTime: parsedate, dformat: dformat, nRows: nRows, parseDate: true, missingValue: missingValues, skipLines: skipLines);
 
                     var df = new DataFrame(retVal, columns, colTypes);
                     if (colTypes != null)
@@ -364,44 +364,54 @@ namespace Daany
             return new DataFrame(data,columns);
 
 		}
-	/// <summary>
-	/// Method for loading data from the file into data frame object.
-	/// </summary>
-	/// <param name="filePath">Full or relative path of the file.</param>
-	/// <param name="sep"> Separator character.</param>
-	/// <param name="names">Column names in case the columns are provided separately from the file.</param>
-	/// <param name="dformat">Date time format.</param>
-	/// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
-	/// <param name="skipLines">Number of first lines to skip with parsing. This is handy in case we need to put description to data before actual data.</param>
-	/// <returns>Data Frame object.</returns>
-	public static DataFrame FromCsv(string filePath, char sep = ',', string[]? names = null, string? dformat = null, bool parseDate = true, ColType[]? colTypes = null, char[]? missingValues = null, int nRows = -1, int skipLines = 0)
-        {
-            if (string.IsNullOrEmpty(filePath))
-                throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
+	    /// <summary>
+	    /// Method for loading data from the file into data frame object.
+	    /// </summary>
+	    /// <param name="filePath">Full or relative path of the file.</param>
+	    /// <param name="sep"> Separator character.</param>
+	    /// <param name="names">Column names in case the columns are provided separately from the file.</param>
+	    /// <param name="dformat">Date time format.</param>
+	    /// <param name="nRows">Number of loading rows. This is handy in case we need just few rows to load in order to see how df behaves.</param>
+	    /// <param name="skipLines">Number of first lines to skip with parsing. This is handy in case we need to put description to data before actual data.</param>
+	    /// <returns>Data Frame object.</returns>
+	    public static DataFrame FromCsv(string filePath, char sep = ',', string[]? names = null, string? dformat = null, bool parseDate = true, ColType[]? colTypes = null, char[]? missingValues = null, int nRows = -1, int skipLines = 0)
+	    {
+		    string[]? dateFormat = string.IsNullOrEmpty(dformat) ? null : [dformat];
+            return FromCsvEx(filePath, sep, names, dateFormat, parseDate, colTypes, missingValues, nRows, skipLines);
+	    }
 
-            if (!File.Exists(filePath))
-                throw new ArgumentException(nameof(filePath), "File name does not exist.");
+	    public static DataFrame FromCsvEx(string filePath, char sep = ',', string[]? names = null, string[]? dformats = null, bool parseDate = true, ColType[]? colTypes = null, char[]? missingValues = null, int nRows = -1, int skipLines = 0)
+	    {
+		    if (string.IsNullOrEmpty(filePath))
+			    throw new ArgumentNullException(nameof(filePath), "Argument should not be null.");
 
-            using (var srdr = new StreamReader(filePath))
-            {
-                var csvReader = new CsvReader(srdr, sep.ToString());
+		    if (!File.Exists(filePath))
+			    throw new ArgumentException(nameof(filePath), "File name does not exist.");
 
-                var columns = names == null ? new List<string>() : names.ToList();
+		    using (var srdr = new StreamReader(filePath))
+		    {
+			    var csvReader = new CsvReader(srdr, sep.ToString());
 
-                var retVal = ParseReader(csvReader, columns: ref columns, colTypes: ref colTypes,
-										parseDateTime: parseDate, dateFormats: dformat, nRows: nRows, parseDate: parseDate, 
-                                        missingValue: missingValues, skipLines: skipLines);
+			    var columns = names == null ? new List<string>() : names.ToList();
 
-                var df = new DataFrame(retVal, columns, colTypes);
+			    var retVal = ParseReader(csvReader, columns: ref columns, colTypes: ref colTypes,
+									    parseDateTime: parseDate, dformats: dformats, nRows: nRows, parseDate: parseDate,
+									    missingValue: missingValues, skipLines: skipLines);
 
-                return df;
-            }
-       
+			    var df = new DataFrame(retVal, columns, colTypes);
 
-        }
+			    return df;
+		    }
 
+		}
         #endregion
-        private static List<object?> ParseReader(CsvReader csvReader, ref List<string> columns, ref ColType[]? colTypes, bool parseDateTime, string? dateFormats, int nRows, bool parseDate, char[]? missingValue, int skipLines)
+        private static List<object?> ParseReader(CsvReader csvReader, ref List<string> columns, ref ColType[]? colTypes, bool parseDateTime, string? dformat, int nRows, bool parseDate, char[]? missingValue, int skipLines)
+        { 
+            string[]? dformats = string.IsNullOrEmpty(dformat) ? null : [dformat];
+			return ParseReader(csvReader, ref columns, ref colTypes, parseDateTime, dformats, nRows, parseDate, missingValue, skipLines);
+		}
+
+		private static List<object?> ParseReader(CsvReader csvReader, ref List<string> columns, ref ColType[]? colTypes, bool parseDateTime, string[]? dformats, int nRows, bool parseDate, char[]? missingValue, int skipLines)
         {
             //Define header
             int line = 0;
@@ -444,7 +454,7 @@ namespace Daany
 					colTypes = new ColType[csvReader.FieldsCount];
 					for (int i = 0; i < columns.Count; i++)
                     {
-                        colTypes[i] = DetectType(csvReader[i], dateFormats, parseDate);
+                        colTypes[i] = DetectType(csvReader[i], dformats, parseDate);
                     }
 				}
 
@@ -462,7 +472,7 @@ namespace Daany
 						if (colTypes == null)
                             throw new ArgumentNullException(nameof(colTypes));
 
-						object? val = ParseValue(csvReader[i], missingValue, colTypes[i], dateFormats);
+						object? val = ParseValue(csvReader[i], missingValue, colTypes[i], dformats);
 
 						listValues.Add(val!);
 					}
@@ -475,7 +485,8 @@ namespace Daany
             return listValues;
         }
 
-		internal static object? ParseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string? dFormat = null)
+
+		internal static object? ParseValue(ReadOnlySpan<char> value, char[]? missingValue, ColType colType, string[]? dformats = null)
 		{
 			// Check if the value is a missing value
 			if (IsMissingValue(value, missingChars: missingValue))
@@ -490,19 +501,19 @@ namespace Daany
 				ColType.I64 => long.TryParse(value, out var longResult) ? longResult : (object)value.ToString(),
 				ColType.F32 => float.TryParse(value, out var floatResult) ? floatResult : (object)value.ToString(),
 				ColType.DD => double.TryParse(value, out var doubleResult) ? doubleResult : (object)value.ToString(),
-				ColType.DT => TryParseDateTime(value, dFormat, out var dateResult) ? dateResult : (object)value.ToString(),
+				ColType.DT => TryParseDateTime(value, dformats, out var dateResult) ? dateResult : (object)value.ToString(),
 				_ => value.ToString()
 			};
 		}
 
-		private static bool TryParseDateTime(ReadOnlySpan<char> value, string? dFormat, out DateTime result)
+		private static bool TryParseDateTime(ReadOnlySpan<char> value, string[]? dformats, out DateTime result)
 		{
-			if (string.IsNullOrEmpty(dFormat))
+			if (dformats == null)
 			{
 				return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
 			}
 
-			return DateTime.TryParseExact(value, dFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+			return DateTime.TryParseExact(value, dformats, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
 		}
 
 		private static object? ParseValue(ReadOnlySpan<char> value, char[]? missingValue, bool parseDate = false, string? dFormat = null)
@@ -659,7 +670,7 @@ namespace Daany
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static ColType DetectType(ReadOnlySpan<char> value, string? dateFormat = null, bool parseDate = true)
+		private static ColType DetectType(ReadOnlySpan<char> value, string[]? dformats = null, bool parseDate = true)
 		{
 			if (value.IsEmpty || value.IsWhiteSpace())
 				return ColType.STR;
@@ -668,8 +679,8 @@ namespace Daany
 			if (parseDate)
 			{
 				// First try exact date format if provided
-				if (!string.IsNullOrEmpty(dateFormat) &&
-					DateTime.TryParseExact(value, dateFormat, CultureInfo.InvariantCulture,
+				if (dformats != null &&
+					DateTime.TryParseExact(value, dformats, CultureInfo.InvariantCulture,
 						DateTimeStyles.None, out _))
 				{
 					return ColType.DT;
