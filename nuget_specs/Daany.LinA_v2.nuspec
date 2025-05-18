@@ -16,27 +16,33 @@
 		<summary>Daany.LinA - .NET wrapper for selected routines of MKL LAPACK and BLASS.</summary >
         <copyright>Copyright ©2020-2025 Bahrudin Hrnjica</copyright>
         <tags>linear algebra, math, matrix, lapack, blass, data preparation, data analytics</tags>
-        <dependencies>
-        <group targetFramework="net9.0">
-			<dependency id="MKL.NET.win-x64" version="2022.0.0.115" />	
-		</group>
-		<group targetFramework="net8.0">
-			<dependency id="MKL.NET.win-x64" version="2022.0.0.115" />	
-		</group>
-		<group targetFramework="net7.0">
-			<dependency id="MKL.NET.win-x64" version="2022.0.0.115" />	
-		</group>	
-        </dependencies>
+		<dependencies>
+			<group targetFramework="net9.0">
+				<dependency id="MKL.NET.win-x64" version="2022.0.0.115" />
+				<dependency id="MKL.NET.linux-x64" version="2022.0.1.117" />
+			</group>
+			<group targetFramework="net8.0">
+				<dependency id="MKL.NET.win-x64" version="2022.0.0.115" />
+				<dependency id="MKL.NET.linux-x64" version="2022.0.1.117" />
+			</group>
+			<group targetFramework="net7.0">
+				<dependency id="MKL.NET.win-x64" version="2022.0.0.115" />
+				<dependency id="MKL.NET.linux-x64" version="2022.0.1.117" />
+			</group>
+		</dependencies>
     </metadata>
     <!-- A readme.txt to display when the package is installed <file src="daanyIcon.png"/> -->
     <files>
         <file src="../README.MD"/>	
 		<file src="../daanyIcon.png"/>
 		<file src="../LICENSE"/>
+		
 		 <!-- net9.0 !-->
         <file src="../src/daany.lina/bin/Release/net9.0/Daany.LinA.dll" target="lib/net9.0" />
+		
         <!-- net8.0 !-->
         <file src="../src/daany.lina/bin/Release/net8.0/Daany.LinA.dll" target="lib/net8.0" />
+		
         <!-- net7.0 !-->
         <file src="../src/daany.lina/bin/Release/net7.0/Daany.LinA.dll" target="lib/net7.0" />
     </files>

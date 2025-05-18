@@ -13,7 +13,7 @@
     <Title>Package title</Title>
     <Version>2.5.0</Version>
     <Description>Daany - .NET DAta ANalYtics .NET library with the implementation of DataFrame, Time series decompositions and Linear Algebra LAPACK and BLASS routines.</Description>
-    <Copyright>Bahrudin Hrnjica, 2019-2023</Copyright>
+    <Copyright>Bahrudin Hrnjica, 2019-2025</Copyright>
     <PackageProjectUrl>github.com/bhrnjica/daany</PackageProjectUrl>
     <PackageIcon>daanyIcon.png</PackageIcon>
     <PackageReadmeFile>README.MD</PackageReadmeFile>

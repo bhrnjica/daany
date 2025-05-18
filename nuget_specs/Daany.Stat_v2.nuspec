@@ -14,6 +14,7 @@
 		<title>Daany.Stat</title>
         <description>Daany.Stat - A set of components for handling with time series.</description>
 		<summary>Daany.Stat - A set of components for handling with time series.</summary>
+		<readme>README.MD</readme>
         <copyright>Copyright ©2019-2025 Bahrudin Hrnjica</copyright>
         <tags>ml.net, data preparation, data analytics</tags>
         <dependencies>
@@ -34,19 +35,21 @@
 		<file src="../daanyIcon.png"/>
 		<file src="../LICENSE"/>
          <!-- native dlls !-->
-        <file src="../src/daany_rust/target/x86_64-pc-windows-msvc/release/daany_rust_lib.dll" target="runtimes/win-x64/native/" />
-		<file src="../src/daany_rust/target/x86_64-unknown-linux-gnu/release/libdaany_rust_lib.so" target="runtimes/linux-x64/native/" />
+        <file src="../src/daany_rust/rust_lib/x86_64-pc-windows-msvc/release/daany_rust_lib.dll" target="runtimes/win-x64/native/" />
+		<file src="../src/daany_rust/rust_lib/x86_64-unknown-linux-gnu/release/libdaany_rust_lib.so" target="runtimes/linux-x64/native/" />
 
         <!-- net9.0 !-->
 		<file src="../src/daany.mathstuff/bin/Release/net8.0/Daany.MathStuff.dll" target="lib/net9.0" />
 		<file src="../src/daany.df/bin/Release/net8.0/Daany.DataFrame.dll" target="lib/net9.0" />
 		<file src="../src/daany.stat/bin/Release/net8.0/Daany.Stat.dll" target="lib/net9.0" />
         <file src="../src/daany.ext/Plotly.Bin/XPlot.Plotly.dll" target="lib/net9.0" />
+		
 		<!-- net8.0 !-->
 		<file src="../src/daany.mathstuff/bin/Release/net8.0/Daany.MathStuff.dll" target="lib/net8.0" />
 		<file src="../src/daany.df/bin/Release/net8.0/Daany.DataFrame.dll" target="lib/net8.0" />
 		<file src="../src/daany.stat/bin/Release/net8.0/Daany.Stat.dll" target="lib/net8.0" />
         <file src="../src/daany.ext/Plotly.Bin/XPlot.Plotly.dll" target="lib/net8.0" />
+		
         <!-- net7.0 !-->
         <file src="../src/daany.mathstuff/bin/Release/net7.0/Daany.MathStuff.dll" target="lib/net7.0" />
 		<file src="../src/daany.df/bin/Release/net7.0/Daany.DataFrame.dll" target="lib/net7.0" />
