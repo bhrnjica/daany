@@ -27,7 +27,7 @@ jobs:
       run: dotnet restore
 
     - name: Restore NuGet Packages
-      run: nuget restore MyProject.sln
+      run: nuget restore daany.sln
 
     - name: Pack NuGet Packages
       run: |
