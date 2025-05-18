@@ -9,7 +9,7 @@ on:
       daany_version:
         description: "Daany Nuget package Version"
         required: true
-        default: "2.2.1"
+        default: "2.2.2"
 
 jobs:
   build:
