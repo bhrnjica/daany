@@ -25,7 +25,13 @@ jobs:
 
     - name: Restore Dependencies
       run: dotnet restore
+      
+    - name: Build Project
+      run: dotnet build -c Release
 
+    - name: Run Tests
+      run: dotnet test -c Release
+      
     - name: Restore NuGet Packages
       run: nuget restore daany.sln
 
