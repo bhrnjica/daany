@@ -6,8 +6,6 @@ dotnet test -c Release
 
 # build this nuget packs
 
-nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties Configuration=Release;Version=2.2.1 -IncludeReferencedProjects -OutputDirectory nuget/
-
 nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties Configuration=Release;Version=2.2.1 -IncludeReferencedProjects -OutputDirectory nuget/ 
 
 nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties Configuration=Release;Version=2.2.1 -IncludeReferencedProjects -OutputDirectory nuget/
