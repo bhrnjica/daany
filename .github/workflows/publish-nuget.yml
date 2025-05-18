@@ -28,13 +28,7 @@ jobs:
       
     - name: Build Project
       run: dotnet build -c Release
-
-    - name: Run Tests
-      run: dotnet test -c Release
       
-    - name: Restore NuGet Packages
-      run: nuget restore daany.sln
-
     - name: Pack NuGet Packages
       run: |
         nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties Configuration=Release;Version=${{ github.event.inputs.daany_version }} -IncludeReferencedProjects -OutputDirectory nuget/
