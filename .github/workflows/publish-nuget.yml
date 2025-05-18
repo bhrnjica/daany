@@ -38,4 +38,4 @@ jobs:
         nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
     
     - name: Publish NuGet Packages
-      run: nuget push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+      run: nuget push nuget/*.nupkg -ApiKey ${{ daany.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
