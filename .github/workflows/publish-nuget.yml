@@ -3,6 +3,7 @@ name: Publish NuGet Packages
 on:
   release:
     types: [published]  # Runs only when a new release is published
+    
   workflow_dispatch:
     inputs:
       daany_version:
@@ -35,3 +36,6 @@ jobs:
         nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
         nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
         nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
+    
+    - name: Publish NuGet Packages
+      run: nuget push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
