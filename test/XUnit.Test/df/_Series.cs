@@ -261,6 +261,137 @@ namespace Unit.Test.DF
 
 
         }
+
+        [Fact]
+        public void SumEx_Test01()
+        {
+            // Test SumEx with integer values
+            var intList = new List<object?> { 1, 2, 3, 4, 5 };
+            var intSeries = new Series(intList, type: ColType.I32);
+            
+            var sumResult = intSeries.SumEx();
+            var expectedSum = 15.0;
+            
+            Assert.Equal(expectedSum, sumResult);
+        }
+
+        [Fact]
+        public void SumEx_Test02()
+        {
+            // Test SumEx with double values
+            var doubleList = new List<object?> { 1.5, 2.5, 3.0, 4.0 };
+            var doubleSeries = new Series(doubleList, type: ColType.DD);
+            
+            var sumResult = doubleSeries.SumEx();
+            var expectedSum = 11.0;
+            
+            Assert.Equal(expectedSum, sumResult);
+        }
+
+        [Fact]
+        public void SumEx_Test03()
+        {
+            // Test SumEx with mixed numeric types
+            var mixedList = new List<object?> { 1, 2.5f, 3.0, 4L };
+            var mixedSeries = new Series(mixedList, type: ColType.DD);
+            
+            var sumResult = mixedSeries.SumEx();
+            var expectedSum = 10.5;
+            
+            Assert.Equal(expectedSum, sumResult, 5); // 5 decimal places precision
+        }
+
+        [Fact]
+        public void SumEx_Test04()
+        {
+            // Test SumEx with empty series
+            var emptySeries = new Series(new List<object?>());
+            
+            var sumResult = emptySeries.SumEx();
+            
+            Assert.True(double.IsNaN(sumResult));
+        }
+
+        [Fact]
+        public void MeanEx_Test01()
+        {
+            // Test MeanEx with integer values
+            var intList = new List<object?> { 2, 4, 6, 8 };
+            var intSeries = new Series(intList, type: ColType.I32);
+            
+            var meanResult = intSeries.MeanEx();
+            var expectedMean = 5.0;
+            
+            Assert.Equal(expectedMean, meanResult);
+        }
+
+        [Fact]
+        public void MeanEx_Test02()
+        {
+            // Test MeanEx with double values
+            var doubleList = new List<object?> { 1.0, 2.0, 3.0, 4.0 };
+            var doubleSeries = new Series(doubleList, type: ColType.DD);
+            
+            var meanResult = doubleSeries.MeanEx();
+            var expectedMean = 2.5;
+            
+            Assert.Equal(expectedMean, meanResult);
+        }
+
+        [Fact]
+        public void MeanEx_Test03()
+        {
+            // Test MeanEx with empty series
+            var emptySeries = new Series(new List<object?>());
+            
+            var meanResult = emptySeries.MeanEx();
+            
+            Assert.True(double.IsNaN(meanResult));
+        }
+
+        [Fact]
+        public void SumEx_vs_Sum_Performance_Test()
+        {
+            // Performance comparison test between Sum() and SumEx()
+            var largeList = new List<object?>();
+            for (int i = 1; i <= 10000; i++)
+            {
+                largeList.Add((double)i);
+            }
+            
+            var largeSeries = new Series(largeList, type: ColType.DD);
+            
+            // Test both methods return same result
+            var sumResult = largeSeries.Sum();
+            var sumExResult = largeSeries.SumEx();
+            
+            Assert.Equal(sumResult, sumExResult, 10); // 10 decimal places precision
+            
+            // Expected sum: 1+2+...+10000 = 10000*10001/2 = 50005000
+            Assert.Equal(50005000.0, sumExResult);
+        }
+
+        [Fact]
+        public void MeanEx_vs_Mean_Performance_Test()
+        {
+            // Performance comparison test between Mean() and MeanEx()
+            var largeList = new List<object?>();
+            for (int i = 1; i <= 1000; i++)
+            {
+                largeList.Add((double)i);
+            }
+            
+            var largeSeries = new Series(largeList, type: ColType.DD);
+            
+            // Test both methods return same result
+            var meanResult = largeSeries.Mean();
+            var meanExResult = largeSeries.MeanEx();
+            
+            Assert.Equal(meanResult, meanExResult, 10); // 10 decimal places precision
+            
+            // Expected mean: (1+2+...+1000)/1000 = 1000*1001/2/1000 = 500.5
+            Assert.Equal(500.5, meanExResult);
+        }
     }
 
 }
