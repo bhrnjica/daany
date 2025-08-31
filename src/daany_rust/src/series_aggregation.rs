@@ -1,5 +1,4 @@
 use std::ffi::c_char;
-use std::ptr;
 
 /// CellObject structure matching the C# equivalent for FFI
 #[repr(C)]
@@ -140,6 +139,7 @@ pub extern "C" fn series_mean(data: *const CellObject, length: usize) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::ptr;
 
     #[test]
     fn test_series_sum_integers() {
