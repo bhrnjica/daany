@@ -20,26 +20,26 @@ jobs:
       # Build Rust library (Linux)
       - name: Build Rust library (Linux)
         if: runner.os == 'Linux'
-        run: cargo build --release --manifest-path src/daany.rust/Cargo.toml
+        run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
 
       # Build Rust library (Windows)
       - name: Build Rust library (Windows)
         if: runner.os == 'Windows'
-        run: cargo build --release --manifest-path src/daany.rust/Cargo.toml
+        run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
 
       # Copy Rust library to test bin (Linux)
       - name: Copy Rust library to test bin (Linux)
         if: runner.os == 'Linux'
         run: |
-          cp src/daany.rust/target/release/libdaany_rust_lib.so test/XUnit.Test/bin/Release/net8.0/runtimes/linux-x64/native/daany_rust_lib.so
-          cp src/daany.rust/target/release/libdaany_rust_lib.so test/XUnit.Test/bin/Release/net9.0/runtimes/linux-x64/native/daany_rust_lib.so
+          cp src/daany_rust/target/release/libdaany_rust_lib.so test/XUnit.Test/bin/Release/net8.0/runtimes/linux-x64/native/daany_rust_lib.so
+          cp src/daany_rust/target/release/libdaany_rust_lib.so test/XUnit.Test/bin/Release/net9.0/runtimes/linux-x64/native/daany_rust_lib.so
 
       # Copy Rust library to test bin (Windows)
       - name: Copy Rust library to test bin (Windows)
         if: runner.os == 'Windows'
         run: |
-          copy src\daany.rust\target\release\daany_rust_lib.dll test\XUnit.Test\bin\Release\net8.0\runtimes\win-x64\native\daany_rust_lib.dll
-          copy src\daany.rust\target\release\daany_rust_lib.dll test\XUnit.Test\bin\Release\net9.0\runtimes\win-x64\native\daany_rust_lib.dll
+          copy src\daany_rust\target\release\daany_rust_lib.dll test\XUnit.Test\bin\Release\net8.0\runtimes\win-x64\native\daany_rust_lib.dll
+          copy src\daany_rust\target\release\daany_rust_lib.dll test\XUnit.Test\bin\Release\net9.0\runtimes\win-x64\native\daany_rust_lib.dll
 
       # Your .NET build/test steps here
       - name: Setup .NET
