@@ -10,11 +10,19 @@ This project extends the Daany DataFrame library with Rust-optimized aggregation
 
 ### Selected Functions for Optimization
 
-**Series.Sum()** and **Series.Mean()** methods were selected for Rust optimization because:
+**Series aggregation methods** were selected for Rust optimization because:
 - They are computationally intensive operations that benefit from Rust's performance
 - They involve iterating through large collections and performing mathematical calculations
 - They are frequently used in data analysis workflows
 - The current C# implementation uses LINQ which can create temporary collections
+
+**Current Rust-optimized methods:**
+- **Sum** - Summation of all numeric values
+- **Mean** - Arithmetic mean/average
+- **Min** - Minimum value
+- **Max** - Maximum value
+- **Std** - Sample standard deviation  
+- **Median** - Middle value when sorted
 
 ### Architecture
 
@@ -30,29 +38,74 @@ C# Series Class
 
 ### Files Modified
 
-1. **`src/daany_rust/src/series_aggregation.rs`** - New Rust implementation
+1. **`src/daany_rust/src/series_aggregation.rs`** - Enhanced Rust implementation
    - `series_sum()` function with FFI support
-   - `series_mean()` function with FFI support
+   - `series_mean()` function with FFI support  
+   - `series_min()` function with FFI support
+   - `series_max()` function with FFI support
+   - `series_std()` function with FFI support (sample standard deviation)
+   - `series_median()` function with FFI support
    - Support for multiple numeric types (I32, I64, F32, DD)
-   - Comprehensive unit tests
+   - Comprehensive unit tests for all methods
 
 2. **`src/daany_rust/src/lib.rs`** - Updated exports
-   - Added exports for new series aggregation functions
+   - Added exports for all series aggregation functions
 
-3. **`src/daany.df/util/daany_rust.cs`** - FFI bindings
-   - Added DllImport declarations for `series_sum` and `series_mean`
+3. **`src/daany.df/util/daany_rust.cs`** - Enhanced FFI bindings
+   - Added DllImport declarations for all six aggregation functions
    - Helper methods for converting Series data to CellObject arrays
    - Memory management utilities
 
 4. **`src/daany.df/dataframe/Series.cs`** - Enhanced Series class
    - Added `SumEx()` method using Rust implementation
    - Added `MeanEx()` method using Rust implementation
-   - Maintains compatibility with existing `Sum()` and `Mean()` methods
+   - Added `MinEx()` method using Rust implementation
+   - Added `MaxEx()` method using Rust implementation
+   - Added `StdEx()` method using Rust implementation
+   - Added `MedianEx()` method using Rust implementation
+   - Maintains compatibility with existing C# methods
 
 5. **`test/XUnit.Test/df/_Series.cs`** - Comprehensive unit tests
    - Tests for basic functionality with different data types
    - Performance comparison tests between C# and Rust implementations
-   - Edge case testing (empty series, mixed types)
+   - Edge case testing (empty series, mixed types, single values)
+   - Tests for all new aggregation methods
+
+## Method Usage
+
+### Available Rust-Optimized Methods
+
+```csharp
+var series = new Series(new List<object> {1, 2, 3, 4, 5}, type: ColType.I32);
+
+// Basic aggregations
+double sum = series.SumEx();        // 15.0
+double mean = series.MeanEx();      // 3.0
+double min = series.MinEx();        // 1.0  
+double max = series.MaxEx();        // 5.0
+
+// Statistical measures
+double std = series.StdEx();        // Sample standard deviation
+double median = series.MedianEx();  // 3.0
+```
+
+### Performance Comparison
+
+The "Ex" methods provide optimized Rust implementations while maintaining the same interface as existing C# methods:
+
+```csharp
+// C# implementation (existing)
+double csharpSum = series.Sum();
+double csharpMean = series.Mean();  
+double csharpMedian = series.Median();
+
+// Rust implementation (optimized)
+double rustSum = series.SumEx();
+double rustMean = series.MeanEx();
+double rustMedian = series.MedianEx();
+
+// Results are identical, but Rust versions are faster for large datasets
+```
 
 ## Performance Benefits
 
