@@ -392,6 +392,134 @@ namespace Unit.Test.DF
             // Expected mean: (1+2+...+1000)/1000 = 1000*1001/2/1000 = 500.5
             Assert.Equal(500.5, meanExResult);
         }
+
+        [Fact]
+        public void MinEx_Test01()
+        {
+            // Test MinEx with integer values
+            var intList = new List<object?> { 5, 2, 8, 1, 9 };
+            var intSeries = new Series(intList, type: ColType.I32);
+            
+            var minResult = intSeries.MinEx();
+            var expectedMin = 1.0;
+            
+            Assert.Equal(expectedMin, minResult);
+        }
+
+        [Fact]
+        public void MinEx_Test02()
+        {
+            // Test MinEx with double values
+            var doubleList = new List<object?> { 1.5, 2.3, 0.8, 4.0 };
+            var doubleSeries = new Series(doubleList, type: ColType.DD);
+            
+            var minResult = doubleSeries.MinEx();
+            var expectedMin = 0.8;
+            
+            Assert.Equal(expectedMin, minResult);
+        }
+
+        [Fact]
+        public void MaxEx_Test01()
+        {
+            // Test MaxEx with integer values
+            var intList = new List<object?> { 5, 2, 8, 1, 9 };
+            var intSeries = new Series(intList, type: ColType.I32);
+            
+            var maxResult = intSeries.MaxEx();
+            var expectedMax = 9.0;
+            
+            Assert.Equal(expectedMax, maxResult);
+        }
+
+        [Fact]
+        public void MaxEx_Test02()
+        {
+            // Test MaxEx with double values
+            var doubleList = new List<object?> { 1.5, 2.3, 0.8, 4.0 };
+            var doubleSeries = new Series(doubleList, type: ColType.DD);
+            
+            var maxResult = doubleSeries.MaxEx();
+            var expectedMax = 4.0;
+            
+            Assert.Equal(expectedMax, maxResult);
+        }
+
+        [Fact]
+        public void StdEx_Test01()
+        {
+            // Test StdEx with known dataset
+            var dataList = new List<object?> { 2, 4, 4, 4, 5, 5, 7, 9 };
+            var dataSeries = new Series(dataList, type: ColType.I32);
+            
+            var stdResult = dataSeries.StdEx();
+            var expectedStd = 2.138; // Sample standard deviation
+            
+            Assert.Equal(expectedStd, stdResult, 2); // 2 decimal places precision
+        }
+
+        [Fact]
+        public void StdEx_Test02()
+        {
+            // Test StdEx with small dataset (should return NaN for less than 2 elements)
+            var smallList = new List<object?> { 5 };
+            var smallSeries = new Series(smallList, type: ColType.I32);
+            
+            var stdResult = smallSeries.StdEx();
+            
+            Assert.True(double.IsNaN(stdResult));
+        }
+
+        [Fact]
+        public void MedianEx_Test01()
+        {
+            // Test MedianEx with odd number of values
+            var oddList = new List<object?> { 1, 3, 5, 7, 9 };
+            var oddSeries = new Series(oddList, type: ColType.I32);
+            
+            var medianResult = oddSeries.MedianEx();
+            var expectedMedian = 5.0;
+            
+            Assert.Equal(expectedMedian, medianResult);
+        }
+
+        [Fact]
+        public void MedianEx_Test02()
+        {
+            // Test MedianEx with even number of values
+            var evenList = new List<object?> { 1, 2, 3, 4 };
+            var evenSeries = new Series(evenList, type: ColType.I32);
+            
+            var medianResult = evenSeries.MedianEx();
+            var expectedMedian = 2.5;
+            
+            Assert.Equal(expectedMedian, medianResult);
+        }
+
+        [Fact]
+        public void MedianEx_vs_Median_Test()
+        {
+            // Test that MedianEx and existing Median method return same result
+            var testList = new List<object?> { 7, 1, 9, 3, 5, 2, 8, 4, 6 };
+            var testSeries = new Series(testList, type: ColType.I32);
+            
+            var medianResult = testSeries.Median();
+            var medianExResult = testSeries.MedianEx();
+            
+            Assert.Equal(medianResult, medianExResult);
+        }
+
+        [Fact]
+        public void NewAggregationMethods_EmptyInput_Test()
+        {
+            // Test all new methods with empty series
+            var emptySeries = new Series(new List<object?>());
+            
+            Assert.True(double.IsNaN(emptySeries.MinEx()));
+            Assert.True(double.IsNaN(emptySeries.MaxEx()));
+            Assert.True(double.IsNaN(emptySeries.StdEx()));
+            Assert.True(double.IsNaN(emptySeries.MedianEx()));
+        }
     }
 
 }

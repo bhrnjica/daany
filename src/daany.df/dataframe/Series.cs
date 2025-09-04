@@ -637,6 +637,114 @@ namespace Daany
 		}
 
 		/// <summary>
+		/// Computes the minimum value of the series using optimized Rust implementation.
+		/// Provides better performance for large datasets.
+		/// </summary>
+		/// <returns>Minimum of all numeric values</returns>
+		/// <example>
+		/// <code>
+		/// var series = new Series(new List<object> {1, 2, 3});
+		/// var min = series.MinEx(); // Returns 1 (optimized)
+		/// </code>
+		/// </example>
+		public double MinEx()
+		{
+			if (_data == null || _data.Count == 0)
+				return double.NaN;
+
+			var (dataPtr, length) = Daany.Binding.DaanyRust.SeriesDataToCellObjects(_data, _type);
+			try
+			{
+				return Daany.Binding.DaanyRust.series_min(dataPtr, (nuint)length);
+			}
+			finally
+			{
+				Daany.Binding.DaanyRust.FreeCellObjects(dataPtr);
+			}
+		}
+
+		/// <summary>
+		/// Computes the maximum value of the series using optimized Rust implementation.
+		/// Provides better performance for large datasets.
+		/// </summary>
+		/// <returns>Maximum of all numeric values</returns>
+		/// <example>
+		/// <code>
+		/// var series = new Series(new List<object> {1, 2, 3});
+		/// var max = series.MaxEx(); // Returns 3 (optimized)
+		/// </code>
+		/// </example>
+		public double MaxEx()
+		{
+			if (_data == null || _data.Count == 0)
+				return double.NaN;
+
+			var (dataPtr, length) = Daany.Binding.DaanyRust.SeriesDataToCellObjects(_data, _type);
+			try
+			{
+				return Daany.Binding.DaanyRust.series_max(dataPtr, (nuint)length);
+			}
+			finally
+			{
+				Daany.Binding.DaanyRust.FreeCellObjects(dataPtr);
+			}
+		}
+
+		/// <summary>
+		/// Computes the sample standard deviation of the series using optimized Rust implementation.
+		/// Provides better performance for large datasets.
+		/// </summary>
+		/// <returns>Sample standard deviation of all numeric values</returns>
+		/// <example>
+		/// <code>
+		/// var series = new Series(new List<object> {1, 2, 3, 4, 5});
+		/// var std = series.StdEx(); // Returns sample standard deviation (optimized)
+		/// </code>
+		/// </example>
+		public double StdEx()
+		{
+			if (_data == null || _data.Count == 0)
+				return double.NaN;
+
+			var (dataPtr, length) = Daany.Binding.DaanyRust.SeriesDataToCellObjects(_data, _type);
+			try
+			{
+				return Daany.Binding.DaanyRust.series_std(dataPtr, (nuint)length);
+			}
+			finally
+			{
+				Daany.Binding.DaanyRust.FreeCellObjects(dataPtr);
+			}
+		}
+
+		/// <summary>
+		/// Computes the median of the series using optimized Rust implementation.
+		/// Provides better performance for large datasets.
+		/// </summary>
+		/// <returns>Median of all numeric values</returns>
+		/// <example>
+		/// <code>
+		/// var series = new Series(new List<object> {1, 2, 3, 4});
+		/// var median = series.MedianEx(); // Returns 2.5 (optimized)
+		/// </code>
+		/// </example>
+		public double MedianEx()
+		{
+			if (_data == null || _data.Count == 0)
+				return double.NaN;
+
+			var (dataPtr, length) = Daany.Binding.DaanyRust.SeriesDataToCellObjects(_data, _type);
+			try
+			{
+				return Daany.Binding.DaanyRust.series_median(dataPtr, (nuint)length);
+			}
+			finally
+			{
+				Daany.Binding.DaanyRust.FreeCellObjects(dataPtr);
+			}
+		}
+
+		/// <summary>
 		/// Computes the median of the series values.
 		/// </summary>
 		/// <returns>Median of all numeric values</returns>
