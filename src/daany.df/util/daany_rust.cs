@@ -74,6 +74,18 @@ namespace Daany.Binding
 		[DllImport("daany_rust_lib", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern double series_mean(IntPtr data, nuint length);
 
+		[DllImport("daany_rust_lib", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern double series_min(IntPtr data, nuint length);
+
+		[DllImport("daany_rust_lib", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern double series_max(IntPtr data, nuint length);
+
+		[DllImport("daany_rust_lib", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern double series_std(IntPtr data, nuint length);
+
+		[DllImport("daany_rust_lib", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern double series_median(IntPtr data, nuint length);
+
 
 		//Helpers
 		internal static object[] exctractData(nint dataPtr, ulong rowCount, ulong colCount)
