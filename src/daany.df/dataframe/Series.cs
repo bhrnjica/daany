@@ -566,6 +566,33 @@ namespace Daany
 		}
 
 		/// <summary>
+		/// Computes the sum of the series values using optimized Rust implementation.
+		/// Provides better performance for large datasets.
+		/// </summary>
+		/// <returns>Sum of all numeric values</returns>
+		/// <example>
+		/// <code>
+		/// var series = new Series(new List<object> {1, 2, 3});
+		/// var sum = series.SumEx(); // Returns 6 (optimized)
+		/// </code>
+		/// </example>
+		public double SumEx()
+		{
+			if (_data == null || _data.Count == 0)
+				return double.NaN;
+
+			var (dataPtr, length) = Daany.Binding.DaanyRust.SeriesDataToCellObjects(_data, _type);
+			try
+			{
+				return Daany.Binding.DaanyRust.series_sum(dataPtr, (nuint)length);
+			}
+			finally
+			{
+				Daany.Binding.DaanyRust.FreeCellObjects(dataPtr);
+			}
+		}
+
+		/// <summary>
 		/// Computes the arithmetic mean of the series values.
 		/// </summary>
 		/// <returns>Average of all numeric values</returns>
@@ -580,6 +607,33 @@ namespace Daany
 			if (_data == null || _data.Count == 0)
 				return double.NaN;
 			return _data.Where(IsNumeric).Average(Convert.ToDouble);
+		}
+
+		/// <summary>
+		/// Computes the arithmetic mean of the series values using optimized Rust implementation.
+		/// Provides better performance for large datasets.
+		/// </summary>
+		/// <returns>Average of all numeric values</returns>
+		/// <example>
+		/// <code>
+		/// var series = new Series(new List<object> {1, 2, 3});
+		/// var avg = series.MeanEx(); // Returns 2 (optimized)
+		/// </code>
+		/// </example>
+		public double MeanEx()
+		{
+			if (_data == null || _data.Count == 0)
+				return double.NaN;
+
+			var (dataPtr, length) = Daany.Binding.DaanyRust.SeriesDataToCellObjects(_data, _type);
+			try
+			{
+				return Daany.Binding.DaanyRust.series_mean(dataPtr, (nuint)length);
+			}
+			finally
+			{
+				Daany.Binding.DaanyRust.FreeCellObjects(dataPtr);
+			}
 		}
 
 		/// <summary>

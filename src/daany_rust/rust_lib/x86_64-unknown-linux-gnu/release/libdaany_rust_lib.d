@@ -1,1 +1,0 @@
-/home/bhrnjica/projects/daany/src/daany_rust/target/x86_64-unknown-linux-gnu/release/libdaany_rust_lib.so: /home/bhrnjica/projects/daany/src/daany_rust/src/daany_csv.rs /home/bhrnjica/projects/daany/src/daany_rust/src/lib.rs

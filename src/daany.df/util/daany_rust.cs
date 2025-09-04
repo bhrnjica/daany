@@ -15,6 +15,7 @@
 //  https://github.com/bhrnjica/daany/blob/master/LICENSE                  //
 //////////////////////////////////////////////////////////////////////////////
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -66,6 +67,12 @@ namespace Daany.Binding
 				out ulong colCountOut,
 				out IntPtr dataOut,
 				out ulong rowCountOut);
+
+		[DllImport("daany_rust_lib", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern double series_sum(IntPtr data, nuint length);
+
+		[DllImport("daany_rust_lib", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern double series_mean(IntPtr data, nuint length);
 
 
 		//Helpers
@@ -136,6 +143,92 @@ namespace Daany.Binding
 			{
 				File.Delete(filePath);
 				Console.WriteLine($"Deleted existing file: {filePath}");
+			}
+		}
+
+		/// <summary>
+		/// Converts Series data to CellObject array for FFI calls
+		/// </summary>
+		/// <param name="data">Series data list</param>
+		/// <param name="colType">Column type</param>
+		/// <returns>Pointer to allocated CellObject array and its length</returns>
+		internal static (IntPtr dataPtr, int length) SeriesDataToCellObjects(IList<object?> data, ColType colType)
+		{
+			if (data == null || data.Count == 0)
+				return (IntPtr.Zero, 0);
+
+			int length = data.Count;
+			int cellObjectSize = Marshal.SizeOf<CellObject>();
+			IntPtr dataPtr = Marshal.AllocHGlobal(cellObjectSize * length);
+
+			IntPtr currentPtr = dataPtr;
+			for (int i = 0; i < length; i++)
+			{
+				var cellObject = CreateCellObject(data[i], colType);
+				Marshal.StructureToPtr(cellObject, currentPtr, false);
+				currentPtr = IntPtr.Add(currentPtr, cellObjectSize);
+			}
+
+			return (dataPtr, length);
+		}
+
+		/// <summary>
+		/// Creates a CellObject from a value and column type
+		/// </summary>
+		private static CellObject CreateCellObject(object? value, ColType colType)
+		{
+			var cellObject = new CellObject();
+			
+			if (value == null)
+			{
+				cellObject.typeId = -1; // Null/missing value
+				return cellObject;
+			}
+
+			switch (colType)
+			{
+				case ColType.I32:
+					cellObject.value.intValue = Convert.ToInt32(value);
+					cellObject.typeId = 1;
+					break;
+				case ColType.I64:
+					cellObject.value.longValue = Convert.ToInt64(value);
+					cellObject.typeId = 2;
+					break;
+				case ColType.F32:
+					cellObject.value.floatValue = Convert.ToSingle(value);
+					cellObject.typeId = 3;
+					break;
+				case ColType.DD:
+					cellObject.value.doubleValue = Convert.ToDouble(value);
+					cellObject.typeId = 5;
+					break;
+				default:
+					// Try to convert to double as fallback for numeric operations
+					if (double.TryParse(value?.ToString(), out double doubleVal))
+					{
+						cellObject.value.doubleValue = doubleVal;
+						cellObject.typeId = 5;
+					}
+					else
+					{
+						cellObject.typeId = -1; // Non-numeric
+					}
+					break;
+			}
+
+			return cellObject;
+		}
+
+		/// <summary>
+		/// Frees memory allocated for CellObject array
+		/// </summary>
+		/// <param name="dataPtr">Pointer to allocated memory</param>
+		internal static void FreeCellObjects(IntPtr dataPtr)
+		{
+			if (dataPtr != IntPtr.Zero)
+			{
+				Marshal.FreeHGlobal(dataPtr);
 			}
 		}
 	}
