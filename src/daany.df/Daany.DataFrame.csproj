@@ -48,4 +48,30 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\daany.mathstuff\Daany.MathStuff.csproj" />
 	</ItemGroup>
+
+	<!-- Build Rust library before C# build -->
+	<Target Name="BuildRustLibrary" BeforeTargets="Build">
+		<Message Text="Building Rust library..." Importance="high" />
+		
+		<!-- Build the Rust library -->
+		<Exec Command="cargo build --release" 
+			  WorkingDirectory="$(MSBuildProjectDirectory)\..\daany_rust" 
+			  ContinueOnError="false" />
+
+		<!-- Copy to Windows x64 directory -->
+		<Copy Condition="'$(OS)' == 'Windows_NT'"
+			  SourceFiles="$(MSBuildProjectDirectory)\..\daany_rust\target\release\daany_rust_lib.dll"
+			  DestinationFolder="$(MSBuildProjectDirectory)\..\daany_rust\rust_lib\win32-x64"
+			  OverwriteReadOnlyFiles="true"
+			  ContinueOnError="true" />
+
+		<!-- Copy to Linux x64 directory -->
+		<Copy Condition="'$(OS)' != 'Windows_NT'"
+			  SourceFiles="$(MSBuildProjectDirectory)\..\daany_rust\target\release\libdaany_rust_lib.so"
+			  DestinationFiles="$(MSBuildProjectDirectory)\..\daany_rust\rust_lib\linux32-x64\daany_rust_lib.so"
+			  OverwriteReadOnlyFiles="true"
+			  ContinueOnError="true" />
+
+		<Message Text="Rust library build and copy completed." Importance="high" />
+	</Target>
 </Project>
