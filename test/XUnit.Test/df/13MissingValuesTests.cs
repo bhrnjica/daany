@@ -237,8 +237,6 @@ namespace Unit.Test.DF
 			Assert.Equal(2, df["col1", 1]);
 			Assert.Equal(DataFrame.NAN, df["col1", 2]);
 			Assert.Equal(4, df["col1", 3]);
-		}
-
 
 			// Assert
 			Assert.Equal(new List<object> { DataFrame.NAN, 2, 4, 6 }, df["col1"]); // Avg of 2, 4, 6 = 4
