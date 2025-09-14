@@ -3,6 +3,7 @@ name: Publish NuGet Packages
 on:
   release:
     types: [published]
+    
   workflow_dispatch:
     inputs:
       daany_version:
@@ -11,43 +12,12 @@ on:
         default: "2.2.6"
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x'
-
-    - name: Restore Dependencies
-      run: dotnet restore
-
-    - name: Build Project
-      run: dotnet build -c Release
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x'
-
-    - name: Restore Dependencies
-      run: dotnet restore
-
-    - name: Build Project
-      run: dotnet build -c Release
-
+  build:
+    uses: ./.github/workflows/CI_dotnet.yml
+    
   publish-nuget:
     runs-on: windows-latest
-    needs: [build-linux, build-windows]
+    needs: build
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
