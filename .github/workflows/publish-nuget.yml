@@ -36,10 +36,10 @@ jobs:
     
     - name: Pack NuGet Packages
       run: |
-        nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
-        nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
-        nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
-        nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
     
     - name: Publish NuGet Packages
-      run: nuget push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+      run: ./nuget.exe push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
