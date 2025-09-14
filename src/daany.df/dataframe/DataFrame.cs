@@ -1654,6 +1654,53 @@ namespace Daany
 		}
 
 		/// <summary>
+		/// Removes columns from the DataFrame by their zero-based column indices.
+		/// </summary>
+		/// <param name="colIndex">Zero-based column indices to be removed. Negative indices count from the end (-1 is the last column).</param>
+		/// <returns>A new DataFrame with the specified columns removed.</returns>
+		/// <exception cref="ArgumentException">Thrown when no column indices are provided or when invalid indices are specified.</exception>
+		/// <exception cref="IndexOutOfRangeException">Thrown when any index is out of bounds.</exception>
+		/// <example>
+		/// // Example usage:
+		/// DataFrame df = new DataFrame(
+		///     new List<object> { 1, 2, 3, 4, 5, 6 },
+		///     new List<string> { "row1", "row2" },
+		///     new List<string> { "col1", "col2", "col3" },
+		///     new ColType[] { ColType.I32, ColType.I32, ColType.I32 });
+		///
+		/// DataFrame result1 = df.Drop(0);          // Drop first column
+		/// DataFrame result2 = df.Drop(-1);         // Drop last column  
+		/// DataFrame result3 = df.Drop(0, 2);       // Drop first and third columns
+		/// </example>
+		public DataFrame Drop(params int[] colIndex)
+		{
+			// Validate input
+			if (colIndex == null || colIndex.Length == 0)
+				throw new ArgumentException("No column indices provided.", nameof(colIndex));
+
+			// Convert negative indices to positive and validate bounds
+			var validatedIndices = new List<int>();
+			var columnCount = ColCount();
+			
+			foreach (var index in colIndex)
+			{
+				var normalizedIndex = index < 0 ? columnCount + index : index;
+				
+				if (normalizedIndex < 0 || normalizedIndex >= columnCount)
+					throw new IndexOutOfRangeException($"Column index {index} is out of bounds. Valid range is {-columnCount} to {columnCount - 1}.");
+				
+				if (!validatedIndices.Contains(normalizedIndex))
+					validatedIndices.Add(normalizedIndex);
+			}
+
+			// Convert indices to column names
+			var columnNames = validatedIndices.Select(index => Columns[index]).ToArray();
+
+			// Use the existing Drop method that takes column names
+			return Drop(columnNames);
+		}
+
+		/// <summary>
 		/// Removes rows containing missing values (DataFrame.NAN).
 		/// Optionally checks for missing values in specified columns only.
 		/// </summary>
