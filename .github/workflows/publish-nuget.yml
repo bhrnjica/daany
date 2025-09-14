@@ -2,8 +2,7 @@ name: Publish NuGet Packages
 
 on:
   release:
-    types: [published]  # Runs only when a new release is published
-    
+    types: [published]
   workflow_dispatch:
     inputs:
       daany_version:
@@ -12,9 +11,8 @@ on:
         default: "2.2.6"
 
 jobs:
-  build:
-    runs-on: windows-latest
-
+  build-linux:
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -22,24 +20,48 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'  # Adjust based on your project
+        dotnet-version: '9.0.x'
 
     - name: Restore Dependencies
       run: dotnet restore
-      
+
     - name: Build Project
       run: dotnet build -c Release
-    
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Project
+      run: dotnet build -c Release
+
+  publish-nuget:
+    runs-on: windows-latest
+    needs: [build-linux, build-windows]
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
     - name: Download nuget.exe
       run: |
-        curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe  
-    
+        curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+
     - name: Pack NuGet Packages
       run: |
         ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
         ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
         ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
         ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
-    
+
     - name: Publish NuGet Packages
       run: ./nuget.exe push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
