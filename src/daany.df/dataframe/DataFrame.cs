@@ -1770,6 +1770,9 @@ namespace Daany
 		/// </example>
 		public void FillNA(string col, Aggregation aggValue)
 		{
+			// If no aggregation is specified, do nothing
+			if (aggValue == Aggregation.None)
+				return;
 
 			EnsureColumnTypesInitialized();
 

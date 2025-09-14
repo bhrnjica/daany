@@ -216,7 +216,22 @@ namespace Unit.Test.DF
 			Assert.Equal(new List<object> { 4, 2, 4, 6 }, df["col1"]); // Avg of 2, 4, 6 = 4
 		}
 
+		[Fact]
+		public void FillNA_ShouldSkipReplaceMissingValuesIfAggregationIsNone()
+		{
+			// Arrange
+			var df = new DataFrame(
+				new List<object> { DataFrame.NAN, 2, 4, 6 },
+				new List<object> { "row1", "row2", "row3", "row4" },
+				new List<string> { "col1" },
+				new ColType[] { ColType.I32 });
 
+			// Act
+			df.FillNA("col1", Aggregation.None);
+
+			// Assert
+			Assert.Equal(new List<object> { DataFrame.NAN, 2, 4, 6 }, df["col1"]); // Avg of 2, 4, 6 = 4
+		}
 
 		[Fact]
         public void RemoveMissingValue_Test01()
