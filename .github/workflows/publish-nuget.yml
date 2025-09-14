@@ -3,7 +3,6 @@ name: Publish NuGet Packages
 on:
   release:
     types: [published]
-    
   workflow_dispatch:
     inputs:
       daany_version:
@@ -12,12 +11,68 @@ on:
         default: "2.2.6"
 
 jobs:
-  build:
-    uses: ./.github/workflows/CI_dotnet.yml
-    
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    - name: Get .NET Version
+      id: get_dotnet_version
+      run: echo "version=$(dotnet --version)" >> $GITHUB_OUTPUT
+      
+    - name: Build Rust library (Linux)
+      if: runner.os == 'Linux'
+      run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
+      
+    - name: Copy Rust library to lib (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        DOTNET_VERSION=${{ steps.get_dotnet_version.outputs.version }}
+        mkdir -p src/daany_rust/rust_lib/linux32-x64/$DOTNET_VERSION/
+        cp src/daany_rust/target/release/libdaany_rust_lib.so src/daany_rust/rust_lib/linux32-x64/$DOTNET_VERSION/daany_rust_lib.so
+          
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Project
+      run: dotnet build -c Release
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Build Rust library (Windows)
+      if: runner.os == 'Windows'
+      run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
+      
+    - name: Copy Rust library to lib (Windows)
+      if: runner.os == 'Linux'
+      run: |
+        DOTNET_VERSION=${{ steps.get_dotnet_version.outputs.version }}
+        mkdir -p src/daany_rust/rust_lib/windows32-x64/$DOTNET_VERSION/
+        cp src/daany_rust/target/release/libdaany_rust_lib.dll src/daany_rust/rust_lib/windows32-x64/$DOTNET_VERSION/daany_rust_lib.dll
+        
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Project
+      run: dotnet build -c Release
+
   publish-nuget:
     runs-on: windows-latest
-    needs: build
+    needs: [build-linux, build-windows]
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -25,13 +80,11 @@ jobs:
     - name: Download nuget.exe
       run: |
         curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-
     - name: Pack NuGet Packages
       run: |
         ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
         ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
         ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
         ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
-
     - name: Publish NuGet Packages
       run: ./nuget.exe push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
