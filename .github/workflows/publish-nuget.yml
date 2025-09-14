@@ -29,7 +29,11 @@ jobs:
       
     - name: Build Project
       run: dotnet build -c Release
-      
+    
+    - name: Download nuget.exe
+      run: |
+        curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe  
+    
     - name: Pack NuGet Packages
       run: |
         nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
