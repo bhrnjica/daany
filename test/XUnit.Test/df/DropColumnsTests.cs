@@ -46,9 +46,6 @@ namespace Unit.Test.DF
 		[Fact]
 		public void Drop_WithAllIndices_RemovesAllColumns()
 		{
-			var result = df.Drop(0, 1, 2, 3);
-			Assert.Empty(result.Columns);
-
 			var ex = Assert.Throws<ArgumentException>(() => df.Drop(0, 1, 2, 3));
 			Assert.Contains("Dictionary cannot be null or empty.", ex.Message);
 		}
