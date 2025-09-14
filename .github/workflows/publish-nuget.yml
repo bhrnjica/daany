@@ -23,7 +23,6 @@ jobs:
         dotnet-version: '9.0.x'
     - name: Get .NET Version
       id: get_dotnet_version
-      run: echo "version=$(dotnet --version)" >> $GITHUB_OUTPUT
       
     - name: Build Rust library (Linux)
       if: runner.os == 'Linux'
@@ -32,9 +31,8 @@ jobs:
     - name: Copy Rust library to lib (Linux)
       if: runner.os == 'Linux'
       run: |
-        DOTNET_VERSION=${{ steps.get_dotnet_version.outputs.version }}
-        mkdir -p src/daany_rust/rust_lib/linux32-x64/$DOTNET_VERSION/
-        cp src/daany_rust/target/release/libdaany_rust_lib.so src/daany_rust/rust_lib/linux32-x64/$DOTNET_VERSION/daany_rust_lib.so
+        mkdir -p src/daany_rust/rust_lib/linux32-x64
+        cp src/daany_rust/target/release/libdaany_rust_lib.so src/daany_rust/rust_lib/linux32-x64/daany_rust_lib.so
           
     - name: Restore Dependencies
       run: dotnet restore
@@ -60,9 +58,8 @@ jobs:
     - name: Copy Rust library to lib (Windows)
       if: runner.os == 'Linux'
       run: |
-        DOTNET_VERSION=${{ steps.get_dotnet_version.outputs.version }}
-        mkdir -p src/daany_rust/rust_lib/windows32-x64/$DOTNET_VERSION/
-        cp src/daany_rust/target/release/libdaany_rust_lib.dll src/daany_rust/rust_lib/windows32-x64/$DOTNET_VERSION/daany_rust_lib.dll
+        mkdir -p src/daany_rust/rust_lib/win32-x64
+        cp src/daany_rust/target/release/libdaany_rust_lib.dll src/daany_rust/rust_lib/win32-x64/daany_rust_lib.dll
         
     - name: Restore Dependencies
       run: dotnet restore
