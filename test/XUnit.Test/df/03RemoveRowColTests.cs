@@ -244,6 +244,163 @@ namespace Unit.Test.DF
 
 
         }
+        [Fact]
+        public void DropByIndex_SingleColumn_Test()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "itemID",new List<object>() { "foo", "bar", "baz", "foo" } },
+                { "catId",new List<object>() { "A", "A", "B", "B" } },
+                { "value1",new List<object>() { 1,2,3,4 } },
+            };
+
+            var df1 = new DataFrame(dict);
+
+            // Drop middle column by index (catId is at index 1)
+            var df2 = df1.Drop(1);
+
+            // Test
+            Assert.Equal(3, df1.Columns.Count);
+            Assert.Equal(2, df2.Columns.Count);
+            Assert.Equal(new List<string> { "itemID", "value1" }, df2.Columns);
+
+            // Verify data integrity
+            var c1f1 = df1["itemID"].ToList();
+            var c1f3 = df1["value1"].ToList();
+            var c2f1 = df2["itemID"].ToList();
+            var c2f2 = df2["value1"].ToList();
+
+            for (int i = 0; i < c1f1.Count(); i++)
+            {
+                Assert.Equal(c1f1[i].ToString(), c2f1[i].ToString());
+                Assert.Equal(c1f3[i], c2f2[i]);
+            }
+        }
+
+        [Fact]
+        public void DropByIndex_MultipleColumns_Test()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1, 2, 3 } },
+                { "col2",new List<object>() { "A", "B", "C" } },
+                { "col3",new List<object>() { 10, 20, 30 } },
+                { "col4",new List<object>() { true, false, true } },
+            };
+
+            var df1 = new DataFrame(dict);
+
+            // Drop first and third columns (indices 0 and 2)
+            var df2 = df1.Drop(0, 2);
+
+            // Test
+            Assert.Equal(4, df1.Columns.Count);
+            Assert.Equal(2, df2.Columns.Count);
+            Assert.Equal(new List<string> { "col2", "col4" }, df2.Columns);
+
+            // Verify data integrity
+            var originalCol2 = df1["col2"].ToList();
+            var originalCol4 = df1["col4"].ToList();
+            var newCol1 = df2["col2"].ToList();
+            var newCol2 = df2["col4"].ToList();
+
+            Assert.Equal(originalCol2, newCol1);
+            Assert.Equal(originalCol4, newCol2);
+        }
+
+        [Fact]
+        public void DropByIndex_NegativeIndices_Test()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1, 2, 3 } },
+                { "col2",new List<object>() { "A", "B", "C" } },
+                { "col3",new List<object>() { 10, 20, 30 } },
+            };
+
+            var df1 = new DataFrame(dict);
+
+            // Drop last column using negative index
+            var df2 = df1.Drop(-1);
+
+            // Test
+            Assert.Equal(3, df1.Columns.Count);
+            Assert.Equal(2, df2.Columns.Count);
+            Assert.Equal(new List<string> { "col1", "col2" }, df2.Columns);
+
+            // Drop last two columns using negative indices
+            var df3 = df1.Drop(-1, -2);
+
+            Assert.Equal(1, df3.Columns.Count);
+            Assert.Equal(new List<string> { "col1" }, df3.Columns);
+        }
+
+        [Fact]
+        public void DropByIndex_DuplicateIndices_Test()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1, 2, 3 } },
+                { "col2",new List<object>() { "A", "B", "C" } },
+                { "col3",new List<object>() { 10, 20, 30 } },
+            };
+
+            var df1 = new DataFrame(dict);
+
+            // Drop the same column twice (should only drop once)
+            var df2 = df1.Drop(1, 1);
+
+            // Test
+            Assert.Equal(3, df1.Columns.Count);
+            Assert.Equal(2, df2.Columns.Count);
+            Assert.Equal(new List<string> { "col1", "col3" }, df2.Columns);
+        }
+
+        [Fact]
+        public void DropByIndex_EmptyArray_ShouldThrow()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1, 2, 3 } },
+            };
+
+            var df = new DataFrame(dict);
+
+            // Should throw when no indices provided
+            Assert.Throws<ArgumentException>(() => df.Drop(new int[0]));
+        }
+
+        [Fact]
+        public void DropByIndex_NullArray_ShouldThrow()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1, 2, 3 } },
+            };
+
+            var df = new DataFrame(dict);
+
+            // Should throw when null provided
+            Assert.Throws<ArgumentException>(() => df.Drop((int[])null));
+        }
+
+        [Fact]
+        public void DropByIndex_OutOfBounds_ShouldThrow()
+        {
+            var dict = new Dictionary<string, List<object>>
+            {
+                { "col1",new List<object>() { 1, 2, 3 } },
+                { "col2",new List<object>() { "A", "B", "C" } },
+            };
+
+            var df = new DataFrame(dict);
+
+            // Should throw for positive index out of bounds
+            Assert.Throws<IndexOutOfRangeException>(() => df.Drop(2));
+            
+            // Should throw for negative index out of bounds
+            Assert.Throws<IndexOutOfRangeException>(() => df.Drop(-3));
+        }
 
         [Fact]
         public void Remove_Test01()
