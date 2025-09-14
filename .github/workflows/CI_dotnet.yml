@@ -12,7 +12,12 @@ on:
         type: string
         default: './output'
         description: 'Directory where published binaries will be output'
-
+  
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+    
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
