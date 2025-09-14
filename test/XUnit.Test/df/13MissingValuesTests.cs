@@ -240,6 +240,9 @@ namespace Unit.Test.DF
 		}
 
 
+			// Assert
+			Assert.Equal(new List<object> { DataFrame.NAN, 2, 4, 6 }, df["col1"]); // Avg of 2, 4, 6 = 4
+		}
 
 		[Fact]
         public void RemoveMissingValue_Test01()
