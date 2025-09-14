@@ -1770,7 +1770,7 @@ namespace Daany
 		/// </example>
 		public void FillNA(string col, Aggregation aggValue)
 		{
-			// If no aggregation is specified, do nothing
+			// If aggregation is None, no missing value replacement should be performed
 			if (aggValue == Aggregation.None)
 				return;
 

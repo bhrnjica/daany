@@ -217,17 +217,28 @@ namespace Unit.Test.DF
 		}
 
 		[Fact]
-		public void FillNA_ShouldSkipReplaceMissingValuesIfAggregationIsNone()
+		public void FillNA_ShouldNotReplaceWhenAggregationIsNone()
 		{
 			// Arrange
 			var df = new DataFrame(
-				new List<object> { DataFrame.NAN, 2, 4, 6 },
+				new List<object> { DataFrame.NAN, 2, DataFrame.NAN, 4 },
 				new List<object> { "row1", "row2", "row3", "row4" },
 				new List<string> { "col1" },
 				new ColType[] { ColType.I32 });
 
+			var originalValues = df["col1"].ToList();
+
 			// Act
 			df.FillNA("col1", Aggregation.None);
+
+			// Assert - values should remain unchanged
+			Assert.Equal(originalValues, df["col1"]);
+			Assert.Equal(DataFrame.NAN, df["col1", 0]);
+			Assert.Equal(2, df["col1", 1]);
+			Assert.Equal(DataFrame.NAN, df["col1", 2]);
+			Assert.Equal(4, df["col1", 3]);
+		}
+
 
 			// Assert
 			Assert.Equal(new List<object> { DataFrame.NAN, 2, 4, 6 }, df["col1"]); // Avg of 2, 4, 6 = 4
