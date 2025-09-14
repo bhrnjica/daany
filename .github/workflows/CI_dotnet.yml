@@ -1,10 +1,17 @@
 name: Continuous Integration for Windows and Linux
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_call:
+    inputs:
+      solution-path:
+        required: true
+        type: string
+        description: 'Path to the .NET solution file'
+      publish-directory:
+        required: false
+        type: string
+        default: './output'
+        description: 'Directory where published binaries will be output'
 
 jobs:
   build-and-test:
