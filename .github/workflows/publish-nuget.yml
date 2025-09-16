@@ -147,14 +147,5 @@ jobs:
         ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
         ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
 
-    - name: Check for NuGet Packages
-      shell: pwsh
-      run: |
-        $files = Get-ChildItem -Path "nuget" -Filter "*.nupkg"
-        if ($files.Count -eq 0) {
-          Write-Error "No NuGet packages found to push."
-          exit 1
-        }
-
     - name: Publish NuGet Packages
       run: ./nuget.exe push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
