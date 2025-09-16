@@ -93,4 +93,5 @@ jobs:
         with:
           name: published-binaries
           path: ./output/
+          overwrite: true
 
