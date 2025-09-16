@@ -36,13 +36,16 @@ jobs:
     - name: Build Project
       run: dotnet build -c Release
 
-    - name: Upload Linux Build Artifacts
+    - name: Publish Daany.LinA for net9.0
+      run: dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net9.0 -o src/daany.lina/bin/Release/net9.0
+
+    - name: Upload Linux Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: build-output-linux
+        name: linux-artifacts
         path: |
-          src/
-          test/
+          src/daany_rust/rust_lib/linux32-x64/
+          src/daany.lina/bin/Release/net9.0/
 
   build-windows:
     runs-on: windows-latest
@@ -73,13 +76,16 @@ jobs:
     - name: Build Project
       run: dotnet build -c Release
 
-    - name: Upload Windows Build Artifacts
+    - name: Publish Daany.LinA for net9.0
+      run: dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net9.0 -o src/daany.lina/bin/Release/net9.0
+
+    - name: Upload Windows Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: build-output-windows
+        name: windows-artifacts
         path: |
-          src/
-          test/
+          src/daany_rust/rust_lib/win32-x64/
+          src/daany.lina/bin/Release/net9.0/
 
   publish-nuget:
     runs-on: windows-latest
@@ -90,28 +96,29 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Download Linux Build Artifacts
+    - name: Download Linux Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: build-output-linux
-        path: ./src/
+        name: linux-artifacts
+        path: src/
 
-    - name: Download Windows Build Artifacts
+    - name: Download Windows Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: build-output-windows
-        path: ./src/
+        name: windows-artifacts
+        path: src/
 
     - name: Download nuget.exe
       run: |
         curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
     - name: Pack NuGet Packages
+      shell: pwsh
       run: |
-        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=%DAANY_VERSION%" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=%DAANY_VERSION%" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=%DAANY_VERSION%" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=%DAANY_VERSION%" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
 
     - name: Publish NuGet Packages
       run: ./nuget.exe push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
