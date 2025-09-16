@@ -59,9 +59,13 @@ jobs:
       run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
 
     - name: Copy Rust library to lib (Windows)
+      shell: pwsh
       run: |
-        mkdir -p src/daany_rust/rust_lib/win32-x64
-        copy src\daany_rust\target\release\daany_rust_lib.dll src\daany_rust\rust_lib\win32-x64\daany_rust_lib.dll
+        $dir = "src/daany_rust/rust_lib/win32-x64"
+        if (!(Test-Path $dir)) {
+          New-Item -ItemType Directory -Path $dir | Out-Null
+        }
+        Copy-Item -Path "src/daany_rust/target/release/daany_rust_lib.dll" -Destination "$dir/daany_rust_lib.dll"
 
     - name: Restore Dependencies
       run: dotnet restore
