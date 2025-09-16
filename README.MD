@@ -1,5 +1,6 @@
 ﻿![Daany Logo](./docs/img/daany_logo_small.png)
 
+
 Daany v2.0 - .NET **DA**ta **AN**al**Y**tics .NET library with the implementation of `DataFrame`, `Time series` decompositions and `Linear Algebra` `LAPACK` and `BLASS` routines.
 
 
