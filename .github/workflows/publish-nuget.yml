@@ -142,10 +142,10 @@ jobs:
     - name: Pack NuGet Packages
       shell: pwsh
       run: |
-        ./nuget.exe pack Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
 
     - name: Check for NuGet Packages
       shell: pwsh
