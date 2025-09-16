@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       daany_version:
-        description: "Daany Nuget package Version"
+        description: "Daany NuGet package Version"
         required: true
         default: "2.2.6"
 
@@ -21,24 +21,28 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
-    - name: Get .NET Version
-      id: get_dotnet_version
-      
+
     - name: Build Rust library (Linux)
-      if: runner.os == 'Linux'
       run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
-      
+
     - name: Copy Rust library to lib (Linux)
-      if: runner.os == 'Linux'
       run: |
         mkdir -p src/daany_rust/rust_lib/linux32-x64
         cp src/daany_rust/target/release/libdaany_rust_lib.so src/daany_rust/rust_lib/linux32-x64/daany_rust_lib.so
-          
+
     - name: Restore Dependencies
       run: dotnet restore
 
     - name: Build Project
       run: dotnet build -c Release
+
+    - name: Upload Linux Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output-linux
+        path: |
+          src/
+          test/
 
   build-windows:
     runs-on: windows-latest
@@ -50,38 +54,60 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
-        
+
     - name: Build Rust library (Windows)
-      if: runner.os == 'Windows'
       run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
-      
+
     - name: Copy Rust library to lib (Windows)
-      if: runner.os == 'Linux'
       run: |
         mkdir -p src/daany_rust/rust_lib/win32-x64
-        cp src/daany_rust/target/release/libdaany_rust_lib.dll src/daany_rust/rust_lib/win32-x64/daany_rust_lib.dll
-        
+        copy src\daany_rust\target\release\daany_rust_lib.dll src\daany_rust\rust_lib\win32-x64\daany_rust_lib.dll
+
     - name: Restore Dependencies
       run: dotnet restore
 
     - name: Build Project
       run: dotnet build -c Release
 
+    - name: Upload Windows Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output-windows
+        path: |
+          src/
+          test/
+
   publish-nuget:
     runs-on: windows-latest
     needs: [build-linux, build-windows]
+    env:
+      DAANY_VERSION: ${{ github.event.inputs.daany_version }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
+    - name: Download Linux Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-output-linux
+        path: ./src/
+
+    - name: Download Windows Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-output-windows
+        path: ./src/
+
     - name: Download nuget.exe
       run: |
         curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+
     - name: Pack NuGet Packages
       run: |
-        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=${{ github.event.inputs.daany_version }}" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=%DAANY_VERSION%" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=%DAANY_VERSION%" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=%DAANY_VERSION%" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=%DAANY_VERSION%" -IncludeReferencedProjects -OutputDirectory nuget/
+
     - name: Publish NuGet Packages
       run: ./nuget.exe push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
