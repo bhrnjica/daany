@@ -79,11 +79,18 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build
 
-      - name: Publish binaries as artifact
-        run: dotnet publish -c Release -o ./output
-    
+      - name: Publish net7.0
+        run: dotnet publish -c Release -f net7.0 -o ./output/net7.0
+      
+      - name: Publish net8.0
+        run: dotnet publish -c Release -f net8.0 -o ./output/net8.0
+      
+      - name: Publish net9.0
+        run: dotnet publish -c Release -f net9.0 -o ./output/net9.0
+      
       - name: Upload published binaries
         uses: actions/upload-artifact@v4
         with:
           name: published-binaries
           path: ./output/
+
