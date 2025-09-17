@@ -114,4 +114,9 @@ jobs:
         ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
 
     - name: Publish NuGet Packages
-      run: ./nuget.exe push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+      run: |
+        $version = "${{ env.DAANY_VERSION }}"
+        ./nuget.exe push nuget/Daany.DataFrame.$version.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+        ./nuget.exe push nuget/Daany.DataFrame.Ext.$version.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+        ./nuget.exe push nuget/Daany.Stat.$version.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+        ./nuget.exe push nuget/Daany.LinA.$version.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
