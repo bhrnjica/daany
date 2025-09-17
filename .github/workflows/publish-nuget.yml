@@ -17,25 +17,19 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x'
-
     - name: Build Rust library (Linux)
       run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
 
-    - name: Copy Rust library to lib (Linux)
+    - name: Copy Rust library to target path
       run: |
         mkdir -p src/daany_rust/rust_lib/linux32-x64
         cp src/daany_rust/target/release/libdaany_rust_lib.so src/daany_rust/rust_lib/linux32-x64/libdaany_rust_lib.so
 
-    - name: Upload Linux Artifacts
+    - name: Upload Linux Rust binary
       uses: actions/upload-artifact@v4
       with:
-        name: linux-artifacts
-        path: |
-          src/daany_rust/rust_lib/linux32-x64/
+        name: rust-linux
+        path: src/daany_rust/rust_lib/linux32-x64/libdaany_rust_lib.so
 
   build-windows:
     runs-on: windows-latest
@@ -43,69 +37,23 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x'
-
     - name: Build Rust library (Windows)
       run: cargo build --release --manifest-path src/daany_rust/Cargo.toml
 
-    - name: Copy Rust library to lib (Windows)
+    - name: Copy Rust library to target path
       shell: pwsh
       run: |
         $dir = "src/daany_rust/rust_lib/win32-x64"
         if (!(Test-Path $dir)) {
           New-Item -ItemType Directory -Path $dir | Out-Null
         }
-        Copy-Item -Path "src/daany_rust/target/release/daany_rust_lib.dll" -Destination "$dir/"
+        Copy-Item -Path "src/daany_rust/target/release/daany_rust_lib.dll" -Destination "$dir/daany_rust_lib.dll"
 
-    - name: Restore Dependencies
-      run: dotnet restore
-
-    - name: Build Projects
-      run: dotnet build -c Release
-
-    - name: Publish Required Projects
-      run: |
-        dotnet publish src/daany.df/Daany.DataFrame.csproj -c Release -f net7.0 -o src/daany.df/bin/Release/net7.0
-        dotnet publish src/daany.df/Daany.DataFrame.csproj -c Release -f net8.0 -o src/daany.df/bin/Release/net8.0
-        dotnet publish src/daany.df/Daany.DataFrame.csproj -c Release -f net9.0 -o src/daany.df/bin/Release/net9.0
-
-        dotnet publish src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net7.0 -o src/daany.ext/bin/Release/net7.0
-        dotnet publish src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net8.0 -o src/daany.ext/bin/Release/net8.0
-        dotnet publish src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net9.0 -o src/daany.ext/bin/Release/net9.0
-
-        dotnet publish src/daany.stat/Daany.Stat.csproj -c Release -f net7.0 -o src/daany.stat/bin/Release/net7.0
-        dotnet publish src/daany.stat/Daany.Stat.csproj -c Release -f net8.0 -o src/daany.stat/bin/Release/net8.0
-        dotnet publish src/daany.stat/Daany.Stat.csproj -c Release -f net9.0 -o src/daany.stat/bin/Release/net9.0
-
-        dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net7.0 -o src/daany.lina/bin/Release/net7.0
-        dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net8.0 -o src/daany.lina/bin/Release/net8.0
-        dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net9.0 -o src/daany.lina/bin/Release/net9.0
-
-    - name: Upload Windows Artifacts
+    - name: Upload Windows Rust binary
       uses: actions/upload-artifact@v4
       with:
-        name: windows-artifacts
-        path: |
-          src/daany_rust/rust_lib/win32-x64/
-
-          src/daany.df/bin/Release/net7.0
-          src/daany.df/bin/Release/net8.0
-          src/daany.df/bin/Release/net9.0
-
-          src/daany.ext/bin/Release/net7.0
-          src/daany.ext/bin/Release/net8.0
-          src/daany.ext/bin/Release/net9.0
-
-          src/daany.stat/bin/Release/net7.0
-          src/daany.stat/bin/Release/net8.0
-          src/daany.stat/bin/Release/net9.0
-
-          src/daany.lina/bin/Release/net7.0
-          src/daany.lina/bin/Release/net8.0
-          src/daany.lina/bin/Release/net9.0
+        name: rust-windows
+        path: src/daany_rust/rust_lib/win32-x64/daany_rust_lib.dll
 
   publish-nuget:
     runs-on: windows-latest
@@ -116,29 +64,54 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Download Linux Artifacts
+    - name: Download Rust binaries
       uses: actions/download-artifact@v4
       with:
-        name: linux-artifacts
-        path: .
+        name: rust-linux
+        path: src/daany_rust/rust_lib/linux32-x64/
 
-    - name: Download Windows Artifacts
+    - name: Download Rust binaries
       uses: actions/download-artifact@v4
       with:
-        name: windows-artifacts
-        path: .
+        name: rust-windows
+        path: src/daany_rust/rust_lib/win32-x64/
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Projects for net7, net8, net9
+      run: |
+        dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net7.0
+        dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net8.0
+        dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net9.0
+
+        dotnet build src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net7.0
+        dotnet build src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net8.0
+        dotnet build src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net9.0
+
+        dotnet build src/daany.stat/Daany.Stat.csproj -c Release -f net7.0
+        dotnet build src/daany.stat/Daany.Stat.csproj -c Release -f net8.0
+        dotnet build src/daany.stat/Daany.Stat.csproj -c Release -f net9.0
+
+        dotnet build src/daany.lina/Daany.LinA.csproj -c Release -f net7.0
+        dotnet build src/daany.lina/Daany.LinA.csproj -c Release -f net8.0
+        dotnet build src/daany.lina/Daany.LinA.csproj -c Release -f net9.0
 
     - name: Download nuget.exe
-      run: |
-        curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+      run: curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
     - name: Pack NuGet Packages
       shell: pwsh
       run: |
-        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -IncludeReferencedProjects -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
 
     - name: Publish NuGet Packages
       run: ./nuget.exe push nuget/*.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
