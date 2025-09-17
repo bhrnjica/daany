@@ -28,33 +28,14 @@ jobs:
     - name: Copy Rust library to lib (Linux)
       run: |
         mkdir -p src/daany_rust/rust_lib/linux32-x64
-        cp src/daany_rust/target/release/libdaany_rust_lib.so src/daany_rust/rust_lib/linux32-x64/daany_rust_lib.so
-
-    - name: Restore Dependencies
-      run: dotnet restore
-
-    - name: Build Projects
-      run: dotnet build -c Release
-
-    - name: Publish Required Projects
-      run: |
-        dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net7.0 -o src/daany.lina/bin/Release/net7.0
-        dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net8.0 -o src/daany.lina/bin/Release/net8.0
-        dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net9.0 -o src/daany.lina/bin/Release/net9.0
-        dotnet publish src/daany.mathstuff/Daany.MathStuff.csproj -c Release -f net8.0 -o src/daany.mathstuff/bin/Release/net8.0
-        dotnet publish src/daany.mathstuff/Daany.MathStuff.csproj -c Release -f net9.0 -o src/daany.mathstuff/bin/Release/net9.0
-
+        cp src/daany_rust/target/release/libdaany_rust_lib.so src/daany_rust/rust_lib/linux32-x64/libdaany_rust_lib.so
+        
     - name: Upload Linux Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: linux-artifacts
         path: |
           src/daany_rust/rust_lib/linux32-x64/
-          src/daany.lina/bin/Release/net7.0/
-          src/daany.lina/bin/Release/net8.0/
-          src/daany.lina/bin/Release/net9.0/
-          src/daany.mathstuff/bin/Release/net8.0/
-          src/daany.mathstuff/bin/Release/net9.0/
 
   build-windows:
     runs-on: windows-latest
@@ -87,11 +68,21 @@ jobs:
 
     - name: Publish Required Projects
       run: |
+        dotnet publish src/daany.df/Daany.DataFrame.csproj -c Release -f net7.0 -o src/daany.df/bin/Release/net7.0
+        dotnet publish src/daany.df/Daany.DataFrame.csproj -c Release -f net8.0 -o src/daany.df/bin/Release/net8.0
+        dotnet publish src/daany.df/Daany.DataFrame.csproj -c Release -f net9.0 -o src/daany.df/bin/Release/net9.0
+        
+        dotnet publish src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net7.0 -o src/daany.ext/bin/Release/net7.0
+        dotnet publish src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net8.0 -o src/daany.ext/bin/Release/net8.0
+        dotnet publish src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net9.0 -o src/daany.ext/bin/Release/net9.0
+        
+        dotnet publish src/daany.stat/Daany.Stat.csproj -c Release -f net7.0 -o src/daany.stat/bin/Release/net7.0
+        dotnet publish src/daany.stat/Daany.Stat.csproj -c Release -f net8.0 -o src/daany.stat/bin/Release/net8.0
+        dotnet publish src/daany.stat/Daany.Stat.csproj -c Release -f net9.0 -o src/daany.stat/bin/Release/net9.0
+        
         dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net7.0 -o src/daany.lina/bin/Release/net7.0
         dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net8.0 -o src/daany.lina/bin/Release/net8.0
         dotnet publish src/daany.lina/Daany.LinA.csproj -c Release -f net9.0 -o src/daany.lina/bin/Release/net9.0
-        dotnet publish src/daany.mathstuff/Daany.MathStuff.csproj -c Release -f net8.0 -o src/daany.mathstuff/bin/Release/net8.0
-        dotnet publish src/daany.mathstuff/Daany.MathStuff.csproj -c Release -f net9.0 -o src/daany.mathstuff/bin/Release/net9.0
 
     - name: Upload Windows Artifacts
       uses: actions/upload-artifact@v4
@@ -99,11 +90,22 @@ jobs:
         name: windows-artifacts
         path: |
           src/daany_rust/rust_lib/win32-x64/
-          src/daany.lina/bin/Release/net7.0/
-          src/daany.lina/bin/Release/net8.0/
-          src/daany.lina/bin/Release/net9.0/
-          src/daany.mathstuff/bin/Release/net8.0/
-          src/daany.mathstuff/bin/Release/net9.0/
+          
+          src/daany.df/bin/Release/net7.0
+          src/daany.df/bin/Release/net8.0
+          src/daany.df/bin/Release/net9.0
+          
+          src/daany.ext/bin/Release/net7.0
+          src/daany.ext/bin/Release/net8.0
+          src/daany.ext/bin/Release/net9.0
+
+          src/daany.stat/bin/Release/net7.0
+          src/daany.stat/bin/Release/net8.0
+          src/daany.stat/bin/Release/net9.0
+
+          src/daany.lina/bin/Release/net7.0
+          src/daany.lina/bin/Release/net8.0
+          src/daany.lina/bin/Release/net9.0
 
   publish-nuget:
     runs-on: windows-latest
@@ -129,8 +131,8 @@ jobs:
     - name: Rename Linux Rust Library for NuGet
       shell: pwsh
       run: |
-        $src = "src/daany_rust/rust_lib/linux32-x64/daany_rust_lib.so"
-        $dest = "src/daany_rust/rust_lib/linux32-x64/libdaany_rust_lib.so"
+        $src = "src/daany_rust/rust_lib/linux32-x64/libdaany_rust_lib.so"
+        $dest = "src/daany_rust/rust_lib/linux32-x64/daany_rust_lib.so"
         if (Test-Path $src) {
           Copy-Item -Path $src -Destination $dest -Force
         }
