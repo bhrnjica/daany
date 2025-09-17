@@ -108,10 +108,10 @@ jobs:
     - name: Pack NuGet Packages
       shell: pwsh
       run: |
-        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
-        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;Version=$env:DAANY_VERSION" -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame_v2.nuspec -Properties "Configuration=Release;version=$env:DAANY_VERSION" -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.DataFrame.Ext_v2.nuspec -Properties "Configuration=Release;version=$env:DAANY_VERSION" -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.Stat_v2.nuspec -Properties "Configuration=Release;version=$env:DAANY_VERSION" -OutputDirectory nuget/
+        ./nuget.exe pack nuget_specs/Daany.LinA_v2.nuspec -Properties "Configuration=Release;version=$env:DAANY_VERSION" -OutputDirectory nuget/
 
     - name: Publish NuGet Packages
       run: |
