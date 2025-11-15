@@ -15,9 +15,12 @@
 		<title>Daany.DataFrame</title>
         <description>Daany.DataFrame - cross platform NET library for analysis and transformation of tabular data.</description>
 		<summary>Daany.DataFrame - .NET library for analysis and transformation of tabular data.</summary >
-        <copyright>Copyright ©2019-2025 Bahrudin Hrnjica</copyright>
+        <copyright>Copyright ©2019-2026 Bahrudin Hrnjica</copyright>
         <tags>ml.net, data preparation, data analytics</tags>
         <dependencies>
+		  <group targetFramework="net10.0" >
+
+		  </group>
 		  <group targetFramework="net9.0" >
 
 		  </group>
@@ -40,7 +43,11 @@
         <file src="../src/daany_rust/rust_lib/win32-x64/daany_rust_lib.dll" target="runtimes/win-x64/native/" />
 		<file src="../src/daany_rust/rust_lib/linux32-x64/libdaany_rust_lib.so" target="runtimes/linux-x64/native/" />
 		
-         <!-- net9.0 !-->
+		<!-- net10.0 !-->
+		<file src="../src/daany.mathstuff/bin/Release/net10.0/Daany.MathStuff.dll" target="lib/net10.0" />
+		<file src="../src/daany.df/bin/Release/net10.0/Daany.DataFrame.dll" target="lib/net10.0" />
+		
+        <!-- net9.0 !-->
 		<file src="../src/daany.mathstuff/bin/Release/net9.0/Daany.MathStuff.dll" target="lib/net9.0" />
 		<file src="../src/daany.df/bin/Release/net9.0/Daany.DataFrame.dll" target="lib/net9.0" />
 		

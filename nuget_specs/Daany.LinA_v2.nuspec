@@ -15,9 +15,13 @@
         <title>Daany.LinA</title>
         <description>Daany.LinA - .NET wrapper for selected routines of MKL LAPACK and BLASS.</description>
 		<summary>Daany.LinA - .NET wrapper for selected routines of MKL LAPACK and BLASS.</summary >
-        <copyright>Copyright ©2020-2025 Bahrudin Hrnjica</copyright>
+        <copyright>Copyright ©2020-2026 Bahrudin Hrnjica</copyright>
         <tags>linear algebra, math, matrix, lapack, blass, data preparation, data analytics</tags>
 		<dependencies>
+		    <group targetFramework="net10.0">
+				<dependency id="MKL.NET.win-x64" version="2022.0.0.115" />
+				<dependency id="MKL.NET.linux-x64" version="2022.0.1.117" />
+			</group>
 			<group targetFramework="net9.0">
 				<dependency id="MKL.NET.win-x64" version="2022.0.0.115" />
 				<dependency id="MKL.NET.linux-x64" version="2022.0.1.117" />
@@ -38,7 +42,10 @@
 		<file src="../daanyIcon.png"/>
 		<file src="../LICENSE"/>
 		
-		 <!-- net9.0 !-->
+		<!-- net10.0 !-->
+        <file src="../src/daany.lina/bin/Release/net10.0/Daany.LinA.dll" target="lib/net10.0" />
+		
+		<!-- net9.0 !-->
         <file src="../src/daany.lina/bin/Release/net9.0/Daany.LinA.dll" target="lib/net9.0" />
 		
         <!-- net8.0 !-->

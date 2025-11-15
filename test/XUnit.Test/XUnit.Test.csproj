@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net9.0;net8.0;net7.0</TargetFrameworks>
+		<TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
 		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
 		<LangVersion>Latest</LangVersion>
 		<IsPackable>false</IsPackable>
@@ -11,11 +11,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="OxyPlot.Core" Version="2.2.0" />
 		<PackageReference Include="xunit" Version="2.9.3" />
 		<PackageReference Include="xunit.runner.utility" Version="2.9.3" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -100,14 +100,10 @@
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<!-- For Windows -->
-		<Exec Condition="'$(OS)' == 'Windows_NT'"
-			  Command="xcopy /y &quot;$(SolutionDir)src\daany_rust\rust_lib\win32-x64\daany_rust_lib.dll&quot; &quot;$(TargetDir)&quot;"
-			  ContinueOnError="true" />
+		<Exec Condition="'$(OS)' == 'Windows_NT'" Command="xcopy /y &quot;$(SolutionDir)src\daany_rust\rust_lib\win32-x64\daany_rust_lib.dll&quot; &quot;$(TargetDir)&quot;" ContinueOnError="true" />
 
 		<!-- For Linux -->
-		<Exec Condition="'$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == 'linux-x64'"
-			  Command="cp $(SolutionDir)src/daany_rust/rust_lib/linux32-x64/daany_rust_lib.so $(TargetDir)"
-			  ContinueOnError="true" />
+		<Exec Condition="'$(OS)' != 'Windows_NT' And '$(RuntimeIdentifier)' == 'linux-x64'" Command="cp $(SolutionDir)src/daany_rust/rust_lib/linux32-x64/daany_rust_lib.so $(TargetDir)" ContinueOnError="true" />
 	</Target>
 	<!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="xcopy /y &quot;$(SolutionDir)src\daany_rust\rust_lib\[OS]\release\daany_rust_lib.dll(so)&quot; &quot;$(TargetDir)&quot;" ContinueOnError="true" />

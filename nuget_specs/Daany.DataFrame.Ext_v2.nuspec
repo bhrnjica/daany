@@ -15,9 +15,12 @@
         <description>Daany.DataFrame.Ext - A set of extensions for Daany.DataFrame.</description>
 		<summary>Daany.DataFrame.Ext - A set of extensions for Daany.DataFrame.</summary>
 		<readme>README.MD</readme>
-        <copyright>Copyright ©2019-2025 Bahrudin Hrnjica</copyright>
+        <copyright>Copyright ©2019-2026 Bahrudin Hrnjica</copyright>
         <tags>ml.net, data preparation, data analytics</tags>
         <dependencies>
+		  <group targetFramework="net10.0" >
+
+		  </group>
 		  <group targetFramework="net9.0" >
 
 		  </group>
@@ -39,6 +42,12 @@
 		<file src="../src/daany_rust/rust_lib/win32-x64/daany_rust_lib.dll" target="runtimes/win-x64/native/" />
 		<file src="../src/daany_rust/rust_lib/linux32-x64/libdaany_rust_lib.so" target="runtimes/linux-x64/native/" />
 
+		<!-- net10.0 !-->
+		<file src="../src/daany.mathstuff/bin/Release/net10.0/Daany.MathStuff.dll" target="lib/net10.0" />
+		<file src="../src/daany.df/bin/Release/net10.0/Daany.DataFrame.dll" target="lib/net10.0" />
+		<file src="../src/daany.ext/bin/Release/net10.0/Daany.DataFrame.Ext.dll" target="lib/net10.0" />
+		<file src="../src/daany.ext/Plotly.Bin/XPlot.Plotly.dll" target="lib/net10.0" />
+		
 		<!-- net9.0 !-->
 		<file src="../src/daany.mathstuff/bin/Release/net9.0/Daany.MathStuff.dll" target="lib/net9.0" />
 		<file src="../src/daany.df/bin/Release/net9.0/Daany.DataFrame.dll" target="lib/net9.0" />
