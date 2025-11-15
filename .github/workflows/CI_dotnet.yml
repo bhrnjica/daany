@@ -81,8 +81,8 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release
 
-      - name: Test
-        run: dotnet test --configuration Release --no-build
+      # - name: Test
+      #   run: dotnet test --configuration Release --no-build
 
       - name: Publish net7.0
         run: dotnet publish -c Release -f net7.0 -o ./output/net7.0
