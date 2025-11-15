@@ -8,7 +8,7 @@ on:
       daany_version:
         description: "Daany NuGet package Version"
         required: true
-        default: "2.2.6"
+        default: "2.2.8"
 
 jobs:
   build-linux:
@@ -84,7 +84,7 @@ jobs:
     - name: Restore Dependencies
       run: dotnet restore
 
-    - name: Build Projects for net7, net8, net9, net10
+    - name: Build Projects for net8, net9, net10
       run: |
         dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net8.0
         dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net9.0

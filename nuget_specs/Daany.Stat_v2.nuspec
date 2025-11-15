@@ -31,10 +31,6 @@
 				<dependency id="OxyPlot.Core" version="2.2.0" />
 			</group>
 			 
-			<group targetFramework="net7.0" >
-				<dependency id="OxyPlot.Core" version="2.2.0" />
-			</group>
-		  
         </dependencies>
     </metadata>
     <!-- A readme.txt to display when the package is installed -->
@@ -65,11 +61,5 @@
 		<file src="../src/daany.stat/bin/Release/net8.0/Daany.Stat.dll" target="lib/net8.0" />
         <file src="../src/daany.ext/Plotly.Bin/XPlot.Plotly.dll" target="lib/net8.0" />
 		
-        <!-- net7.0 !-->
-        <file src="../src/daany.mathstuff/bin/Release/net7.0/Daany.MathStuff.dll" target="lib/net7.0" />
-		<file src="../src/daany.df/bin/Release/net7.0/Daany.DataFrame.dll" target="lib/net7.0" />
-		<file src="../src/daany.stat/bin/Release/net7.0/Daany.Stat.dll" target="lib/net7.0" />
-        <file src="../src/daany.ext/Plotly.Bin/XPlot.Plotly.dll" target="lib/net7.0" />
-       
     </files>
 </package>

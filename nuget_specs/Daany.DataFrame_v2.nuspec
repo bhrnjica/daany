@@ -27,10 +27,6 @@
 		  <group targetFramework="net8.0" >
 
 		  </group>
-          <group targetFramework="net7.0" >
-
-		  </group>
-
         </dependencies>
     </metadata>
     <!-- A readme.txt to display when the package is installed -->
@@ -53,10 +49,6 @@
 		
         <!-- net8.0 !-->
 		<file src="../src/daany.mathstuff/bin/Release/net8.0/Daany.MathStuff.dll" target="lib/net8.0" />
-		<file src="../src/daany.df/bin/Release/net8.0/Daany.DataFrame.dll" target="lib/net8.0" />
-		
-        <!-- net7.0 !-->
-        <file src="../src/daany.mathstuff/bin/Release/net7.0/Daany.MathStuff.dll" target="lib/net7.0" />
-		<file src="../src/daany.df/bin/Release/net7.0/Daany.DataFrame.dll" target="lib/net7.0" />		
+		<file src="../src/daany.df/bin/Release/net8.0/Daany.DataFrame.dll" target="lib/net8.0" />		
     </files>
 </package>
