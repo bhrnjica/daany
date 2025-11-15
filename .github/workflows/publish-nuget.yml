@@ -84,23 +84,29 @@ jobs:
     - name: Restore Dependencies
       run: dotnet restore
 
-    - name: Build Projects for net7, net8, net9
+    - name: Build Projects for net7, net8, net9, net10
       run: |
         dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net7.0
         dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net8.0
         dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net9.0
+        dotnet build src/daany.df/Daany.DataFrame.csproj -c Release -f net10.0
 
         dotnet build src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net7.0
         dotnet build src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net8.0
         dotnet build src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net9.0
+        dotnet build src/daany.ext/Daany.DataFrame.Ext.csproj -c Release -f net10.0
+
 
         dotnet build src/daany.stat/Daany.Stat.csproj -c Release -f net7.0
         dotnet build src/daany.stat/Daany.Stat.csproj -c Release -f net8.0
         dotnet build src/daany.stat/Daany.Stat.csproj -c Release -f net9.0
+        dotnet build src/daany.stat/Daany.Stat.csproj -c Release -f net10.0
 
         dotnet build src/daany.lina/Daany.LinA.csproj -c Release -f net7.0
         dotnet build src/daany.lina/Daany.LinA.csproj -c Release -f net8.0
         dotnet build src/daany.lina/Daany.LinA.csproj -c Release -f net9.0
+        dotnet build src/daany.lina/Daany.LinA.csproj -c Release -f net10.0
+        
 
     - name: Download nuget.exe
       run: curl -L -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe

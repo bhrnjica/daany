@@ -69,6 +69,7 @@ jobs:
             7.0.x
             8.0.x
             9.0.x
+           10.0.x
 
       - name: Restore dependencies
         run: dotnet restore
@@ -87,6 +88,9 @@ jobs:
       
       - name: Publish net9.0
         run: dotnet publish -c Release -f net9.0 -o ./output/net9.0
+
+      - name: Publish net10.0
+        run: dotnet publish -c Release -f net10.0 -o ./output/net10.0
       
       - name: Upload published binaries
         uses: actions/upload-artifact@v4
