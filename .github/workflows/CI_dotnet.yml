@@ -43,11 +43,9 @@ jobs:
       - name: Copy Rust library to test bin (Linux)
         if: runner.os == 'Linux'
         run: |
-          mkdir -p test/XUnit.Test/bin/Release/net7.0/runtimes/linux-x64/native/
           mkdir -p test/XUnit.Test/bin/Release/net8.0/runtimes/linux-x64/native/
           mkdir -p test/XUnit.Test/bin/Release/net9.0/runtimes/linux-x64/native/
           mkdir -p test/XUnit.Test/bin/Release/net10.0/runtimes/linux-x64/native/
-          cp src/daany_rust/target/release/libdaany_rust_lib.so test/XUnit.Test/bin/Release/net7.0/runtimes/linux-x64/native/daany_rust_lib.so
           cp src/daany_rust/target/release/libdaany_rust_lib.so test/XUnit.Test/bin/Release/net8.0/runtimes/linux-x64/native/daany_rust_lib.so
           cp src/daany_rust/target/release/libdaany_rust_lib.so test/XUnit.Test/bin/Release/net9.0/runtimes/linux-x64/native/daany_rust_lib.so
           cp src/daany_rust/target/release/libdaany_rust_lib.so test/XUnit.Test/bin/Release/net10.0/runtimes/linux-x64/native/daany_rust_lib.so
@@ -56,11 +54,9 @@ jobs:
       - name: Copy Rust library to test bin (Windows)
         if: runner.os == 'Windows'
         run: |
-          mkdir -p test/XUnit.Test/bin/Release/net7.0/runtimes/win-x64/native/
           mkdir -p test/XUnit.Test/bin/Release/net8.0/runtimes/win-x64/native/
           mkdir -p test/XUnit.Test/bin/Release/net9.0/runtimes/win-x64/native/
           mkdir -p test/XUnit.Test/bin/Release/net10.0/runtimes/win-x64/native/
-          copy src\daany_rust\target\release\daany_rust_lib.dll test\XUnit.Test\bin\Release\net7.0\runtimes\win-x64\native\daany_rust_lib.dll
           copy src\daany_rust\target\release\daany_rust_lib.dll test\XUnit.Test\bin\Release\net8.0\runtimes\win-x64\native\daany_rust_lib.dll
           copy src\daany_rust\target\release\daany_rust_lib.dll test\XUnit.Test\bin\Release\net9.0\runtimes\win-x64\native\daany_rust_lib.dll
           copy src\daany_rust\target\release\daany_rust_lib.dll test\XUnit.Test\bin\Release\net10.0\runtimes\win-x64\native\daany_rust_lib.dll
@@ -70,7 +66,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            7.0.x
             8.0.x
             9.0.x
             10.0.x
@@ -81,8 +76,8 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release
 
-      # - name: Test
-      #   run: dotnet test --configuration Release --no-build
+      - name: Test
+        run: dotnet test --configuration Release --no-build
 
       - name: Publish net7.0
         run: dotnet publish -c Release -f net7.0 -o ./output/net7.0
